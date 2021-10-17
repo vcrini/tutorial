@@ -162,4 +162,243 @@ MANGIA-PUDDING
 (MALEDETTO-ALIENO-LISP-HAI-MANGIATO-IL-MIO-PUDDING)
 [20]> (mangia-pudding 'giovanni)
 (IO SPERO CHE TU SCHIANTI GIOVANNI)
-[21]>
+[21]> (and (oddp 5) (oddp 3) (oddp 1))
+T
+[22]> (and (oddp 5) (oddp 2) (oddp 1))
+NIL
+[23]> (or (oddp 5) (oddp 2) (oddp 1))
+T
+[24]> (setf *dispari* nil)
+NIL
+[25]> (or (oddp 0) (setf *pari* t))
+T
+[26]> *pari*
+T
+[27]> (if (member 1 '(2 4 1 5))
+          '1-nella-lista
+          '1-non-nella-lista)
+1-NELLA-LISTA
+[28]> (member 1 '(2 4 1 5))
+(1 5)
+[29]> (member 2 '(2 4 1 5))
+(2 4 1 5)
+[30]> (member 4 '(2 4 1 5))
+(4 1 5)
+[31]> (car (member 4 '(2 4 1 5)))
+4
+[32]> (car (member 5 '(2 4 1 5)))
+5
+[33]> (member 5 '(2 4 1 5))
+(5)
+[34]> (member nil '(3 4 nil 5))
+(NIL 5)
+[35]> (member nil '(3 4 5 nil))
+(NIL)
+[36]> (if (member nil '(3 4 5 nil)) 'trovato 'non-trovato))
+TROVATO
+[37]>
+*** - READ from #<INPUT CONCATENATED-STREAM #<INPUT STRING-INPUT-STREAM> #<IO TERMINAL-STREAM>>: an object cannot start with #\)
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [38]> :R1
+[39]> (if (member nil '(3 4 5 nil)) 'trovato 'non-trovato)
+TROVATO
+[40]> (if ((nil)) 'trovato 'non-trovato)
+
+*** - EVAL: (NIL) is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort main loop
+Break 1 [41]> (if (('nil)) 'trovato 'non-trovato)
+
+*** - EVAL: ('NIL) is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort debug loop
+ABORT          :R3      Abort main loop
+Break 2 [42]> :R3
+[43]> (if (('nil)) 'trovato 'non-trovato)
+
+*** - EVAL: ('NIL) is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort main loop
+Break 1 [44]> :R1
+Use instead> (if (nil) 'trovato 'non-trovato)
+
+*** - EVAL: undefined function NIL
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of (FDEFINITION 'NIL).
+RETRY          :R2      Retry
+STORE-VALUE    :R3      Input a new value for (FDEFINITION 'NIL).
+ABORT          :R4      Abort debug loop
+ABORT          :R5      Abort main loop
+Break 2 [45]> (if '(nil) 'trovato 'non-trovato)
+TROVATO
+Break 2 [45]> (if '() 'trovato 'non-trovato)
+NON-TROVATO
+Break 2 [45]> (if '(nil) 'trovato 'non-trovato)
+TROVATO
+Break 2 [45]> (if () 'trovato 'non-trovato)
+NON-TROVATO
+Break 2 [45]> (if (nil) 'trovato 'non-trovato)
+
+*** - EVAL: undefined function NIL
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of (FDEFINITION 'NIL).
+RETRY          :R2      Retry
+STORE-VALUE    :R3      Input a new value for (FDEFINITION 'NIL).
+ABORT          :R4      Abort debug loop
+ABORT          :R5      Abort debug loop
+ABORT          :R6      Abort main loop
+Break 3 [46]> :R6
+[47]> (if '() 'trovato 'non-trovato)
+NON-TROVATO
+[48]> (if () 'trovato 'non-trovato)
+NON-TROVATO
+[49]> (if 'nil 'trovato 'non-trovato)
+NON-TROVATO
+[50]> (if nil 'trovato 'non-trovato)
+NON-TROVATO
+[51]> (if ('nil) 'trovato 'non-trovato)
+
+*** - EVAL: 'NIL is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort main loop
+Break 1 [52]> R3
+
+*** - SYSTEM::READ-EVAL-PRINT: variable R3 has no value
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of R3.
+STORE-VALUE    :R2      Input a new value for R3.
+ABORT          :R3      Abort debug loop
+ABORT          :R4      Abort main loop
+Break 2 [53]> :R3
+Break 1 [52]> (if '(nil) 'trovato 'non-trovato)
+TROVATO
+Break 1 [52]> (if nil 'trovato 'non-trovato)
+NON-TROVATO
+Break 1 [52]> (if 'nil 'trovato 'non-trovato)
+NON-TROVATO
+Break 1 [52]> (member nil '(3 4 5 nil))
+(NIL)
+Break 1 [52]> (find-if #'oddp '(2 4 5 6))
+5
+Break 1 [52]> (find-if '(5 6))
+
+*** - EVAL: too few arguments given to FIND-IF: (FIND-IF '(5 6))
+The following restarts are available:
+ABORT          :R1      Abort debug loop
+ABORT          :R2      Abort main loop
+Break 2 [54]> R3
+
+*** - SYSTEM::READ-EVAL-PRINT: variable R3 has no value
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of R3.
+STORE-VALUE    :R2      Input a new value for R3.
+ABORT          :R3      Abort debug loop
+ABORT          :R4      Abort debug loop
+ABORT          :R5      Abort main loop
+Break 3 [55]> :R3
+Break 2 [54]> (find-if (5 6))
+
+*** - EVAL: 5 is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort debug loop
+ABORT          :R3      Abort debug loop
+ABORT          :R4      Abort main loop
+Break 3 [56]> :R3
+Break 1 [52]> (find-if #'oddp '(2 4 8 6))
+NIL
+Break 1 [52]> (find-if #'oddp '(2 4 8 6 1))
+1
+Break 1 [52]> (null '(2 nil 3))
+NIL
+Break 1 [52]> (null '(2 1 3))
+NIL
+Break 1 [52]> (+ 1 1)
+2
+Break 1 [52]> (+ 100 100)
+200
+Break 1 [52]> (+ 1037893756983764598732645876387453860 10012344554441111111222223333344444555555666666777778888800000000000000000)
+10012344554441111111222223333344444556593560423761543487532645876387453860
+Break 1 [52]> (- 14 8)
+6
+Break 1 [52]> (null '(1 nil))
+NIL
+Break 1 [52]> (null (1 nil))
+
+*** - EVAL: 1 is not a function name; try using a symbol instead
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead.
+ABORT          :R2      Abort debug loop
+ABORT          :R3      Abort main loop
+Break 2 [57]> :R3
+[58]> (null '(1 nil))
+NIL
+[59]> (null '(1 2))
+NIL
+[60]> (nul 1)
+
+*** - EVAL: undefined function NUL
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of (FDEFINITION 'NUL).
+RETRY          :R2      Retry
+STORE-VALUE    :R3      Input a new value for (FDEFINITION 'NUL).
+ABORT          :R4      Abort main loop
+Break 1 [61]> :R1
+Use instead of (FDEFINITION 'NUL)>
+
+*** - Ctrl-C: User break
+The following restarts are available:
+ABORT          :R1      Abort debug loop
+ABORT          :R2      Abort main loop
+Break 2 [62]> :R1
+Break 1 [61]> :R2
+
+*** - EVAL: undefined function NUL
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of (FDEFINITION 'NUL).
+RETRY          :R2      Retry
+STORE-VALUE    :R3      Input a new value for (FDEFINITION 'NUL).
+ABORT          :R4      Abort main loop
+Break 1 [63]> :R4
+[64]> (null '(1))
+NIL
+[65]> (null '(nil))
+NIL
+[66]> (null '())
+T
+[67]> (null '(1))
+NIL
+[68]> (null 'nil)
+T
+[69]> (null '())
+T
+[70]> (find-if #'null '(2 4 nil 6))
+NIL
+[71]> (find-if #'null '(2 4 6))
+NIL
+[72]> (find-if #'null '(nil))
+NIL
+[73]> (find-if #'null '())
+NIL
+[74]> (setf *pippo 'ciao)
+CIAO
+[75]> *pippo
+CIAO
+[76]> (eq *pippo 'ciao)
+T
+[77]> (eq *pippo 'ciaone)
+NIL
+[78]> (eq 'mela 'mela)
+T
+[79]> (equal 'mela 'mela)
+T
+[80]> (eq (list 1 2 3) (list 1 2 3))
+NIL
+[81]> (equal (list 1 2 3) (list 1 2 3))
+T
+[82]>
