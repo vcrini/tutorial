@@ -1,0 +1,165 @@
+vcrini@gdr:~$ clisp
+  i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
+  I I I I I I I      8     8   8           8     8     o  8    8
+  I  \ `+' /  I      8         8           8     8        8    8
+   \  `-+-'  /       8         8           8      ooooo   8oooo
+    `-__|__-'        8         8           8           8  8
+        |            8     o   8           8     o     8  8
+  ------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
+
+Welcome to GNU CLISP 2.49.92 (2018-02-18) <http://clisp.org/>
+
+Copyright (c) Bruno Haible, Michael Stoll 1992-1993
+Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
+Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
+Copyright (c) Bruno Haible, Sam Steingold 1999-2000
+Copyright (c) Sam Steingold, Bruno Haible 2001-2018
+
+Type :h and hit Enter for context help.
+
+[1]> (if (= (+ 1 2) 3)
+You are in the top-level Read-Eval-Print loop.
+Help (abbreviated :h) = this list
+Use the usual editing capabilities.
+(quit) or (exit) leaves CLISP.
+  'yes
+  'none)
+YES
+[2]> (if (= (+ 1 3) 3)
+  'yes
+  'none)
+NONE
+[3]> (if '(1)
+         'la-lista-ha-roba-dentro
+         'la-lista-non-ha-niente)
+LA-LISTA-HA-ROBA-DENTRO
+[4]> (if '()
+         'la-lista-ha-roba-dentro
+         'la-lista-non-ha-niente)
+LA-LISTA-NON-HA-NIENTE
+[5]> (if (oddp 3)
+         'dispari
+         'pari)
+DISPARI
+[6]> (if (oddp 2)
+         'dispari
+         'pari)
+PARI
+[7]> (if (oddp 0)
+         'dispari
+         'pari)
+PARI
+[8]> (if (oddp 3)
+         'dispari
+         (/ 1 0))
+DISPARI
+[9]> (if (oddp 2)
+         'dispari
+         (/ 1 0))
+
+*** - /: division by zero
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [10]> :R1
+[11]> (defvar *numero-dispari* nil)
+*NUMERO-DISPARI*
+[12]> (if (oddp 5)
+          (progn (setf *numero-dispari* t)
+                 'numero-dispari)
+          'numero-pari)
+NUMERO-DISPARI
+[13]> *numero-dispari*
+T
+[14]> (defvar *numero-dispari* nil)
+*NUMERO-DISPARI*
+[15]> *numero-dispari*
+T
+[16]> (if (oddp 4)
+          (progn (setf *numero-dispari* t)
+                 'numero-dispari)
+          'numero-pari)
+NUMERO-PARI
+[17]> (quit)
+Bye.
+vcrini@gdr:~$ clisp
+  i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
+  I I I I I I I      8     8   8           8     8     o  8    8
+  I  \ `+' /  I      8         8           8     8        8    8
+   \  `-+-'  /       8         8           8      ooooo   8oooo
+    `-__|__-'        8         8           8           8  8
+        |            8     o   8           8     o     8  8
+  ------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
+
+Welcome to GNU CLISP 2.49.92 (2018-02-18) <http://clisp.org/>
+
+Copyright (c) Bruno Haible, Michael Stoll 1992-1993
+Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
+Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
+Copyright (c) Bruno Haible, Sam Steingold 1999-2000
+Copyright (c) Sam Steingold, Bruno Haible 2001-2018
+
+Type :h and hit Enter for context help.
+
+[1]> (defvar *dispari* nul)
+
+*** - UNLESS: variable NUL has no value
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of NUL.
+STORE-VALUE    :R2      Input a new value for NUL.
+ABORT          :R3      Abort main loop
+Break 1 [2]> :R1
+Use instead of NUL> nil
+*DISPARI*
+[3]> *dispari*
+NIL
+[4]> (when (oddp 5)
+           (setf *dispari* t)
+           'dispari-è-il-numero)
+DISPARI-È-IL-NUMERO
+[5]> (when (oddp 0)
+           (setf *dispari* t)
+           'dispari-è-il-numero)
+NIL
+[6]> *dispari*
+T
+[7]> (unless (oddp 2)
+           (setf *dispari* nil)
+           'pari-è-il-numero)
+PARI-È-IL-NUMERO
+[8]> *dispari*
+NIL
+[9]> (defvar *arci-nemico* nil)
+*ARCI-NEMICO*
+[10]> (defun mangia-pudding (persona)
+        (cond ((eq persona 'enrico) (setf *arci-nemico* 'stupido-alieno-lisp) '(maledetto-alieno-lisp-hai-mangiato-il-mio-pudding))
+               ((eq persona 'giovanni) (setf *arci-nemico* 'inutile-vecchio-giovanni) '(Io spero che tu schianti Giovanni))
+You are in the top-level Read-Eval-Print loop.
+Help (abbreviated :h) = this list
+Use the usual editing capabilities.
+(quit) or (exit) leaves CLISP.
+               (t '(perchè mangi il mio pudding straniero?))))
+MANGIA-PUDDING
+[11]> (mangia-pudding 'giovanni)
+(IO SPERO CHE TU SCHIANTI GIOVANNI)
+[12]> *arci-nemico*
+INUTILE-VECCHIO-GIOVANNI
+[13]> (mangia-pudding 'enrico)
+(MALEDETTO-ALIENO-LISP-HAI-MANGIATO-IL-MIO-PUDDING)
+[14]> *arci-nemico*
+STUPIDO-ALIENO-LISP
+[15]> (mangia-pudding 'Valerio)
+(PERCHÈ MANGI IL MIO PUDDING STRANIERO?)
+[16]> *arci-nemico*
+STUPIDO-ALIENO-LISP
+[17]> (defun mangia-pudding (persona)
+        (case persona ((enrico) (setf *arci-nemico* 'stupido-alieno-lisp) '(maledetto-alieno-lisp-hai-mangiato-il-mio-pudding))
+               ((giovanni) (setf *arci-nemico* 'inutile-vecchio-giovanni) '(Io spero che tu schianti Giovanni))
+               (otherwise '(perchè mangi il mio pudding straniero?))))
+MANGIA-PUDDING
+[18]> (mangia-pudding 'Valerio)
+(PERCHÈ MANGI IL MIO PUDDING STRANIERO?)
+[19]> (mangia-pudding 'enrico)
+(MALEDETTO-ALIENO-LISP-HAI-MANGIATO-IL-MIO-PUDDING)
+[20]> (mangia-pudding 'giovanni)
+(IO SPERO CHE TU SCHIANTI GIOVANNI)
+[21]>
