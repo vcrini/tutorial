@@ -1,0 +1,124 @@
+vcrini@gdr:~/tutorial/clisp$ ls -l
+total 36
+-rw-r--r-- 1 vcrini vcrini    57 Nov  1 09:37 1.txt
+-rw-r--r-- 1 vcrini vcrini    56 Oct 10 16:48 4_flet.lisp
+-rw-r--r-- 1 vcrini vcrini    87 Oct 10 16:50 4_flet2.lisp
+-rw-r--r-- 1 vcrini vcrini    90 Oct 10 16:52 5_labels.lisp
+-rw-r--r-- 1 vcrini vcrini    23 Oct 10 16:46 hello.lisp
+-rw-r--r-- 1 vcrini vcrini 12109 Oct 17 17:56 lisp.txt
+-rw-r--r-- 1 vcrini vcrini    34 Oct 10 16:53 readme.txt
+vcrini@gdr:~/tutorial/clisp$ cat 1.txt
+vcrini@gdr:~/tutorial/clisp$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+vcrini@gdr:~/tutorial/clisp$ ls -l
+total 36
+-rw-r--r-- 1 vcrini vcrini    57 Nov  1 09:37 1.txt
+-rw-r--r-- 1 vcrini vcrini    56 Oct 10 16:48 4_flet.lisp
+-rw-r--r-- 1 vcrini vcrini    87 Oct 10 16:50 4_flet2.lisp
+-rw-r--r-- 1 vcrini vcrini    90 Oct 10 16:52 5_labels.lisp
+-rw-r--r-- 1 vcrini vcrini    23 Oct 10 16:46 hello.lisp
+-rw-r--r-- 1 vcrini vcrini 12109 Oct 17 17:56 lisp.txt
+-rw-r--r-- 1 vcrini vcrini    34 Oct 10 16:53 readme.txt
+vcrini@gdr:~/tutorial/clisp$ clisp
+  i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
+  I I I I I I I      8     8   8           8     8     o  8    8
+  I  \ `+' /  I      8         8           8     8        8    8
+   \  `-+-'  /       8         8           8      ooooo   8oooo
+    `-__|__-'        8         8           8           8  8
+        |            8     o   8           8     o     8  8
+  ------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
+
+Welcome to GNU CLISP 2.49.92 (2018-02-18) <http://clisp.org/>
+
+Copyright (c) Bruno Haible, Michael Stoll 1992-1993
+Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
+Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
+Copyright (c) Bruno Haible, Sam Steingold 1999-2000
+Copyright (c) Sam Steingold, Bruno Haible 2001-2018
+
+Type :h and hit Enter for context help.
+
+[1]> (defparameter *nodes* '((living-room (you are in the living room. A wizard is snoring loudly on the couch.)) (garden (you are in a beautiful garden. There is a wel
+l in front of you)) (attic (you are in the attic. There is a giant welding torch in the corner.))))
+*NODES*
+[2]> (assoc 'garden *nodes*)
+(GARDEN (YOU ARE IN A BEAUTIFUL GARDEN. THERE IS A WELL IN FRONT OF YOU))
+[3]> (defun describe-location (location nodes) (cadr (assoc location nodes)))
+DESCRIBE-LOCATION
+[4]> (des
+describe            describe-location   describe-object     destructuring-bind
+[4]> (describe-location 'garden)
+
+*** - EVAL/APPLY: Too few arguments (1 instead of at least 2) given to DESCRIBE-LOCATION
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [5]> :R1
+[6]> (describe-location garden)
+
+*** - SYSTEM::READ-EVAL-PRINT: variable GARDEN has no value
+The following restarts are available:
+USE-VALUE      :R1      Input a value to be used instead of GARDEN.
+STORE-VALUE    :R2      Input a new value for GARDEN.
+ABORT          :R3      Abort main loop
+Break 1 [7]> :R3
+[8]> (describe-location 'living-room *nodes*)
+(YOU ARE IN THE LIVING ROOM. A WIZARD IS SNORING LOUDLY ON THE COUCH.)
+[9]> (defparameter *edges* '((living-room (garden west door) (attic upstairs ladder)) (garden (living-room east door)) (attic (living-room downstairs ladder))))
+*EDGES*
+[10]> (defun describe-path (edge)
+'(there is a ,(caddr edge) going, (cadr edge) from here.))
+
+*** - READ: comma is illegal outside of backquote
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [11]> (defun describe-path (edge)
+'(there is a ,(caddr edge) going ,(cadr edge) from here.))
+
+*** - READ: comma is illegal outside of backquote
+The following restarts are available:
+ABORT          :R1      Abort debug loop
+ABORT          :R2      Abort main loop
+Break 2 [12]> :R1
+Break 1 [11]> :R1
+[13]> (defun describe-path (edge)
+'(there is a ,(caddr edge) going ,(cadr edge) from here.))
+
+*** - READ: comma is illegal outside of backquote
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [14]> :R1
+[15]> (defun describe-path (edge)
+(there is a ,(caddr edge) going ,(cadr edge) from here.))
+
+*** - READ: comma is illegal outside of backquote
+The following restarts are available:
+ABORT          :R1      Abort main loop
+Break 1 [16]> :R1
+[17]>
