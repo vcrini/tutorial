@@ -4,7 +4,7 @@ import . "fmt"
 
 const Ciao = "ciao"
 
-var mondo = "mondo"
+var mondo string = "mondo"
 
 func main() {
 	Printf("%v %v\n", Ciao, mondo)
