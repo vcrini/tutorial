@@ -8,5 +8,5 @@ const (
 )
 
 func main() {
-	Println(Ciao, mondo)
+	Printf("%v %v\n", Ciao, mondo)
 }
