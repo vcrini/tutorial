@@ -1,7 +1,6 @@
 package main
 import . "fmt"
-const Ciao = "ciao"
-const mondo = "mondo"
+const Ciao, mondo = "ciao", "mondo"
 
 func main() {
 	Println(Ciao, mondo)
