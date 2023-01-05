@@ -16,8 +16,12 @@ func main() {
   if err != nil {
     log.Fatal(err)
   }
+  grade, errg := strconv.ParseFloat(input, 64)
+  if errg != nil {
+    log.Fatal(err)
+  }
   var  status string
-  if input >= 60 {
+  if grade >= 60 {
     status = "passato"
   } else {
     status = "bocciato"
