@@ -24,10 +24,6 @@ func main() {
 	} else {
 		fmt.Printf("area is %.2f\n", amount)
 	}
-	// fmt.Printf("%.2f\n", painNeeded(width,height))
-	// width = 5.2
-	// height = 3.5
-	// fmt.Printf("%.2f\n", painNeeded(width,height))
 	width = -1.0
 	height = 3.5
 	amount, err = paintNeeded(width, height)
