@@ -15,6 +15,9 @@ func main() {
   myIntPointer=&myInt
 	fmt.Println(&myInt)
 	fmt.Println(&myIntPointer)
+  myInt=6
+	fmt.Println(myInt)
+	fmt.Println(*myIntPointer)
 	var myFloat float64
 	fmt.Println(reflect.TypeOf(myFloat))
 	var myBool bool
