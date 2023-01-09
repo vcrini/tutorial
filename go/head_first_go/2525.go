@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+  "log"
 )
 
 func paintNeeded(width float64, height float64) (float64, error) {
@@ -20,7 +21,7 @@ func main() {
 	height = 3.0
 	amount, err := paintNeeded(width, height)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	} else {
 		fmt.Printf("area is %.2f\n", amount)
 	}
@@ -28,7 +29,7 @@ func main() {
 	height = 3.5
 	amount, err = paintNeeded(width, height)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	} else {
 		fmt.Printf("area is %.2f\n", amount)
 	}
