@@ -16,6 +16,7 @@ func main() {
 	rand.Seed(seconds)
 	target := rand.Intn(100) + 1
 	fmt.Println(target)
+	success := false
 
 	for guesses := 0; guesses < 3; guesses++ {
 		reader := bufio.NewReader(os.Stdin)
@@ -37,8 +38,16 @@ func main() {
 		}
 		if guess == target {
 			fmt.Println("Indovinato")
-      break
+			success = true
+			break
 		}
+
+	}
+	if success {
+		fmt.Println("Complimenti!")
+
+	} else {
+		fmt.Println("Spiacente non hai indovinato, ritenta")
 
 	}
 }
