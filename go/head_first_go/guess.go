@@ -1,3 +1,4 @@
+// guess challenge
 package main
 
 import (
@@ -15,12 +16,11 @@ func main() {
 	seconds := time.Now().Unix()
 	rand.Seed(seconds)
 	target := rand.Intn(100) + 1
-	fmt.Println(target)
 	success := false
-
-	for guesses := 0; guesses < 3; guesses++ {
+	retries := 3
+	for guesses := 0; guesses < retries; guesses++ {
 		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Fai un tentativo di indovinare")
+		fmt.Println("Fai un tentativo di indovinare disponibili(", retries-guesses, " di ", retries, ")")
 		input, err := reader.ReadString('\n')
 		if err != nil {
 			log.Fatal(err)
@@ -47,7 +47,7 @@ func main() {
 		fmt.Println("Complimenti!")
 
 	} else {
-		fmt.Println("Spiacente non hai indovinato, ritenta")
+		fmt.Println("Spiacente non hai indovinato il numero era", target, ", ritenta")
 
 	}
 }
