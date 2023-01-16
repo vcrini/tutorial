@@ -1,5 +1,5 @@
 package main
-import "greeting/greeting"
+import "example.com/packages/greeting"
 
 func main() {
   greeting.Hello()
