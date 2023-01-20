@@ -12,14 +12,14 @@ func main() {
 	for i := 0; i < 3; i++ {
 		fmt.Printf("il %d numero è  %d\n", i, element[i])
 	}
-	element2 := [3]int{1, 2, 3}
+	element2 := [3]float64{1.0, 2.0, 3.0}
 	//calculating media
-	sum := 0
-	const nOfElements int = 3
+	sum := 0.0
 	for _, v := range element2 {
 		sum += v
 	}
-	media := float64(sum / nOfElements)
-	fmt.Printf(" la media è %2.2f\n", media)
+	n := float64(len(element2))
+
+	fmt.Printf("la media di %v è %0.2f\n", element2, sum/n)
 
 }
