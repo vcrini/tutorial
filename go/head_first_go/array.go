@@ -33,13 +33,15 @@ func main() {
 	}
 	scanner := bufio.NewScanner(file)
 	var i int
-	var element3 [3]float64
+	var elements []float64
 	for scanner.Scan() {
+    var elem float64
 		fmt.Println(scanner.Text())
-		element3[i], err = strconv.ParseFloat(scanner.Text(), 64)
+		elem, err = strconv.ParseFloat(scanner.Text(), 64)
 		if err != nil {
 			log.Fatal(err)
 		}
+    elements=append(elements,elem)
 		i += 1
 	}
 	err = file.Close()
@@ -49,12 +51,12 @@ func main() {
 	if scanner.Err() != nil {
 		log.Fatal(err)
 	}
-  fmt.Println("La media dei valori contenuti nel file è")
-  sum=0
-	for _, v := range element3 {
+	fmt.Println("La media dei valori contenuti nel file è")
+	sum = 0
+	for _, v := range elements {
 		sum += v
 	}
-	n = float64(len(element3))
+	n = float64(len(elements))
 
-	fmt.Printf("la media di %v è %0.2f\n", element3, sum/n)
+	fmt.Printf("la media di %v è %0.2f\n", elements, sum/n)
 }
