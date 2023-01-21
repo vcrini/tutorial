@@ -1,8 +1,8 @@
 package main
 
 import (
-	"example.com/vcrini/x/go/array/file"
-	"example.com/vcrini/x/go/array/media"
+	"github.com/vcrini/x/go/array/file"
+	"github.com/vcrini/x/go/array/media"
 	"fmt"
 )
 
