@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+  "example.com/vcrini/x/go/array/media"
 )
 
 func main() {
@@ -35,13 +36,13 @@ func main() {
 	var i int
 	var elements []float64
 	for scanner.Scan() {
-    var elem float64
+		var elem float64
 		fmt.Println(scanner.Text())
 		elem, err = strconv.ParseFloat(scanner.Text(), 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-    elements=append(elements,elem)
+		elements = append(elements, elem)
 		i += 1
 	}
 	err = file.Close()
@@ -51,12 +52,5 @@ func main() {
 	if scanner.Err() != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("La media dei valori contenuti nel file è")
-	sum = 0
-	for _, v := range elements {
-		sum += v
-	}
-	n = float64(len(elements))
-
-	fmt.Printf("la media di %v è %0.2f\n", elements, sum/n)
+	fmt.Printf("la media dei valori di %v è %0.2f\n", elements, media.Media(elements))
 }
