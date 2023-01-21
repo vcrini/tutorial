@@ -14,6 +14,7 @@ func main() {
 	for i := 0; i < 3; i++ {
 		fmt.Printf("il %d numero è  %d\n", i, element[i])
 	}
+  //again elements but dinamically declared, array is still static
 	element2 := [3]float64{1.0, 2.0, 3.0}
 	//calculating media
 	sum := 0.0
@@ -23,7 +24,7 @@ func main() {
 	n := float64(len(element2))
 
 	fmt.Printf("la media di %v è %0.2f\n", element2, sum/n)
-	// reading from file
+  // reading elements from file, array is dynamic
 	fmt.Println("il contenuto del file è")
 	elements := file.ReadFile()
 	fmt.Printf("la media dei valori di %v è %0.2f\n", elements, media.Media(elements))

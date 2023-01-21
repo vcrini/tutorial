@@ -1,3 +1,4 @@
+//operation on file
 package file
 
 import (
@@ -8,6 +9,7 @@ import (
 	"strconv"
 )
 
+//reads file from disk called 'array.txt and extracts values in an array
 func ReadFile() []float64 {
 
 	file, err := os.Open("array.txt")
