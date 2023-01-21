@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bufio"
+	"example.com/vcrini/x/go/array/file"
+	"example.com/vcrini/x/go/array/media"
 	"fmt"
-	"log"
-	"os"
-	"strconv"
-  "example.com/vcrini/x/go/array/media"
 )
 
 func main() {
@@ -28,29 +25,6 @@ func main() {
 	fmt.Printf("la media di %v è %0.2f\n", element2, sum/n)
 	// reading from file
 	fmt.Println("il contenuto del file è")
-	file, err := os.Open("array.txt")
-	if err != nil {
-		log.Fatal(err)
-	}
-	scanner := bufio.NewScanner(file)
-	var i int
-	var elements []float64
-	for scanner.Scan() {
-		var elem float64
-		fmt.Println(scanner.Text())
-		elem, err = strconv.ParseFloat(scanner.Text(), 64)
-		if err != nil {
-			log.Fatal(err)
-		}
-		elements = append(elements, elem)
-		i += 1
-	}
-	err = file.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-	if scanner.Err() != nil {
-		log.Fatal(err)
-	}
+	elements := file.ReadFile()
 	fmt.Printf("la media dei valori di %v è %0.2f\n", elements, media.Media(elements))
 }
