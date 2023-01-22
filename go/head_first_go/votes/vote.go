@@ -8,18 +8,18 @@ import (
 )
 
 func main() {
-  votes:=readFile("votes.txt")
-  ranks:=compare(votes)
-  fmt.Printf("elections result: %v", ranks)
-
-
+	votes := readFile("votes.txt")
+	ranks := compare(votes)
+	for k, v := range ranks {
+		fmt.Printf("%s has been voted %d times\n", k, v)
+	}
 }
 func compare(votes []string) map[string]int {
-  ranks:=make(map[string]int)
-  for _,v:=range votes {
-    ranks[v]++
-  }
-  return ranks
+	ranks := make(map[string]int)
+	for _, v := range votes {
+		ranks[v]++
+	}
+	return ranks
 
 }
 func readFile(filename string) []string {
