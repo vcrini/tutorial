@@ -13,6 +13,8 @@ func main() {
 	for k, v := range ranks {
 		fmt.Printf("%s has been voted %d times\n", k, v)
 	}
+	votes_alvaro, ok := ranks["Alvaro"]
+	fmt.Printf("%d seems votes for Alvaro. But Alvaro is present? %b\n", votes_alvaro, ok)
 }
 func compare(votes []string) map[string]int {
 	ranks := make(map[string]int)
