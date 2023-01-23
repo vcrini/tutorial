@@ -2,21 +2,23 @@ package main
 
 import "fmt"
 
+type details struct {
+	title   string
+	name    string
+	surname string
+	age     int
+}
+type address struct {
+	via    string
+	number int
+	cap    int
+}
+type full struct {
+	details
+	address
+}
+
 func main() {
-	type details struct {
-		name    string
-		surname string
-		age     int
-	}
-	type address struct {
-		via    string
-		number int
-		cap    int
-	}
-	type full struct {
-		details
-		address
-	}
 	var e details
 	e.name = "Valerio"
 	e.surname = "Crini"
@@ -30,6 +32,22 @@ func main() {
 	var b full
 	b.name = "Valerio"
 	b.via = "Fra Paolo Sarpi"
+	b = useTitleNoPointers(b)
+	fmt.Printf("person %s is %s and lives in '%s'\n", b.details.title, b.details.name, b.address.via)
+	c := useTitleWrong(b)
+	fmt.Printf("person %s is %s and lives in '%s'\n", c.details.title, c.details.name, c.address.via)
+	useTitlePointers(&b)
 	fmt.Printf("person name is %s and lives in '%s'\n", b.details.name, b.address.via)
 	fmt.Printf("person is %v\n", b)
+}
+func useTitleNoPointers(s full) full {
+	s.title = "Mr."
+	return s
+}
+func useTitleWrong(s full) *full {
+	s.title = "Miss"
+	return &s
+}
+func useTitlePointers(s *full) {
+	s.title = "Mr."
 }
