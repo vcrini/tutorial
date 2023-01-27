@@ -1,9 +1,11 @@
 package main
+
 import (
-  "fmt" 
-  "log"
-  "example.com/x/date"
+	"example.com/x/date"
+	"fmt"
+	"log"
 )
+
 func main() {
 	var date date.Date
 	fmt.Println(date)
@@ -20,9 +22,15 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(date)
-  fmt.Printf("Date is %d/%d/%d\n",date.Year(), date.Month(), date.Day())
+	fmt.Printf("Date is %d/%d/%d\n", date.Year(), date.Month(), date.Day())
 	err = date.SetMonth(14)
 	if err != nil {
 		log.Fatal(err)
 	}
+  var n = date.Note
+	// note.SetText("Nota 1")
+	// note.SetMonth(12)
+	// note.SetDay(10)
+	// note.SetYear(2014)
+	// fmt.Printf("Nota: %s del %d/%d/%d", note.Text(), note.Year(), note.Month(), note.Day())
 }
