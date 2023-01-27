@@ -12,7 +12,8 @@ type Date struct {
 }
 
 type Note struct {
-	text string
+	note string
+  Date
 }
 
 func (d *Date) SetMonth(month int) error {
@@ -36,11 +37,11 @@ func (d *Date) SetDay(day int) error {
 	d.day = day
 	return nil
 }
-func (n *Note) SetText(text string) error {
-	if text == "sveglia" {
-		return errors.New(fmt.Sprintf("Invalid text: %s", text))
+func (n *Note) SetText(note string) error {
+	if note == "sveglia" {
+		return errors.New(fmt.Sprintf("Invalid text: %s", note))
 	}
-	n.text = text
+	n.note = note
 	return nil
 }
 
@@ -55,5 +56,5 @@ func (d *Date) Day() int {
 	return d.day
 }
 func (n *Note) Text() string {
-	return n.text
+	return n.note
 }
