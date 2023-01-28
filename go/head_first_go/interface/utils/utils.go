@@ -22,3 +22,7 @@ func (t TapeRecorder) Recording(song string) {
 func (t TapeRecorder) Stop() {
   fmt.Println("Fermo!")
 }
+type Device interface {
+  Play(string)
+  Stop()
+}
