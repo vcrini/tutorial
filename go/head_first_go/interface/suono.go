@@ -14,4 +14,5 @@ func main() {
   playList(player, mixtape)
   player2 := utils.TapeRecorder{}
   playList(player2, mixtape)
+  utils.TryOut(player2)
 }

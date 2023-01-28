@@ -26,3 +26,9 @@ type Device interface {
   Play(string)
   Stop()
 }
+func TryOut(d Device) {
+  d.Play("Test track")
+  d.Stop()
+  var recorder TapeRecorder = d.(TapeRecorder)
+  recorder.Recording("Test record")
+}
