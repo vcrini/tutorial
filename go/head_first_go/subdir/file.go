@@ -26,7 +26,20 @@ func scanDirectory(path string) error {
 	}
 	return nil
 }
+func reportPanic() {
+  p:=recover()
+  if p==nil {
+    return
+  }
+  err, ok:=p.(error)
+  if ok {
+    fmt.Println("Managing panic ",err)
+  } else {
+    panic(p)
+  }
+}
 func main() {
+  defer reportPanic()
 	err := scanDirectory(".")
 	if err != nil {
 		log.Fatal(err)
