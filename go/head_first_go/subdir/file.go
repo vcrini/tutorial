@@ -3,17 +3,30 @@ import (
   "fmt"
   "io/ioutil"
   "log"
+  "path/filepath"
 )
-func main() {
-  files, err:=ioutil.ReadDir("my_directory")
-  if err != nil {
-    log.Fatal(err)
+func scanDirectory(path string) error {
+  fmt.Println(path)
+  files, err:=ioutil.ReadDir(path)
+  if err!=nil {
+    return err
   }
   for _, file:=range files {
-    if file.IsDir(){
-      fmt.Println("Directory:", file.Name())
+    filePath := filepath.Join(path, file.Name())
+    if file.IsDir() {
+      err:=scanDirectory(filePath)
+      if err != nil {
+        return err
+      }
     } else {
-      fmt.Println("File:", file.Name())
+      fmt.Println(filePath)
     }
+  }
+  return nil
+}
+func main() {
+  err:=scanDirectory(".")
+  if err != nil {
+    log.Fatal(err)
   }
 }
