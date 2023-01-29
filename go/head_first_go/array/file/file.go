@@ -1,4 +1,4 @@
-//operation on file
+// operation on file
 package file
 
 import (
@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-//reads file from disk called 'array.txt and extracts values in an array
+// reads file from disk called 'array.txt and extracts values in an array
 func ReadFile() []float64 {
 
 	file, err := os.Open("array.txt")
@@ -29,10 +29,7 @@ func ReadFile() []float64 {
 		elements = append(elements, elem)
 		i += 1
 	}
-	err = file.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
+	defer file.Close()
 	if scanner.Err() != nil {
 		log.Fatal(err)
 	}
@@ -40,33 +37,33 @@ func ReadFile() []float64 {
 }
 
 func OpenFile(fileName string) (*os.File, error) {
-  fmt.Printf("Opening file '%s'\n",fileName)
-  file, err:= os.Open(fileName)
-  return file, err
+	fmt.Printf("Opening file '%s'\n", fileName)
+	file, err := os.Open(fileName)
+	return file, err
 }
 func CloseFile(file *os.File) {
-  fmt.Printf("Closing file %v\n",file)
-  file.Close()
+	fmt.Printf("Closing file %v\n", file)
+	file.Close()
 }
 
 func GetFloats(fileName string) ([]float64, error) {
-  var numbers []float64
-  file, err:=OpenFile(fileName)
-  if err!=nil {
-    return nil, err
-  }
-  scanner :=bufio.NewScanner(file)
-  for scanner.Scan() {
-    number, err:=strconv.ParseFloat(scanner.Text(), 64)
-    if err!=nil {
-      return nil, err
-    }
-    numbers=append(numbers, number)
-  }
-  CloseFile(file)
-  if scanner.Err() != nil {
-    return nil, scanner.Err()
-  }
-  return numbers, nil
+	var numbers []float64
+	file, err := OpenFile(fileName)
+	if err != nil {
+		return nil, err
+	}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		number, err := strconv.ParseFloat(scanner.Text(), 64)
+		if err != nil {
+			return nil, err
+		}
+		numbers = append(numbers, number)
+	}
+	CloseFile(file)
+	if scanner.Err() != nil {
+		return nil, scanner.Err()
+	}
+	return numbers, nil
 
 }
