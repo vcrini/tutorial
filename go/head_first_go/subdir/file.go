@@ -8,10 +8,10 @@ import (
 )
 
 func scanDirectory(path string) error {
-	fmt.Println(path)
+	fmt.Println("entering ",path)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
-		return err
+		panic(err)
 	}
 	for _, file := range files {
 		filePath := filepath.Join(path, file.Name())
@@ -21,7 +21,7 @@ func scanDirectory(path string) error {
 				return err
 			}
 		} else {
-			fmt.Println(filePath)
+			fmt.Println(filePath," is a file")
 		}
 	}
 	return nil
