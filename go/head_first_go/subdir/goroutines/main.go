@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+  "time"
 )
 func getLen(url string) {
 	response, err := http.Get(url)
@@ -20,7 +21,8 @@ func getLen(url string) {
 
 }
 func main() {
-  getLen("https://google.com")
-  getLen("http://vcrini.com")
-  getLen("https://ilpost.it")
+  go getLen("https://google.com")
+  go getLen("http://vcrini.com")
+  go getLen("https://ilpost.it")
+  time.Sleep(time.Second*2)
 }
