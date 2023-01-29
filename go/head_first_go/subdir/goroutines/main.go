@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-  "time"
 )
-func getLen(url string) {
+
+
+func getLen(url string, channel chan int) {
 	response, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
@@ -17,12 +18,15 @@ func getLen(url string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(len(body))
+	channel <- len(body)
 
 }
 func main() {
-  go getLen("https://google.com")
-  go getLen("http://vcrini.com")
-  go getLen("https://ilpost.it")
-  time.Sleep(time.Second*2)
+	sizes := make(chan int)
+	go getLen("https://google.com", sizes)
+	go getLen("http://vcrini.com", sizes)
+	go getLen("https://ilpost.it", sizes)
+	fmt.Println(<-sizes)
+	fmt.Println(<-sizes)
+	fmt.Println(<-sizes)
 }
