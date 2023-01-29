@@ -6,9 +6,8 @@ import (
 	"log"
 	"net/http"
 )
-
-func main() {
-	response, err := http.Get("https://google.com")
+func getLen(url string) {
+	response, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -17,5 +16,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(body))
+	fmt.Println(len(body))
+
+}
+func main() {
+  getLen("https://google.com")
+  getLen("http://vcrini.com")
+  getLen("https://ilpost.it")
 }
