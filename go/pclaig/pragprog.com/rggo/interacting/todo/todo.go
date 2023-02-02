@@ -35,6 +35,7 @@ func (l *List) Add(task string) {
 // settings Done = true and CompletedAt to the current time
 func (l *List) Complete(i int) error {
 	ls := *l
+
 	if i < 0 || i > len(ls) {
 		return fmt.Errorf("Item %d does not exists", i)
 	}
@@ -44,13 +45,13 @@ func (l *List) Complete(i int) error {
 	return nil
 }
 
-//Delete method deletes a ToDo item from the list
+// Delete method deletes a ToDo item from the list
 func (l *List) Delete(i int) error {
 	ls := *l
 	if i < 0 || i > len(ls) {
 		return fmt.Errorf("Item %d does not exists", i)
 	}
-	//not fully understood why with ls is on right is not working
+	// not fully understood why with ls is on right is not working
 	*l = append(ls[:i-1], ls[i:]...)
 	return nil
 }
@@ -62,8 +63,9 @@ func (l *List) Save(filename string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filename, js, 0644)
+	return ioutil.WriteFile(filename, js, 0o644)
 }
+
 func (l *List) Get(filename string) error {
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -76,5 +78,4 @@ func (l *List) Get(filename string) error {
 		return nil
 	}
 	return json.Unmarshal(file, l)
-
 }
