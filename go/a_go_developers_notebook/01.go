@@ -2,9 +2,9 @@ package main
 
 import . "fmt"
 
-const Ciao = "ciao"
+const Ciao="Ciao"
 
-var mondo string = "mondo"
+var mondo string = "Mondo"
 
 func main() {
 	mondo := mondo + "!"
