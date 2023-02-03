@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -63,11 +62,11 @@ func (l *List) Save(filename string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(filename, js, 0o644)
+	return os.WriteFile(filename, js, 0o644)
 }
 
 func (l *List) Get(filename string) error {
-	file, err := ioutil.ReadFile(filename)
+	file, err := os.ReadFile(filename)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil

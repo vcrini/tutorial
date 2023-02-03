@@ -1,7 +1,6 @@
 package todo_test
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -29,7 +28,10 @@ func TestComplete(t *testing.T) {
 	if l[0].Done {
 		t.Errorf("%q should not be completed", taskName)
 	}
-	l.Complete(1)
+	err := l.Complete(1)
+	if err != nil {
+		t.Errorf("I'm returning a %v but I should not", err)
+	}
 	if !l[0].Done {
 		t.Errorf("%q should be completed", taskName)
 	}
@@ -49,7 +51,10 @@ func TestDelete(t *testing.T) {
 	if l[0].Task != tasks[0] {
 		t.Errorf("Expected %q, got %q instead.", tasks[0], l[0].Task)
 	}
-	l.Delete(2)
+	err := l.Delete(2)
+	if err != nil {
+		t.Errorf("I'm returning a %v but I should not", err)
+	}
 	num := 2
 	if len(l) != num {
 		t.Errorf("Expected %d, got %d instead. %v", num, len(l), l)
@@ -70,7 +75,7 @@ func TestSaveGet(t *testing.T) {
 	if l1[0].Task != taskName {
 		t.Errorf("Expected %q, got %q instead.", taskName, l1[0].Task)
 	}
-	tf, err := ioutil.TempFile("", "")
+	tf, err := os.CreateTemp("", "")
 	if err != nil {
 		t.Fatalf("Non riesco a creare il file temporaneo: %s", err)
 	}
