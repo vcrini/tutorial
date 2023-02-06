@@ -2,9 +2,8 @@ package todo_test
 
 import (
 	"os"
-	"testing"
-
 	"pragprog.com/rggo/interacting/todo"
+	"testing"
 )
 
 // TestAdd tests the Add method of the list type
