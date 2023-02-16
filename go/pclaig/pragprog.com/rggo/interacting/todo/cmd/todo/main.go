@@ -1,9 +1,9 @@
 package main
 
 import (
+  "flag"
 	"fmt"
 	"os"
-	"strings"
 
 	"pragprog.com/rggo/interacting/todo"
 )
@@ -12,6 +12,12 @@ import (
 const todoFileName = ".todo.json"
 
 func main() {
+  //parsing command line flags
+  task:= flag.String("task","", "Task to be included in the todo list")
+  list:= flag.Bool("list",false, "List all tasks")
+  complete:= flag.Int("complete",0, "Item to be completed")
+  flag.Parse()
+
 	l := &todo.List{}
 	if err := l.Get(todoFileName); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -19,10 +25,12 @@ func main() {
 	}
 	//decide what to do according on number of arguments provided
 	switch {
-	case len(os.Args) == 1:
+	case *list:
 		// List current to do items
 		for _, item := range *l {
+      if !item.Done {
 			fmt.Println(item.Task)
+      }
 		}
 
 	// concatenate all provided params with a space and add to the list as an item
