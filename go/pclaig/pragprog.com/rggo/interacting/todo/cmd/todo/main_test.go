@@ -56,10 +56,9 @@ func TestTodoCLI(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		io.WriteString(cmdStdIn, task2)
-		// if _,err:=io.WriteString(cmdStdIn, task2); err!=nil {
-		//   t.Fatal(err)
-		// }
+		if _, err := io.WriteString(cmdStdIn, task2); err != nil {
+			t.Fatal(err)
+		}
 		cmdStdIn.Close()
 		if err := cmd.Run(); err != nil {
 			t.Fatal(err)
