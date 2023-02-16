@@ -9,7 +9,7 @@ import (
 )
 
 // Hardcoding the file name
-const todoFileName = ".todo.json"
+var todoFileName = ".todo.json"
 
 func main() {
 	//parsing command line flags
@@ -19,6 +19,10 @@ func main() {
 	flag.Parse()
 
 	l := &todo.List{}
+	// if env is defined then use this file name
+	if os.Getenv("TODO_FILENAME") != "" {
+		todoFileName = os.Getenv("TODO_FILENAME")
+	}
 	if err := l.Get(todoFileName); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
