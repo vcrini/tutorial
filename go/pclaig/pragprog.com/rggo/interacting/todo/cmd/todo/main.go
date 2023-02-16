@@ -18,6 +18,7 @@ func main() {
 	//parsing command line flags
 	add := flag.Bool("add", false, "Add task to the todo list")
 	list := flag.Bool("list", false, "List all tasks")
+	verbose := flag.Bool("verbose", false, "Display verbose output when listing tasks")
 	complete := flag.Int("complete", 0, "Item to be completed")
 	delete := flag.Int("delete", -1, "Item to be deleted")
 	flag.Parse()
@@ -35,7 +36,19 @@ func main() {
 	switch {
 	case *list:
 		// List current to do items
-		fmt.Print(l)
+		if *verbose {
+
+			for k, t := range *l {
+				prefix := "  "
+				if t.Done {
+					prefix = "X "
+				}
+				fmt.Print(fmt.Sprintf("%s%d: %s completed: %t %s %s\n", prefix, k+1, t.Task, t.Done, t.CreatedAt, t.CompletedAt))
+			}
+
+		} else {
+			fmt.Print(l)
+		}
 	case *delete > 0:
 		//delete given item
 		if err := l.Delete(*delete); err != nil {
