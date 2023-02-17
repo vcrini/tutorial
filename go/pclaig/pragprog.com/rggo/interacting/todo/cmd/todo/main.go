@@ -18,6 +18,7 @@ func main() {
 	//parsing command line flags
 	add := flag.Bool("add", false, "Add task to the todo list")
 	list := flag.Bool("list", false, "List all tasks")
+	list_todo := flag.Bool("list_todo", false, "List all tasks not yet completed")
 	complete := flag.Int("complete", 0, "Item to be completed")
 	del := flag.Int("delete", -1, "Item to be deleted")
 	flag.Parse()
@@ -33,6 +34,13 @@ func main() {
 	}
 	//decide what to do according on number of arguments provided
 	switch {
+  case *list_todo:
+    //List current tasks not yet completed
+  for k,t:=range *l {
+    if !t.Done { 
+		  fmt.Printf(" %d: %s\n", k+1, t.Task)
+      }
+    }
 	case *list:
 		// List current to do items
 		fmt.Print(l)
