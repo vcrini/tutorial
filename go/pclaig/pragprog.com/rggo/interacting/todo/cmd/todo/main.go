@@ -19,7 +19,7 @@ func main() {
 	add := flag.Bool("add", false, "Add task to the todo list")
 	list := flag.Bool("list", false, "List all tasks")
 	complete := flag.Int("complete", 0, "Item to be completed")
-	delete := flag.Int("delete", -1, "Item to be deleted")
+	del := flag.Int("delete", -1, "Item to be deleted")
 	flag.Parse()
 
 	l := &todo.List{}
@@ -36,9 +36,9 @@ func main() {
 	case *list:
 		// List current to do items
 		fmt.Print(l)
-	case *delete > 0:
+	case *del > 0:
 		//delete given item
-		if err := l.Delete(*delete); err != nil {
+		if err := l.Delete(*del); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
