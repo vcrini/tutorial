@@ -12,11 +12,15 @@ import (
 
 var (
 	binName  = "todo"
-	fileName = ".todo.json"
+  fileName = ".test.json"
 )
+  
 
 func TestMain(m *testing.M) {
-	fmt.Println("Building tool...")
+  if err:=os.Setenv("TODO_FILENAME",fileName); err != nil {
+		fmt.Fprintf(os.Stderr, "%s \nCannot set env variable %s", err,"TODO_FILENAME")
+}
+	fmt.Printf("Building tool... with test file '%s'",os.Getenv("TODO_FILENAME"))
 	if runtime.GOOS == "windows" {
 		binName += ".exe"
 	}
