@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -36,14 +36,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*filename); err != nil {
+	if err := run(*filename, os.Stdout); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 }
 
-func run(filename string) error {
+func run(filename string, out io.Writer) error {
 	// Read all the data from the input file and check for errors
 	input, err := os.ReadFile(filename)
 	if err != nil {
@@ -51,7 +51,16 @@ func run(filename string) error {
 	}
 
 	htmlData := parseContent(input)
-	outName := fmt.Sprintf("%s.html", filepath.Base(filename))
+	//create temporary file
+	temp, err := os.CreateTemp("", "mdp*.html")
+	if err != nil {
+		return err
+	}
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	outName := temp.Name()
+	fmt.Fprintln(out, outName)
 	fmt.Println(outName)
 
 	return saveHTML(outName, htmlData)
