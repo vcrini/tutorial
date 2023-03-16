@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-  "html/template"
+	"html/template"
 	"io"
 	"os"
 	"os/exec"
@@ -26,19 +26,20 @@ const (
   {{ .Body}}
     </body>
   </html>
-  `
+`
 )
 
 // content type represents the HTML content to add into the template
 type content struct {
-  Title string
-  Body template.HTML
+	Title string
+	Body  template.HTML
 }
+
 func main() {
 	// Parse flags
 	filename := flag.String("file", "", "Markdownfile to preview")
 	skipPreview := flag.Bool("s", false, "skip auto-preview")
-  tFname:=flag.String("t", "", "Alternate template name")
+	tFname := flag.String("t", "", "Alternate template name")
 	flag.Parse()
 
 	// If user did not provide input file, show usage
@@ -61,7 +62,7 @@ func run(filename string, tFname string, out io.Writer, skipPreview bool) error 
 		return err
 	}
 
-	htmlData,err := parseContent(input, tFname)
+	htmlData, err := parseContent(input, tFname)
 	if err != nil {
 		return err
 	}
@@ -91,30 +92,30 @@ func parseContent(input []byte, tFname string) ([]byte, error) {
 	// to generate a valid and safe HTML
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
-  //Parse the content of the defaultTemplate const into a new template
-  t, err := template.New("mdp").Parse(defaultTemplate)
-  if err!= nil {
-    return nil, err
-  }
-  //if user provided alternate template file, replace template
-  if tFname != "" {
-    t, err=template.ParseFiles(tFname)
-    if err!= nil {
-      return nil, err
-    }
-  }
-  // instantiate the content type adding title and body
-  c:= content{
-    Title: "Markdown Preview Tool",
-    Body: template.HTML(body),
-    }
+	//Parse the content of the defaultTemplate const into a new template
+	t, err := template.New("mdp").Parse(defaultTemplate)
+	if err != nil {
+		return nil, err
+	}
+	//if user provided alternate template file, replace template
+	if tFname != "" {
+		t, err = template.ParseFiles(tFname)
+		if err != nil {
+			return nil, err
+		}
+	}
+	// instantiate the content type adding title and body
+	c := content{
+		Title: "Markdown Preview Tool",
+		Body:  template.HTML(body),
+	}
 	//create a buffer to write to file
 	var buffer bytes.Buffer
 
-  //execute the template with the content type
-  if err := t.Execute(&buffer, c); err !=nil {
-    return nil, err
-  }
+	//execute the template with the content type
+	if err := t.Execute(&buffer, c); err != nil {
+		return nil, err
+	}
 
 	return buffer.Bytes(), nil
 }
