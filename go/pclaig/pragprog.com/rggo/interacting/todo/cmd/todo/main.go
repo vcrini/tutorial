@@ -19,8 +19,9 @@ func main() {
 	add := flag.Bool("add", false, "Add task to the todo list")
 	list := flag.Bool("list", false, "List all tasks")
 	verbose := flag.Bool("verbose", false, "Display verbose output when listing tasks")
+	list_todo := flag.Bool("list_todo", false, "List all tasks not yet completed")
 	complete := flag.Int("complete", 0, "Item to be completed")
-	delete := flag.Int("delete", -1, "Item to be deleted")
+	del := flag.Int("delete", -1, "Item to be deleted")
 	flag.Parse()
 
 	l := &todo.List{}
@@ -34,6 +35,13 @@ func main() {
 	}
 	//decide what to do according on number of arguments provided
 	switch {
+	case *list_todo:
+		//List current tasks not yet completed
+		for k, t := range *l {
+			if !t.Done {
+				fmt.Printf(" %d: %s\n", k+1, t.Task)
+			}
+		}
 	case *list:
 		// List current to do items
 		if *verbose {
@@ -49,9 +57,9 @@ func main() {
 		} else {
 			fmt.Print(l)
 		}
-	case *delete > 0:
+	case *del > 0:
 		//delete given item
-		if err := l.Delete(*delete); err != nil {
+		if err := l.Delete(*del); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
@@ -79,7 +87,9 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(1)
 		}
-		l.Add(t)
+		for _, v := range t {
+			l.Add(v)
+		}
 		//Save the new list
 		if err := l.Save(todoFileName); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -90,21 +100,25 @@ func main() {
 	default:
 		// Invalid flag provided
 		fmt.Fprintln(os.Stderr, "Invalid option")
+		flag.Usage()
 		os.Exit(1)
 	}
 }
-func getTask(r io.Reader, args ...string) (string, error) {
+func getTask(r io.Reader, args ...string) ([]string, error) {
+	var lines = []string{}
 	if len(args) > 0 {
-		return strings.Join(args, " "), nil
+		return append(lines, strings.Join(args, " ")), nil
 	}
 
 	s := bufio.NewScanner(r)
-	s.Scan()
-	if err := s.Err(); err != nil {
-		return "", err
+	for s.Scan() {
+		if err := s.Err(); err != nil {
+			return append(lines, ""), err
+		}
+		if len(s.Text()) == 0 {
+			return append(lines, ""), fmt.Errorf("Task cannot be blank")
+		}
+		lines = append(lines, s.Text())
 	}
-	if len(s.Text()) == 0 {
-		return "", fmt.Errorf("Task cannot be blank")
-	}
-	return s.Text(), nil
+	return lines, nil
 }

@@ -12,11 +12,14 @@ import (
 
 var (
 	binName  = "todo"
-	fileName = ".todo.json"
+	fileName = ".test.json"
 )
 
 func TestMain(m *testing.M) {
-	fmt.Println("Building tool...")
+	if err := os.Setenv("TODO_FILENAME", fileName); err != nil {
+		fmt.Fprintf(os.Stderr, "%s \nCannot set env variable %s", err, "TODO_FILENAME")
+	}
+	fmt.Printf("Building tool... with test file '%s'", os.Getenv("TODO_FILENAME"))
 	if runtime.GOOS == "windows" {
 		binName += ".exe"
 	}
@@ -72,6 +75,53 @@ func TestTodoCLI(t *testing.T) {
 		}
 
 		expected := fmt.Sprintf("  1: %s\n  2: %s\n", task, task2)
+		sOut := string(out)
+		if expected != sOut {
+			t.Errorf("Expected %q, got %q instead\n", expected, sOut)
+		}
+
+	})
+	t.Run("CompleteTask", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-complete", "1")
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+		cmd = exec.Command(cmdPath, "-list")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected := fmt.Sprintf("X 1: %s\n  2: %s\n", task, task2)
+		sOut := string(out)
+		if expected != sOut {
+			t.Errorf("Expected %q, got %q instead\n", expected, sOut)
+		}
+
+	})
+	task2 = "t1\nt2"
+	t.Run("AddNewTestFromSTDINWithNewLines", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-add")
+		cmdStdIn, err := cmd.StdinPipe()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := io.WriteString(cmdStdIn, task2); err != nil {
+			t.Fatal(err)
+		}
+		cmdStdIn.Close()
+		if err := cmd.Run(); err != nil {
+			t.Fatal(err)
+		}
+	})
+	t.Run("ListTasks", func(t *testing.T) {
+		cmd := exec.Command(cmdPath, "-list")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		expected := "X 1: test task number 1\n  2: test number 2\n  3: t1\n  4: t2\n"
 		sOut := string(out)
 		if expected != sOut {
 			t.Errorf("Expected %q, got %q instead\n", expected, sOut)
