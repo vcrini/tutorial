@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	buildCommand := "aws ec2 describe-instances --filters Name=tag:Name,Values=%s --query Reservations[].Instances[].{id:InstanceId,name:KeyName,ip:PrivateIpAddress}"
+	buildCommand := "aws ec2 describe-instances --filters Name=tag:Name,Values=%s --query Reservations[].Instances[].{ip:PrivateIpAddress,id:InstanceId,name:KeyName,az:Placement.AvailabilityZone}"
 	command := ""
 	host := flag.String("host", "bitgdi-test-ecsnode", "Name of hosts or wildcard")
 	flag.Parse()
