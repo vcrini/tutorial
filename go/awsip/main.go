@@ -9,21 +9,18 @@ import (
 )
 
 func main() {
-	buildCommand := "aws ec2 describe-instances --filters Name=tag:Name,Values=%s --query Reservations[].Instances[].{ip:PrivateIpAddress,id:InstanceId,name:KeyName,az:Placement.AvailabilityZone}"
-	command := ""
 	host := flag.String("host", "bitgdi-test-ecsnode", "Name of hosts or wildcard")
 	flag.Parse()
-	command = fmt.Sprintf(buildCommand, *host)
-	fmt.Println(command)
-	fmt.Println(exe(command))
+	h := fmt.Sprintf("Name=tag:Name,Values=%s", *host)
+	buildCommand := []string{"aws", "ec2", "describe-instances", "--filters", h, "--query", "Reservations[].Instances[].{id:InstanceId,name:Tags[?Key == 'Name'].Value | [0],ip:PrivateIpAddress,az:Placement.AvailabilityZone}"}
+	fmt.Println(exe(buildCommand))
 }
 
-func exe(s string) string {
-	splitCommand := strings.Split(s, " ")
-	cmd := exec.Command(splitCommand[0], splitCommand[1:]...)
+func exe(s []string) string {
+	cmd := exec.Command(s[0], s[1:]...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Cannot run:\n%s\n '%s'", out, err)
+		fmt.Fprintf(os.Stderr, "Cannot run:\n%s\n%s\n '%s'", strings.Join(s, "+"), out, err)
 		os.Exit(1)
 	}
 	return string(out)
