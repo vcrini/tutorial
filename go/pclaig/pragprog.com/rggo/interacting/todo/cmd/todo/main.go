@@ -51,7 +51,7 @@ func main() {
 				if t.Done {
 					prefix = "X "
 				}
-				fmt.Print(fmt.Sprintf("%s%d: %s completed: %t %s %s\n", prefix, k+1, t.Task, t.Done, t.CreatedAt, t.CompletedAt))
+				fmt.Printf("%s%d: %s completed: %t %s %s\n", prefix, k+1, t.Task, t.Done, t.CreatedAt, t.CompletedAt)
 			}
 
 		} else {
