@@ -13,7 +13,7 @@ import (
 
 func main() {
 	buildCommand := []string{}
-	cluster := flag.String("cluster", "bitgdi-test-cluster", "cluster name")
+	//cluster := flag.String("cluster", "bitgdi-test-cluster", "cluster name")
 	flag.Func("start-pipeline-execution", "Filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"]", func(s string) error {
 		jsonFile, err := os.Open(s)
 		fmt.Println(s)
@@ -32,17 +32,13 @@ func main() {
 		for _, v := range result {
 			fmt.Println(v)
 			buildCommand = []string{"aws", "codepipeline", "start-pipeline-execution", "--name", v.(string)}
-			fmt.Println(buildCommand)
 			fmt.Println(exe(buildCommand))
 		}
 		defer jsonFile.Close()
 		return nil
 	})
 	flag.Parse()
-	fmt.Println(*cluster)
-	//h := fmt.Sprintf("Name=tag:Name,Values=%s", *command)
-	//buildCommand := []string{"aws", "ec2", "describe-instances", "--filters", h, "--query", "Reservations[].Instances[].{id:InstanceId,name:Tags[?Key == 'Name'].Value | [0],ip:PrivateIpAddress,az:Placement.AvailabilityZone}"}
-	//fmt.Println(exe(buildCommand))
+	//fmt.Println(*cluster)
 }
 
 func exe(s []string) string {
