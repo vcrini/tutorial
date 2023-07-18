@@ -15,14 +15,10 @@ func main() {
 	buildCommand := []string{}
 	//cluster := flag.String("cluster", "bitgdi-test-cluster", "cluster name")
 	flag.Func("start-pipeline-execution", "Filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"]", func(s string) error {
-		jsonFile, err := os.Open(s)
-		fmt.Println(s)
+		byteValue, err := readJson(s)
 		if err != nil {
 			return errors.New("could not parse json file")
 		}
-		// read our opened jsonFile as a byte array.
-		byteValue, _ := io.ReadAll(jsonFile)
-		fmt.Println(byteValue)
 		var result []interface{}
 		err = json.Unmarshal([]byte(byteValue), &result)
 		fmt.Println(result)
@@ -34,13 +30,26 @@ func main() {
 			buildCommand = []string{"aws", "codepipeline", "start-pipeline-execution", "--name", v.(string)}
 			fmt.Println(exe(buildCommand))
 		}
-		defer jsonFile.Close()
 		return nil
 	})
 	flag.Parse()
 	//fmt.Println(*cluster)
 }
+func readJson(fileName string) ([]byte, error) {
+	jsonFile, err := os.Open(fileName)
+	fmt.Println(fileName)
+	if err != nil {
+		return []byte("error"), errors.New("could not parse json file")
+	}
+	// read our opened jsonFile as a byte array.
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return []byte("error"), errors.New("could not parse a byte array")
+	}
+	defer jsonFile.Close()
+	return byteValue, nil
 
+}
 func exe(s []string) string {
 	cmd := exec.Command(s[0], s[1:]...)
 	out, err := cmd.CombinedOutput()
