@@ -5,10 +5,9 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/vcrini/go-utils"
 	"io"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 func main() {
@@ -28,7 +27,7 @@ func main() {
 		for _, v := range result {
 			fmt.Println(v)
 			buildCommand = []string{"aws", "codepipeline", "start-pipeline-execution", "--name", v.(string)}
-			fmt.Println(exe(buildCommand))
+			fmt.Println(utils.Exe(buildCommand))
 		}
 		return nil
 	})
@@ -49,13 +48,4 @@ func readJson(fileName string) ([]byte, error) {
 	defer jsonFile.Close()
 	return byteValue, nil
 
-}
-func exe(s []string) string {
-	cmd := exec.Command(s[0], s[1:]...)
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Cannot run:\n%s\n%s\n '%s'", strings.Join(s, "+"), out, err)
-		os.Exit(1)
-	}
-	return string(out)
 }
