@@ -37,8 +37,7 @@ func main() {
 			fmt.Println(utils.Exe(buildCommand))
 			time.Sleep(time.Duration(*seconds) * time.Second)
 		}
-	}
-	if *showPipeline != "" {
+	} else if *showPipeline != "" {
 		s := *showPipeline
 		byteValue, err := readJson(s)
 		if err != nil {
@@ -58,8 +57,9 @@ func main() {
 			fmt.Println(utils.Exe(buildCommand))
 			time.Sleep(time.Duration(*seconds) * time.Second)
 		}
+	} else {
+		fmt.Println("Please use: -h for launch details ")
 	}
-	//fmt.Println(*cluster)
 }
 func readJson(fileName string) ([]byte, error) {
 	jsonFile, err := os.Open(fileName)
