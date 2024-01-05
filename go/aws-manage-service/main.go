@@ -16,6 +16,7 @@ func main() {
 	seconds := flag.Int("s", 0, "seconds between requests")
 	startPipelineExecution := flag.String("start-pipeline-execution", "", "Filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"]")
 	showPipeline := flag.String("show-pipeline", "", "Filename containing json with array of pipelines to show: e.g. [\"pipeline1\",\"pipeline2\"]")
+	listServices := flag.String("list-services", "", "cluster name")
 	flag.Parse()
 	if *startPipelineExecution != "" {
 		s := *startPipelineExecution
@@ -55,6 +56,11 @@ func main() {
 			fmt.Println(utils.Exe(buildCommand))
 			time.Sleep(time.Duration(*seconds) * time.Second)
 		}
+	} else if *listServices != "" {
+		s := *listServices
+		buildCommand := []string{"aws", "ecs", "list-services", "--cluster", s, "--query", "serviceArns[*]"}
+		fmt.Println(utils.Exe(buildCommand))
+		time.Sleep(time.Duration(*seconds) * time.Second)
 	} else {
 		fmt.Println("Please use: -h for launch details ")
 	}
