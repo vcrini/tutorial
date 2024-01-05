@@ -26,7 +26,6 @@ func main() {
 		}
 		var result []interface{}
 		err = json.Unmarshal([]byte(byteValue), &result)
-		fmt.Println(result)
 		if err != nil {
 			fmt.Printf("can't unmarshall json: %s", err.Error())
 			os.Exit(2)
@@ -46,7 +45,6 @@ func main() {
 		}
 		var result []interface{}
 		err = json.Unmarshal([]byte(byteValue), &result)
-		fmt.Println(result)
 		if err != nil {
 			fmt.Printf("can't unmarshall json: %s", err.Error())
 			os.Exit(2)
@@ -63,7 +61,6 @@ func main() {
 }
 func readJson(fileName string) ([]byte, error) {
 	jsonFile, err := os.Open(fileName)
-	fmt.Println(fileName)
 	if err != nil {
 		return []byte("error"), errors.New("could not parse json file")
 	}
