@@ -14,9 +14,10 @@ import (
 
 func main() {
 	seconds := flag.Int("s", 0, "seconds between requests")
+	cluster := flag.String("cluster", "", "cluster where to operate, used with 'list-services', 'stop-services', 'start-services'")
 	startPipelineExecution := flag.String("start-pipeline-execution", "", "given filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"] triggers specified pipelines")
-	showPipeline := flag.String("show-pipeline", "", " return services with desired tasks {\"pipeline1\": 1, \"pipeline2\": 0]")
-	listServices := flag.String("list-services", "", "cluster name")
+	showPipeline := flag.String("show-pipeline", "", "show pipeline status")
+	listServices := flag.Bool("list-services", false, "return services with desired tasks {\"pipeline1\": 1, \"pipeline2\": 0]")
 	flag.Parse()
 	if *startPipelineExecution != "" {
 		s := *startPipelineExecution
@@ -56,10 +57,14 @@ func main() {
 			fmt.Println(utils.Exe(buildCommand))
 			time.Sleep(time.Duration(*seconds) * time.Second)
 		}
-	} else if *listServices != "" {
-		s := *listServices
+	} else if *listServices {
 		services := make(map[string]int)
-		buildCommand := []string{"aws", "ecs", "list-services", "--cluster", s, "--query", "serviceArns[*]"}
+		if *cluster == "" {
+			fmt.Println("parameter 'cluster' is mandatory")
+			os.Exit(4)
+
+		}
+		buildCommand := []string{"aws", "ecs", "list-services", "--cluster", *cluster, "--query", "serviceArns[*]"}
 		var out = utils.Exe(buildCommand)
 		var result []interface{}
 		var err = json.Unmarshal([]byte(out), &result)
@@ -75,7 +80,7 @@ func main() {
 				var name = r.FindString(v.(string))
 				names = append(names, name)
 			}
-			buildCommand := []string{"aws", "ecs", "describe-services", "--cluster", s, "--services"}
+			buildCommand := []string{"aws", "ecs", "describe-services", "--cluster", *cluster, "--services"}
 			buildCommand = append(buildCommand, names...)
 			buildCommand = append(buildCommand, []string{"--query", "services[*].{serviceName: serviceName, desiredCount: desiredCount}"}...)
 			out = utils.Exe(buildCommand)
