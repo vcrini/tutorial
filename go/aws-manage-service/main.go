@@ -18,6 +18,8 @@ func main() {
 	startPipelineExecution := flag.String("start-pipeline-execution", "", "given filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"] triggers specified pipelines")
 	showPipeline := flag.String("show-pipeline", "", "show pipeline status")
 	listServices := flag.Bool("list-services", false, "return services with desired tasks {\"pipeline1\": 1, \"pipeline2\": 0]")
+	stopService := flag.String("stop-services", "", "reads a json dictionary where keys are services to stop")
+	startService := flag.String("start-services", "", "reads a json dictionary where keys are services to start if value is '0' or higher")
 	flag.Parse()
 	if *startPipelineExecution != "" {
 		s := *startPipelineExecution
@@ -103,6 +105,10 @@ func main() {
 			os.Exit(3)
 		}
 		fmt.Print(string(u))
+	} else if *startService != "" {
+		start_or_stop(*startService, *cluster, "start")
+	} else if *stopService != "" {
+		start_or_stop(*stopService, *cluster, "stop")
 	} else {
 		fmt.Println("Please use: -h for launch details ")
 	}
@@ -125,4 +131,30 @@ func chunkBy[T any](items []T, chunkSize int) (chunks [][]T) {
 		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
 	}
 	return append(chunks, items)
+}
+func start_or_stop(file string, cluster string, action string) {
+	byteValue, err := readJson(file)
+	if err != nil {
+		fmt.Println("could not parse json file")
+		os.Exit(1)
+	}
+	var result map[string]interface{}
+	err = json.Unmarshal([]byte(byteValue), &result)
+	if err != nil {
+		fmt.Printf("can't unmarshall json: %s", err.Error())
+		os.Exit(2)
+	}
+	for k, v := range result {
+
+		var count int
+		if action == "stop" {
+			count = 0
+		} else {
+			count = int(v.(float64))
+		}
+		fmt.Printf("service: %s is being set to: %s\n", k, action)
+		buildCommand := []string{"aws", "ecs", "update-service", "--cluster", cluster, "--service", k, "--desired-count", fmt.Sprint(count), "--query", "service.{desiredCount: desiredCount}"}
+		fmt.Println(utils.Exe(buildCommand))
+	}
+
 }
