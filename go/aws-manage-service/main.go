@@ -13,13 +13,15 @@ import (
 )
 
 func main() {
-	seconds := flag.Int("s", 0, "seconds between requests")
 	cluster := flag.String("cluster", "", "cluster where to operate, used with 'list-services', 'stop-services', 'start-services'")
-	startPipelineExecution := flag.String("start-pipeline-execution", "", "given filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"] triggers specified pipelines")
-	showPipeline := flag.String("show-pipeline", "", "show pipeline status")
 	listServices := flag.Bool("list-services", false, "return services with desired tasks {\"pipeline1\": 1, \"pipeline2\": 0]")
-	stopService := flag.String("stop-services", "", "reads a json dictionary where keys are services to stop")
+	rollback := flag.String("rollback", "", "service to be rollbacked")
+	seconds := flag.Int("s", 0, "seconds between requests")
+	showPipeline := flag.String("show-pipeline", "", "show pipeline status")
+	startPipelineExecution := flag.String("start-pipeline-execution", "", "given filename containing json with array of pipelines to start: e.g. [\"pipeline1\",\"pipeline2\"] triggers specified pipelines")
 	startService := flag.String("start-services", "", "reads a json dictionary where keys are services to start if value is '0' or higher")
+	stopService := flag.String("stop-services", "", "reads a json dictionary where keys are services to stop")
+	version := flag.Int("version", -1, "version to rollback")
 	flag.Parse()
 	if *startPipelineExecution != "" {
 		s := *startPipelineExecution
@@ -109,6 +111,16 @@ func main() {
 		start_or_stop(*startService, *cluster, "start")
 	} else if *stopService != "" {
 		start_or_stop(*stopService, *cluster, "stop")
+	} else if *rollback != "" {
+		if *cluster == "" {
+			fmt.Println("parameter 'cluster' is mandatory")
+			os.Exit(4)
+		}
+		if *version < 0 {
+
+			fmt.Println("parameter 'version' is mandatory and must be >0")
+		}
+		deployOrRollback(*rollback, *cluster, *version)
 	} else {
 		fmt.Println("Please use: -h for launch details ")
 	}
@@ -131,6 +143,11 @@ func chunkBy[T any](items []T, chunkSize int) (chunks [][]T) {
 		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
 	}
 	return append(chunks, items)
+}
+func deployOrRollback(service string, cluster string, version int) {
+	buildCommand := []string{"aws", "ecs", "update-service", "--cluster", cluster, "--service", service, "--task-definition", fmt.Sprintf("%s:%d", service, version)}
+	fmt.Println(utils.Exe(buildCommand))
+
 }
 func start_or_stop(file string, cluster string, action string) {
 	byteValue, err := readJson(file)
