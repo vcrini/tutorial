@@ -22,6 +22,7 @@ func main() {
 	startService := flag.String("start-services", "", "reads a json dictionary where keys are services to start if value is '0' or higher")
 	stopService := flag.String("stop-services", "", "reads a json dictionary where keys are services to stop")
 	version := flag.Int("version", -1, "version to rollback")
+	findVersion := flag.String("findVersion", "", "name of service you want to find version")
 	flag.Parse()
 	if *startPipelineExecution != "" {
 		s := *startPipelineExecution
@@ -121,6 +122,8 @@ func main() {
 			fmt.Println("parameter 'version' is mandatory and must be >0")
 		}
 		deployOrRollback(*rollback, *cluster, *version)
+	} else if *findVersion != "" {
+		findVersionMax(*findVersion)
 	} else {
 		fmt.Println("Please use: -h for launch details ")
 	}
@@ -147,6 +150,41 @@ func chunkBy[T any](items []T, chunkSize int) (chunks [][]T) {
 func deployOrRollback(service string, cluster string, version int) {
 	buildCommand := []string{"aws", "ecs", "update-service", "--cluster", cluster, "--service", service, "--task-definition", fmt.Sprintf("%s:%d", service, version), "--query", "service.{taskDefinition: taskDefinition, status: status}"}
 	fmt.Println(utils.Exe(buildCommand))
+
+}
+func findVersionMax(service string) {
+	buildCommand := []string{"aws", "ecs", "list-task-definitions", "--family-prefix", service, "--query", "reverse(taskDefinitionArns[*])"}
+	fmt.Println(utils.Exe(buildCommand))
+	// [
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:28",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:27",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:26",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:25",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:24",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:23",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:22",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:21",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:20",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:19",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:18",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:17",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:16",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:15",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:14",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:13",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:12",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:11",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:10",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:9",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:8",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:7",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:6",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:5",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:4",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:3",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:2",
+	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:1"
+	//
 
 }
 func start_or_stop(file string, cluster string, action string) {
