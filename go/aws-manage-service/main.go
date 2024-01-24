@@ -166,17 +166,18 @@ func findVersionMax(service string) {
 		fmt.Printf("can't unmarshall json: %s", err.Error())
 		os.Exit(2)
 	}
-	// r, _ := regexp.Compile("([^:]+)$")
-	r, _ := regexp.Compile("([^/]+)$")
+	rImageVersion := regexp.MustCompile(`([^:\\]+)"`)
+	rTaskDefinitionAndVesion, _ := regexp.Compile("([^/]+)$")
 	version := ""
 	old_version := ""
 	versions := make(map[string]string)
 	for _, arn := range result {
-		var serviceAndVersion = r.FindString(arn.(string))
-		buildCommand := []string{"aws", "ecs", "describe-task-definition", "--task-definition", serviceAndVersion, "--query", "taskDefinition.containerDefinitions[0].image"}
-		version = utils.Exe(buildCommand)
+		var taskDefinitionAndVersion = rTaskDefinitionAndVesion.FindString(arn.(string))
+		buildCommand := []string{"aws", "ecs", "describe-task-definition", "--task-definition", taskDefinitionAndVersion, "--query", "taskDefinition.containerDefinitions[0].image"}
+		v := utils.Exe(buildCommand)
+		version = rImageVersion.FindStringSubmatch(v)[1]
 		if version != old_version {
-			versions[serviceAndVersion] = version
+			versions[taskDefinitionAndVersion] = version
 		}
 		old_version = version
 	}
