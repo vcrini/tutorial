@@ -154,37 +154,38 @@ func deployOrRollback(service string, cluster string, version int) {
 }
 func findVersionMax(service string) {
 	buildCommand := []string{"aws", "ecs", "list-task-definitions", "--family-prefix", service, "--query", "reverse(taskDefinitionArns[*])"}
-	fmt.Println(utils.Exe(buildCommand))
+	var out = utils.Exe(buildCommand)
 	// [
 	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:28",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:27",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:26",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:25",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:24",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:23",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:22",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:21",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:20",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:19",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:18",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:17",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:16",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:15",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:14",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:13",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:12",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:11",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:10",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:9",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:8",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:7",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:6",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:5",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:4",
-	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:3",
 	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:2",
 	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:1"
 	//
+	var result []interface{}
+	var err = json.Unmarshal([]byte(out), &result)
+	if err != nil {
+		fmt.Printf("can't unmarshall json: %s", err.Error())
+		os.Exit(2)
+	}
+	// r, _ := regexp.Compile("([^:]+)$")
+	r, _ := regexp.Compile("([^/]+)$")
+	version := ""
+	old_version := ""
+	versions := make(map[string]string)
+	for _, arn := range result {
+		var serviceAndVersion = r.FindString(arn.(string))
+		buildCommand := []string{"aws", "ecs", "describe-task-definition", "--task-definition", serviceAndVersion, "--query", "taskDefinition.containerDefinitions[0].image"}
+		version = utils.Exe(buildCommand)
+		if version != old_version {
+			versions[serviceAndVersion] = version
+		}
+		old_version = version
+	}
+	u, err := json.Marshal(versions)
+	if err != nil {
+		fmt.Printf("can't marshall versions: %s", err.Error())
+		os.Exit(3)
+	}
+	fmt.Print(string(u))
 
 }
 func start_or_stop(file string, cluster string, action string) {
