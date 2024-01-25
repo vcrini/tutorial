@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -153,7 +154,11 @@ func deployOrRollback(service string, cluster string, version int) {
 
 }
 func findVersionMax(service string) {
-	buildCommand := []string{"aws", "ecs", "list-task-definitions", "--family-prefix", service, "--query", "reverse(taskDefinitionArns[*])"}
+	// find oldest version available
+	buildCommand := []string{"aws", "ecr", "list-images", "--repository-name", fmt.Sprintf("%s-snapshot", service), "--query", "imageIds[-1].imageTag", "--output", "text"}
+	versionOldest := strings.TrimSuffix(utils.Exe(buildCommand), "\n")
+
+	buildCommand = []string{"aws", "ecs", "list-task-definitions", "--family-prefix", service, "--query", "reverse(taskDefinitionArns[*])"}
 	var out = utils.Exe(buildCommand)
 	// [
 	//     "arn:aws:ecs:eu-west-1:796341525871:task-definition/dpl-app-appdemo-backend:28",
@@ -178,6 +183,10 @@ func findVersionMax(service string) {
 		version = rImageVersion.FindStringSubmatch(v)[1]
 		if version != old_version {
 			versions[taskDefinitionAndVersion] = version
+		}
+		if version == versionOldest {
+			// this is oldest version available quit loop
+			break
 		}
 		old_version = version
 	}
