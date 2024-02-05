@@ -39,6 +39,44 @@ func deployOrRollback(service string, cluster string, version int) {
 	fmt.Println(utils.Exe(buildCommand))
 
 }
+func EnableOrDisablePipeline(action string, args []string) {
+	flag := flag.NewFlagSet("EnableOrDisablePipeline", flag.ExitOnError)
+	registerGlobalFlags(flag)
+	err := flag.Parse(args)
+	if err != nil {
+		log.Fatalf("error in parsing params %s", args)
+	}
+	// works only if params are before args
+	args = flag.Args()
+	if action != "enable" && action != "disable" {
+		log.Fatal("parameter 'action' must be 'enable' or 'disable' only")
+	}
+	if len(args) == 0 {
+		log.Fatal("you must pass a file containing list of services like [\"service1\", \"service2\"]")
+	}
+	file := args[0]
+	byteValue, err := readJson(file)
+	if err != nil {
+		fmt.Println("could not parse json file")
+		os.Exit(1)
+	}
+	var result []interface{}
+	err = json.Unmarshal([]byte(byteValue), &result)
+	if err != nil {
+		fmt.Printf("can't unmarshall json: %s", err.Error())
+		os.Exit(2)
+	}
+	for _, v := range result {
+		fmt.Println(v)
+		buildCommand := []string{"aws", "codepipeline", fmt.Sprintf("%s-stage-transition", action), "--pipeline-name", v.(string), "--stage-name", "Source", "--transition-type", "Outbound"}
+		if action == "disable" {
+			buildCommand = append(buildCommand, "--reason", "disabled by aws-manager-service")
+		}
+		fmt.Println(utils.Exe(buildCommand))
+		time.Sleep(time.Duration(*_seconds) * time.Second)
+	}
+
+}
 func findVersionMax(args []string) {
 	flag := flag.NewFlagSet("find-version", flag.ExitOnError)
 	registerGlobalFlags(flag)
