@@ -44,6 +44,6 @@ func main() {
 		EnableOrDisablePipeline("disable", args)
 	default:
 		log.Fatalf("Unrecognized command %q. "+
-			"Command must be one of: find-version, list-services, show-pipeline, start-pipeline-execution, start-services, stop-services, rollback ...", cmd)
+			"Command must be one of: disable-pipeline, enable-pipeline, find-version, list-services, show-pipeline, start-pipeline-execution, start-services, stop-services, rollback ...", cmd)
 	}
 }
