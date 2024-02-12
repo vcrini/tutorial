@@ -89,10 +89,11 @@ func findVersionMax(args []string) {
 	}
 	service := args[0]
 	// find oldest version available
-	buildCommand := []string{"aws", "ecr", "list-images", "--repository-name", fmt.Sprintf("%s-snapshot", service), "--query", "imageIds[-1].imageTag", "--output", "text"}
+
+	buildCommand := []string{"aws", "ecr", "list-images", "--repository-name", fmt.Sprintf("%s-snapshot", service), "--query", "imageIds[?imageTag!=``].imageTag|[0]", "--output", "text"}
 	versionOldestSnapshot := strings.TrimSuffix(utils.Exe(buildCommand), "\n")
 
-	buildCommand = []string{"aws", "ecr", "list-images", "--repository-name", service, "--query", "imageIds[-1].imageTag", "--output", "text"}
+	buildCommand = []string{"aws", "ecr", "list-images", "--repository-name", service, "--query", "imageIds[?imageTag!=``].imageTag|[0]", "--output", "text"}
 	versionOldestNonSnapshot := strings.TrimSuffix(utils.Exe(buildCommand), "\n")
 	var versionList []string
 	versionList = append(versionList, versionOldestNonSnapshot, versionOldestSnapshot)
