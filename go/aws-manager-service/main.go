@@ -9,7 +9,7 @@ import (
 var (
 	_seconds = flag.Int("s", 0, "seconds between requests")
 	_version = flag.Bool("v", false, "return version")
-	version  = "0.6.0"
+	version  = "0.6.1"
 )
 
 func main() {

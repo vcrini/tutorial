@@ -117,6 +117,8 @@ func findVersionMax(args []string) {
 	rTaskDefinitionAndVersion, _ := regexp.Compile("([^/]+)$")
 	version := ""
 	old_version := ""
+	// used for not skipping same version but one snap & other release
+	old_snap := ""
 	versions := make(map[string][]string)
 	for _, arn := range result {
 		var taskDefinitionAndVersion = rTaskDefinitionAndVersion.FindString(arn.(string))
@@ -127,11 +129,12 @@ func findVersionMax(args []string) {
 			snap = "release"
 		}
 		version = rImageVersion.FindStringSubmatch(v)[2]
-		if version != old_version {
+		if version != old_version || (version == old_version && snap != old_snap) {
 			versions[taskDefinitionAndVersion] = append(versions[taskDefinitionAndVersion], version)
 			versions[taskDefinitionAndVersion] = append(versions[taskDefinitionAndVersion], snap)
+			old_snap = snap
 		}
-		if version == versionOldest {
+		if version == versionOldest && snap == old_snap {
 			// this is oldest version available quit loop
 			break
 		}
