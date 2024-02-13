@@ -113,18 +113,23 @@ func findVersionMax(args []string) {
 		fmt.Printf("can't unmarshall json: %s", err.Error())
 		os.Exit(2)
 	}
-	rImageVersion := regexp.MustCompile(`([^:\\]+)"`)
-	rTaskDefinitionAndVesion, _ := regexp.Compile("([^/]+)$")
+	rImageVersion := regexp.MustCompile(`([^-]+):([^:\\]+)"`)
+	rTaskDefinitionAndVersion, _ := regexp.Compile("([^/]+)$")
 	version := ""
 	old_version := ""
-	versions := make(map[string]string)
+	versions := make(map[string][]string)
 	for _, arn := range result {
-		var taskDefinitionAndVersion = rTaskDefinitionAndVesion.FindString(arn.(string))
+		var taskDefinitionAndVersion = rTaskDefinitionAndVersion.FindString(arn.(string))
 		buildCommand := []string{"aws", "ecs", "describe-task-definition", "--task-definition", taskDefinitionAndVersion, "--query", "taskDefinition.containerDefinitions[0].image"}
 		v := utils.Exe(buildCommand)
-		version = rImageVersion.FindStringSubmatch(v)[1]
+		snap := rImageVersion.FindStringSubmatch(v)[1]
+		if snap != "snapshot" {
+			snap = "release"
+		}
+		version = rImageVersion.FindStringSubmatch(v)[2]
 		if version != old_version {
-			versions[taskDefinitionAndVersion] = version
+			versions[taskDefinitionAndVersion] = append(versions[taskDefinitionAndVersion], version)
+			versions[taskDefinitionAndVersion] = append(versions[taskDefinitionAndVersion], snap)
 		}
 		if version == versionOldest {
 			// this is oldest version available quit loop
