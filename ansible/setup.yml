@@ -43,7 +43,10 @@
       - virtualbox-extension-pack
 
     brew_packages:
+      - awscli
       - aspell
+      - docker-compose
+      - freetds
       - lazygit
       - nmap
       - ripgrep-all
@@ -53,6 +56,7 @@
       - tmuxp
       - neovim
     install_homebrew_if_missing: false
+    state: latest
     upgrade_homebrew_packages: false
   pre_tasks:
     - name: Ensuring Homebrew Is Installed
@@ -88,7 +92,7 @@
      - name: Installing Homebrew Cask Packages
        homebrew_cask:
          name: "{{ brew_cask_packages }}"
-         state: present
+         state: "{{ state }}"
        register: result
        until: result is successful
        when: homebrew_check.stat.exists
@@ -96,7 +100,7 @@
      - name: Installing Homebrew Packages
        homebrew:
          name: "{{ brew_packages }}"
-         state: present
+         state: "{{ state }}"
        register: result
        until: result is successful
        when: homebrew_check.stat.exists
