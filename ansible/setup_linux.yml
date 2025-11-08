@@ -1,0 +1,22 @@
+---
+- name: Install required Ubuntu packages
+  hosts: localhost
+  become: true # sudo
+  vars:
+    # You can edit this list or override it with --extra-vars
+    packages:
+      # - fi
+      - fish
+      - fd-find
+      - texlive-latex-base
+      - sqlite3
+  tasks:
+    - name: Ensure apt cache is up‑to‑date
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600 # seconds; skip refresh if cache younger than this
+    - name: Install the desired packages
+      ansible.builtin.apt:
+        name: "{{ packages }}"
+        state: present
+        install_recommends: false # optional – skip recommended extras
