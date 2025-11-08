@@ -5,7 +5,7 @@
   vars:
     # You can edit this list or override it with --extra-vars
     packages:
-      # - fi
+      - git
       - fish
       - fd-find
       - texlive-latex-base
@@ -15,6 +15,9 @@
       ansible.builtin.apt:
         update_cache: yes
         cache_valid_time: 3600 # seconds; skip refresh if cache younger than this
+    - name: Add Git latest version
+      ansible.builtin.apt_repository:
+        repo: ppa:git-core/ppa
     - name: Install the desired packages
       ansible.builtin.apt:
         name: "{{ packages }}"
