@@ -4,57 +4,56 @@
   become: false
   vars:
     brew_cask_packages:
-      - alt-tab                         
-      - bitwarden                       
-      - font-hack-nerd-font             
-      - grandperspective                
-      - tiles                           
-      - visualvm
-      - anki                            
-      - brave-browser                    
-      - font-victor-mono-nerd-font      
-      - libreoffice                      
-      - obsidian                        
-      - rar                             
-      - timemachineeditor               
-      - vlc
-      - anydesk                         
-      - dbeaver-community               
-      - gimp                            
-      - iterm2                          
-      - libreoffice-language-pack       
-      - openvpn-connect                 
-      - wireshark
-      - audacity                        
-      - drawio                          
-      - google-chrome                   
-      - java                            
-      - microsoft-auto-update           
-      - osxfuse                         
-      - virtualbox                      
-      - zoom
-      - aws-vault                       
-      - firefox                         
-      - google-drive                    
-      - kitty                           
-      - microsoft-teams                 
-      - postman                         
-      - thunderbird                     
+      - alt-tab
+      - anki
+      - anydesk
+      - audacity
+      - aws-vault
+      - brave-browser
+      - dbeaver-community
+      - drawio
+      - firefox
+      - font-hack-nerd-font
+      - font-victor-mono-nerd-font
+      - gimp
+      - google-drive
+      - grandperspective
+      - iterm2
+      - java
+      - kitty
+      - libreoffice
+      - libreoffice-language-pack
+      - microsoft-auto-update
+      - obsidian
+      - openvpn-connect
+      - osxfuse
+      - postman
+      - rar
+      - thunderbird
+      - tiles
+      - timemachineeditor
+      - virtualbox
       - virtualbox-extension-pack
+      - visualvm
+      - vlc
+      - wireshark
+      - zoom
 
     brew_packages:
-      - awscli
       - aspell
+      - awscli
       - docker-compose
       - freetds
       - lazygit
+      - neovim
       - nmap
+      - pdftk-java
+      - proton-drive
       - ripgrep-all
       - sops
-      - thefuck    
+      - thefuck
       - tmux
       - tmuxp
-      - neovim
     install_homebrew_if_missing: false
     state: latest
     upgrade_homebrew_packages: false
@@ -77,30 +76,30 @@
         - not homebrew_check.stat.exists
         - install_homebrew_if_missing
   tasks:
-     - name: Updating Homebrew
-       homebrew:
-         update_homebrew: true
-       when: homebrew_check.stat.exists
+    - name: Updating Homebrew
+      homebrew:
+        update_homebrew: true
+      when: homebrew_check.stat.exists
 
-     - name: Upgrading Homebrew Packages
-       homebrew:
-         upgrade_all: "{{ upgrade_homebrew_packages }}"
-       register: result
-       until: result is successful
-       when: homebrew_check.stat.exists
+    - name: Upgrading Homebrew Packages
+      homebrew:
+        upgrade_all: "{{ upgrade_homebrew_packages }}"
+      register: result
+      until: result is successful
+      when: homebrew_check.stat.exists
 
-     - name: Installing Homebrew Cask Packages
-       homebrew_cask:
-         name: "{{ brew_cask_packages }}"
-         state: "{{ state }}"
-       register: result
-       until: result is successful
-       when: homebrew_check.stat.exists
+    - name: Installing Homebrew Cask Packages
+      homebrew_cask:
+        name: "{{ brew_cask_packages }}"
+        state: "{{ state }}"
+      register: result
+      until: result is successful
+      when: homebrew_check.stat.exists
 
-     - name: Installing Homebrew Packages
-       homebrew:
-         name: "{{ brew_packages }}"
-         state: "{{ state }}"
-       register: result
-       until: result is successful
-       when: homebrew_check.stat.exists
+    - name: Installing Homebrew Packages
+      homebrew:
+        name: "{{ brew_packages }}"
+        state: "{{ state }}"
+      register: result
+      until: result is successful
+      when: homebrew_check.stat.exists
