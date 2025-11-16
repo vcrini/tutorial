@@ -7,14 +7,16 @@
       - eza
       - zoxide
     packages:
-      - git
-      - unzip
-      - tmux
-      - thefuck
-      - fish
+      - bat
       - fd-find
-      - texlive-latex-base
+      - fish
+      - git
       - sqlite3
+      - texlive-latex-base
+      - thefuck
+      - tmux
+      - neovim
+      - unzip
   tasks:
     - name: Ensure apt cache is up‑to‑date
       become: true # sudo
