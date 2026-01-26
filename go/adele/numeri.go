@@ -1,6 +1,5 @@
 package main
 
-//"math/rand/v2")
 import (
 	"math/rand/v2"
 
