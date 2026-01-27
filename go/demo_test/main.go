@@ -18,6 +18,10 @@ func Sum(x int, y int) int {
 	return x + y
 }
 
+func ReturnArray() [2]string {
+	return [2]string{"dangerous", "dragons"}
+}
+
 func ReturnStruct() name {
 	x := name{1, 2}
 	return x

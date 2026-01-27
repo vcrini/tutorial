@@ -13,3 +13,14 @@ func TestStruct(t *testing.T) {
 		t.Errorf("ReturnStruct().X = %d; want 1", ReturnStruct().X)
 	}
 }
+
+func TestArray(t *testing.T) {
+	v := ReturnArray()
+	if v[0] != "dangerous" {
+		t.Errorf("ReturnArray()[0] = %s; want \"dangerous\"", ReturnArray()[0])
+	}
+	v[0] = "dungeons"
+	if v[0] != "dungeons" {
+		t.Errorf("ReturnArray()[0] = %s; want \"dangerous\"", ReturnArray()[0])
+	}
+}
