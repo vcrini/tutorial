@@ -7,3 +7,9 @@ func TestSum(t *testing.T) {
 		t.Errorf("Sum(2,2) = %d; want 4", Sum(2, 2))
 	}
 }
+
+func TestStruct(t *testing.T) {
+	if ReturnStruct().X != 1 {
+		t.Errorf("ReturnStruct().X = %d; want 1", ReturnStruct().X)
+	}
+}
