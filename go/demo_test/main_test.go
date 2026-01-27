@@ -30,4 +30,11 @@ func TestSliceLiteral(t *testing.T) {
 	if v[0] != "dungeons" {
 		t.Errorf("ReturnArray()[0] = %s; want \"dungeons\"", ReturnArray()[0])
 	}
+	v = v[:1]
+	if z := len(v); z != 1 {
+		t.Errorf("%d; want 1", z)
+	}
+	if z := cap(v); z != 3 {
+		t.Errorf("%d; want 3", z)
+	}
 }
