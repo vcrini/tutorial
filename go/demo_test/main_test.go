@@ -24,3 +24,10 @@ func TestArray(t *testing.T) {
 		t.Errorf("ReturnArray()[0] = %s; want \"dangerous\"", ReturnArray()[0])
 	}
 }
+
+func TestSliceLiteral(t *testing.T) {
+	v := ReturnLiteralSlice()
+	if v[0] != "dungeons" {
+		t.Errorf("ReturnArray()[0] = %s; want \"dungeons\"", ReturnArray()[0])
+	}
+}
