@@ -50,4 +50,8 @@ func TestMap(t *testing.T) {
 	if !reflect.DeepEqual(v["O"], name{0, 0}) {
 		t.Errorf(" %d; want \"{0,0}\"", v["O"])
 	}
+	delete(v, "O")
+	if _, ok := v["O"]; ok {
+		t.Errorf("want \"nil\"")
+	}
 }
