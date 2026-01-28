@@ -38,3 +38,10 @@ func TestSliceLiteral(t *testing.T) {
 		t.Errorf("%d; want 3", z)
 	}
 }
+
+func TestMap(t *testing.T) {
+	v := ReturnMap()
+	if v["O"].X != 0 {
+		t.Errorf(" %d; want \"0\"", v["O"].X)
+	}
+}

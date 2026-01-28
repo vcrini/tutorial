@@ -18,6 +18,10 @@ func Sum(x int, y int) int {
 	return x + y
 }
 
+func ReturnMap() map[string]name {
+	return map[string]name{"O": {0, 0}, "A": {1, 2}}
+}
+
 func ReturnLiteralSlice() []string {
 	return []string{"dungeons", "&", "dragons"}
 }
