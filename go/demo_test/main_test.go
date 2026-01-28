@@ -1,6 +1,9 @@
 package demo_test
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func TestSum(t *testing.T) {
 	if Sum(2, 2) != 4 {
@@ -43,5 +46,8 @@ func TestMap(t *testing.T) {
 	v := ReturnMap()
 	if v["O"].X != 0 {
 		t.Errorf(" %d; want \"0\"", v["O"].X)
+	}
+	if !reflect.DeepEqual(v["O"], name{0, 0}) {
+		t.Errorf(" %d; want \"{0,0}\"", v["O"])
 	}
 }
