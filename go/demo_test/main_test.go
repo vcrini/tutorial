@@ -49,11 +49,11 @@ func TestMap(t *testing.T) {
 		t.Errorf(" %d; want \"0\"", v["O"].X)
 	}
 	if !reflect.DeepEqual(v["O"], name{0, 0}) {
-		t.Errorf(" %d; want \"{0,0}\"", v["O"])
+		t.Errorf(" %v; want \"{0,0}\"", v["O"])
 	}
 	delete(v, "A")
 	if _, ok := v["A"]; ok {
-		t.Errorf("want \"nil\"")
+		t.Errorf("it should not be found")
 	}
 	if elem := v["A"]; !reflect.DeepEqual(elem, name{0, 0}) {
 		t.Errorf("got %v want \"{0,0}\"", elem)
