@@ -24,7 +24,7 @@ func TestArray(t *testing.T) {
 	}
 	v[0] = "dungeons"
 	if v[0] != "dungeons" {
-		t.Errorf("ReturnArray()[0] = %s; want \"dangerous\"", ReturnArray()[0])
+		t.Errorf("ReturnArray()[0] = %s; want \"dangerous\"", v[0])
 	}
 }
 
