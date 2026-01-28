@@ -6,8 +6,9 @@ import (
 )
 
 func TestSum(t *testing.T) {
-	if Sum(2, 2) != 4 {
-		t.Errorf("Sum(2,2) = %d; want 4", Sum(2, 2))
+	got := Sum(2, 2)
+	if got != 4 {
+		t.Errorf("Sum(2,2) = %d; want 4", got)
 	}
 }
 
