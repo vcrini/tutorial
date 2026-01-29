@@ -1,5 +1,5 @@
-// Package demo_test is for testing
-package demo_test
+// Package main is for testing
+package main
 
 import (
 	"fmt"

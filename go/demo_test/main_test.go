@@ -1,4 +1,4 @@
-package demo_test
+package main
 
 import (
 	"reflect"
