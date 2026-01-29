@@ -30,6 +30,9 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	p2, _ := loadPage("TestPage")
+	p2, err := loadPage("TestPage")
 	fmt.Println(string(p2.Body))
+	if err != nil {
+		fmt.Println(err)
+	}
 }
