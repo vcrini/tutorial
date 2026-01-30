@@ -72,6 +72,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor++
 				}
 
+			case "left", "h":
+				if len(m.pngs) > 0 {
+					if m.selectedPNGIndex == -1 {
+						m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona l'ultimo se nessuno è selezionato
+					} else {
+						m.selectedPNGIndex = (m.selectedPNGIndex - 1 + len(m.pngs)) % len(m.pngs)
+					}
+					m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
+				} else {
+					m.message = "Nessun PNG disponibile per la selezione."
+				}
+
+			case "right", "l":
+				if len(m.pngs) > 0 {
+					if m.selectedPNGIndex == -1 {
+						m.selectedPNGIndex = 0 // Seleziona il primo se nessuno è selezionato
+					} else {
+						m.selectedPNGIndex = (m.selectedPNGIndex + 1) % len(m.pngs)
+					}
+					m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
+				} else {
+					m.message = "Nessun PNG disponibile per la selezione."
+				}
+
 			case "enter":
 				switch m.choices[m.cursor] {
 				// case "Saluta":
