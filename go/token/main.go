@@ -32,12 +32,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.quitting = true
 			return m, tea.Quit
 
-		case "up", "k": // Naviga in alto nel menu
+		case "up", "k", "shift+tab": // Naviga in alto nel menu con freccia su, k o Shift+Tab
 			if m.cursor > 0 {
 				m.cursor--
 			}
 
-		case "down", "j": // Naviga in basso nel menu
+		case "down", "j", "tab": // Naviga in basso nel menu con freccia giù, j o Tab
 			if m.cursor < len(m.choices)-1 {
 				m.cursor++
 			}
