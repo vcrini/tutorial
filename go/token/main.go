@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"math/rand/v2" // Usiamo rand/v2 per una migliore generazione di numeri casuali
+	"fmt" // Usiamo rand/v2 per una migliore generazione di numeri casuali
 	"os"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -76,14 +74,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "enter":
 				switch m.choices[m.cursor] {
-				case "Saluta":
-					m.message = "Ciao! Benvenuto nell'applicazione Bubble Tea."
-				case "Mostra Data/Ora":
-					currentTime := time.Now().Format("02/01/2006 15:04:05")
-					m.message = fmt.Sprintf("La data e l'ora attuali sono: %s", currentTime)
-				case "Numero Casuale":
-					randomNumber := rand.IntN(1000) + 1
-					m.message = fmt.Sprintf("Il tuo numero casuale è: %d", randomNumber)
+				// case "Saluta":
+				// 	m.message = "Ciao! Benvenuto nell'applicazione Bubble Tea."
+				// case "Mostra Data/Ora":
+				// 	currentTime := time.Now().Format("02/01/2006 15:04:05")
+				// 	m.message = fmt.Sprintf("La data e l'ora attuali sono: %s", currentTime)
+				// case "Numero Casuale":
+				// 	randomNumber := rand.IntN(1000) + 1
+				// 	m.message = fmt.Sprintf("Il tuo numero casuale è: %d", randomNumber)
 				case "Crea PNG":
 					m.appState = createPNGState
 					m.textInput.Reset()
@@ -116,6 +114,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						png := &m.pngs[m.selectedPNGIndex]
 						png.Counter = defaultCounter
 						m.message = fmt.Sprintf("Contatore di '%s' resettato a %d.", png.Name, png.Counter)
+					}
+				case "Resetta Tutti i Contatori PNG":
+					if len(m.pngs) == 0 {
+						m.message = "Nessun PNG presente per resettare i contatori."
+					} else {
+						for i := range m.pngs {
+							m.pngs[i].Counter = defaultCounter // Resetta al valore di default (3)
+						}
+						m.message = fmt.Sprintf("Tutti i contatori PNG sono stati resettati a %d.", defaultCounter)
 					}
 				case "Esci":
 					m.quitting = true
@@ -277,13 +284,14 @@ func main() {
 
 	p := tea.NewProgram(model{
 		choices: []string{
-			"Saluta",
-			"Mostra Data/Ora",
-			"Numero Casuale",
+			// "Saluta",
+			// "Mostra Data/Ora",
+			// "Numero Casuale",
 			"Crea PNG",
 			"Seleziona PNG",
 			"Decrementa Contatore PNG",
 			"Resetta Contatore PNG",
+			"Resetta Tutti i Contatori PNG",
 			"Esci",
 		},
 		message:          "Benvenuto! Premi Enter per scegliere un'opzione o frecce per navigare.",
