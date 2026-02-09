@@ -482,10 +482,7 @@ func (m model) View() string {
 	if totalHeight < 12 {
 		totalHeight = 12
 	}
-	bodyContentHeight := totalHeight - 6 // header + message + borders
-	if bodyContentHeight < 4 {
-		bodyContentHeight = 4
-	}
+	bodyContentHeight := max(totalHeight-6, 4)
 
 	// Header
 	header := titleStyle.Render(" PNG Manager ") + dim.Render(" • Lazy style UI")
@@ -494,6 +491,7 @@ func (m model) View() string {
 	// Menu (sinistra)
 	var menu strings.Builder
 	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
+	menu.WriteString(dim.Render("Shortcut: 1=Comandi 2=PNGs") + "\n\n")
 	for i, choice := range m.choices {
 		cursor := "  "
 		if m.cursor == i && m.appState == menuState {
