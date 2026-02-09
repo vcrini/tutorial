@@ -93,6 +93,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.deleteSelectedPNG()
 				}
 
+			case "n":
+				if m.focusedPanel == 1 {
+					m.appState = createPNGState
+					m.textInput.Reset()
+					m.message = "Inserisci il nome del nuovo PNG:"
+					return m, textinput.Blink
+				}
+
 			case "enter":
 				return m.handleMenuChoice(m.choices[m.cursor])
 			}
