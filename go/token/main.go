@@ -147,6 +147,7 @@ type model struct {
 	selectPNGCursor  int             // Il cursore per la selezione del PNG
 	width            int             // Larghezza della finestra
 	height           int             // Altezza della finestra
+	focusedPanel     int             // 0=menu, 1=pngs
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -171,13 +172,42 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.quitting = true
 				return m, tea.Quit
 
+			case "1":
+				m.focusedPanel = 0
+			case "2":
+				m.focusedPanel = 1
+
 			case "up", "k":
-				if m.cursor > 0 {
+				if m.focusedPanel == 1 {
+					if len(m.pngs) > 0 {
+						if m.selectedPNGIndex == -1 {
+							m.selectedPNGIndex = 0
+						} else {
+							m.selectedPNGIndex = (m.selectedPNGIndex - 1 + len(m.pngs)) % len(m.pngs)
+						}
+						_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
+						m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
+					} else {
+						m.message = "Nessun PNG disponibile per la selezione."
+					}
+				} else if m.cursor > 0 {
 					m.cursor--
 				}
 
 			case "down", "j":
-				if m.cursor < len(m.choices)-1 {
+				if m.focusedPanel == 1 {
+					if len(m.pngs) > 0 {
+						if m.selectedPNGIndex == -1 {
+							m.selectedPNGIndex = 0
+						} else {
+							m.selectedPNGIndex = (m.selectedPNGIndex + 1) % len(m.pngs)
+						}
+						_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
+						m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
+					} else {
+						m.message = "Nessun PNG disponibile per la selezione."
+					}
+				} else if m.cursor < len(m.choices)-1 {
 					m.cursor++
 				}
 
@@ -422,6 +452,7 @@ func (m model) View() string {
 		BottomRight: "┘",
 	}
 	panel := lipgloss.NewStyle().Border(border).Padding(0, 1)
+	panelFocused := lipgloss.NewStyle().Border(border).BorderForeground(lipgloss.Color("10")).Padding(0, 1)
 	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
 	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
 	selectedItemStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
@@ -470,7 +501,11 @@ func (m model) View() string {
 		}
 		menu.WriteString(fmt.Sprintf("%s%s\n", cursor, choice))
 	}
-	menuPanel := panel.Width(leftWidth).Render(limitLines(menu.String(), bodyContentHeight))
+	menuPanelStyle := panel
+	if m.focusedPanel == 0 {
+		menuPanelStyle = panelFocused
+	}
+	menuPanel := menuPanelStyle.Width(leftWidth).Render(limitLines(menu.String(), bodyContentHeight))
 
 	// Pannello destro superiore
 	var rightTop strings.Builder
@@ -513,7 +548,11 @@ func (m model) View() string {
 		}
 	}
 
-	rightTopPanel := panel.Width(rightWidth).Render(limitLines(rightTop.String(), bodyContentHeight))
+	rightPanelStyle := panel
+	if m.focusedPanel == 1 {
+		rightPanelStyle = panelFocused
+	}
+	rightTopPanel := rightPanelStyle.Width(rightWidth).Render(limitLines(rightTop.String(), bodyContentHeight))
 
 	// Barra messaggi
 	message := m.message
@@ -571,6 +610,7 @@ func main() {
 		selectedPNGIndex: selectedIndex, // Nessun PNG selezionato inizialmente
 		appState:         menuState,
 		textInput:        ti,
+		focusedPanel:     0,
 	})
 
 	if _, err := p.Run(); err != nil {
