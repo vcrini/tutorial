@@ -66,29 +66,51 @@ func uniqueRandomPNGName(existing []PNG) string {
 	}
 }
 
-func loadPNGList(path string) ([]PNG, error) {
+func loadPNGList(path string) ([]PNG, string, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []PNG{}, nil
+			return []PNG{}, "", nil
 		}
-		return nil, err
+		return nil, "", err
 	}
 
-	var pngs []PNG
-	if err := json.Unmarshal(data, &pngs); err != nil {
-		return nil, err
+	var wrapper struct {
+		PNGs     []PNG  `json:"pngs"`
+		Selected string `json:"selected"`
 	}
-	return pngs, nil
+	if err := json.Unmarshal(data, &wrapper); err == nil && wrapper.PNGs != nil {
+		return wrapper.PNGs, wrapper.Selected, nil
+	}
+
+	var legacy []PNG
+	if err := json.Unmarshal(data, &legacy); err != nil {
+		return nil, "", err
+	}
+	return legacy, "", nil
 }
 
-func savePNGList(path string, pngs []PNG) error {
-	data, err := json.MarshalIndent(pngs, "", "  ")
+func savePNGList(path string, pngs []PNG, selected string) error {
+	payload := struct {
+		PNGs     []PNG  `json:"pngs"`
+		Selected string `json:"selected"`
+	}{
+		PNGs:     pngs,
+		Selected: selected,
+	}
+	data, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
 		return err
 	}
 	data = append(data, '\n')
 	return os.WriteFile(path, data, 0o644)
+}
+
+func selectedPNGName(pngs []PNG, idx int) string {
+	if idx < 0 || idx >= len(pngs) {
+		return ""
+	}
+	return pngs[idx].Name
 }
 
 // appState definisce i diversi stati dell'applicazione.
@@ -149,6 +171,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.selectedPNGIndex = (m.selectedPNGIndex - 1 + len(m.pngs)) % len(m.pngs)
 					}
+					_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
 					m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
 				} else {
 					m.message = "Nessun PNG disponibile per la selezione."
@@ -161,6 +184,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						m.selectedPNGIndex = (m.selectedPNGIndex + 1) % len(m.pngs)
 					}
+					_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
 					m.message = fmt.Sprintf("PNG selezionato: '%s' (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
 				} else {
 					m.message = "Nessun PNG disponibile per la selezione."
@@ -185,28 +209,48 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					name := uniqueRandomPNGName(m.pngs)
 					newPNG := PNG{Name: name, Counter: defaultCounter}
 					m.pngs = append(m.pngs, newPNG)
-					if err := savePNGList(dataFile, m.pngs); err != nil {
+					m.selectedPNGIndex = len(m.pngs) - 1
+					if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 						m.message = fmt.Sprintf("PNG '%s' creato ma salvataggio fallito: %v", name, err)
 					} else {
 						m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, defaultCounter)
 					}
-					m.selectedPNGIndex = len(m.pngs) - 1
 				case "Ricarica PNG da disco":
-					pngs, err := loadPNGList(dataFile)
+					selectedName := ""
+					if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
+						selectedName = m.pngs[m.selectedPNGIndex].Name
+					}
+					pngs, selected, err := loadPNGList(dataFile)
 					if err != nil {
 						m.message = fmt.Sprintf("Errore nel caricare %s: %v", dataFile, err)
 					} else {
 						m.pngs = pngs
-						if len(m.pngs) == 0 {
-							m.selectedPNGIndex = -1
-						} else {
-							m.selectedPNGIndex = 0
+						m.selectedPNGIndex = -1
+						if len(m.pngs) > 0 {
+							if selected != "" {
+								for i, p := range m.pngs {
+									if p.Name == selected {
+										m.selectedPNGIndex = i
+										break
+									}
+								}
+							} else {
+								for i, p := range m.pngs {
+									if p.Name == selectedName && selectedName != "" {
+										m.selectedPNGIndex = i
+										break
+									}
+								}
+							}
+							if m.selectedPNGIndex == -1 {
+								m.selectedPNGIndex = 0
+							}
 						}
 						m.selectPNGCursor = 0
 						m.message = fmt.Sprintf("Lista PNG caricata da %s (%d).", dataFile, len(m.pngs))
 					}
 				case "Salva PNG su disco":
-					if err := savePNGList(dataFile, m.pngs); err != nil {
+					if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 						m.message = fmt.Sprintf("Errore nel salvataggio su %s: %v", dataFile, err)
 					} else {
 						m.message = fmt.Sprintf("Lista PNG salvata su %s.", dataFile)
@@ -226,7 +270,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						png := &m.pngs[m.selectedPNGIndex]
 						if png.Counter > minCounter {
 							png.Counter--
-							if err := savePNGList(dataFile, m.pngs); err != nil {
+							if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 								m.message = fmt.Sprintf("Contatore di '%s' decrementato, ma salvataggio fallito: %v", png.Name, err)
 							} else {
 								m.message = fmt.Sprintf("Contatore di '%s' decrementato a %d.", png.Name, png.Counter)
@@ -241,7 +285,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					} else {
 						png := &m.pngs[m.selectedPNGIndex]
 						png.Counter = defaultCounter
-						if err := savePNGList(dataFile, m.pngs); err != nil {
+						if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 							m.message = fmt.Sprintf("Contatore di '%s' resettato, ma salvataggio fallito: %v", png.Name, err)
 						} else {
 							m.message = fmt.Sprintf("Contatore di '%s' resettato a %d.", png.Name, png.Counter)
@@ -254,7 +298,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						for i := range m.pngs {
 							m.pngs[i].Counter = defaultCounter // Resetta al valore di default (3)
 						}
-						if err := savePNGList(dataFile, m.pngs); err != nil {
+						if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 							m.message = fmt.Sprintf("Contatori resettati, ma salvataggio fallito: %v", err)
 						} else {
 							m.message = fmt.Sprintf("Tutti i contatori PNG sono stati resettati a %d.", defaultCounter)
@@ -290,12 +334,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					newPNG := PNG{Name: name, Counter: defaultCounter}
 					m.pngs = append(m.pngs, newPNG)
-					if err := savePNGList(dataFile, m.pngs); err != nil {
+					m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
+					if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 						m.message = fmt.Sprintf("PNG '%s' creato ma salvataggio fallito: %v", name, err)
 					} else {
 						m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, defaultCounter)
 					}
-					m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
 					m.appState = menuState
 				}
 				return m, nil
@@ -322,6 +366,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			case "enter":
 				m.selectedPNGIndex = m.selectPNGCursor
+				_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
 				m.message = fmt.Sprintf("PNG '%s' selezionato (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
 				m.appState = menuState
 			case "esc", "ctrl+c":
@@ -422,11 +467,20 @@ func main() {
 	ti.Width = 20
 	ti.Prompt = "Nome: "
 
-	pngs, err := loadPNGList(dataFile)
+	pngs, selected, err := loadPNGList(dataFile)
 	initialMessage := "Benvenuto! Premi Enter per scegliere un'opzione o frecce per navigare."
 	if err != nil {
 		initialMessage = fmt.Sprintf("Errore nel caricare %s: %v", dataFile, err)
 		pngs = []PNG{}
+	}
+	selectedIndex := -1
+	if selected != "" {
+		for i, p := range pngs {
+			if p.Name == selected {
+				selectedIndex = i
+				break
+			}
+		}
 	}
 
 	p := tea.NewProgram(model{
@@ -446,7 +500,7 @@ func main() {
 		},
 		message:          initialMessage,
 		pngs:             pngs,
-		selectedPNGIndex: -1, // Nessun PNG selezionato inizialmente
+		selectedPNGIndex: selectedIndex, // Nessun PNG selezionato inizialmente
 		appState:         menuState,
 		textInput:        ti,
 	})
