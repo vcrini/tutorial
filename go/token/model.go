@@ -14,8 +14,6 @@ type appState int
 const (
 	menuState appState = iota
 	createPNGState
-	selectPNGState
-	// Aggiungi altri stati se necessario
 )
 
 // Model è lo stato della nostra applicazione TUI.
@@ -28,7 +26,6 @@ type model struct {
 	selectedPNGIndex int             // L'indice del PNG attualmente selezionato per le operazioni
 	appState         appState        // Lo stato attuale dell'applicazione
 	textInput        textinput.Model // Input per il nome del nuovo PNG
-	selectPNGCursor  int             // Il cursore per la selezione del PNG
 	width            int             // Larghezza della finestra
 	height           int             // Altezza della finestra
 	focusedPanel     int             // 0=menu, 1=pngs
@@ -52,7 +49,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case tea.KeyMsg:
 			switch msg.String() {
-			case "ctrl+c", "esc":
+			case "ctrl+c", "esc", "q", "ctrl+q":
 				m.quitting = true
 				return m, tea.Quit
 
@@ -122,7 +119,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.appState = menuState
 				}
 				return m, nil
-			case "esc", "ctrl+c":
+			case "esc", "ctrl+c", "q", "ctrl+q":
 				m.appState = menuState
 				m.message = "Creazione PNG annullata."
 				return m, nil
@@ -130,33 +127,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.textInput, cmd = m.textInput.Update(msg)
 		return m, cmd
-
-	case selectPNGState:
-		switch msg := msg.(type) {
-		case tea.WindowSizeMsg:
-			m.width = msg.Width
-			m.height = msg.Height
-			return m, nil
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "up", "k":
-				if m.selectPNGCursor > 0 {
-					m.selectPNGCursor--
-				}
-			case "down", "j":
-				if m.selectPNGCursor < len(m.pngs)-1 {
-					m.selectPNGCursor++
-				}
-			case "enter":
-				m.selectedPNGIndex = m.selectPNGCursor
-				m.persistSelection()
-				m.message = fmt.Sprintf("PNG '%s' selezionato (contatore: %d).", m.pngs[m.selectedPNGIndex].Name, m.pngs[m.selectedPNGIndex].Counter)
-				m.appState = menuState
-			case "esc", "ctrl+c":
-				m.appState = menuState
-				m.message = "Selezione PNG annullata."
-			}
-		}
 	}
 
 	return m, cmd

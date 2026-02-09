@@ -82,7 +82,7 @@ func (m model) View() string {
 	// Menu (sinistra)
 	var menu strings.Builder
 	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
-	menu.WriteString(dim.Render("Shortcut: 1=Comandi 2=PNGs") + "\n\n")
+	menu.WriteString(dim.Render("Shortcut: 1=Comandi 2=PNGs  q/Esc/Ctrl+C=Esci") + "\n\n")
 	for i, choice := range m.choices {
 		cursor := "  "
 		if m.cursor == i && m.appState == menuState {
@@ -104,20 +104,6 @@ func (m model) View() string {
 		rightTop.WriteString(m.message + "\n\n")
 		rightTop.WriteString(m.textInput.View() + "\n\n")
 		rightTop.WriteString(dim.Render("(Enter per confermare, Esc per annullare)"))
-	case selectPNGState:
-		rightTop.WriteString(titleStyle.Render(" Seleziona PNG ") + "\n\n")
-		if len(m.pngs) == 0 {
-			rightTop.WriteString(dim.Render("Nessun PNG disponibile."))
-		} else {
-			for i, png := range m.pngs {
-				cursor := "  "
-				if m.selectPNGCursor == i {
-					cursor = selectedItemStyle.Render("➜") + " "
-				}
-				rightTop.WriteString(fmt.Sprintf("%s%s (Contatore: %d)\n", cursor, png.Name, png.Counter))
-			}
-			rightTop.WriteString("\n" + dim.Render("(Enter per selezionare, Esc per annullare)"))
-		}
 	default:
 		rightTop.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
 		if len(m.pngs) == 0 {

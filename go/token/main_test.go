@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
-
-	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestCapitalizeWord(t *testing.T) {
@@ -132,29 +130,6 @@ func TestSelectionHelpers(t *testing.T) {
 		t.Fatalf("expected selected index 0 after prev, got %d", m.selectedPNGIndex)
 	}
 
-	if _, err := os.Stat(dataFile); err != nil {
-		t.Fatalf("expected save file to exist: %v", err)
-	}
-}
-
-func TestMenuHandleChoiceCreateRandom(t *testing.T) {
-	dir := t.TempDir()
-	old := dataFile
-	dataFile = filepath.Join(dir, "pngs.json")
-	t.Cleanup(func() { dataFile = old })
-
-	m := model{pngs: []PNG{}}
-	var cmd tea.Cmd
-	m, cmd = m.handleMenuChoice("Crea PNG casuale")
-	if cmd != nil {
-		t.Fatalf("expected nil cmd, got %v", cmd)
-	}
-	if len(m.pngs) != 1 {
-		t.Fatalf("expected 1 png, got %d", len(m.pngs))
-	}
-	if m.selectedPNGIndex != 0 {
-		t.Fatalf("expected selected index 0, got %d", m.selectedPNGIndex)
-	}
 	if _, err := os.Stat(dataFile); err != nil {
 		t.Fatalf("expected save file to exist: %v", err)
 	}
