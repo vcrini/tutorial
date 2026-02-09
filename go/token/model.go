@@ -50,7 +50,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		case tea.KeyMsg:
 			switch msg.String() {
-			case "ctrl+c", "esc", "q", "ctrl+q":
+			case "esc":
+				if m.showHelp {
+					m.showHelp = false
+					return m, nil
+				}
+				m.quitting = true
+				return m, tea.Quit
+			case "q":
+				if m.showHelp {
+					m.showHelp = false
+					return m, nil
+				}
+				m.quitting = true
+				return m, tea.Quit
+			case "ctrl+c", "ctrl+q":
 				m.quitting = true
 				return m, tea.Quit
 
@@ -150,7 +164,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.appState = menuState
 				}
 				return m, nil
-			case "esc", "ctrl+c", "q", "ctrl+q":
+			case "esc":
+				if m.showHelp {
+					m.showHelp = false
+					return m, nil
+				}
+				m.appState = menuState
+				m.message = "Creazione PNG annullata."
+				return m, nil
+			case "q":
+				if m.showHelp {
+					m.showHelp = false
+					return m, nil
+				}
+				m.appState = menuState
+				m.message = "Creazione PNG annullata."
+				return m, nil
+			case "ctrl+c", "ctrl+q":
 				m.appState = menuState
 				m.message = "Creazione PNG annullata."
 				return m, nil
