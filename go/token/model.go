@@ -101,6 +101,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, textinput.Blink
 				}
 
+			case "r":
+				if m.focusedPanel == 1 {
+					return m.handleMenuChoice("Resetta Tutti i Token PNG")
+				}
+
 			case "enter":
 				return m.handleMenuChoice(m.choices[m.cursor])
 			}

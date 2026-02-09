@@ -107,7 +107,7 @@ func (m model) View() string {
 		rightTop.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
 	default:
 		rightTop.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
-		rightTop.WriteString(dim.Render("↑↓: seleziona PNG  ←→: token -/+  n: nuovo  d/x: elimina  (focus su PNGs)") + "\n\n")
+		rightTop.WriteString(dim.Render("↑↓: seleziona PNG  ←→: token -/+  n: nuovo  r: reset all  d/x: elimina  (focus su PNGs)") + "\n\n")
 		if len(m.pngs) == 0 {
 			rightTop.WriteString(dim.Render("Nessun PNG creato."))
 		} else {
@@ -140,13 +140,13 @@ func (m model) View() string {
 	if m.appState == createPNGState {
 		helpText = "Enter conferma  •  Esc/q annulla"
 	} else if m.focusedPanel == 1 {
-		helpText = "↑↓ seleziona PNG  •  ←→ token  •  n nuovo  •  d/x elimina  •  1 menu  2 PNGs"
+		helpText = "↑↓ seleziona PNG  •  ←→ token  •  n nuovo  •  r reset all  •  d/x elimina  •  1 menu  2 PNGs"
 	}
 	if totalWidth < 80 {
 		if m.appState == createPNGState {
 			helpText = "Enter conferma  •  Esc/q annulla"
 		} else if m.focusedPanel == 1 {
-			helpText = "↑↓ seleziona  •  ←→ token  •  n nuovo  •  d/x elimina  •  1 menu  2 PNGs"
+			helpText = "↑↓ seleziona  •  ←→ token  •  n nuovo  •  r reset all  •  d/x elimina  •  1 menu  2 PNGs"
 		} else {
 			helpText = "1/2/Tab focus  •  q/Esc esci  •  Enter"
 		}
