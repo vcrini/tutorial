@@ -39,7 +39,7 @@ func main() {
 		selectedPNGIndex: selectedIndex,
 		appState:         menuState,
 		textInput:        ti,
-		focusedPanel:     0,
+		focusedPanel:     1,
 	})
 
 	if _, err := p.Run(); err != nil {

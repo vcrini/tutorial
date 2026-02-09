@@ -29,6 +29,7 @@ type model struct {
 	width            int             // Larghezza della finestra
 	height           int             // Altezza della finestra
 	focusedPanel     int             // 0=menu, 1=pngs
+	showHelp         bool            // Mostra la finestra di aiuto
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -63,6 +64,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else {
 					m.focusedPanel = 0
 				}
+			case "?":
+				m.showHelp = !m.showHelp
 
 			case "up", "k":
 				if m.focusedPanel == 1 {

@@ -43,10 +43,8 @@ func (m model) View() string {
 		BottomRight: "┘",
 	}
 	panel := lipgloss.NewStyle().Border(border).Padding(0, 1)
-	panelFocused := lipgloss.NewStyle().Border(border).BorderForeground(lipgloss.Color("10")).Padding(0, 1)
 	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
 	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
-	selectedItemStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
 	selectedPNGStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("13")).Bold(true)
 	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
 
@@ -57,14 +55,14 @@ func (m model) View() string {
 	if totalWidth < 60 {
 		totalWidth = 60
 	}
-	leftWidth := totalWidth / 3
-	if leftWidth > 32 {
-		leftWidth = 32
+	listWidth := totalWidth / 2
+	if listWidth < 30 {
+		listWidth = 30
 	}
-	if leftWidth < 24 {
-		leftWidth = 24
+	if listWidth > 60 {
+		listWidth = 60
 	}
-	rightWidth := totalWidth - leftWidth
+	detailWidth := totalWidth - listWidth
 
 	totalHeight := m.height
 	if totalHeight <= 0 {
@@ -77,83 +75,74 @@ func (m model) View() string {
 
 	// Header
 	header := titleStyle.Render(" PNG Manager ") + dim.Render(" • Lazy style UI")
-	headerBar := panel.Width(leftWidth + rightWidth).Render(header)
+	headerBar := panel.Width(listWidth + detailWidth).Render(header)
 
-	// Menu (sinistra)
-	var menu strings.Builder
-	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
-	menu.WriteString(dim.Render("1=Comandi  2=PNGs  Tab=Switch  q/Esc/Ctrl+C=Esci") + "\n")
-	menu.WriteString(dim.Render("Enter: esegui  ↑↓: naviga") + "\n\n")
-	for i, choice := range m.choices {
-		cursor := "  "
-		if m.cursor == i && m.appState == menuState {
-			cursor = selectedItemStyle.Render("➜") + " "
-		}
-		menu.WriteString(fmt.Sprintf("%s%s\n", cursor, choice))
-	}
-	menuPanelStyle := panel
-	if m.focusedPanel == 0 {
-		menuPanelStyle = panelFocused
-	}
-	menuPanel := menuPanelStyle.Width(leftWidth).Render(limitLines(menu.String(), bodyContentHeight))
-
-	// Pannello destro superiore
-	var rightTop strings.Builder
+	// Pannello lista PNG
+	var listPanel strings.Builder
 	switch m.appState {
 	case createPNGState:
-		rightTop.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
-		rightTop.WriteString(m.message + "\n\n")
-		rightTop.WriteString(m.textInput.View() + "\n\n")
-		rightTop.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
+		listPanel.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
+		listPanel.WriteString(m.message + "\n\n")
+		listPanel.WriteString(m.textInput.View() + "\n\n")
+		listPanel.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
 	default:
-		rightTop.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
-		rightTop.WriteString(dim.Render("↑↓: seleziona PNG  ←→: token -/+  n: nuovo  r: reset all  d/x: elimina  (focus su PNGs)") + "\n\n")
+		listPanel.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
+		listPanel.WriteString(dim.Render("?") + "\n\n")
 		if len(m.pngs) == 0 {
-			rightTop.WriteString(dim.Render("Nessun PNG creato."))
+			listPanel.WriteString(dim.Render("Nessun PNG creato."))
 		} else {
 			for i, png := range m.pngs {
 				line := fmt.Sprintf("%s (Token: %d)", png.Name, png.Token)
 				if i == m.selectedPNGIndex {
-					rightTop.WriteString(selectedPNGStyle.Render("• "+line) + "\n")
+					listPanel.WriteString(selectedPNGStyle.Render("• "+line) + "\n")
 				} else {
-					rightTop.WriteString("  " + line + "\n")
+					listPanel.WriteString("  " + line + "\n")
 				}
 			}
 			if m.selectedPNGIndex == -1 {
-				rightTop.WriteString("\n" + dim.Render("Nessun PNG selezionato."))
+				listPanel.WriteString("\n" + dim.Render("Nessun PNG selezionato."))
 			}
 		}
 	}
 
-	rightPanelStyle := panel
-	if m.focusedPanel == 1 {
-		rightPanelStyle = panelFocused
+	listBox := panel.Width(listWidth).Render(limitLines(listPanel.String(), bodyContentHeight))
+
+	// Pannello dettagli PNG
+	var details strings.Builder
+	details.WriteString(titleStyle.Render(" Dettagli ") + "\n\n")
+	if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
+		png := m.pngs[m.selectedPNGIndex]
+		details.WriteString(fmt.Sprintf("Nome:  %s\n", png.Name))
+		details.WriteString(fmt.Sprintf("Token: %d\n", png.Token))
+		details.WriteString(fmt.Sprintf("Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs)))
+	} else {
+		details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
 	}
-	rightTopPanel := rightPanelStyle.Width(rightWidth).Render(limitLines(rightTop.String(), bodyContentHeight))
+	detailsBox := panel.Width(detailWidth).Render(limitLines(details.String(), bodyContentHeight))
 
 	// Barra messaggi con hint contestuale
 	message := m.message
 	if message == "" {
 		message = "Pronto."
 	}
-	helpText := "1/2/Tab focus  •  q/Esc/Ctrl+C esci  •  Enter esegui  •  ↑↓ menu"
-	if m.appState == createPNGState {
-		helpText = "Enter conferma  •  Esc/q annulla"
-	} else if m.focusedPanel == 1 {
-		helpText = "↑↓ seleziona PNG  •  ←→ token  •  n nuovo  •  r reset all  •  d/x elimina  •  1 menu  2 PNGs"
-	}
-	if totalWidth < 80 {
-		if m.appState == createPNGState {
-			helpText = "Enter conferma  •  Esc/q annulla"
-		} else if m.focusedPanel == 1 {
-			helpText = "↑↓ seleziona  •  ←→ token  •  n nuovo  •  r reset all  •  d/x elimina  •  1 menu  2 PNGs"
-		} else {
-			helpText = "1/2/Tab focus  •  q/Esc esci  •  Enter"
-		}
-	}
-	messageBar := panel.Width(leftWidth + rightWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("["+helpText+"]"))
+	messageBar := panel.Width(listWidth + detailWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("[? help]"))
 
 	// Layout finale
-	body := lipgloss.JoinHorizontal(lipgloss.Top, menuPanel, rightTopPanel)
+	body := lipgloss.JoinHorizontal(lipgloss.Top, listBox, detailsBox)
+	if m.showHelp {
+		var help strings.Builder
+		help.WriteString(titleStyle.Render(" Help ") + "\n\n")
+		help.WriteString("Tab: cambia pannello\n")
+		help.WriteString("1/2: focus pannello\n")
+		help.WriteString("q/Esc/Ctrl+C: esci\n")
+		help.WriteString("n: nuovo PNG\n")
+		help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
+		help.WriteString("r: reset token di tutti\n")
+		help.WriteString("↑↓: seleziona PNG\n")
+		help.WriteString("←→: token -/+\n")
+		help.WriteString("?: mostra/nasconde help\n")
+		helpBox := panel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight))
+		return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, helpBox, messageBar)
+	}
 	return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar)
 }
