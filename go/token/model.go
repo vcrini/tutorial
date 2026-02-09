@@ -28,8 +28,11 @@ type model struct {
 	textInput        textinput.Model // Input per il nome del nuovo PNG
 	width            int             // Larghezza della finestra
 	height           int             // Altezza della finestra
-	focusedPanel     int             // 0=menu, 1=pngs
+	focusedPanel     int             // 0=pngs, 1=mostri
 	showHelp         bool            // Mostra la finestra di aiuto
+	monsters         []Monster
+	monsterSearch    textinput.Model
+	monsterCursor    int
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -70,48 +73,54 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "1":
 				m.focusedPanel = 0
+				m.monsterSearch.Blur()
 			case "2":
 				m.focusedPanel = 1
+				m.monsterSearch.Focus()
 			case "tab":
 				if m.focusedPanel == 0 {
 					m.focusedPanel = 1
+					m.monsterSearch.Focus()
 				} else {
 					m.focusedPanel = 0
+					m.monsterSearch.Blur()
 				}
 			case "?":
 				m.showHelp = !m.showHelp
 
 			case "up", "k":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.selectPrevPNG()
-				} else if m.cursor > 0 {
-					m.cursor--
+				} else {
+					m.monsterCursor--
+					m.clampMonsterCursor()
 				}
 
 			case "down", "j":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.selectNextPNG()
-				} else if m.cursor < len(m.choices)-1 {
-					m.cursor++
+				} else {
+					m.monsterCursor++
+					m.clampMonsterCursor()
 				}
 
 			case "left", "h":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.decrementSelectedToken()
 				}
 
 			case "right", "l":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.incrementSelectedToken()
 				}
 
 			case "d", "x", "backspace", "delete":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.deleteSelectedPNG()
 				}
 
 			case "n":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					m.appState = createPNGState
 					m.textInput.Reset()
 					m.message = "Inserisci il nome del nuovo PNG:"
@@ -119,12 +128,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case "r":
-				if m.focusedPanel == 1 {
+				if m.focusedPanel == 0 {
 					return m.handleMenuChoice("Resetta Tutti i Token PNG")
 				}
 
 			case "enter":
-				return m.handleMenuChoice(m.choices[m.cursor])
+				if m.focusedPanel == 0 {
+					return m.handleMenuChoice(m.choices[m.cursor])
+				}
+			}
+			if m.focusedPanel == 1 {
+				var cmd tea.Cmd
+				m.monsterSearch, cmd = m.monsterSearch.Update(msg)
+				m.clampMonsterCursor()
+				return m, cmd
 			}
 		}
 

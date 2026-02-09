@@ -16,11 +16,22 @@ func main() {
 	ti.Width = 20
 	ti.Prompt = "Nome: "
 
+	mi := textinput.New()
+	mi.Placeholder = "Cerca mostro..."
+	mi.CharLimit = 40
+	mi.Width = 24
+	mi.Prompt = "Cerca: "
+
 	pngs, selected, err := loadPNGList(dataFile)
 	initialMessage := "Benvenuto! Premi Enter per scegliere un'opzione o frecce per navigare."
 	if err != nil {
 		initialMessage = fmt.Sprintf("Errore nel caricare %s: %v", dataFile, err)
 		pngs = []PNG{}
+	}
+	monsters, errMon := loadMonsters(monstersFile)
+	if errMon != nil {
+		initialMessage = fmt.Sprintf("Errore nel caricare %s: %v", monstersFile, errMon)
+		monsters = []Monster{}
 	}
 	selectedIndex := -1
 	if selected != "" {
@@ -39,7 +50,9 @@ func main() {
 		selectedPNGIndex: selectedIndex,
 		appState:         menuState,
 		textInput:        ti,
-		focusedPanel:     1,
+		focusedPanel:     0,
+		monsters:         monsters,
+		monsterSearch:    mi,
 	})
 
 	if _, err := p.Run(); err != nil {

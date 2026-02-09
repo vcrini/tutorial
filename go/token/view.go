@@ -52,17 +52,21 @@ func (m model) View() string {
 	if totalWidth <= 0 {
 		totalWidth = 96
 	}
-	if totalWidth < 60 {
-		totalWidth = 60
+	if totalWidth < 80 {
+		totalWidth = 80
 	}
-	listWidth := totalWidth / 2
-	if listWidth < 30 {
-		listWidth = 30
+	listWidth := totalWidth / 3
+	if listWidth < 26 {
+		listWidth = 26
 	}
-	if listWidth > 60 {
-		listWidth = 60
+	detailWidth := totalWidth / 3
+	if detailWidth < 26 {
+		detailWidth = 26
 	}
-	detailWidth := totalWidth - listWidth
+	monsterWidth := totalWidth - listWidth - detailWidth
+	if monsterWidth < 30 {
+		monsterWidth = 30
+	}
 
 	totalHeight := m.height
 	if totalHeight <= 0 {
@@ -75,7 +79,7 @@ func (m model) View() string {
 
 	// Header
 	header := titleStyle.Render(" PNG Manager ") + dim.Render(" • Lazy style UI")
-	headerBar := panel.Width(listWidth + detailWidth).Render(header)
+	headerBar := panel.Width(listWidth + detailWidth + monsterWidth).Render(header)
 
 	// Pannello lista PNG
 	var listPanel strings.Builder
@@ -120,28 +124,68 @@ func (m model) View() string {
 	}
 	detailsBox := panel.Width(detailWidth).Render(limitLines(details.String(), bodyContentHeight))
 
+	// Pannello mostri
+	var monsters strings.Builder
+	monsters.WriteString(titleStyle.Render(" Mostri ") + "\n\n")
+	monsters.WriteString(m.monsterSearch.View() + "\n\n")
+	filtered := m.filteredMonsters()
+	if len(filtered) == 0 {
+		monsters.WriteString(dim.Render("Nessun mostro trovato."))
+	} else {
+		for i, mon := range filtered {
+			prefix := "  "
+			if i == m.monsterCursor {
+				prefix = selectedPNGStyle.Render("•") + " "
+			}
+			monsters.WriteString(prefix + mon.Name + "\n")
+		}
+		monsters.WriteString("\n")
+		idx := m.monsterCursor
+		if idx < 0 {
+			idx = 0
+		}
+		if idx >= len(filtered) {
+			idx = len(filtered) - 1
+		}
+		mon := filtered[idx]
+		monsters.WriteString(dim.Render("Dettagli") + "\n")
+		monsters.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
+		monsters.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
+		if len(mon.Thresholds.Values) > 0 {
+			monsters.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
+		} else if mon.Thresholds.Text != "" {
+			monsters.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
+		}
+		monsters.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
+		if mon.Attack.Name != "" {
+			monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+		}
+	}
+	monstersBox := panel.Width(monsterWidth).Render(limitLines(monsters.String(), bodyContentHeight))
+
 	// Barra messaggi con hint contestuale
 	message := m.message
 	if message == "" {
 		message = "Pronto."
 	}
-	messageBar := panel.Width(listWidth + detailWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("[? help]"))
+	messageBar := panel.Width(listWidth + detailWidth + monsterWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("[? help]"))
 
 	// Layout finale
-	body := lipgloss.JoinHorizontal(lipgloss.Top, listBox, detailsBox)
+	body := lipgloss.JoinHorizontal(lipgloss.Top, listBox, detailsBox, monstersBox)
 	if m.showHelp {
 		var help strings.Builder
 		help.WriteString(titleStyle.Render(" Help ") + "\n\n")
 		help.WriteString("Tab: cambia pannello\n")
-		help.WriteString("1/2: focus pannello\n")
+		help.WriteString("1/2: focus pannello (PNGs/Mostri)\n")
 		help.WriteString("q/Esc/Ctrl+C: esci\n")
 		help.WriteString("n: nuovo PNG\n")
 		help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
 		help.WriteString("r: reset token di tutti\n")
 		help.WriteString("↑↓: seleziona PNG\n")
 		help.WriteString("←→: token -/+\n")
+		help.WriteString("Mostri: digita per cercare, ↑↓ per selezionare\n")
 		help.WriteString("?: mostra/nasconde help\n")
-		helpBox := panel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight))
+		helpBox := panel.Width(listWidth + detailWidth + monsterWidth).Render(limitLines(help.String(), bodyContentHeight))
 		return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, helpBox, messageBar)
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar)

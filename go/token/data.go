@@ -17,6 +17,7 @@ const (
 
 var dataFile = "pngs.json"
 var namesFile = "config/names.yaml"
+var monstersFile = "config/mostri.yml"
 
 type nameLists struct {
 	First []string `yaml:"first"`
@@ -25,6 +26,58 @@ type nameLists struct {
 
 var namesCache nameLists
 var namesLoaded bool
+
+type Thresholds struct {
+	Values []int
+	Text   string
+}
+
+func (t *Thresholds) UnmarshalYAML(value *yaml.Node) error {
+	switch value.Kind {
+	case yaml.SequenceNode:
+		var vals []int
+		for i := 0; i < len(value.Content); i++ {
+			var v int
+			if err := value.Content[i].Decode(&v); err != nil {
+				return err
+			}
+			vals = append(vals, v)
+		}
+		t.Values = vals
+		t.Text = ""
+		return nil
+	case yaml.ScalarNode:
+		t.Text = value.Value
+		t.Values = nil
+		return nil
+	default:
+		return nil
+	}
+}
+
+type Monster struct {
+	Name               string     `yaml:"name"`
+	Role               string     `yaml:"role"`
+	Rank               int        `yaml:"rank"`
+	Description        string     `yaml:"description"`
+	MotivationsTactics string     `yaml:"motivations_tactics"`
+	Difficulty         int        `yaml:"difficulty"`
+	Thresholds         Thresholds `yaml:"thresholds"`
+	PF                 int        `yaml:"pf"`
+	Stress             int        `yaml:"stress"`
+	Attack             struct {
+		Bonus      int    `yaml:"bonus"`
+		Name       string `yaml:"name"`
+		Range      string `yaml:"range"`
+		Damage     string `yaml:"damage"`
+		DamageType string `yaml:"damage_type"`
+	} `yaml:"attack"`
+	Traits []struct {
+		Name string `yaml:"name"`
+		Kind string `yaml:"kind"`
+		Text string `yaml:"text"`
+	} `yaml:"traits"`
+}
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
@@ -148,6 +201,19 @@ func defaultNameLists() nameLists {
 			"Warren", "Worth", "York",
 		},
 	}
+}
+
+func loadMonsters(path string) ([]Monster, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var monsters []Monster
+	if err := yaml.Unmarshal(data, &monsters); err != nil {
+		return nil, err
+	}
+	return monsters, nil
 }
 
 func uniqueRandomPNGName(existing []PNG) string {

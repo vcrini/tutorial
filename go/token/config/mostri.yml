@@ -349,7 +349,7 @@
   description: "Un piccolo grumo semovente di melma rossa traslucida e fiammeggiante."
   motivations_tactics: "Incendiare, mimetizzarsi"
   difficulty: 11
-  thresholds: [5, "None"]
+  thresholds: "5/None"
   pf: 2
   stress: 1
   attack:
@@ -424,7 +424,7 @@
   description: "Un piccolo grumo semovente di melma verde traslucida."
   motivations_tactics: "Avvicinarsi furtivamente, mimetizzarsi"
   difficulty: 14
-  thresholds: [4, "Nessuna"]
+  thresholds: "4/Nessuna"
   pf: 2
   stress: 1
   attack:
