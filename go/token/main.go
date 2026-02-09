@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt" // Usiamo rand/v2 per una migliore generazione di numeri casuali
+	"fmt"
+	"math/rand/v2"
 	"os"
 	"strings"
 
@@ -19,6 +20,48 @@ const (
 type PNG struct {
 	Name    string
 	Counter int
+}
+
+func randomPNGName() string {
+	adjectives := []string{
+		"antico", "arcano", "celestiale", "crepuscolare", "dorato", "draconico",
+		"incantato", "lunare", "mistico", "nobile", "ruggente", "sacro",
+		"segreto", "tempestoso", "valente", "velato",
+	}
+	nouns := []string{
+		"drago", "grifone", "fenice", "runa", "santuario", "torre", "reliquia",
+		"spada", "scudo", "foresta", "regno", "oracolo", "ombra", "stella",
+		"valle", "vento",
+	}
+	suffixes := []string{
+		"al", "anor", "dellalba", "delcrepuscolo", "dor", "eld", "fir",
+		"gorn", "ion", "kor", "lith", "mir", "nath", "rend", "thor", "vyr",
+	}
+
+	adj := capitalizeWord(adjectives[rand.IntN(len(adjectives))])
+	noun := capitalizeWord(nouns[rand.IntN(len(nouns))])
+	suffix := capitalizeWord(suffixes[rand.IntN(len(suffixes))])
+	return fmt.Sprintf("%s %s %s", adj, noun, suffix)
+}
+
+func capitalizeWord(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+func uniqueRandomPNGName(existing []PNG) string {
+	seen := make(map[string]struct{}, len(existing))
+	for _, p := range existing {
+		seen[p.Name] = struct{}{}
+	}
+	for {
+		name := randomPNGName()
+		if _, ok := seen[name]; !ok {
+			return name
+		}
+	}
 }
 
 // appState definisce i diversi stati dell'applicazione.
@@ -111,6 +154,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.textInput.Reset()
 					m.message = "Inserisci il nome del nuovo PNG:"
 					return m, textinput.Blink
+				case "Crea PNG casuale":
+					name := uniqueRandomPNGName(m.pngs)
+					newPNG := PNG{Name: name, Counter: defaultCounter}
+					m.pngs = append(m.pngs, newPNG)
+					m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, defaultCounter)
+					m.selectedPNGIndex = len(m.pngs) - 1
 				case "Seleziona PNG":
 					if len(m.pngs) == 0 {
 						m.message = "Nessun PNG disponibile da selezionare. Creane uno prima!"
@@ -161,26 +210,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch msg.String() {
 			case "enter":
 				name := m.textInput.Value()
-				if name != "" {
-					// Controlla se il nome esiste già
-					found := false
-					for _, p := range m.pngs {
-						if p.Name == name {
-							found = true
-							break
-						}
+				if strings.TrimSpace(name) == "" {
+					name = uniqueRandomPNGName(m.pngs)
+				}
+
+				// Controlla se il nome esiste già
+				found := false
+				for _, p := range m.pngs {
+					if p.Name == name {
+						found = true
+						break
 					}
-					if found {
-						m.message = fmt.Sprintf("Un PNG con il nome '%s' esiste già. Scegli un nome diverso.", name)
-					} else {
-						newPNG := PNG{Name: name, Counter: defaultCounter}
-						m.pngs = append(m.pngs, newPNG)
-						m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, minCounter)
-						m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
-						m.appState = menuState
-					}
+				}
+				if found {
+					m.message = fmt.Sprintf("Un PNG con il nome '%s' esiste già. Scegli un nome diverso.", name)
 				} else {
-					m.message = "Il nome del PNG non può essere vuoto."
+					newPNG := PNG{Name: name, Counter: defaultCounter}
+					m.pngs = append(m.pngs, newPNG)
+					m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, defaultCounter)
+					m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
+					m.appState = menuState
 				}
 				return m, nil
 			case "esc", "ctrl+c":
@@ -312,6 +361,7 @@ func main() {
 			// "Mostra Data/Ora",
 			// "Numero Casuale",
 			"Crea PNG",
+			"Crea PNG casuale",
 			"Seleziona PNG",
 			"Decrementa Contatore PNG",
 			"Resetta Contatore PNG",
