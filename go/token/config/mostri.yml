@@ -1,0 +1,1089 @@
+- name: Demone Minore
+  role: Solitario
+  rank: 1
+  description: "Una creatura color cremisi proveniente dai Cerchi Inferi, consumata dalla rabbia contro tutti i mortali."
+  motivations_tactics: "Agire in modo imprevedibile, circondare i bersagli, godere del dolore, tormentare"
+  difficulty: 14
+  thresholds: [8, 15]
+  pf: 8
+  stress: 4
+  attack:
+    bonus: +3
+    name: Artigli
+    range: Mischia
+    damage: 1d8+6
+    damage_type: fis
+  traits:
+    - name: Inesorabile (2)
+      kind: Passiva
+      text: "Il Demone può diventare protagonista fino a due volte per turno del GM. Spendete Paura come di consueto per renderlo ogni volta protagonista."
+    - name: Tutto ha una Fine
+      kind: Passiva
+      text: "Quando un PG ottiene un fallimento con Paura mentre si trova entro distanza Ravvicinata dal Demone, perde una Speranza."
+    - name: Fuoco Infernale
+      kind: Azione
+      text: "Spendete una Paura per scatenare una pioggia di fuoco infernale entro distanza Lontana. Tutti i bersagli nell’area devono effettuare un Tiro Reazione di Agilità. I bersagli che falliscono subiscono 1d20+3 danni magici. I bersagli che superano il tiro subiscono metà dei danni."
+    - name: Mietitore
+      kind: Reazione
+      text: "Prima di tirare il danno per l’attacco del Demone, potete marcare uno Stress per ottenere un bonus al tiro di danno pari al numero di PF persi dal Demone."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando il Demone colpisce un PG, ottenete Paura."
+
+- name: Elementale Minore del Caos
+  role: Solitario
+  rank: 1
+  description: "Una massa scintillante di magia incontrollabile."
+  motivations_tactics: "Confondere, destabilizzare, trasformare"
+  difficulty: 14
+  thresholds: [7, 14]
+  pf: 7
+  stress: 3
+  attack:
+    bonus: +3
+    name: Esplosione Distorsiva
+    range: Ravvicinata
+    damage: 1d12+6
+    damage_type: mag
+  traits:
+    - name: Forma Arcana
+      kind: Passiva
+      text: "L’Elementale è resistente ai danni magici."
+    - name: Flusso Nauseante
+      kind: Azione
+      text: "Subite un PF per costringere tutti i bersagli entro distanza Ravvicinata a marcare uno Stress ed essere Vulnerabili fino al prossimo riposo o fino a quando non recuperano un PF."
+    - name: Rimodellare la Realtà
+      kind: Azione
+      text: "Spendete una Paura per trasformare l’area entro distanza Prossima in un ambiente diverso. Tutti i bersagli all’interno di quest’area subiscono 2d6+3 danni magici diretti."
+    - name: Riflessione Magica
+      kind: Reazione
+      text: "Quando l’Elementale subisce danni da un attacco a distanza Ravvicinata, infliggete all’attaccante danno pari alla metà del danno di tale attacco."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando l’Elementale colpisce un PG, ottenete Paura."
+
+- name: Elementale Minore del Fuoco
+  role: Solitario
+  rank: 1
+  description: "Una fiamma vivente delle dimensioni di un grande falò."
+  motivations_tactics: "Appiccare incendi, circondare i nemici, crescere in dimensioni, intimidire"
+  difficulty: 13
+  thresholds: [7, 15]
+  pf: 9
+  stress: 3
+  attack:
+    bonus: +3
+    name: Esplosione Elementale
+    range: Lontana
+    damage: 1d10+4
+    damage_type: mag
+  traits:
+    - name: Inesorabile (2)
+      kind: Passiva
+      text: "L’Elementale può diventare protagonista fino a due volte per turno del GM. Spendete Paura come di consueto per renderlo ogni volta protagonista."
+    - name: Terra Bruciata
+      kind: Azione
+      text: "Marcate uno Stress per scegliere un punto entro distanza Lontana. Il terreno entro distanza Prossima da quel punto viene avvolto dalle fiamme. Tutte le creature all’interno dell’area devono effettuare un Tiro Reazione di Agilità. I bersagli che falliscono subiscono 2d8 danni magici dalle fiamme. I bersagli che superano il tiro subiscono metà dei danni."
+    - name: Esplosione
+      kind: Azione
+      text: "Spendete una Paura per generare una violenta esplosione. Effettuate un attacco contro tutti i bersagli entro distanza Ravvicinata. I bersagli colpiti subiscono 1d8 danni magici e vengono spinti a distanza Lontana."
+    - name: Combustione
+      kind: Reazione
+      text: "Tre volte per scena, quando l’Elementale si muove su oggetti altamente infiammabili, può consumarli per curare un PF o rimuovere uno Stress."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando l’Elementale colpisce un PG, ottenete Paura."
+
+- name: Difensore dalle Radici Profonde
+  role: Bruto
+  rank: 1
+  description: "Un vegetale corpulento con viticci avvolgenti."
+  motivations_tactics: "Afferrare, imboscate, picchiare, proteggere"
+  difficulty: 10
+  thresholds: [8, 14]
+  pf: 7
+  stress: 3
+  attack:
+    bonus: +2
+    name: Viticci
+    range: Ravvicinata
+    damage: 1d8+3
+    damage_type: fis
+  experience:
+    - name: Enorme
+      bonus: +3
+  traits:
+    - name: Abbattere al Suolo
+      kind: Azione
+      text: "Colpite il terreno, spingendo via tutti i bersagli entro distanza Prossima a distanza Lontana. Ogni bersaglio spinto via marca uno Stress."
+    - name: Afferra e Trascina
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Ravvicinata. In caso di successo, spendete una Paura per trascinarlo a distanza di Mischia, infliggendogli 1d6+2 danni fisici e rendendolo Trattenuto finché il Difensore non subisce danno Grave."
+
+- name: Duellante Arcano
+  role: Condottiero
+  rank: 1
+  description: "Un mercenario che combina la scherma alla magia con effetti letali."
+  motivations_tactics: "Comandare, distruggere, resistere"
+  difficulty: 14
+  thresholds: [8, 14]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: +3
+    name: Spada Lunga Potenziata
+    range: Mischia
+    damage: 1d8+4
+    damage_type: fis/mag
+  experience:
+    - name: Sapienza Magica
+      bonus: +2
+  traits:
+    - name: Acciaio Arcano
+      kind: Passiva
+      text: "Il danno inflitto dall’attacco base del Duellante è sia fisico che magico."
+    - name: Esplosione Soppressiva
+      kind: Azione
+      text: "Marcate uno Stress e scegliete un gruppo entro distanza Lontana. Tutti i bersagli devono superare un Tiro Reazione di Agilità o subire 1d8+2 danni magici. Ottenete una Paura per ogni bersaglio che ha subito almeno un PF con questo attacco."
+    - name: Movimento all’Unisono
+      kind: Azione
+      text: "Spendete 2 Paure per rendere protagonisti fino a cinque alleati entro distanza Lontana."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando il Duellante colpisce un PG, ottenete Paura."
+
+- name: Giovane Driade
+  role: Condottiero
+  rank: 1
+  description: "Un’imperiosa ibridazione di umanoide e pianta che guida le difese della sua foresta."
+  motivations_tactics: "Comandare, nutrire, potare gli indesiderati"
+  difficulty: 11
+  thresholds: [6, 11]
+  pf: 6
+  stress: 2
+  attack:
+    bonus: +0
+    name: Falce
+    range: Mischia
+    damage: 1d8+5
+    damage_type: fis
+  experience:
+    - name: Comandante
+      bonus: +3
+  traits:
+    - name: Voce della Foresta
+      kind: Azione
+      text: "Marcate uno Stress per rendere protagonisti 1d4 alleati a distanza di un bersaglio che possono attaccare senza muoversi. In caso di successo, i loro attacchi infliggono metà dei danni."
+    - name: Gabbia Spinosa
+      kind: Azione
+      text: "Spendete una Paura per creare una gabbia attorno a un bersaglio entro distanza Prossima e renderlo Trattenuto finché non viene liberato con un Tiro Forza riuscito. Quando una creatura effettua un tiro azione contro la gabbia, deve marcare uno Stress."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando la Driade colpisce un PG, ottenete Paura."
+
+- name: Groviglio Avviluppante
+  role: Seguace
+  rank: 1
+  description: "Un cespuglio animato che beve sangue."
+  motivations_tactics: "Intrappolare, prosciugare, unirsi"
+  difficulty: 11
+  thresholds: "Nessuna"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: -1
+    name: Spine
+    range: Mischia
+    damage: 2
+    damage_type: fis
+  traits:
+    - name: Seguace (4)
+      kind: Passiva
+      text: "Il Groviglio viene sconfitto quando subisce un qualsiasi danno. Per ogni 4 danni inflitti da un PG al Groviglio Avviluppante, viene sconfitto un Groviglio Seguace aggiuntivo entro portata dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Grovigli Avviluppanti entro distanza Ravvicinata da esso. Quei Grovigli si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 2 danni fisici ciascuno. Sommate questi danni."
+    - name: Prosciugare e Moltiplicarsi
+      kind: Reazione
+      text: "Quando un attacco del Groviglio fa perdere PF a un bersaglio e ci sono tre o più Grovigli Avviluppanti Seguaci entro distanza Ravvicinata, potete combinare i Seguaci in uno Sciame di Grovigli Avviluppanti. I PF dell’Orda sono pari al numero di Grovigli Seguaci combinati."
+
+- name: Sciame di Grovigli Avviluppanti
+  role: Orda
+  rank: 1
+  description: "Un gruppo di cespugli animati e assetati di sangue, grandi quanto delle zucche."
+  motivations_tactics: "Digerire, immobilizzare, intrappolare"
+  difficulty: 12
+  thresholds: [6, 11]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: +0
+    name: Spine
+    range: Mischia
+    damage: 1d6+3
+    damage_type: fis
+  experience:
+    - name: Mimetizzazione
+      bonus: +2
+  traits:
+    - name: Orda (1d4+2)
+      kind: Passiva
+      text: "Quando lo Sciame ha subito metà o più dei suoi PF, il suo attacco base infligge invece 1d4+2 danni fisici."
+    - name: Schiacciare
+      kind: Azione
+      text: "Marcate uno Stress per infliggere 2d6+8 danni fisici diretti a un bersaglio con 3 o più gettoni Cespuglio."
+    - name: Ingombrare
+      kind: Reazione
+      text: "Quando lo Sciame colpisce, assegnate al bersaglio un gettone cespuglio. Se un bersaglio ha gettoni cespuglio, è Trattenuto. Se un bersaglio ha 3 o più gettoni cespuglio, è anche Vulnerabile. Tutti i gettoni cespuglio possono essere rimossi superando un Tiro Astuzia (12 + il numero di gettoni cespuglio) o infliggendo danno Maggiore o superiore allo Sciame. Se i gettoni cespuglio vengono rimossi dal bersaglio con il Tiro Astuzia, un numero di Grovigli Avviluppanti Seguaci pari al numero di gettoni rimossi compare a distanza di Mischia."
+
+- name: Guardia Arciere
+  role: Tiratore
+  rank: 1
+  description: "Una guardia di alta statura che impugna un arco lungo e una faretra con frecce decorate nei colori locali."
+  motivations_tactics: "Arrestare, arrivare a fine giornata, bloccare, chiudere i cancelli"
+  difficulty: 10
+  thresholds: [4, 8]
+  pf: 3
+  stress: 2
+  attack:
+    bonus: +1
+    name: Arco Lungo
+    range: Lontana
+    damage: 1d8+3
+    damage_type: fis
+  experience:
+    - name: Conoscenza Locale
+      bonus: +3
+  traits:
+    - name: Tiro Ostacolante
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Lontana. In caso di successo, marcate uno Stress per infliggere 1d12+3 danni fisici. Se il bersaglio subisce PF da questo attacco, ha svantaggio sui Tiri Agilità finché non recupera almeno 1 PF."
+
+- name: Guardia Armata
+  role: Avversario Base
+  rank: 1
+  description: "Una guardia corazzata che impugna una spada e uno scudo dipinti con i colori del luogo."
+  motivations_tactics: "Arrestare, arrivare alla fine della giornata, bloccare, chiudere le porte"
+  difficulty: 12
+  thresholds: [5, 9]
+  pf: 5
+  stress: 2
+  attack:
+    bonus: +1
+    name: Spada Lunga
+    range: Mischia
+    damage: 1d6+1
+    damage_type: fis
+  experience:
+    - name: Conoscenza Locale
+      bonus: +3
+  traits:
+    - name: Muro di Scudi
+      kind: Passiva
+      text: "Una creatura che tenta di muoversi a distanza Prossima della Guardia deve superare un Tiro Agilità. Se altre Guardie Armate sono in linea con la prima e ciascuna è a distanza di Mischia da un’altra guardia, la Difficoltà aumenta del numero totale di guardie."
+    - name: In Arresto
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, marcate uno Stress per Trattenere il bersaglio finché non si libera con un attacco riuscito, un Tiro Astuzia o un Tiro Forza."
+
+- name: Lupo Terribile
+  role: Sicario
+  rank: 1
+  description: "Un grande lupo con denti minacciosi, raramente incontrato da solo."
+  motivations_tactics: "Circondare, difendere il territorio, proteggere il branco, seguire le tracce, tormentare"
+  difficulty: 12
+  thresholds: [5, 9]
+  pf: 4
+  stress: 3
+  attack:
+    bonus: +2
+    name: Artigli
+    range: Mischia
+    damage: 1d6+2
+    damage_type: fis
+  experience:
+    - name: Sensi Acuti
+      bonus: +3
+  traits:
+    - name: Branco
+      kind: Passiva
+      text: "Se il Lupo effettua un attacco base con successo e un altro Lupo Terribile si trova a distanza di Mischia dal bersaglio, infliggete 1d6+5 danni fisici invece dei normali danni e ottenete Paura."
+    - name: Colpo Azzoppante
+      kind: Azione
+      text: "Marcate uno Stress per effettuare un attacco contro un bersaglio entro distanza di Mischia. In caso di successo, infliggete 3d4+10 danni fisici diretti e rendete il bersaglio Vulnerabile finché non recupera almeno 1 PF."
+
+- name: Melma Verde
+  role: Sicario
+  rank: 1
+  description: "Una massa semovente di melma verde traslucida."
+  motivations_tactics: "Avvicinarsi furtivamente, avvolgere, consumare e moltiplicarsi, mimetizzarsi"
+  difficulty: 8
+  thresholds: [5, 10]
+  pf: 5
+  stress: 2
+  attack:
+    bonus: +1
+    name: Appendice Melmosa
+    range: Mischia
+    damage: 1d6+1
+    damage_type: mag
+  experience:
+    - name: Mimetizzazione
+      bonus: +3
+  traits:
+    - name: Lento
+      kind: Passiva
+      text: "Quando la Melma è protagonista ma non ha gettoni sul proprio blocco statistiche, non può agire. Mettete un gettone sul blocco statistiche e descrivete ciò che sta per compiere. Quando la Melma è protagonista e ha un gettone sul blocco statistiche, rimuovete il gettone ed essa può agire."
+    - name: Forma Acida
+      kind: Passiva
+      text: "Quando la Melma effettua un attacco con successo, il bersaglio marca una Casella Armatura senza riceverne i benefici (può comunque usare l’armatura per ridurre il danno). Se non può marcare una Casella Armatura, subisce un PF aggiuntivo."
+    - name: Avvolgere
+      kind: Azione
+      text: "Effettuate un attacco base contro un bersaglio entro distanza di Mischia. In caso di successo, la Melma avvolge il bersaglio, che deve marcare 2 Stress. Il bersaglio deve marcare uno Stress aggiuntivo quando effettua un tiro azione. Se la Melma subisce danno Grave, il bersaglio si libera."
+    - name: Scissione
+      kind: Reazione
+      text: "Quando la Melma ha perso 3 o più PF, potete spendere una Paura per scinderla in due Melme Verdi Piccole (senza PF o Stress segnati). Entrambe diventano immediatamente Protagoniste."
+
+- name: Melma Rossa Piccola
+  role: Sicario
+  rank: 1
+  description: "Un piccolo grumo semovente di melma rossa traslucida e fiammeggiante."
+  motivations_tactics: "Incendiare, mimetizzarsi"
+  difficulty: 11
+  thresholds: [5, "None"]
+  pf: 2
+  stress: 1
+  attack:
+    bonus: -1
+    name: Appendice Melmosa
+    range: Mischia
+    damage: 1d4+2
+    damage_type: mag
+  traits:
+    - name: Ustionante
+      kind: Reazione
+      text: "Quando una creatura entro distanza di Mischia infligge danno alla Melma, subisce 1d6 danni magici diretti."
+
+- name: Maestro d’Armi
+  role: Bruto
+  rank: 1
+  description: "Un maestro d’armi che brandisce una spada grande il doppio di lui."
+  motivations_tactics: "Agire per primo, intimidire, mirare ai più deboli"
+  difficulty: 14
+  thresholds: [8, 15]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: +2
+    name: Claymore
+    range: Prossima
+    damage: 1d12+2
+    damage_type: fis
+  traits:
+    - name: Lanciare la Sfida
+      kind: Azione
+      text: "Effettuate un attacco base contro un bersaglio. In caso di successo, marcate uno Stress per Provocare il bersaglio fino al suo prossimo attacco riuscito. La prossima volta che il bersaglio Provocato attacca, ha svantaggio contro i bersagli diversi dal Maestro d’Armi."
+    - name: Scatto Adrenalinico
+      kind: Azione
+      text: "Una volta per scena, spendete una Paura per curare 2 PF e rimuovere 2 Stress."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando il Maestro d’Armi colpisce un PG, ottenete Paura."
+
+- name: Melma Rossa
+  role: Sicario
+  rank: 1
+  description: "Una massa semovente di melma rossa traslucida e fiammeggiante."
+  motivations_tactics: "Appiccare il fuoco, consumare e moltiplicarsi, incendiare, mimetizzarsi"
+  difficulty: 10
+  thresholds: [6, 11]
+  pf: 5
+  stress: 3
+  attack:
+    bonus: +1
+    name: Appendice Melmosa
+    range: Mischia
+    damage: 1d8+3
+    damage_type: mag
+  experience:
+    - name: Mimetizzazione
+      bonus: +3
+  traits:
+    - name: Fuoco Strisciante
+      kind: Passiva
+      text: "La melma può muoversi solo a distanza Prossima con un movimento normale. Brucia qualsiasi oggetto infiammabile che tocca."
+    - name: Incendio
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, il bersaglio subisce 1d8 danni magici e viene Incendiato finché non viene spento con un Tiro Astuzia (14). Mentre è Incendiato, il bersaglio subisce 1d4 danni magici quando effettua un tiro azione."
+    - name: Scissione
+      kind: Reazione
+      text: "Quando la Melma ha subito 3 o più PF, potete spendere una Paura per scinderla in due Melme Rosse Piccole (senza PF o Stress segnati). Entrambe diventano immediatamente Protagoniste."
+
+- name: Melma Verde Piccola
+  role: Sicario
+  rank: 1
+  description: "Un piccolo grumo semovente di melma verde traslucida."
+  motivations_tactics: "Avvicinarsi furtivamente, mimetizzarsi"
+  difficulty: 14
+  thresholds: [4, "Nessuna"]
+  pf: 2
+  stress: 1
+  attack:
+    bonus: -1
+    name: Appendice Melmosa
+    range: Mischia
+    damage: 1d4+1
+    damage_type: mag
+  traits:
+    - name: Forma Acida
+      kind: Passiva
+      text: "Quando la Melma effettua un attacco con successo, il bersaglio marca una Casella Armatura senza riceverne i benefici (può comunque usare l’armatura per ridurre il danno). Se non può marcare una Casella Armatura, subisce un PF aggiuntivo."
+
+- name: Mercenario
+  role: Seguace
+  rank: 1
+  description: "Un mercenario armato che sfida la propria fortuna."
+  motivations_tactics: "Caricare, lacerare, sopraffare, trarre profitto"
+  difficulty: 10
+  thresholds: "Nessuna"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: +3
+    name: Spada Lunga
+    range: Mischia
+    damage: 3
+    damage_type: fis
+  traits:
+    - name: Seguace (4)
+      kind: Passiva
+      text: "Il Mercenario viene sconfitto quando subisce un qualsiasi danno. Per ogni 4 danni inflitti da un PG al Mercenario, viene sconfitto un Mercenario Seguace aggiuntivo entro portata dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Mercenari entro distanza Ravvicinata da esso. Quei Mercenari si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 3 danni fisici ciascuno. Sommate questi danni."
+
+- name: Nobile Minore
+  role: Controparte
+  rank: 1
+  description: "Un aristocratico riccamente agghindato, un concentrato di arroganza."
+  motivations_tactics: "Abusare del suo potere, mobilitare seguaci, raccogliere risorse"
+  difficulty: 14
+  thresholds: [6, 10]
+  pf: 3
+  stress: 5
+  attack:
+    bonus: -3
+    name: Stocco
+    range: Mischia
+    damage: 1d6+1
+    damage_type: fis
+  experience:
+    - name: Aristocratico
+      bonus: +3
+  traits:
+    - name: La Mia Terra, Le Mie Regole
+      kind: Passiva
+      text: "Tutte le azioni contro il Nobile nella sua terra hanno svantaggio."
+    - name: Guardie, Catturateli!
+      kind: Azione
+      text: "Una volta per scena, marcate uno Stress per evocare 1d4 Guardie Armate, che appaiono a distanza Lontana per far rispettare la volontà del Nobile."
+    - name: Esilio
+      kind: Azione
+      text: "Spendete una Paura e scegliete un PG come bersaglio. Il Nobile proclama che il bersaglio e i suoi alleati sono esiliati dal suo territorio. Il bersaglio e i suoi alleati subiscono svantaggio ai tiri azione a fini sociali all’interno del dominio del Nobile."
+
+- name: Ogre di Caverna
+  role: Solitario
+  rank: 1
+  description: "Un umanoide massiccio che considera tutte le forme di vita senziente come cibo."
+  motivations_tactics: "Banchettare, calpestare, lanciare i nemici, staccare teste a morsi, strappare arti"
+  difficulty: 13
+  thresholds: [8, 15]
+  pf: 8
+  stress: 3
+  attack:
+    bonus: +1
+    name: Clava
+    range: Prossima
+    damage: 1d10+2
+    damage_type: fis
+  experience:
+    - name: Lanciare
+      bonus: +2
+  traits:
+    - name: Potenziamento
+      kind: Passiva
+      text: "Spendete una Paura per rendere l’Ogre protagonista. Mentre è protagonista, può effettuare il suo attacco base contro tutti i bersagli entro portata."
+    - name: Spaccaossa
+      kind: Passiva
+      text: "Gli attacchi dell’Ogre infliggono danno diretto."
+    - name: Pioggia di Massi
+      kind: Azione
+      text: "Marcate uno Stress per raccogliere oggetti pesanti e lanciarli contro tutti i bersagli davanti all’Ogre entro distanza Lontana. Effettuate un attacco contro questi bersagli. I bersagli colpiti subiscono 1d10+2 danni fisici. Se viene colpito più di un bersaglio, ottenete una Paura."
+    - name: Furia Belluina
+      kind: Reazione
+      text: "Quando l’Ogre subisce 2 o più PF, può scatenare la sua furia. Spostate l’Ogre in un punto entro distanza Ravvicinata e infliggete 2d6+3 danni fisici diretti a tutti i bersagli sul suo percorso."
+
+- name: Orso
+  role: Bruto
+  rank: 1
+  description: "Un grande orso con folta pelliccia e artigli potenti."
+  motivations_tactics: "Arrampicarsi, colpire, territoriale, inseguire"
+  difficulty: 14
+  thresholds: [9, 17]
+  pf: 7
+  stress: 2
+  attack:
+    bonus: +1
+    name: Artigli
+    range: Mischia
+    damage: 1d8+3
+    damage_type: fis
+  experience:
+    - name: Imboscata
+      bonus: +3
+    - name: Sensi Acuti
+      bonus: +2
+  traits:
+    - name: Forza Schiacciante
+      kind: Passiva
+      text: "I bersagli che subiscono PF dall’attacco base dell’Orso vengono respinti a distanza Prossima."
+    - name: Morso
+      kind: Azione
+      text: "Marcate uno Stress per effettuare un attacco contro un bersaglio entro distanza di Mischia. In caso di successo, infliggete 3d4+10 danni fisici e il bersaglio viene Trattenuto finché non si libera con un Tiro Forza riuscito."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando l’Orso colpisce un PG, ottenete Paura."
+
+- name: Capitano Pirata
+  role: Condottiero
+  rank: 1
+  description: "Un carismatico lupo di mare con un cappello appariscente, desideroso di razziare e saccheggiare."
+  motivations_tactics: "Comandare, far camminare sull’asse, razziare, saccheggiare"
+  difficulty: 14
+  thresholds: [7, 14]
+  pf: 7
+  stress: 5
+  attack:
+    bonus: +4
+    name: Sciabola
+    range: Mischia
+    damage: 1d12+2
+    damage_type: fis
+  experience:
+    - name: Comandante
+      bonus: +2
+    - name: Marinaio
+      bonus: +3
+  traits:
+    - name: Cappa e Spada
+      kind: Passiva
+      text: "Quando il Capitano subisce 2 o meno PF da un attacco in Mischia, l’attaccante deve marcare uno Stress."
+    - name: Rinforzi
+      kind: Azione
+      text: "Una volta per scena, marcate uno Stress per evocare un’Orda di Pirati Predoni, che appare a distanza Lontana."
+    - name: Senza Pietà
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio che abbia tre o più Pirati a distanza di Mischia. Il Capitano guida i Pirati urlando minacce e promettendo una morte tra i flutti. Il bersaglio deve effettuare un Tiro Reazione di Presenza. In caso di fallimento, il bersaglio marca 1d4+1 Stress. In caso di successo, marca 1 Stress."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando il Capitano colpisce un PG, ottenete Paura."
+
+- name: Pirata Brutale
+  role: Bruto
+  rank: 1
+  description: "Un pirata muscoloso e tatuato con pugni grandi come meloni."
+  motivations_tactics: "Distruggere, razziare, saccheggiare, terrorizzare"
+  difficulty: 13
+  thresholds: [8, 15]
+  pf: 5
+  stress: 3
+  attack:
+    bonus: +1
+    name: Pugni Massicci
+    range: Mischia
+    damage: 2d6
+    damage_type: fis
+  experience:
+    - name: Marinaio
+      bonus: +2
+  traits:
+    - name: Cappa e Spada
+      kind: Passiva
+      text: "Quando il Pirata subisce 2 o meno PF a causa di un attacco in Mischia, l’attaccante deve marcare uno Stress."
+    - name: Spazzare il Ponte
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, marcate uno Stress per muovervi a distanza di Mischia dal bersaglio, infliggendo 3d4 danni fisici e spingendo indietro il bersaglio a distanza Ravvicinata."
+
+- name: Pirati Predoni
+  role: Orda
+  rank: 1
+  description: "Marinai razziatori che si muovono in torme devastanti."
+  motivations_tactics: "Razziare, riunirsi, saccheggiare"
+  difficulty: 12
+  thresholds: [5, 11]
+  pf: 4
+  stress: 3
+  attack:
+    bonus: +1
+    name: Sciabola
+    range: Mischia
+    damage: 1d8+2
+    damage_type: fis
+  experience:
+    - name: Marinaio
+      bonus: +3
+  traits:
+    - name: Orda (1d4+1)
+      kind: Passiva
+      text: "Quando i Predoni hanno perso metà o più dei loro PF, il loro attacco base infligge invece 1d4+1 danni fisici."
+    - name: Cappa e Spada
+      kind: Passiva
+      text: "Quando i Predoni subiscono 2 o meno PF da un attacco in Mischia, l’attaccante deve marcare uno Stress."
+
+- name: Ratto Gigante
+  role: Seguace
+  rank: 1
+  description: "Un roditore grande quanto un gatto, abile nel recupero e nella sopravvivenza."
+  motivations_tactics: "Fame, logorare, saccheggiare, scavare"
+  difficulty: 10
+  thresholds: "Nessuna"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: -4
+    name: Artigli
+    range: Mischia
+    damage: 1
+    damage_type: fis
+  experience:
+    - name: Sensi Acuti
+      bonus: +3
+  traits:
+    - name: Seguace (3)
+      kind: Passiva
+      text: "Il ratto viene sconfitto quando subisce qualsiasi danno. Per ogni 3 danni inflitti da un PG al ratto, viene sconfitto un seguace aggiuntivo nel raggio d’azione dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Ratti Giganti entro distanza Ravvicinata da esso. Tali Seguaci si muovono a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 1 danno fisico ciascuno. Sommate questi danni."
+
+- name: Cavaliere Scheletrico
+  role: Bruto
+  rank: 1
+  description: "Un grande scheletro corazzato con una lama enorme."
+  motivations_tactics: "Rubare la pelle, seminare il caos, uccidere i vivi"
+  difficulty: 13
+  thresholds: [7, 13]
+  pf: 5
+  stress: 2
+  attack:
+    bonus: +2
+    name: Spadone Arrugginito
+    range: Mischia
+    damage: 1d10+2
+    damage_type: fis
+  traits:
+    - name: Terrificante
+      kind: Passiva
+      text: "Quando il Cavaliere effettua un attacco con successo, tutti i PG entro distanza Ravvicinata perdono una Speranza e voi guadagnate Paura."
+    - name: Tagliare fino alle Ossa
+      kind: Azione
+      text: "Marcate uno Stress per effettuare un attacco contro tutti i bersagli entro distanza Prossima. I bersagli colpiti subiscono 1d8+2 danni fisici e devono marcare uno Stress."
+    - name: Scava Due Fosse
+      kind: Reazione
+      text: "Quando il Cavaliere viene sconfitto, effettuate un attacco contro un bersaglio entro distanza Prossima (dando priorità alla creatura che lo ha ucciso). In caso di successo, il bersaglio subisce 1d4+8 danni fisici e perde 1d4 Speranze."
+
+- name: Catasta Scheletrica
+  role: Seguace
+  rank: 1
+  description: "Un mucchio di ossa crepitanti."
+  motivations_tactics: "Cadere a pezzi, fingersi morta, rubare la pelle, sopraffare"
+  difficulty: 8
+  thresholds: "Nessuna"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: -1
+    name: Artigli d’Ossa
+    range: Mischia
+    damage: 1
+    damage_type: fis
+  traits:
+    - name: Seguace (4)
+      kind: Passiva
+      text: "La Catasta viene sconfitta quando subisce un qualsiasi danno. Per ogni 4 danni inflitti da un PG alla Catasta, sconfiggete una Catasta aggiuntiva entro portata dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagoniste tutte le Cataste entro distanza Ravvicinata da esso. Le Cataste si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 1 danno fisico ciascuna. Sommate questi danni."
+
+- name: Guerriero Scheletrico
+  role: Avversario Base
+  rank: 1
+  description: "Uno scheletro ricoperto di terra armato con una lama arrugginita."
+  motivations_tactics: "Attaccare in gruppo, fingersi morto, rubare la pelle"
+  difficulty: 10
+  thresholds: [4, 8]
+  pf: 3
+  stress: 2
+  attack:
+    bonus: +0
+    name: Spada
+    range: Mischia
+    damage: 1d6+2
+    damage_type: fis
+  traits:
+    - name: Solo Ossa
+      kind: Passiva
+      text: "Il Guerriero è resistente ai danni fisici."
+    - name: Non Resterà Morto
+      kind: Reazione
+      text: "Quando il Guerriero viene sconfitto, potete renderlo protagonista e tirare un d6. Se il risultato è 6, se ci sono altri avversari sul campo di battaglia, il Guerriero si rigenera a pieno punteggio di PF."
+
+- name: Tiratore Scheletrico
+  role: Tiratore
+  rank: 1
+  description: "Uno scheletro fragile con un arco corto e frecce."
+  motivations_tactics: "Fingersi morto, perforare bersagli distratti, rubare la pelle"
+  difficulty: 9
+  thresholds: [4, 7]
+  pf: 3
+  stress: 2
+  attack:
+    bonus: +2
+    name: Arco Corto
+    range: Lontana
+    damage: 1d8+1
+    damage_type: fis
+  traits:
+    - name: Opportunista
+      kind: Passiva
+      text: "Quando due o più avversari si trovano entro distanza Prossima da una creatura, tutti i danni inflitti dall’Arciere a quella creatura sono raddoppiati."
+    - name: Tiro Letale
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio Vulnerabile entro distanza Lontana. In caso di successo, marcate uno Stress per infliggere 3d4+8 danni fisici."
+
+- name: Sciogliterra
+  role: Solitario
+  rank: 1
+  description: "Un insetto grande come un cavallo con artigli per scavare e sangue acido."
+  motivations_tactics: "Nutrirsi, riposizionarsi, scavare, trascinare via"
+  difficulty: 14
+  thresholds: [8, 15]
+  pf: 8
+  stress: 3
+  attack:
+    bonus: +3
+    name: Artigli
+    range: Prossima
+    damage: 1d12+2
+    damage_type: fis
+  experience:
+    - name: Percepire Vibrazioni
+      bonus: +2
+  traits:
+    - name: Inesorabile (3)
+      kind: Passiva
+      text: "Lo Sciogliterra può essere protagonista fino a tre volte per turno del GM. Spendete Paura come di consueto per renderlo ogni volta protagonista."
+    - name: Eruzione Tellurica
+      kind: Azione
+      text: "Marcate uno Stress per far uscire a sorpresa lo Sciogliterra dal terreno. Tutte le creature entro distanza Prossima devono superare un Tiro Reazione di Agilità o vengono gettate a terra, diventando Vulnerabili fino alla loro prossima azione."
+    - name: Sputo Acido
+      kind: Azione
+      text: "Effettuate un attacco contro tutti i bersagli davanti allo Sciogliterra entro distanza Ravvicinata. I bersagli colpiti subiscono 2d6 danni fisici e devono marcare una Casella Armatura senza riceverne i benefici (possono comunque usare l’armatura per ridurre il danno). Se non possono marcare una Casella Armatura, devono subire un PF aggiuntivo e voi ottenete Paura."
+    - name: Bagno Acido
+      kind: Reazione
+      text: "Quando lo Sciogliterra subisce danno Grave, tutte le creature entro distanza Ravvicinata vengono bagnate dal suo sangue acido, subendo 1d10 danni fisici. Il sangue ricopre il terreno entro distanza Prossima e tutte le creature diverse dallo Sciogliterra che lo attraversano subiscono 1d6 danni fisici."
+
+- name: Scorpione Gigante
+  role: Bruto
+  rank: 1
+  description: "Un insetto grande quanto un umano con artigli affilati e una coda pungente."
+  motivations_tactics: "Afferrare, avvelenare, imboscata, nutrirsi"
+  difficulty: 13
+  thresholds: [7, 13]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: +1
+    name: Chele
+    range: Mischia
+    damage: 1d12+2
+    damage_type: fis
+  experience:
+    - name: Mimetizzazione
+      bonus: +2
+  traits:
+    - name: Doppio Colpo
+      kind: Azione
+      text: "Marcate uno Stress per effettuare un attacco base contro due bersagli entro distanza di Mischia."
+    - name: Pungiglione Velenoso
+      kind: Azione
+      text: "Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, spendete una Paura per infliggere 1d4+4 danni fisici e Avvelenarlo fino al prossimo riposo o fino a quando non supera un Tiro Conoscenza (16). Mentre è Avvelenato, il bersaglio deve tirare un d6 prima di effettuare un tiro azione. Se ottiene un risultato pari o inferiore a 4, marca uno Stress."
+    - name: Slancio
+      kind: Reazione
+      text: "Quando lo Scorpione colpisce un PG, ottenete Paura."
+
+- name: Schermagliatore
+  role: Avversario Base
+  rank: 1
+  description: "Un combattente agile armato di giavellotti."
+  motivations_tactics: "Attaccare sui fianchi, cercare vantaggio, incalzare, schermagliare"
+  difficulty: 12
+  thresholds: [5, 9]
+  pf: 3
+  stress: 3
+  attack:
+    bonus: +1
+    name: Giavellotto
+    range: Ravvicinata
+    damage: 1d6+2
+    damage_type: fis
+  experience:
+    - name: Mimetizzazione
+      bonus: +2
+  traits:
+    - name: Mantieni la Distanza
+      kind: Passiva
+      text: "Dopo aver effettuato un attacco base, lo Schermagliatore può muoversi ovunque fino a distanza Lontana."
+    - name: Ritirata
+      kind: Reazione
+      text: "Quando una creatura si muove a distanza di Mischia per effettuare un attacco, potete marcare uno Stress prima del tiro attacco per muovervi in qualsiasi entro distanza Ravvicinata ed effettuare un attacco contro quella creatura. In caso di successo, infliggete 1d10+2 danni fisici."
+
+- name: Serpente di Vetro
+  role: Avversario Base
+  rank: 1
+  description: "Un serpente trasparente con una testa massiccia che lascia una scia di frammenti di vetro ovunque vada."
+  motivations_tactics: "Arrampicarsi, mantenere le distanze, nutrirsi, spaventare"
+  difficulty: 14
+  thresholds: [6, 10]
+  pf: 5
+  stress: 3
+  attack:
+    bonus: +2
+    name: Zanne di Vetro
+    range: Prossima
+    damage: 1d8+2
+    damage_type: fis
+  traits:
+    - name: Frammenti che Lacerano l’Armatura
+      kind: Passiva
+      text: "Dopo un attacco a distanza di Mischia contro il Serpente, l’attaccante deve marcare una Casella Armatura senza riceverne i benefici (può comunque usare l’armatura per ridurre il danno). Se non può marcare una Casella Armatura, subisce un PF aggiuntivo."
+    - name: Serpe Roteante
+      kind: Azione
+      text: "Marcate uno Stress per effettuare un attacco contro tutti i bersagli entro distanza Prossima. I bersagli colpiti subiscono 1d6+1 danni fisici."
+    - name: Sputatore
+      kind: Azione
+      text: "Spendete una Paura per prendere un Dado Sputatore d6. Quando il Serpente è protagonista, tirate questo dado. Con un risultato di 5 o superiore, tutti i bersagli davanti al Serpente entro distanza Lontana devono superare un Tiro Reazione di Agilità o subire 1d4 danni fisici. Il Serpente può diventare protagonista una seconda volta in questo turno del GM."
+
+- name: Soldato Silvano
+  role: Avversario Base
+  rank: 1
+  description: "Un guerriero fatato che indossa un’armatura fatta di foglie e corteccia."
+  motivations_tactics: "Imboscata, nascondersi, proteggere, seguire, sopraffare"
+  difficulty: 11
+  thresholds: [6, 11]
+  pf: 4
+  stress: 2
+  attack:
+    bonus: +0
+    name: Falce
+    range: Mischia
+    damage: 1d8+1
+    damage_type: fis
+  experience:
+    - name: Battipista
+      bonus: +2
+  traits:
+    - name: Tattiche del Branco
+      kind: Passiva
+      text: "Se il Soldato effettua un attacco base e un altro Soldato Silvano si trova a distanza di Mischia dal bersaglio, infligge 1d8+5 danni fisici invece dei danni base."
+    - name: Controllare la Foresta
+      kind: Azione
+      text: "Spendete una Paura per abbattere un albero entro distanza Ravvicinata. Una creatura colpita dall’albero deve superare un Tiro Reazione di Agilità (15) o subire 1d10 danni fisici."
+    - name: Mimetizzarsi
+      kind: Reazione
+      text: "Quando il Soldato colpisce, potete marcare uno Stress per renderlo Nascosto fino al suo prossimo o fino a quando un PG non supera un Tiro Istinto (14) per individuarlo."
+
+- name: Treant Minore
+  role: Seguace
+  rank: 1
+  description: "Un alberello ambulante che smuove le radici per difendere la foresta."
+  motivations_tactics: "Schiacciare, sopraffare, proteggere"
+  difficulty: 10
+  thresholds: "None"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: -2
+    name: Ramo Artigliato
+    range: Mischia
+    damage: 4
+    damage_type: fis
+  traits:
+    - name: Seguace (5)
+      kind: Passiva
+      text: "Il Treant viene sconfitto quando subisce un qualsiasi danno. Per ogni 5 danni inflitti da un PG al Treant, viene sconfitto un Treant Minore Seguace aggiuntivo entro portata dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Treant Minori entro distanza Ravvicinata da esso. Si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 4 danni fisici ciascuno. Sommate questi danni."
+
+- name: Zanzare Giganti
+  role: Orda
+  rank: 1
+  description: "Decine di zanzare grandi come un pugno, che volano insieme per proteggersi."
+  motivations_tactics: "Molestare, succhiare sangue, volare via"
+  difficulty: 10
+  thresholds: [5, 9]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: -2
+    name: Proboscide
+    range: Mischia
+    damage: 1d8+3
+    damage_type: fis
+  experience:
+    - name: Mimetizzazione
+      bonus: +2
+  traits:
+    - name: Orda (1d4+1)
+      kind: Passiva
+      text: "Quando le zanzare hanno perso metà o più dei loro PF, il loro attacco base infligge invece 1d4+1 danni fisici."
+    - name: Volo
+      kind: Passiva
+      text: "Mentre volano, le Zanzare hanno bonus +2 alla loro Difficoltà."
+    - name: Succhiasangue
+      kind: Reazione
+      text: "Quando l’attacco delle Zanzare provoca la perdita di PF a un bersaglio, potete marcare uno Stress per costringere il bersaglio a subire un PF aggiuntivo."
+
+- name: Orda di Zombi
+  role: Orda
+  rank: 1
+  description: "Un gruppo di cadaveri barcollanti che si muovono istintivamente all’unisono."
+  motivations_tactics: "Consumare carne, fame, sbranare"
+  difficulty: 8
+  thresholds: [6, 12]
+  pf: 6
+  stress: 3
+  attack:
+    bonus: -1
+    name: Morso
+    range: Mischia
+    damage: 1d10+2
+    damage_type: fis
+  traits:
+    - name: Orda (1d4+2)
+      kind: Passiva
+      text: "Quando gli Zombi hanno segnato metà o più dei loro PF, il loro attacco base infligge invece 1d4+2 danni fisici."
+    - name: Sopraffare
+      kind: Reazione
+      text: "Quando gli Zombi subiscono PF da un attacco in Mischia, potete marcare uno Stress per effettuare un attacco base contro l’attaccante."
+
+- name: Zombi Barcollante
+  role: Avversario Base
+  rank: 1
+  description: "Un cadavere animato che si muove barcollando, spinto solo dalla fame."
+  motivations_tactics: "Attaccare i nemici, divorare, fame, straziare le carni"
+  difficulty: 10
+  thresholds: [4, 6]
+  pf: 4
+  stress: 1
+  attack:
+    bonus: +0
+    name: Morso
+    range: Mischia
+    damage: 1d6+1
+    damage_type: fis
+  traits:
+    - name: Sono Troppi!
+      kind: Passiva
+      text: "Quando lo Zombi si trova a distanza di Mischia da una creatura e almeno un altro Zombi si trova entro distanza Ravvicinata, tutti gli attacchi contro quella creatura hanno vantaggio."
+    - name: Terrorizzato
+      kind: Passiva
+      text: "I bersagli che subiscono PF dagli attacchi dello Zombi marcano anche uno Stress."
+
+- name: Zombi Corpulento
+  role: Bruto
+  rank: 1
+  description: "Un cadavere enorme, gonfio di putrefazione e rabbia."
+  motivations_tactics: "Distruggere, lanciare detriti, schiacciare, schiantare"
+  difficulty: 10
+  thresholds: [8, 15]
+  pf: 7
+  stress: 4
+  attack:
+    bonus: +2
+    name: Colpo Violento
+    range: Prossima
+    damage: 1d12+3
+    damage_type: fis
+  experience:
+    - name: Danni Collaterali
+      bonus: +2
+    - name: Lancio
+      bonus: +4
+  traits:
+    - name: Lento
+      kind: Passiva
+      text: "Quando lo Zombi diventa protagonista e non ha un gettone sul suo blocco statistiche, non può ancora agire. Mettete un gettone sul suo blocco statistiche e descrivete cosa si sta preparando a fare. Quando lo Zombi è protagonista e ha già un gettone sul suo blocco statistiche, rimuovete il gettone e lo Zombi può agire."
+    - name: Fare a Pezzi
+      kind: Azione
+      text: "Effettuate un attacco base con vantaggio contro un bersaglio che lo Zombi ha Trattenuto. In caso di successo, l’attacco infligge danno diretto."
+    - name: Strappare e Squarciare
+      kind: Reazione
+      text: "Quando lo Zombi effettua un attacco base con successo, potete marcare uno Stress per Trattenere temporaneamente il bersaglio e costringerlo a marcare 2 Stress."
+
+- name: Zombi Gigante Ricucito
+  role: Solitario
+  rank: 1
+  description: "Un imponente ammasso di cadaveri che si muove come un unico essere, con arti larghi come toraci umani e pugni grandi quanto un halfling adulto."
+  motivations_tactics: "Assorbire cadaveri, fame, schiantare, terrorizzare"
+  difficulty: 13
+  thresholds: [8, 15]
+  pf: 10
+  stress: 3
+  attack:
+    bonus: +4
+    name: Troppe Braccia
+    range: Prossima
+    damage: 1d20
+    damage_type: fis
+  experience:
+    - name: Intimidire
+      bonus: +2
+    - name: Strappare
+      bonus: +2
+  traits:
+    - name: Smontabile
+      kind: Passiva
+      text: "Quando lo Zombi subisce danno Maggiore o superiore, subisce un PF aggiuntivo."
+    - name: Arti Flagellanti
+      kind: Passiva
+      text: "Quando lo Zombi effettua un attacco base, può attaccare tutti i bersagli entro distanza Prossima."
+    - name: Un Altro nel Mucchio
+      kind: Azione
+      text: "Quando lo Zombi si trova entro distanza Prossima da un cadavere, può incorporarlo in sé stesso, curando un PF e rimuovendo uno Stress."
+    - name: Urla Tormentate
+      kind: Azione
+      text: "Marcate uno Stress per costringere tutti i PG entro distanza Lontana a effettuare un Tiro Reazione di Presenza (13). I bersagli che falliscono perdono una Speranza e voi guadagnate una Paura per ciascuno di essi. I bersagli che superano il tiro devono marcare uno Stress."
+
+- name: Zombi Marcio
+  role: Seguace
+  rank: 1
+  description: "Un cadavere in decomposizione che barcolla verso la sua preda."
+  motivations_tactics: "Circondare, fame, mangiare carne, sbranare"
+  difficulty: 8
+  thresholds: "Nessuna"
+  pf: 1
+  stress: 1
+  attack:
+    bonus: -3
+    name: Morso
+    range: Mischia
+    damage: 2
+    damage_type: fis
+  traits:
+    - name: Seguace (3)
+      kind: Passiva
+      text: "Lo Zombi viene sconfitto quando subisce un qualsiasi danno. Per ogni 3 danni inflitti da un PG allo Zombi, viene sconfitto un Seguace aggiuntivo entro portata dell’attacco riuscito."
+    - name: Attacco in Massa
+      kind: Azione
+      text: "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti gli Zombi Marci entro distanza Ravvicinata. Gli Zombi Seguaci si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 2 danni fisici ciascuno. Sommate questi danni."

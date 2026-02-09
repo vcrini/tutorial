@@ -31,17 +31,15 @@ func TestSelectedPNGName(t *testing.T) {
 
 func TestRandomPNGNameFormat(t *testing.T) {
 	name := randomPNGName()
-	parts := strings.Split(name, " ")
-	if len(parts) != 3 {
-		t.Fatalf("expected 3 parts, got %d: %q", len(parts), name)
+	if strings.TrimSpace(name) == "" {
+		t.Fatalf("expected non-empty name")
 	}
-	for _, p := range parts {
-		if p == "" {
-			t.Fatalf("empty part in %q", name)
-		}
-		if strings.ToUpper(p[:1]) != p[:1] {
-			t.Fatalf("part not capitalized: %q in %q", p, name)
-		}
+	parts := strings.Split(name, " ")
+	if len(parts) != 2 {
+		t.Fatalf("expected 2 parts, got %d: %q", len(parts), name)
+	}
+	if parts[0] == "" || parts[1] == "" {
+		t.Fatalf("expected non-empty parts: %q", name)
 	}
 }
 

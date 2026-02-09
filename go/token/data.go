@@ -2,10 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand/v2"
 	"os"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -15,6 +16,15 @@ const (
 )
 
 var dataFile = "pngs.json"
+var namesFile = "config/names.yaml"
+
+type nameLists struct {
+	First []string `yaml:"first"`
+	Last  []string `yaml:"last"`
+}
+
+var namesCache nameLists
+var namesLoaded bool
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
@@ -61,25 +71,11 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 }
 
 func randomPNGName() string {
-	adjectives := []string{
-		"antico", "arcano", "celestiale", "crepuscolare", "dorato", "draconico",
-		"incantato", "lunare", "mistico", "nobile", "ruggente", "sacro",
-		"segreto", "tempestoso", "valente", "velato",
+	first, last := loadNameLists()
+	if len(last) == 0 {
+		return first[rand.IntN(len(first))]
 	}
-	nouns := []string{
-		"drago", "grifone", "fenice", "runa", "santuario", "torre", "reliquia",
-		"spada", "scudo", "foresta", "regno", "oracolo", "ombra", "stella",
-		"valle", "vento",
-	}
-	suffixes := []string{
-		"al", "anor", "dellalba", "delcrepuscolo", "dor", "eld", "fir",
-		"gorn", "ion", "kor", "lith", "mir", "nath", "rend", "thor", "vyr",
-	}
-
-	adj := capitalizeWord(adjectives[rand.IntN(len(adjectives))])
-	noun := capitalizeWord(nouns[rand.IntN(len(nouns))])
-	suffix := capitalizeWord(suffixes[rand.IntN(len(suffixes))])
-	return fmt.Sprintf("%s %s %s", adj, noun, suffix)
+	return first[rand.IntN(len(first))] + " " + last[rand.IntN(len(last))]
 }
 
 func capitalizeWord(s string) string {
@@ -87,6 +83,71 @@ func capitalizeWord(s string) string {
 		return s
 	}
 	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+func loadNameLists() ([]string, []string) {
+	if namesLoaded {
+		if len(namesCache.First) > 0 {
+			return namesCache.First, namesCache.Last
+		}
+		return []string{"Unknown"}, nil
+	}
+	namesLoaded = true
+
+	data, err := os.ReadFile(namesFile)
+	if err != nil {
+		namesCache = defaultNameLists()
+		return namesCache.First, namesCache.Last
+	}
+
+	var names nameLists
+	if err := yaml.Unmarshal(data, &names); err != nil {
+		namesCache = defaultNameLists()
+		return namesCache.First, namesCache.Last
+	}
+	for _, name := range names.First {
+		name = strings.TrimSpace(name)
+		if name != "" {
+			namesCache.First = append(namesCache.First, name)
+		}
+	}
+	for _, name := range names.Last {
+		name = strings.TrimSpace(name)
+		if name != "" {
+			namesCache.Last = append(namesCache.Last, name)
+		}
+	}
+	if len(namesCache.First) == 0 {
+		namesCache = defaultNameLists()
+	}
+	return namesCache.First, namesCache.Last
+}
+
+func defaultNameLists() nameLists {
+	return nameLists{
+		First: []string{
+			"Alucard", "Ambrose", "Ash", "Bellamy", "Calder",
+			"Calypso", "Chartreuse", "Clover", "Dahlia",
+			"Darrow", "Deacon", "Elowen", "Emrys", "Fable",
+			"Fiorella", "Flynn", "Gatlin", "Gerard", "Hadron",
+			"Harlow", "Indigo", "Isla", "Jaden", "Kai", "Kismet",
+			"Leo", "Mika", "Moon", "Nyx", "Orna", "Phaedra",
+			"Quill", "Rani", "Raphael", "Reza", "Roux", "Saffron",
+			"Sierra", "Skye", "Talon", "Thea", "Triton", "Vala",
+			"Velo", "Wisteria", "Yanelle", "Zahara",
+		},
+		Last: []string{
+			"Abbot", "Advani", "Agoston", "Baptiste", "Belgarde",
+			"Blossom", "Chance", "Covault", "Dawn", "Dennison",
+			"Drayer", "Emrick", "Foley", "Fury", "Grove",
+			"Hartley", "Humfleet", "Hyland", "Ikeda", "Jones",
+			"Jordon", "Kaan", "Knoth", "Lagrange", "Lockamy",
+			"Lyon", "Marche", "Merrell", "Newland", "Novak",
+			"Orwick", "Overholt", "Pray", "Rathbone", "Rose",
+			"Seagrave", "Spurlock", "Thorn", "Tringle", "Vasquez",
+			"Warren", "Worth", "York",
+		},
+	}
 }
 
 func uniqueRandomPNGName(existing []PNG) string {
