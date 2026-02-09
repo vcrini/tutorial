@@ -53,6 +53,17 @@ func capitalizeWord(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
 }
 
+func limitLines(s string, max int) string {
+	if max <= 0 {
+		return ""
+	}
+	lines := strings.Split(s, "\n")
+	if len(lines) <= max {
+		return s
+	}
+	return strings.Join(lines[:max], "\n")
+}
+
 func uniqueRandomPNGName(existing []PNG) string {
 	seen := make(map[string]struct{}, len(existing))
 	for _, p := range existing {
@@ -134,6 +145,8 @@ type model struct {
 	appState         appState        // Lo stato attuale dell'applicazione
 	textInput        textinput.Model // Input per il nome del nuovo PNG
 	selectPNGCursor  int             // Il cursore per la selezione del PNG
+	width            int             // Larghezza della finestra
+	height           int             // Altezza della finestra
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -148,6 +161,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch m.appState {
 	case menuState:
 		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			m.width = msg.Width
+			m.height = msg.Height
+			return m, nil
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "ctrl+c", "esc":
@@ -313,6 +330,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case createPNGState:
 		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			m.width = msg.Width
+			m.height = msg.Height
+			return m, nil
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "enter":
@@ -354,6 +375,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case selectPNGState:
 		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			m.width = msg.Width
+			m.height = msg.Height
+			return m, nil
 		case tea.KeyMsg:
 			switch msg.String() {
 			case "up", "k":
@@ -385,78 +410,121 @@ func (m model) View() string {
 		return "Arrivederci!\n"
 	}
 
-	s := strings.Builder{}
-
-	// Stile per il titolo
-	titleStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("12")).PaddingBottom(1)
-	// Stile per il menu selezionato
-	selectedItemStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
-	// Stile per i messaggi
-	messageStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("7")).PaddingTop(1)
-	// Stile per l'elenco PNG selezionato
+	// Stili ispirati a lazygit/lazydocker
+	border := lipgloss.Border{
+		Top:         "─",
+		Bottom:      "─",
+		Left:        "│",
+		Right:       "│",
+		TopLeft:     "┌",
+		TopRight:    "┐",
+		BottomLeft:  "└",
+		BottomRight: "┘",
+	}
+	panel := lipgloss.NewStyle().Border(border).Padding(0, 1)
+	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
+	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
+	selectedItemStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
 	selectedPNGStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("13")).Bold(true)
+	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("7"))
 
-	// Titolo
-	s.WriteString(titleStyle.Render("Gestione PNG con Contatore (Bubble Tea)\n"))
-	s.WriteString(strings.Repeat("─", 50) + "\n\n")
+	totalWidth := m.width
+	if totalWidth <= 0 {
+		totalWidth = 96
+	}
+	if totalWidth < 60 {
+		totalWidth = 60
+	}
+	leftWidth := totalWidth / 3
+	if leftWidth > 32 {
+		leftWidth = 32
+	}
+	if leftWidth < 24 {
+		leftWidth = 24
+	}
+	rightWidth := totalWidth - leftWidth
 
-	// Contenuto basato sullo stato dell'applicazione
+	totalHeight := m.height
+	if totalHeight <= 0 {
+		totalHeight = 24
+	}
+	if totalHeight < 12 {
+		totalHeight = 12
+	}
+	bodyContentHeight := totalHeight - 6 // header + message + borders
+	if bodyContentHeight < 4 {
+		bodyContentHeight = 4
+	}
+
+	// Header
+	header := titleStyle.Render(" PNG Manager ") + dim.Render(" • Lazy style UI")
+	headerBar := panel.Width(leftWidth + rightWidth).Render(header)
+
+	// Menu (sinistra)
+	var menu strings.Builder
+	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
+	for i, choice := range m.choices {
+		cursor := "  "
+		if m.cursor == i && m.appState == menuState {
+			cursor = selectedItemStyle.Render("➜") + " "
+		}
+		menu.WriteString(fmt.Sprintf("%s%s\n", cursor, choice))
+	}
+	menuPanel := panel.Width(leftWidth).Render(limitLines(menu.String(), bodyContentHeight))
+
+	// Pannello destro superiore
+	var rightTop strings.Builder
 	switch m.appState {
-	case menuState:
-		s.WriteString("Seleziona un'opzione:\n\n")
-		for i, choice := range m.choices {
-			cursor := "  "
-			if m.cursor == i {
-				cursor = selectedItemStyle.Render("->") + " "
-			}
-			s.WriteString(fmt.Sprintf("%s%s\n", cursor, choice))
-		}
-
-		s.WriteString("\n--- PNGs Disponibili ---\n")
-		if len(m.pngs) == 0 {
-			s.WriteString("Nessun PNG creato. Scegli 'Crea PNG' per aggiungerne uno.\n")
-		} else {
-			for i, png := range m.pngs {
-				pngLine := fmt.Sprintf("  %s (Contatore: %d)", png.Name, png.Counter)
-				if i == m.selectedPNGIndex {
-					s.WriteString(selectedPNGStyle.Render(pngLine) + " <- Selezionato\n")
-				} else {
-					s.WriteString(pngLine + "\n")
-				}
-			}
-			if m.selectedPNGIndex == -1 {
-				s.WriteString("\nNessun PNG selezionato. Scegli 'Seleziona PNG' per sceglierne uno.\n")
-			}
-		}
-
 	case createPNGState:
-		s.WriteString(fmt.Sprintf(
-			"%s\n\n%s\n\n%s",
-			m.message,
-			m.textInput.View(),
-			"(Premi Enter per confermare, Esc per annullare)",
-		))
-
+		rightTop.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
+		rightTop.WriteString(m.message + "\n\n")
+		rightTop.WriteString(m.textInput.View() + "\n\n")
+		rightTop.WriteString(dim.Render("(Enter per confermare, Esc per annullare)"))
 	case selectPNGState:
-		s.WriteString("Seleziona un PNG:\n\n")
+		rightTop.WriteString(titleStyle.Render(" Seleziona PNG ") + "\n\n")
 		if len(m.pngs) == 0 {
-			s.WriteString("Nessun PNG disponibile.\n")
+			rightTop.WriteString(dim.Render("Nessun PNG disponibile."))
 		} else {
 			for i, png := range m.pngs {
 				cursor := "  "
 				if m.selectPNGCursor == i {
-					cursor = selectedItemStyle.Render("->") + " "
+					cursor = selectedItemStyle.Render("➜") + " "
 				}
-				s.WriteString(fmt.Sprintf("%s%s (Contatore: %d)\n", cursor, png.Name, png.Counter))
+				rightTop.WriteString(fmt.Sprintf("%s%s (Contatore: %d)\n", cursor, png.Name, png.Counter))
 			}
-			s.WriteString("\n(Premi Enter per selezionare, Esc per annullare)")
+			rightTop.WriteString("\n" + dim.Render("(Enter per selezionare, Esc per annullare)"))
+		}
+	default:
+		rightTop.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
+		if len(m.pngs) == 0 {
+			rightTop.WriteString(dim.Render("Nessun PNG creato."))
+		} else {
+			for i, png := range m.pngs {
+				line := fmt.Sprintf("%s (Contatore: %d)", png.Name, png.Counter)
+				if i == m.selectedPNGIndex {
+					rightTop.WriteString(selectedPNGStyle.Render("• "+line) + "\n")
+				} else {
+					rightTop.WriteString("  " + line + "\n")
+				}
+			}
+			if m.selectedPNGIndex == -1 {
+				rightTop.WriteString("\n" + dim.Render("Nessun PNG selezionato."))
+			}
 		}
 	}
 
-	// Messaggio globale
-	s.WriteString(messageStyle.Render(fmt.Sprintf("\n%s\n", m.message)))
+	rightTopPanel := panel.Width(rightWidth).Render(limitLines(rightTop.String(), bodyContentHeight))
 
-	return s.String()
+	// Barra messaggi
+	message := m.message
+	if message == "" {
+		message = "Pronto."
+	}
+	messageBar := panel.Width(leftWidth + rightWidth).Render(highlight.Render(" Msg ") + " " + message)
+
+	// Layout finale
+	body := lipgloss.JoinHorizontal(lipgloss.Top, menuPanel, rightTopPanel)
+	return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar)
 }
 
 func main() {
