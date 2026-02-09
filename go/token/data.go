@@ -9,16 +9,55 @@ import (
 )
 
 const (
-	defaultCounter = 3
-	minCounter     = 0 // Il valore minimo
+	defaultToken = 3
+	minToken     = 0 // Il valore minimo
+	maxToken     = 3 // Il valore massimo
 )
 
 var dataFile = "pngs.json"
 
-// PNG rappresenta la struttura dati per un PNG con il suo contatore.
+// PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
-	Name    string
-	Counter int
+	Name  string `json:"Name"`
+	Token int    `json:"Token"`
+}
+
+func (p *PNG) UnmarshalJSON(data []byte) error {
+	var aux struct {
+		Name         string `json:"Name"`
+		Token        *int   `json:"Token"`
+		Counter      *int   `json:"Counter"`
+		TokenLower   *int   `json:"token"`
+		CounterLower *int   `json:"counter"`
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	p.Name = aux.Name
+	switch {
+	case aux.Token != nil:
+		p.Token = *aux.Token
+	case aux.TokenLower != nil:
+		p.Token = *aux.TokenLower
+	case aux.Counter != nil:
+		p.Token = *aux.Counter
+	case aux.CounterLower != nil:
+		p.Token = *aux.CounterLower
+	default:
+		p.Token = 0
+	}
+	return nil
+}
+
+func (p PNG) MarshalJSON() ([]byte, error) {
+	out := struct {
+		Name  string `json:"Name"`
+		Token int    `json:"Token"`
+	}{
+		Name:  p.Name,
+		Token: p.Token,
+	}
+	return json.Marshal(out)
 }
 
 func randomPNGName() string {

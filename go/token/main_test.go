@@ -50,8 +50,8 @@ func TestSaveLoadPNGList(t *testing.T) {
 	path := filepath.Join(dir, "pngs.json")
 
 	input := []PNG{
-		{Name: "Arcano Drago Dor", Counter: 2},
-		{Name: "Mistico Vento Mir", Counter: 3},
+		{Name: "Arcano Drago Dor", Token: 2},
+		{Name: "Mistico Vento Mir", Token: 3},
 	}
 	if err := savePNGList(path, input, "Mistico Vento Mir"); err != nil {
 		t.Fatalf("save failed: %v", err)
@@ -109,8 +109,8 @@ func TestSelectionHelpers(t *testing.T) {
 
 	m := model{
 		pngs: []PNG{
-			{Name: "Arcano Drago Dor", Counter: 2},
-			{Name: "Mistico Vento Mir", Counter: 1},
+			{Name: "Arcano Drago Dor", Token: 2},
+			{Name: "Mistico Vento Mir", Token: 1},
 		},
 		selectedPNGIndex: -1,
 	}
@@ -142,7 +142,7 @@ func TestMenuHandleChoiceSave(t *testing.T) {
 	t.Cleanup(func() { dataFile = old })
 
 	m := model{
-		pngs:             []PNG{{Name: "Arcano Drago Dor", Counter: 2}},
+		pngs:             []PNG{{Name: "Arcano Drago Dor", Token: 2}},
 		selectedPNGIndex: 0,
 	}
 	_, _ = m.handleMenuChoice("Salva PNG su disco")
@@ -158,15 +158,15 @@ func TestMenuHandleChoiceReloadKeepsSelected(t *testing.T) {
 	t.Cleanup(func() { dataFile = old })
 
 	initial := []PNG{
-		{Name: "Arcano Drago Dor", Counter: 2},
-		{Name: "Mistico Vento Mir", Counter: 1},
+		{Name: "Arcano Drago Dor", Token: 2},
+		{Name: "Mistico Vento Mir", Token: 1},
 	}
 	if err := savePNGList(dataFile, initial, "Mistico Vento Mir"); err != nil {
 		t.Fatalf("save failed: %v", err)
 	}
 
 	m := model{
-		pngs:             []PNG{{Name: "X", Counter: 0}},
+		pngs:             []PNG{{Name: "X", Token: 0}},
 		selectedPNGIndex: 0,
 	}
 	m, _ = m.handleMenuChoice("Ricarica PNG da disco")
@@ -195,8 +195,8 @@ func TestMenuHandleChoiceReloadLegacyKeepsSelectedName(t *testing.T) {
 
 	m := model{
 		pngs: []PNG{
-			{Name: "Jack", Counter: 1},
-			{Name: "John", Counter: 3},
+			{Name: "Jack", Token: 1},
+			{Name: "John", Token: 3},
 		},
 		selectedPNGIndex: 1,
 	}

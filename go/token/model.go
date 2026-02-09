@@ -73,10 +73,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case "left", "h":
-				m.selectPrevPNG()
+				if m.focusedPanel == 1 {
+					m.decrementSelectedToken()
+				}
 
 			case "right", "l":
-				m.selectNextPNG()
+				if m.focusedPanel == 1 {
+					m.incrementSelectedToken()
+				}
 
 			case "enter":
 				return m.handleMenuChoice(m.choices[m.cursor])
@@ -108,13 +112,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if found {
 					m.message = fmt.Sprintf("Un PNG con il nome '%s' esiste già. Scegli un nome diverso.", name)
 				} else {
-					newPNG := PNG{Name: name, Counter: defaultCounter}
+					newPNG := PNG{Name: name, Token: defaultToken}
 					m.pngs = append(m.pngs, newPNG)
 					m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
 					if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 						m.message = fmt.Sprintf("PNG '%s' creato ma salvataggio fallito: %v", name, err)
 					} else {
-						m.message = fmt.Sprintf("PNG '%s' creato con contatore %d.", name, defaultCounter)
+						m.message = fmt.Sprintf("PNG '%s' creato con token %d.", name, defaultToken)
 					}
 					m.appState = menuState
 				}

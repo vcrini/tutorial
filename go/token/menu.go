@@ -11,9 +11,7 @@ var menuChoices = []string{
 	"Crea PNG",
 	"Ricarica PNG da disco",
 	"Salva PNG su disco",
-	"Decrementa Contatore PNG",
-	"Resetta Contatore PNG",
-	"Resetta Tutti i Contatori PNG",
+	"Resetta Tutti i Token PNG",
 	"Esci",
 }
 
@@ -63,45 +61,17 @@ func (m model) handleMenuChoice(choice string) (model, tea.Cmd) {
 		} else {
 			m.message = fmt.Sprintf("Lista PNG salvata su %s.", dataFile)
 		}
-	case "Decrementa Contatore PNG":
-		if m.selectedPNGIndex == -1 || len(m.pngs) == 0 {
-			m.message = "Nessun PNG selezionato. Seleziona un PNG prima di decrementare."
-		} else {
-			png := &m.pngs[m.selectedPNGIndex]
-			if png.Counter > minCounter {
-				png.Counter--
-				if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
-					m.message = fmt.Sprintf("Contatore di '%s' decrementato, ma salvataggio fallito: %v", png.Name, err)
-				} else {
-					m.message = fmt.Sprintf("Contatore di '%s' decrementato a %d.", png.Name, png.Counter)
-				}
-			} else {
-				m.message = fmt.Sprintf("Il contatore di '%s' è già al minimo (%d).", png.Name, minCounter)
-			}
-		}
-	case "Resetta Contatore PNG":
-		if m.selectedPNGIndex == -1 || len(m.pngs) == 0 {
-			m.message = "Nessun PNG selezionato. Seleziona un PNG prima di resettare."
-		} else {
-			png := &m.pngs[m.selectedPNGIndex]
-			png.Counter = defaultCounter
-			if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
-				m.message = fmt.Sprintf("Contatore di '%s' resettato, ma salvataggio fallito: %v", png.Name, err)
-			} else {
-				m.message = fmt.Sprintf("Contatore di '%s' resettato a %d.", png.Name, png.Counter)
-			}
-		}
-	case "Resetta Tutti i Contatori PNG":
+	case "Resetta Tutti i Token PNG":
 		if len(m.pngs) == 0 {
-			m.message = "Nessun PNG presente per resettare i contatori."
+			m.message = "Nessun PNG presente per resettare i token."
 		} else {
 			for i := range m.pngs {
-				m.pngs[i].Counter = defaultCounter
+				m.pngs[i].Token = defaultToken
 			}
 			if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
-				m.message = fmt.Sprintf("Contatori resettati, ma salvataggio fallito: %v", err)
+				m.message = fmt.Sprintf("Token resettati, ma salvataggio fallito: %v", err)
 			} else {
-				m.message = fmt.Sprintf("Tutti i contatori PNG sono stati resettati a %d.", defaultCounter)
+				m.message = fmt.Sprintf("Tutti i token PNG sono stati resettati a %d.", defaultToken)
 			}
 		}
 	case "Esci":

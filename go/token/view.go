@@ -82,7 +82,8 @@ func (m model) View() string {
 	// Menu (sinistra)
 	var menu strings.Builder
 	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
-	menu.WriteString(dim.Render("Shortcut: 1=Comandi 2=PNGs  q/Esc/Ctrl+C=Esci") + "\n\n")
+	menu.WriteString(dim.Render("1=Comandi  2=PNGs  q/Esc/Ctrl+C=Esci") + "\n")
+	menu.WriteString(dim.Render("Enter: esegui  ↑↓: naviga") + "\n\n")
 	for i, choice := range m.choices {
 		cursor := "  "
 		if m.cursor == i && m.appState == menuState {
@@ -103,14 +104,15 @@ func (m model) View() string {
 		rightTop.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
 		rightTop.WriteString(m.message + "\n\n")
 		rightTop.WriteString(m.textInput.View() + "\n\n")
-		rightTop.WriteString(dim.Render("(Enter per confermare, Esc per annullare)"))
+		rightTop.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
 	default:
 		rightTop.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
+		rightTop.WriteString(dim.Render("↑↓: seleziona PNG  ←→: token -/+  (focus su PNGs)") + "\n\n")
 		if len(m.pngs) == 0 {
 			rightTop.WriteString(dim.Render("Nessun PNG creato."))
 		} else {
 			for i, png := range m.pngs {
-				line := fmt.Sprintf("%s (Contatore: %d)", png.Name, png.Counter)
+				line := fmt.Sprintf("%s (Token: %d)", png.Name, png.Token)
 				if i == m.selectedPNGIndex {
 					rightTop.WriteString(selectedPNGStyle.Render("• "+line) + "\n")
 				} else {
@@ -129,12 +131,27 @@ func (m model) View() string {
 	}
 	rightTopPanel := rightPanelStyle.Width(rightWidth).Render(limitLines(rightTop.String(), bodyContentHeight))
 
-	// Barra messaggi
+	// Barra messaggi con hint contestuale
 	message := m.message
 	if message == "" {
 		message = "Pronto."
 	}
-	messageBar := panel.Width(leftWidth + rightWidth).Render(highlight.Render(" Msg ") + " " + message)
+	helpText := "1/2 focus  •  q/Esc/Ctrl+C esci  •  Enter esegui  •  ↑↓ menu"
+	if m.appState == createPNGState {
+		helpText = "Enter conferma  •  Esc/q annulla"
+	} else if m.focusedPanel == 1 {
+		helpText = "↑↓ seleziona PNG  •  ←→ token  •  1 menu  2 PNGs"
+	}
+	if totalWidth < 80 {
+		if m.appState == createPNGState {
+			helpText = "Enter conferma  •  Esc/q annulla"
+		} else if m.focusedPanel == 1 {
+			helpText = "↑↓ seleziona  •  ←→ token  •  1 menu  2 PNGs"
+		} else {
+			helpText = "1/2 focus  •  q/Esc esci  •  Enter"
+		}
+	}
+	messageBar := panel.Width(leftWidth + rightWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("["+helpText+"]"))
 
 	// Layout finale
 	body := lipgloss.JoinHorizontal(lipgloss.Top, menuPanel, rightTopPanel)
