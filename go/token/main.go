@@ -33,17 +33,7 @@ func main() {
 	}
 
 	p := tea.NewProgram(model{
-		choices: []string{
-			"Crea PNG",
-			"Crea PNG casuale",
-			"Ricarica PNG da disco",
-			"Salva PNG su disco",
-			"Seleziona PNG",
-			"Decrementa Contatore PNG",
-			"Resetta Contatore PNG",
-			"Resetta Tutti i Contatori PNG",
-			"Esci",
-		},
+		choices:          menuChoices,
 		message:          initialMessage,
 		pngs:             pngs,
 		selectedPNGIndex: selectedIndex,

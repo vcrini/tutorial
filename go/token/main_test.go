@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func TestCapitalizeWord(t *testing.T) {
@@ -98,5 +100,137 @@ func TestLoadLegacyPNGList(t *testing.T) {
 	}
 	if got[0].Name != "Jack" || got[1].Name != "John" {
 		t.Fatalf("unexpected names: %+v", got)
+	}
+}
+
+func TestSelectionHelpers(t *testing.T) {
+	dir := t.TempDir()
+	old := dataFile
+	dataFile = filepath.Join(dir, "pngs.json")
+	t.Cleanup(func() { dataFile = old })
+
+	m := model{
+		pngs: []PNG{
+			{Name: "Arcano Drago Dor", Counter: 2},
+			{Name: "Mistico Vento Mir", Counter: 1},
+		},
+		selectedPNGIndex: -1,
+	}
+
+	m.selectNextPNG()
+	if m.selectedPNGIndex != 0 {
+		t.Fatalf("expected selected index 0, got %d", m.selectedPNGIndex)
+	}
+
+	m.selectNextPNG()
+	if m.selectedPNGIndex != 1 {
+		t.Fatalf("expected selected index 1, got %d", m.selectedPNGIndex)
+	}
+
+	m.selectPrevPNG()
+	if m.selectedPNGIndex != 0 {
+		t.Fatalf("expected selected index 0 after prev, got %d", m.selectedPNGIndex)
+	}
+
+	if _, err := os.Stat(dataFile); err != nil {
+		t.Fatalf("expected save file to exist: %v", err)
+	}
+}
+
+func TestMenuHandleChoiceCreateRandom(t *testing.T) {
+	dir := t.TempDir()
+	old := dataFile
+	dataFile = filepath.Join(dir, "pngs.json")
+	t.Cleanup(func() { dataFile = old })
+
+	m := model{pngs: []PNG{}}
+	var cmd tea.Cmd
+	m, cmd = m.handleMenuChoice("Crea PNG casuale")
+	if cmd != nil {
+		t.Fatalf("expected nil cmd, got %v", cmd)
+	}
+	if len(m.pngs) != 1 {
+		t.Fatalf("expected 1 png, got %d", len(m.pngs))
+	}
+	if m.selectedPNGIndex != 0 {
+		t.Fatalf("expected selected index 0, got %d", m.selectedPNGIndex)
+	}
+	if _, err := os.Stat(dataFile); err != nil {
+		t.Fatalf("expected save file to exist: %v", err)
+	}
+}
+
+func TestMenuHandleChoiceSave(t *testing.T) {
+	dir := t.TempDir()
+	old := dataFile
+	dataFile = filepath.Join(dir, "pngs.json")
+	t.Cleanup(func() { dataFile = old })
+
+	m := model{
+		pngs:             []PNG{{Name: "Arcano Drago Dor", Counter: 2}},
+		selectedPNGIndex: 0,
+	}
+	_, _ = m.handleMenuChoice("Salva PNG su disco")
+	if _, err := os.Stat(dataFile); err != nil {
+		t.Fatalf("expected save file to exist: %v", err)
+	}
+}
+
+func TestMenuHandleChoiceReloadKeepsSelected(t *testing.T) {
+	dir := t.TempDir()
+	old := dataFile
+	dataFile = filepath.Join(dir, "pngs.json")
+	t.Cleanup(func() { dataFile = old })
+
+	initial := []PNG{
+		{Name: "Arcano Drago Dor", Counter: 2},
+		{Name: "Mistico Vento Mir", Counter: 1},
+	}
+	if err := savePNGList(dataFile, initial, "Mistico Vento Mir"); err != nil {
+		t.Fatalf("save failed: %v", err)
+	}
+
+	m := model{
+		pngs:             []PNG{{Name: "X", Counter: 0}},
+		selectedPNGIndex: 0,
+	}
+	m, _ = m.handleMenuChoice("Ricarica PNG da disco")
+
+	if len(m.pngs) != 2 {
+		t.Fatalf("expected 2 pngs, got %d", len(m.pngs))
+	}
+	if m.selectedPNGIndex != 1 {
+		t.Fatalf("expected selected index 1, got %d", m.selectedPNGIndex)
+	}
+}
+
+func TestMenuHandleChoiceReloadLegacyKeepsSelectedName(t *testing.T) {
+	dir := t.TempDir()
+	old := dataFile
+	dataFile = filepath.Join(dir, "pngs.json")
+	t.Cleanup(func() { dataFile = old })
+
+	legacy := `[
+  {"Name":"Jack","Counter":1},
+  {"Name":"John","Counter":3}
+]`
+	if err := os.WriteFile(dataFile, []byte(legacy), 0o644); err != nil {
+		t.Fatalf("write failed: %v", err)
+	}
+
+	m := model{
+		pngs: []PNG{
+			{Name: "Jack", Counter: 1},
+			{Name: "John", Counter: 3},
+		},
+		selectedPNGIndex: 1,
+	}
+	m, _ = m.handleMenuChoice("Ricarica PNG da disco")
+
+	if len(m.pngs) != 2 {
+		t.Fatalf("expected 2 pngs, got %d", len(m.pngs))
+	}
+	if m.selectedPNGIndex != 1 {
+		t.Fatalf("expected selected index 1, got %d", m.selectedPNGIndex)
 	}
 }

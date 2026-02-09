@@ -11,8 +11,9 @@ import (
 const (
 	defaultCounter = 3
 	minCounter     = 0 // Il valore minimo
-	dataFile       = "pngs.json"
 )
+
+var dataFile = "pngs.json"
 
 // PNG rappresenta la struttura dati per un PNG con il suo contatore.
 type PNG struct {
