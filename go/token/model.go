@@ -88,6 +88,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.incrementSelectedToken()
 				}
 
+			case "d", "x", "backspace", "delete":
+				if m.focusedPanel == 1 {
+					m.deleteSelectedPNG()
+				}
+
 			case "enter":
 				return m.handleMenuChoice(m.choices[m.cursor])
 			}

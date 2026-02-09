@@ -60,6 +60,22 @@ func (m *model) incrementSelectedToken() {
 	}
 }
 
+func (m *model) deleteSelectedPNG() {
+	if m.selectedPNGIndex == -1 || len(m.pngs) == 0 {
+		m.message = "Nessun PNG selezionato."
+		return
+	}
+	deleted := m.pngs[m.selectedPNGIndex].Name
+	m.pngs = append(m.pngs[:m.selectedPNGIndex], m.pngs[m.selectedPNGIndex+1:]...)
+	if len(m.pngs) == 0 {
+		m.selectedPNGIndex = -1
+	} else if m.selectedPNGIndex >= len(m.pngs) {
+		m.selectedPNGIndex = len(m.pngs) - 1
+	}
+	m.persistSelection()
+	m.message = fmt.Sprintf("PNG '%s' eliminato.", deleted)
+}
+
 func (m *model) persistSelection() {
 	_ = savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex))
 }
