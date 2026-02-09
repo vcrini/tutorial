@@ -82,7 +82,7 @@ func (m model) View() string {
 	// Menu (sinistra)
 	var menu strings.Builder
 	menu.WriteString(titleStyle.Render(" Comandi ") + "\n\n")
-	menu.WriteString(dim.Render("1=Comandi  2=PNGs  q/Esc/Ctrl+C=Esci") + "\n")
+	menu.WriteString(dim.Render("1=Comandi  2=PNGs  Tab=Switch  q/Esc/Ctrl+C=Esci") + "\n")
 	menu.WriteString(dim.Render("Enter: esegui  ↑↓: naviga") + "\n\n")
 	for i, choice := range m.choices {
 		cursor := "  "
@@ -136,7 +136,7 @@ func (m model) View() string {
 	if message == "" {
 		message = "Pronto."
 	}
-	helpText := "1/2 focus  •  q/Esc/Ctrl+C esci  •  Enter esegui  •  ↑↓ menu"
+	helpText := "1/2/Tab focus  •  q/Esc/Ctrl+C esci  •  Enter esegui  •  ↑↓ menu"
 	if m.appState == createPNGState {
 		helpText = "Enter conferma  •  Esc/q annulla"
 	} else if m.focusedPanel == 1 {
@@ -148,7 +148,7 @@ func (m model) View() string {
 		} else if m.focusedPanel == 1 {
 			helpText = "↑↓ seleziona  •  ←→ token  •  1 menu  2 PNGs"
 		} else {
-			helpText = "1/2 focus  •  q/Esc esci  •  Enter"
+			helpText = "1/2/Tab focus  •  q/Esc esci  •  Enter"
 		}
 	}
 	messageBar := panel.Width(leftWidth + rightWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("["+helpText+"]"))

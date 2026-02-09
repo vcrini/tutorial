@@ -57,6 +57,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.focusedPanel = 0
 			case "2":
 				m.focusedPanel = 1
+			case "tab":
+				if m.focusedPanel == 0 {
+					m.focusedPanel = 1
+				} else {
+					m.focusedPanel = 0
+				}
 
 			case "up", "k":
 				if m.focusedPanel == 1 {
