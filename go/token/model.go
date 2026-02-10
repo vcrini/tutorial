@@ -37,6 +37,7 @@ type model struct {
 	monsterHistIndex int
 	encounter        []EncounterEntry
 	encounterCursor  int
+	detailsCompact   bool
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -167,6 +168,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusedPanel == 0 {
 					return m.handleMenuChoice("Resetta Tutti i Token PNG")
 				}
+
+			case "t":
+				m.detailsCompact = !m.detailsCompact
+				handled = true
 
 			case "enter":
 				if m.focusedPanel == 0 {

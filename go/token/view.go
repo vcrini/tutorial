@@ -110,7 +110,11 @@ func (m model) View() string {
 
 	// Pannello dettagli (PNG o Mostri)
 	var details strings.Builder
-	details.WriteString(titleStyle.Render(" Dettagli ") + "\n\n")
+	modeLabel := "Full"
+	if m.detailsCompact {
+		modeLabel = "Compact"
+	}
+	details.WriteString(titleStyle.Render(" Dettagli ") + dim.Render(" ["+modeLabel+"]") + "\n\n")
 	if m.focusedPanel == 2 {
 		filtered := m.filteredMonsters()
 		if len(filtered) == 0 {
@@ -144,16 +148,18 @@ func (m model) View() string {
 					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
 				}
 			}
-			if mon.Description != "" {
-				details.WriteString("\n" + mon.Description + "\n")
-			}
-			if mon.MotivationsTactics != "" {
-				details.WriteString("\nMotivazioni: " + mon.MotivationsTactics + "\n")
-			}
-			if len(mon.Traits) > 0 {
-				details.WriteString("\nTratti:\n")
-				for _, t := range mon.Traits {
-					details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+			if !m.detailsCompact {
+				if mon.Description != "" {
+					details.WriteString("\n" + mon.Description + "\n")
+				}
+				if mon.MotivationsTactics != "" {
+					details.WriteString("\nMotivazioni: " + mon.MotivationsTactics + "\n")
+				}
+				if len(mon.Traits) > 0 {
+					details.WriteString("\nTratti:\n")
+					for _, t := range mon.Traits {
+						details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+					}
 				}
 			}
 		}
@@ -175,9 +181,41 @@ func (m model) View() string {
 					seen++
 				}
 			}
-			details.WriteString(fmt.Sprintf("Nome:  %s #%d\n", e.Monster.Name, seen))
-			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", e.Monster.Role, e.Monster.Rank))
-			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", e.Monster.Difficulty))
+			mon := e.Monster
+			details.WriteString(fmt.Sprintf("Nome:  %s #%d\n", mon.Name, seen))
+			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
+			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
+			if len(mon.Thresholds.Values) > 0 {
+				details.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
+			} else if mon.Thresholds.Text != "" {
+				details.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
+			}
+			details.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
+			if mon.Attack.Name != "" {
+				bonus := strings.TrimSpace(mon.Attack.Bonus)
+				if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
+					bonus = "+" + bonus
+				}
+				if bonus != "" {
+					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
+				} else {
+					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+				}
+			}
+			if !m.detailsCompact {
+				if mon.Description != "" {
+					details.WriteString("\n" + mon.Description + "\n")
+				}
+				if mon.MotivationsTactics != "" {
+					details.WriteString("\nMotivazioni: " + mon.MotivationsTactics + "\n")
+				}
+				if len(mon.Traits) > 0 {
+					details.WriteString("\nTratti:\n")
+					for _, t := range mon.Traits {
+						details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+					}
+				}
+			}
 		}
 	} else {
 		if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
@@ -280,6 +318,7 @@ func (m model) View() string {
 		help.WriteString("↑↓: seleziona PNG\n")
 		help.WriteString("←→: token -/+\n")
 		help.WriteString("Mostri: digita per cercare, ↑↓ per selezionare, a: aggiungi\n")
+		help.WriteString("t: toggle dettagli compact/full\n")
 		help.WriteString("Incontro: d/x/backspace: rimuovi\n")
 		help.WriteString("?: mostra/nasconde help\n")
 		helpBox := panel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight))
