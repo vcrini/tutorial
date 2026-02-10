@@ -38,6 +38,8 @@ type model struct {
 	encounter        []EncounterEntry
 	encounterCursor  int
 	detailsCompact   bool
+	helpFilter       textinput.Model
+	helpFilterActive bool
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -48,6 +50,40 @@ func (m model) Init() tea.Cmd {
 // Update viene chiamato su ogni messaggio (es. pressione di un tasto) per aggiornare il modello.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+
+	// Help overlay handling
+	if m.showHelp {
+		switch msg := msg.(type) {
+		case tea.WindowSizeMsg:
+			m.width = msg.Width
+			m.height = msg.Height
+			return m, nil
+		case tea.KeyMsg:
+			switch msg.String() {
+			case "esc", "q":
+				m.showHelp = false
+				m.helpFilter.Blur()
+				m.helpFilterActive = false
+				return m, nil
+			case "/":
+				m.helpFilterActive = true
+				m.helpFilter.SetValue("")
+				m.helpFilter.Focus()
+				return m, nil
+			case "enter":
+				if m.helpFilterActive {
+					m.helpFilterActive = false
+					m.helpFilter.Blur()
+					return m, nil
+				}
+			}
+		}
+		if m.helpFilterActive {
+			m.helpFilter, cmd = m.helpFilter.Update(msg)
+			return m, cmd
+		}
+		return m, nil
+	}
 
 	switch m.appState {
 	case menuState:

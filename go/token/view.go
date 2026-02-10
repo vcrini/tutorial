@@ -321,30 +321,49 @@ func (m model) View() string {
 		var help strings.Builder
 		helpTitle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(listWidth + detailWidth - 4).Align(lipgloss.Center).Render("HELP")
 		help.WriteString(helpTitle + "\n\n")
-		help.WriteString("Tab: cambia pannello\n")
-		help.WriteString("1/2/3: focus pannello (PNGs/Incontro/Mostri)\n")
-		help.WriteString("q/Esc/Ctrl+C: esci\n")
-		help.WriteString("t: toggle dettagli compact/full\n")
-		help.WriteString("?: mostra/nasconde help\n\n")
+		help.WriteString(m.helpFilter.View() + "\n\n")
+
+		lines := []string{
+			"Tab: cambia pannello",
+			"1/2/3: focus pannello (PNGs/Incontro/Mostri)",
+			"q/Esc/Ctrl+C: esci",
+			"t: toggle dettagli compact/full",
+			"?: mostra/nasconde help",
+			"/: filtra help",
+			"",
+		}
 
 		switch m.focusedPanel {
 		case 0: // PNGs
-			help.WriteString("PNGs:\n")
-			help.WriteString("↑↓: seleziona PNG\n")
-			help.WriteString("←→: token -/+\n")
-			help.WriteString("n: nuovo PNG\n")
-			help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
-			help.WriteString("r: reset token di tutti\n")
+			lines = append(lines,
+				"PNGs:",
+				"↑↓: seleziona PNG",
+				"←→: token -/+",
+				"n: nuovo PNG",
+				"d/x/Backspace/Delete: elimina PNG",
+				"r: reset token di tutti",
+			)
 		case 1: // Incontro
-			help.WriteString("Incontro:\n")
-			help.WriteString("↑↓: seleziona mostro\n")
-			help.WriteString("d/x/Backspace/Delete: rimuovi\n")
+			lines = append(lines,
+				"Incontro:",
+				"↑↓: seleziona mostro",
+				"d/x/Backspace/Delete: rimuovi",
+			)
 		case 2: // Mostri
-			help.WriteString("Mostri:\n")
-			help.WriteString("digita per cercare\n")
-			help.WriteString("↑↓: seleziona mostro\n")
-			help.WriteString("a: aggiungi all'incontro\n")
-			help.WriteString("Ctrl+O/Ctrl+I: cronologia indietro/avanti\n")
+			lines = append(lines,
+				"Mostri:",
+				"digita per cercare",
+				"↑↓: seleziona mostro",
+				"a: aggiungi all'incontro",
+				"Ctrl+O/Ctrl+I: cronologia indietro/avanti",
+			)
+		}
+
+		filter := strings.ToLower(strings.TrimSpace(m.helpFilter.Value()))
+		for _, line := range lines {
+			if filter == "" || strings.Contains(strings.ToLower(line), filter) {
+				help.WriteString(line + "\n")
+			}
 		}
 		helpBox := helpPanel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight+4))
 		return helpBox

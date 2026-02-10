@@ -22,6 +22,12 @@ func main() {
 	mi.Width = 24
 	mi.Prompt = "Cerca: "
 
+	hf := textinput.New()
+	hf.Placeholder = "filtra help..."
+	hf.CharLimit = 40
+	hf.Width = 30
+	hf.Prompt = "/ "
+
 	pngs, selected, err := loadPNGList(dataFile)
 	initialMessage := "Benvenuto! Premi Enter per scegliere un'opzione o frecce per navigare."
 	if err != nil {
@@ -57,6 +63,7 @@ func main() {
 		monsterHistIndex: 0,
 		encounter:        []EncounterEntry{},
 		encounterCursor:  0,
+		helpFilter:       hf,
 	})
 
 	if _, err := p.Run(); err != nil {
