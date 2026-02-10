@@ -28,6 +28,12 @@ func main() {
 	hf.Width = 30
 	hf.Prompt = "/ "
 
+	ef := textinput.New()
+	ef.Placeholder = "1"
+	ef.CharLimit = 3
+	ef.Width = 4
+	ef.Prompt = "Ferite: "
+
 	pngs, selected, err := loadPNGList(dataFile)
 	initialMessage := "Benvenuto! Premi Enter per scegliere un'opzione o frecce per navigare."
 	if err != nil {
@@ -69,6 +75,8 @@ func main() {
 		encounter:        encounter,
 		encounterCursor:  0,
 		helpFilter:       hf,
+		encounterInput:   ef,
+		encounterLastAmt: 1,
 	})
 
 	if _, err := p.Run(); err != nil {

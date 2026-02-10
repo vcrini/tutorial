@@ -193,6 +193,10 @@ func (m model) View() string {
 				}
 			}
 			mon := e.Monster
+			basePF := e.BasePF
+			if basePF == 0 {
+				basePF = mon.PF
+			}
 			details.WriteString(fmt.Sprintf("Nome:  %s #%d\n", mon.Name, seen))
 			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
 			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
@@ -201,7 +205,11 @@ func (m model) View() string {
 			} else if mon.Thresholds.Text != "" {
 				details.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
 			}
-			details.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
+			pf := basePF - e.Wounds
+			if pf < 0 {
+				pf = 0
+			}
+			details.WriteString(fmt.Sprintf("PF: %d/%d  Stress: %d\n", pf, basePF, mon.Stress))
 			if mon.Attack.Name != "" {
 				bonus := strings.TrimSpace(mon.Attack.Bonus)
 				if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
@@ -252,7 +260,19 @@ func (m model) View() string {
 			if i == m.encounterCursor && m.focusedPanel == 1 {
 				prefix = selectedPNGStyle.Render("•") + " "
 			}
-			encounter.WriteString(prefix + label + "\n")
+			line := label
+			basePF := e.BasePF
+			if basePF == 0 {
+				basePF = e.Monster.PF
+			}
+			if basePF > 0 {
+				pf := basePF - e.Wounds
+				if pf < 0 {
+					pf = 0
+				}
+				line += fmt.Sprintf(" [%d/%d]", pf, basePF)
+			}
+			encounter.WriteString(prefix + line + "\n")
 		}
 	}
 	encounterBox := panel.Width(listWidth).Render(limitLines(encounter.String(), leftPanelHeight))
@@ -317,6 +337,22 @@ func (m model) View() string {
 
 	// Layout finale
 	body := lipgloss.JoinHorizontal(lipgloss.Top, listStack, detailsBox)
+	if m.encounterEditing {
+		var modal strings.Builder
+		modalWidth := listWidth
+		if modalWidth < 28 {
+			modalWidth = 28
+		}
+		title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(modalWidth - 4).Align(lipgloss.Center).Render("FERITE")
+		modal.WriteString(title + "\n\n")
+		modal.WriteString(m.encounterInput.View() + "\n\n")
+		modal.WriteString(dim.Render("Invio per confermare") + "\n")
+		modal.WriteString(dim.Render("Esc per annullare") + "\n")
+		modalBox := helpPanel.Width(modalWidth).Render(limitLines(modal.String(), 8))
+
+		overlay := lipgloss.Place(listWidth+detailWidth, bodyContentHeight+4, lipgloss.Center, lipgloss.Center, modalBox)
+		return overlay
+	}
 	if m.showHelp {
 		var help strings.Builder
 		helpTitle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(listWidth + detailWidth - 4).Align(lipgloss.Center).Render("HELP")
@@ -349,6 +385,7 @@ func (m model) View() string {
 				"Incontro:",
 				"↑↓: seleziona mostro",
 				"d/x/Backspace/Delete: rimuovi",
+				"←→: aggiungi/togli ferite",
 			)
 		case 2: // Mostri
 			lines = append(lines,

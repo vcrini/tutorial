@@ -8,14 +8,20 @@ import (
 
 type EncounterEntry struct {
 	Monster Monster
+	Wounds  int
+	BasePF  int
 }
 
 type encounterPersist struct {
-	Names []string `yaml:"names"`
+	Entries []struct {
+		Name   string `yaml:"name"`
+		Wounds int    `yaml:"wounds"`
+		PF     int    `yaml:"pf"`
+	} `yaml:"entries"`
 }
 
 func (m *model) addMonsterToEncounter(mon Monster) {
-	m.encounter = append(m.encounter, EncounterEntry{Monster: mon})
+	m.encounter = append(m.encounter, EncounterEntry{Monster: mon, BasePF: mon.PF})
 	m.persistEncounter()
 }
 
@@ -34,19 +40,31 @@ func (m *model) removeEncounterAt(idx int) {
 }
 
 func (m *model) persistEncounter() {
-	var names []string
-	for _, e := range m.encounter {
-		names = append(names, e.Monster.Name)
+	var entries []struct {
+		Name   string `yaml:"name"`
+		Wounds int    `yaml:"wounds"`
+		PF     int    `yaml:"pf"`
 	}
-	_ = saveEncounter(encounterFile, names)
+	for _, e := range m.encounter {
+		basePF := e.BasePF
+		if basePF == 0 {
+			basePF = e.Monster.PF
+		}
+		entries = append(entries, struct {
+			Name   string `yaml:"name"`
+			Wounds int    `yaml:"wounds"`
+			PF     int    `yaml:"pf"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF})
+	}
+	_ = saveEncounter(encounterFile, entries)
 }
 
 func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
-	names, err := readEncounter(path)
+	rawEntries, err := readEncounter(path)
 	if err != nil {
 		return nil, err
 	}
-	if len(names) == 0 {
+	if len(rawEntries) == 0 {
 		return []EncounterEntry{}, nil
 	}
 
@@ -56,18 +74,23 @@ func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 	}
 
 	var entries []EncounterEntry
-	for _, name := range names {
+	for _, e := range rawEntries {
+		name := e.Name
 		if mon, ok := byName[name]; ok {
-			entries = append(entries, EncounterEntry{Monster: mon})
+			entries = append(entries, EncounterEntry{Monster: mon, Wounds: e.Wounds, BasePF: e.PF})
 		} else {
-			entries = append(entries, EncounterEntry{Monster: Monster{Name: name}})
+			entries = append(entries, EncounterEntry{Monster: Monster{Name: name, PF: e.PF}, Wounds: e.Wounds, BasePF: e.PF})
 		}
 	}
 	return entries, nil
 }
 
-func saveEncounter(path string, names []string) error {
-	payload := encounterPersist{Names: names}
+func saveEncounter(path string, entries []struct {
+	Name   string `yaml:"name"`
+	Wounds int    `yaml:"wounds"`
+	PF     int    `yaml:"pf"`
+}) error {
+	payload := encounterPersist{Entries: entries}
 	data, err := yaml.Marshal(payload)
 	if err != nil {
 		return err
@@ -75,11 +98,19 @@ func saveEncounter(path string, names []string) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-func readEncounter(path string) ([]string, error) {
+func readEncounter(path string) ([]struct {
+	Name   string `yaml:"name"`
+	Wounds int    `yaml:"wounds"`
+	PF     int    `yaml:"pf"`
+}, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return []string{}, nil
+			return []struct {
+				Name   string `yaml:"name"`
+				Wounds int    `yaml:"wounds"`
+				PF     int    `yaml:"pf"`
+			}{}, nil
 		}
 		return nil, err
 	}
@@ -87,5 +118,12 @@ func readEncounter(path string) ([]string, error) {
 	if err := yaml.Unmarshal(data, &payload); err != nil {
 		return nil, err
 	}
-	return payload.Names, nil
+	if payload.Entries == nil {
+		return []struct {
+			Name   string `yaml:"name"`
+			Wounds int    `yaml:"wounds"`
+			PF     int    `yaml:"pf"`
+		}{}, nil
+	}
+	return payload.Entries, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -40,6 +41,10 @@ type model struct {
 	detailsCompact   bool
 	helpFilter       textinput.Model
 	helpFilterActive bool
+	encounterInput   textinput.Model
+	encounterEditing bool
+	encounterDelta   int
+	encounterLastAmt int
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -93,6 +98,55 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.height = msg.Height
 			return m, nil
 		case tea.KeyMsg:
+			if m.encounterEditing {
+				switch msg.String() {
+				case "enter":
+					val := strings.TrimSpace(m.encounterInput.Value())
+					amt := m.encounterLastAmt
+					if val != "" {
+						if n, err := strconv.Atoi(val); err == nil && n > 0 {
+							amt = n
+						}
+					}
+					if m.encounterDelta == 0 {
+						m.encounterDelta = 1
+					}
+					m.encounterLastAmt = amt
+					if len(m.encounter) > 0 && m.encounterCursor >= 0 && m.encounterCursor < len(m.encounter) {
+						m.encounter[m.encounterCursor].Wounds += m.encounterDelta * amt
+						if m.encounter[m.encounterCursor].Wounds < 0 {
+							m.encounter[m.encounterCursor].Wounds = 0
+						}
+						basePF := m.encounter[m.encounterCursor].BasePF
+						if basePF == 0 {
+							basePF = m.encounter[m.encounterCursor].Monster.PF
+						}
+						if basePF > 0 && m.encounter[m.encounterCursor].Wounds > basePF {
+							m.encounter[m.encounterCursor].Wounds = basePF
+						}
+						m.persistEncounter()
+						if basePF > 0 {
+							pf := basePF - m.encounter[m.encounterCursor].Wounds
+							if pf < 0 {
+								pf = 0
+							}
+							m.message = fmt.Sprintf("Ferite aggiornate. PF: %d/%d", pf, basePF)
+						} else {
+							m.message = "Ferite aggiornate."
+						}
+					}
+					m.encounterEditing = false
+					m.encounterInput.Blur()
+					return m, nil
+				case "esc":
+					m.encounterEditing = false
+					m.encounterInput.Blur()
+					return m, nil
+				}
+				m.encounterInput, cmd = m.encounterInput.Update(msg)
+				return m, cmd
+			}
+
 			handled := false
 			switch msg.String() {
 			case "esc":
@@ -170,12 +224,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "left", "h":
 				if m.focusedPanel == 0 {
 					m.decrementSelectedToken()
+				} else if m.focusedPanel == 1 {
+					m.encounterEditing = true
+					m.encounterDelta = 1
+					m.encounterInput.SetValue(strconv.Itoa(m.encounterLastAmt))
+					m.encounterInput.Focus()
+					return m, nil
 				}
 				handled = true
 
 			case "right", "l":
 				if m.focusedPanel == 0 {
 					m.incrementSelectedToken()
+				} else if m.focusedPanel == 1 {
+					m.encounterEditing = true
+					m.encounterDelta = -1
+					m.encounterInput.SetValue(strconv.Itoa(m.encounterLastAmt))
+					m.encounterInput.Focus()
+					return m, nil
 				}
 				handled = true
 
