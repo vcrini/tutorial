@@ -108,16 +108,64 @@ func (m model) View() string {
 	}
 	listBox := panel.Width(listWidth).Render(limitLines(listPanel.String(), leftPanelHeight))
 
-	// Pannello dettagli PNG
+	// Pannello dettagli (PNG o Mostri)
 	var details strings.Builder
 	details.WriteString(titleStyle.Render(" Dettagli ") + "\n\n")
-	if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
-		png := m.pngs[m.selectedPNGIndex]
-		details.WriteString(fmt.Sprintf("Nome:  %s\n", png.Name))
-		details.WriteString(fmt.Sprintf("Token: %d\n", png.Token))
-		details.WriteString(fmt.Sprintf("Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs)))
+	if m.focusedPanel == 1 {
+		filtered := m.filteredMonsters()
+		if len(filtered) == 0 {
+			details.WriteString(dim.Render("Nessun mostro trovato."))
+		} else {
+			idx := m.monsterCursor
+			if idx < 0 {
+				idx = 0
+			}
+			if idx >= len(filtered) {
+				idx = len(filtered) - 1
+			}
+			mon := filtered[idx]
+			details.WriteString(fmt.Sprintf("Nome:  %s\n", mon.Name))
+			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
+			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
+			if len(mon.Thresholds.Values) > 0 {
+				details.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
+			} else if mon.Thresholds.Text != "" {
+				details.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
+			}
+			details.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
+			if mon.Attack.Name != "" {
+				bonus := strings.TrimSpace(mon.Attack.Bonus)
+				if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
+					bonus = "+" + bonus
+				}
+				if bonus != "" {
+					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
+				} else {
+					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+				}
+			}
+			if mon.Description != "" {
+				details.WriteString("\n" + mon.Description + "\n")
+			}
+			if mon.MotivationsTactics != "" {
+				details.WriteString("\nMotivazioni: " + mon.MotivationsTactics + "\n")
+			}
+			if len(mon.Traits) > 0 {
+				details.WriteString("\nTratti:\n")
+				for _, t := range mon.Traits {
+					details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+				}
+			}
+		}
 	} else {
-		details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
+		if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
+			png := m.pngs[m.selectedPNGIndex]
+			details.WriteString(fmt.Sprintf("Nome:  %s\n", png.Name))
+			details.WriteString(fmt.Sprintf("Token: %d\n", png.Token))
+			details.WriteString(fmt.Sprintf("Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs)))
+		} else {
+			details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
+		}
 	}
 	// Pannello mostri (sotto PNGs)
 	var monsters strings.Builder
