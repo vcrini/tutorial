@@ -324,15 +324,28 @@ func (m model) View() string {
 		help.WriteString("Tab: cambia pannello\n")
 		help.WriteString("1/2/3: focus pannello (PNGs/Incontro/Mostri)\n")
 		help.WriteString("q/Esc/Ctrl+C: esci\n")
-		help.WriteString("n: nuovo PNG\n")
-		help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
-		help.WriteString("r: reset token di tutti\n")
-		help.WriteString("↑↓: seleziona PNG\n")
-		help.WriteString("←→: token -/+\n")
-		help.WriteString("Mostri: digita per cercare, ↑↓ per selezionare, a: aggiungi\n")
 		help.WriteString("t: toggle dettagli compact/full\n")
-		help.WriteString("Incontro: d/x/backspace: rimuovi\n")
-		help.WriteString("?: mostra/nasconde help\n")
+		help.WriteString("?: mostra/nasconde help\n\n")
+
+		switch m.focusedPanel {
+		case 0: // PNGs
+			help.WriteString("PNGs:\n")
+			help.WriteString("↑↓: seleziona PNG\n")
+			help.WriteString("←→: token -/+\n")
+			help.WriteString("n: nuovo PNG\n")
+			help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
+			help.WriteString("r: reset token di tutti\n")
+		case 1: // Incontro
+			help.WriteString("Incontro:\n")
+			help.WriteString("↑↓: seleziona mostro\n")
+			help.WriteString("d/x/Backspace/Delete: rimuovi\n")
+		case 2: // Mostri
+			help.WriteString("Mostri:\n")
+			help.WriteString("digita per cercare\n")
+			help.WriteString("↑↓: seleziona mostro\n")
+			help.WriteString("a: aggiungi all'incontro\n")
+			help.WriteString("Ctrl+O/Ctrl+I: cronologia indietro/avanti\n")
+		}
 		helpBox := helpPanel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight+4))
 		return helpBox
 	}
