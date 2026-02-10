@@ -66,7 +66,7 @@ type Monster struct {
 	PF                 int        `yaml:"pf"`
 	Stress             int        `yaml:"stress"`
 	Attack             struct {
-		Bonus      int    `yaml:"bonus"`
+		Bonus      string `yaml:"bonus"`
 		Name       string `yaml:"name"`
 		Range      string `yaml:"range"`
 		Damage     string `yaml:"damage"`

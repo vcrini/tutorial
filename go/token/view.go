@@ -153,7 +153,15 @@ func (m model) View() string {
 		}
 		monsters.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
 		if mon.Attack.Name != "" {
-			monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+			bonus := strings.TrimSpace(mon.Attack.Bonus)
+			if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
+				bonus = "+" + bonus
+			}
+			if bonus != "" {
+				monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
+			} else {
+				monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+			}
 		}
 	}
 	monstersBox := panel.Width(listWidth).Render(limitLines(monsters.String(), leftPanelHeight))
