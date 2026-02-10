@@ -71,7 +71,7 @@ func (m model) View() string {
 	bodyContentHeight := maxInt(totalHeight-6, 4)
 
 	// Header
-	header := titleStyle.Render(" PNG Manager ") + dim.Render(" • Lazy style UI")
+	header := titleStyle.Render(" PNG Manager ")
 	headerBar := panel.Width(listWidth + detailWidth).Render(header)
 
 	// Pannello lista PNG
@@ -84,7 +84,7 @@ func (m model) View() string {
 		listPanel.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
 	default:
 		listPanel.WriteString(titleStyle.Render(" [1]-PNGs ") + "\n\n")
-		listPanel.WriteString(dim.Render("?") + "\n\n")
+		listPanel.WriteString("\n")
 		if len(m.pngs) == 0 {
 			listPanel.WriteString(dim.Render("Nessun PNG creato."))
 		} else {
@@ -175,7 +175,7 @@ func (m model) View() string {
 	if message == "" {
 		message = "Pronto."
 	}
-	messageBar := panel.Width(listWidth + detailWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("[? help]"))
+	messageBar := panel.Width(listWidth + detailWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("?: help"))
 
 	// Layout finale
 	body := lipgloss.JoinHorizontal(lipgloss.Top, listStack, detailsBox)
