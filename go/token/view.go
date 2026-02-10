@@ -341,7 +341,8 @@ func (m model) View() string {
 				"←→: token -/+",
 				"n: nuovo PNG",
 				"d/x/Backspace/Delete: elimina PNG",
-				"r: reset token di tutti",
+				"r: reset token selezionato",
+				"R: reset token di tutti",
 			)
 		case 1: // Incontro
 			lines = append(lines,

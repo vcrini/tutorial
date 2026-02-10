@@ -202,6 +202,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "r":
 				if m.focusedPanel == 0 {
+					if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
+						m.pngs[m.selectedPNGIndex].Token = defaultToken
+						m.persistSelection()
+						m.message = "Token del PNG selezionato resettato."
+					} else {
+						m.message = "Nessun PNG selezionato."
+					}
+				}
+
+			case "R":
+				if m.focusedPanel == 0 {
 					return m.handleMenuChoice("Resetta Tutti i Token PNG")
 				}
 
