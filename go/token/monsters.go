@@ -16,6 +16,21 @@ func (m model) filteredMonsters() []Monster {
 	return out
 }
 
+func (m model) currentMonster() (Monster, bool) {
+	list := m.filteredMonsters()
+	if len(list) == 0 {
+		return Monster{}, false
+	}
+	idx := m.monsterCursor
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(list) {
+		idx = len(list) - 1
+	}
+	return list[idx], true
+}
+
 func (m *model) clampMonsterCursor() {
 	list := m.filteredMonsters()
 	if len(list) == 0 {

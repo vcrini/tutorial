@@ -102,7 +102,7 @@ func (m model) View() string {
 		}
 	}
 
-	leftPanelHeight := bodyContentHeight / 2
+	leftPanelHeight := bodyContentHeight / 3
 	if leftPanelHeight < 4 {
 		leftPanelHeight = 4
 	}
@@ -111,7 +111,7 @@ func (m model) View() string {
 	// Pannello dettagli (PNG o Mostri)
 	var details strings.Builder
 	details.WriteString(titleStyle.Render(" Dettagli ") + "\n\n")
-	if m.focusedPanel == 1 {
+	if m.focusedPanel == 2 {
 		filtered := m.filteredMonsters()
 		if len(filtered) == 0 {
 			details.WriteString(dim.Render("Nessun mostro trovato."))
@@ -157,6 +157,28 @@ func (m model) View() string {
 				}
 			}
 		}
+	} else if m.focusedPanel == 1 {
+		if len(m.encounter) == 0 {
+			details.WriteString(dim.Render("Nessun mostro in incontro."))
+		} else {
+			idx := m.encounterCursor
+			if idx < 0 {
+				idx = 0
+			}
+			if idx >= len(m.encounter) {
+				idx = len(m.encounter) - 1
+			}
+			e := m.encounter[idx]
+			seen := 0
+			for i := 0; i <= idx; i++ {
+				if m.encounter[i].Monster.Name == e.Monster.Name {
+					seen++
+				}
+			}
+			details.WriteString(fmt.Sprintf("Nome:  %s #%d\n", e.Monster.Name, seen))
+			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", e.Monster.Role, e.Monster.Rank))
+			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", e.Monster.Difficulty))
+		}
 	} else {
 		if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
 			png := m.pngs[m.selectedPNGIndex]
@@ -167,9 +189,28 @@ func (m model) View() string {
 			details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
 		}
 	}
-	// Pannello mostri (sotto PNGs)
+	// Pannello incontro (sotto PNGs)
+	var encounter strings.Builder
+	encounter.WriteString(titleStyle.Render(" [2]-Incontro ") + "\n\n")
+	if len(m.encounter) == 0 {
+		encounter.WriteString(dim.Render("Nessun mostro in incontro."))
+	} else {
+		seen := map[string]int{}
+		for i, e := range m.encounter {
+			seen[e.Monster.Name]++
+			label := fmt.Sprintf("%s #%d", e.Monster.Name, seen[e.Monster.Name])
+			prefix := "  "
+			if i == m.encounterCursor && m.focusedPanel == 1 {
+				prefix = selectedPNGStyle.Render("•") + " "
+			}
+			encounter.WriteString(prefix + label + "\n")
+		}
+	}
+	encounterBox := panel.Width(listWidth).Render(limitLines(encounter.String(), leftPanelHeight))
+
+	// Pannello mostri (sotto Incontro)
 	var monsters strings.Builder
-	monsters.WriteString(titleStyle.Render(" [2]-Mostri ") + "\n\n")
+	monsters.WriteString(titleStyle.Render(" [3]-Mostri ") + "\n\n")
 	monsters.WriteString(m.monsterSearch.View() + "\n\n")
 	filtered := m.filteredMonsters()
 	if len(filtered) == 0 {
@@ -214,7 +255,7 @@ func (m model) View() string {
 	}
 	monstersBox := panel.Width(listWidth).Render(limitLines(monsters.String(), leftPanelHeight))
 
-	listStack := lipgloss.JoinVertical(lipgloss.Left, listBox, monstersBox)
+	listStack := lipgloss.JoinVertical(lipgloss.Left, listBox, encounterBox, monstersBox)
 
 	detailsBox := panel.Width(detailWidth).Render(limitLines(details.String(), bodyContentHeight*2))
 
@@ -231,14 +272,15 @@ func (m model) View() string {
 		var help strings.Builder
 		help.WriteString(titleStyle.Render(" Help ") + "\n\n")
 		help.WriteString("Tab: cambia pannello\n")
-		help.WriteString("1/2: focus pannello (PNGs/Mostri)\n")
+		help.WriteString("1/2/3: focus pannello (PNGs/Incontro/Mostri)\n")
 		help.WriteString("q/Esc/Ctrl+C: esci\n")
 		help.WriteString("n: nuovo PNG\n")
 		help.WriteString("d/x/Backspace/Delete: elimina PNG\n")
 		help.WriteString("r: reset token di tutti\n")
 		help.WriteString("↑↓: seleziona PNG\n")
 		help.WriteString("←→: token -/+\n")
-		help.WriteString("Mostri: digita per cercare, ↑↓ per selezionare\n")
+		help.WriteString("Mostri: digita per cercare, ↑↓ per selezionare, a: aggiungi\n")
+		help.WriteString("Incontro: d/x/backspace: rimuovi\n")
 		help.WriteString("?: mostra/nasconde help\n")
 		helpBox := panel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight))
 		return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, helpBox, messageBar)

@@ -53,6 +53,10 @@ func main() {
 		focusedPanel:     0,
 		monsters:         monsters,
 		monsterSearch:    mi,
+		monsterHistory:   []int{},
+		monsterHistIndex: 0,
+		encounter:        []EncounterEntry{},
+		encounterCursor:  0,
 	})
 
 	if _, err := p.Run(); err != nil {

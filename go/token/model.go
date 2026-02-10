@@ -28,11 +28,15 @@ type model struct {
 	textInput        textinput.Model // Input per il nome del nuovo PNG
 	width            int             // Larghezza della finestra
 	height           int             // Altezza della finestra
-	focusedPanel     int             // 0=pngs, 1=mostri
+	focusedPanel     int             // 0=pngs, 1=incontro, 2=mostri
 	showHelp         bool            // Mostra la finestra di aiuto
 	monsters         []Monster
 	monsterSearch    textinput.Model
 	monsterCursor    int
+	monsterHistory   []int
+	monsterHistIndex int
+	encounter        []EncounterEntry
+	encounterCursor  int
 }
 
 // Init viene chiamata una volta all'avvio del programma per inizializzare il modello.
@@ -78,11 +82,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				handled = true
 			case "2":
 				m.focusedPanel = 1
+				m.monsterSearch.Blur()
+				handled = true
+			case "3":
+				m.focusedPanel = 2
 				m.monsterSearch.Focus()
 				handled = true
 			case "tab":
 				if m.focusedPanel == 0 {
 					m.focusedPanel = 1
+					m.monsterSearch.Blur()
+				} else if m.focusedPanel == 1 {
+					m.focusedPanel = 2
 					m.monsterSearch.Focus()
 				} else {
 					m.focusedPanel = 0
@@ -96,17 +107,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "up", "k":
 				if m.focusedPanel == 0 {
 					m.selectPrevPNG()
+				} else if m.focusedPanel == 1 {
+					if m.encounterCursor > 0 {
+						m.encounterCursor--
+					}
 				} else {
 					m.monsterCursor--
 					m.clampMonsterCursor()
+					m.pushMonsterHistory()
 				}
 
 			case "down", "j":
 				if m.focusedPanel == 0 {
 					m.selectNextPNG()
+				} else if m.focusedPanel == 1 {
+					if m.encounterCursor < len(m.encounter)-1 {
+						m.encounterCursor++
+					}
 				} else {
 					m.monsterCursor++
 					m.clampMonsterCursor()
+					m.pushMonsterHistory()
 				}
 
 			case "left", "h":
@@ -124,6 +145,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "d", "x", "backspace", "delete":
 				if m.focusedPanel == 0 {
 					m.deleteSelectedPNG()
+					handled = true
+				} else if m.focusedPanel == 1 {
+					if len(m.encounter) > 0 {
+						m.removeEncounterAt(m.encounterCursor)
+						m.message = "Mostro rimosso dall'incontro."
+					}
 					handled = true
 				}
 
@@ -146,11 +173,30 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m.handleMenuChoice(m.choices[m.cursor])
 				}
 				handled = true
+			case "a":
+				if m.focusedPanel == 2 {
+					if mon, ok := m.currentMonster(); ok {
+						m.addMonsterToEncounter(mon)
+						m.message = "Aggiunto a incontro: " + mon.Name
+					}
+				}
+				handled = true
+			case "ctrl+o":
+				if m.focusedPanel == 2 {
+					m.monsterHistoryBack()
+				}
+				handled = true
+			case "ctrl+i":
+				if m.focusedPanel == 2 {
+					m.monsterHistoryForward()
+				}
+				handled = true
 			}
-			if m.focusedPanel == 1 && !handled {
+			if m.focusedPanel == 2 && !handled {
 				var cmd tea.Cmd
 				m.monsterSearch, cmd = m.monsterSearch.Update(msg)
 				m.clampMonsterCursor()
+				m.pushMonsterHistory()
 				return m, cmd
 			}
 		}
