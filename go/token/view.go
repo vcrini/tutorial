@@ -56,6 +56,34 @@ func clampFinalWidth(s string, width int) string {
 	return strings.Join(lines, "\n")
 }
 
+func windowLines(lines []string, selected int, height int) []string {
+	if height <= 0 {
+		return []string{}
+	}
+	if len(lines) <= height {
+		return lines
+	}
+	if selected < 0 {
+		selected = 0
+	}
+	if selected >= len(lines) {
+		selected = len(lines) - 1
+	}
+	start := selected - height/2
+	if start < 0 {
+		start = 0
+	}
+	end := start + height
+	if end > len(lines) {
+		end = len(lines)
+		start = end - height
+		if start < 0 {
+			start = 0
+		}
+	}
+	return lines[start:end]
+}
+
 // View rende l'interfaccia utente.
 func (m model) View() string {
 	if m.quitting {
@@ -141,34 +169,6 @@ func (m model) View() string {
 		bodyHeight = 3
 	}
 
-	// Pannello lista PNG
-	var listPanel strings.Builder
-	switch m.appState {
-	case createPNGState:
-		listPanel.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
-		listPanel.WriteString(m.message + "\n\n")
-		listPanel.WriteString(m.textInput.View() + "\n\n")
-		listPanel.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
-	default:
-		listPanel.WriteString(titleStyle.Render(" [1]-PNGs ") + "\n\n")
-		listPanel.WriteString("\n")
-		if len(m.pngs) == 0 {
-			listPanel.WriteString(dim.Render("Nessun PNG creato."))
-		} else {
-			for i, png := range m.pngs {
-				line := fmt.Sprintf("%s (Token: %d)", png.Name, png.Token)
-				if i == m.selectedPNGIndex {
-					listPanel.WriteString(selectedPNGStyle.Render("• "+line) + "\n")
-				} else {
-					listPanel.WriteString("  " + line + "\n")
-				}
-			}
-			if m.selectedPNGIndex == -1 {
-				listPanel.WriteString("\n" + dim.Render("Nessun PNG selezionato."))
-			}
-		}
-	}
-
 	leftBoxTotal1 := bodyHeight / 3
 	leftBoxTotal2 := bodyHeight / 3
 	leftBoxTotal3 := bodyHeight - leftBoxTotal1 - leftBoxTotal2
@@ -192,6 +192,38 @@ func (m model) View() string {
 	}
 	if leftContent3 < 1 {
 		leftContent3 = 1
+	}
+
+	// Pannello lista PNG
+	var listPanel strings.Builder
+	switch m.appState {
+	case createPNGState:
+		listPanel.WriteString(titleStyle.Render(" Nuovo PNG ") + "\n\n")
+		listPanel.WriteString(m.message + "\n\n")
+		listPanel.WriteString(m.textInput.View() + "\n\n")
+		listPanel.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
+	default:
+		headerLines := []string{titleStyle.Render(" [1]-PNGs "), ""}
+		var items []string
+		if len(m.pngs) == 0 {
+			items = []string{dim.Render("Nessun PNG creato.")}
+		} else {
+			for i, png := range m.pngs {
+				line := fmt.Sprintf("%s (Token: %d)", png.Name, png.Token)
+				if i == m.selectedPNGIndex {
+					items = append(items, selectedPNGStyle.Render("• "+line))
+				} else {
+					items = append(items, "  "+line)
+				}
+			}
+		}
+		lines := headerLines
+		remaining := leftContent1 - len(headerLines)
+		if remaining < 0 {
+			remaining = 0
+		}
+		lines = append(lines, windowLines(items, m.selectedPNGIndex, remaining)...)
+		listPanel.WriteString(strings.Join(lines, "\n"))
 	}
 
 	listBox := panel.Width(listContentWidth).Height(leftContent1).Render(limitLines(fitWidth(listPanel.String(), listContentWidth), leftContent1))
@@ -361,9 +393,10 @@ func (m model) View() string {
 	}
 	// Pannello incontro (sotto PNGs)
 	var encounter strings.Builder
-	encounter.WriteString(titleStyle.Render(" [2]-Incontro ") + "\n\n")
+	encounterHeader := []string{titleStyle.Render(" [2]-Incontro "), ""}
+	var encounterItems []string
 	if len(m.encounter) == 0 {
-		encounter.WriteString(dim.Render("Nessun mostro in incontro."))
+		encounterItems = []string{dim.Render("Nessun mostro in incontro.")}
 	} else {
 		seen := map[string]int{}
 		for i, e := range m.encounter {
@@ -385,56 +418,41 @@ func (m model) View() string {
 				}
 				line += fmt.Sprintf(" [%d/%d]", pf, basePF)
 			}
-			encounter.WriteString(prefix + line + "\n")
+			encounterItems = append(encounterItems, prefix+line)
 		}
 	}
+	encounterLines := encounterHeader
+	remainingEncounter := leftContent2 - len(encounterHeader)
+	if remainingEncounter < 0 {
+		remainingEncounter = 0
+	}
+	encounterLines = append(encounterLines, windowLines(encounterItems, m.encounterCursor, remainingEncounter)...)
+	encounter.WriteString(strings.Join(encounterLines, "\n"))
 	encounterBox := panel.Width(listContentWidth).Height(leftContent2).Render(limitLines(fitWidth(encounter.String(), listContentWidth), leftContent2))
 
 	// Pannello mostri (sotto Incontro)
 	var monsters strings.Builder
-	monsters.WriteString(titleStyle.Render(" [3]-Mostri ") + "\n\n")
-	monsters.WriteString(m.monsterSearch.View() + "\n\n")
+	monsterHeader := []string{titleStyle.Render(" [3]-Mostri "), "", m.monsterSearch.View(), ""}
 	filtered := m.filteredMonsters()
+	var monsterItems []string
 	if len(filtered) == 0 {
-		monsters.WriteString(dim.Render("Nessun mostro trovato."))
+		monsterItems = []string{dim.Render("Nessun mostro trovato.")}
 	} else {
 		for i, mon := range filtered {
 			prefix := "  "
 			if i == m.monsterCursor {
 				prefix = selectedPNGStyle.Render("•") + " "
 			}
-			monsters.WriteString(prefix + mon.Name + "\n")
-		}
-		monsters.WriteString("\n")
-		idx := m.monsterCursor
-		if idx < 0 {
-			idx = 0
-		}
-		if idx >= len(filtered) {
-			idx = len(filtered) - 1
-		}
-		mon := filtered[idx]
-		monsters.WriteString(dim.Render("Dettagli") + "\n")
-		monsters.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
-		monsters.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
-		if len(mon.Thresholds.Values) > 0 {
-			monsters.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
-		} else if mon.Thresholds.Text != "" {
-			monsters.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
-		}
-		monsters.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
-		if mon.Attack.Name != "" {
-			bonus := strings.TrimSpace(mon.Attack.Bonus)
-			if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
-				bonus = "+" + bonus
-			}
-			if bonus != "" {
-				monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
-			} else {
-				monsters.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
-			}
+			monsterItems = append(monsterItems, prefix+mon.Name)
 		}
 	}
+	monsterLines := monsterHeader
+	remainingMonster := leftContent3 - len(monsterHeader)
+	if remainingMonster < 0 {
+		remainingMonster = 0
+	}
+	monsterLines = append(monsterLines, windowLines(monsterItems, m.monsterCursor, remainingMonster)...)
+	monsters.WriteString(strings.Join(monsterLines, "\n"))
 	monstersBox := panel.Width(listContentWidth).Height(leftContent3).Render(limitLines(fitWidth(monsters.String(), listContentWidth), leftContent3))
 
 	listStack := lipgloss.JoinVertical(lipgloss.Left, listBox, encounterBox, monstersBox)
