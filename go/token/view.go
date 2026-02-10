@@ -83,7 +83,7 @@ func (m model) View() string {
 		listPanel.WriteString(m.textInput.View() + "\n\n")
 		listPanel.WriteString(dim.Render("Enter: conferma  Esc/q: annulla"))
 	default:
-		listPanel.WriteString(titleStyle.Render(" PNGs ") + "\n\n")
+		listPanel.WriteString(titleStyle.Render(" [1]-PNGs ") + "\n\n")
 		listPanel.WriteString(dim.Render("?") + "\n\n")
 		if len(m.pngs) == 0 {
 			listPanel.WriteString(dim.Render("Nessun PNG creato."))
@@ -121,7 +121,7 @@ func (m model) View() string {
 	}
 	// Pannello mostri (sotto PNGs)
 	var monsters strings.Builder
-	monsters.WriteString(titleStyle.Render(" Mostri ") + "\n\n")
+	monsters.WriteString(titleStyle.Render(" [2]-Mostri ") + "\n\n")
 	monsters.WriteString(m.monsterSearch.View() + "\n\n")
 	filtered := m.filteredMonsters()
 	if len(filtered) == 0 {
