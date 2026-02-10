@@ -140,7 +140,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusedPanel == 0 {
 					return m.handleMenuChoice("Resetta Tutti i Token PNG")
 				}
-				handled = true
 
 			case "enter":
 				if m.focusedPanel == 0 {
