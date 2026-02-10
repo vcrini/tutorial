@@ -15,9 +15,10 @@ const (
 	maxToken     = 3 // Il valore massimo
 )
 
-var dataFile = "pngs.json"
+var dataFile = "pngs.yml"
 var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
+var encounterFile = "encounter.yml"
 
 type nameLists struct {
 	First []string `yaml:"first"`
@@ -239,11 +240,20 @@ func loadPNGList(path string) ([]PNG, string, error) {
 	}
 
 	var wrapper struct {
+		PNGs     []PNG  `yaml:"pngs"`
+		Selected string `yaml:"selected"`
+	}
+	if err := yaml.Unmarshal(data, &wrapper); err == nil && wrapper.PNGs != nil {
+		return wrapper.PNGs, wrapper.Selected, nil
+	}
+
+	// Legacy JSON support
+	var legacyWrapper struct {
 		PNGs     []PNG  `json:"pngs"`
 		Selected string `json:"selected"`
 	}
-	if err := json.Unmarshal(data, &wrapper); err == nil && wrapper.PNGs != nil {
-		return wrapper.PNGs, wrapper.Selected, nil
+	if err := json.Unmarshal(data, &legacyWrapper); err == nil && legacyWrapper.PNGs != nil {
+		return legacyWrapper.PNGs, legacyWrapper.Selected, nil
 	}
 
 	var legacy []PNG
@@ -255,17 +265,16 @@ func loadPNGList(path string) ([]PNG, string, error) {
 
 func savePNGList(path string, pngs []PNG, selected string) error {
 	payload := struct {
-		PNGs     []PNG  `json:"pngs"`
-		Selected string `json:"selected"`
+		PNGs     []PNG  `yaml:"pngs"`
+		Selected string `yaml:"selected"`
 	}{
 		PNGs:     pngs,
 		Selected: selected,
 	}
-	data, err := json.MarshalIndent(payload, "", "  ")
+	data, err := yaml.Marshal(payload)
 	if err != nil {
 		return err
 	}
-	data = append(data, '\n')
 	return os.WriteFile(path, data, 0o644)
 }
 

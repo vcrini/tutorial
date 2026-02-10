@@ -39,6 +39,11 @@ func main() {
 		initialMessage = fmt.Sprintf("Errore nel caricare %s: %v", monstersFile, errMon)
 		monsters = []Monster{}
 	}
+	encounter, errEnc := loadEncounter(encounterFile, monsters)
+	if errEnc != nil {
+		initialMessage = fmt.Sprintf("Errore nel caricare %s: %v", encounterFile, errEnc)
+		encounter = []EncounterEntry{}
+	}
 	selectedIndex := -1
 	if selected != "" {
 		for i, p := range pngs {
@@ -61,7 +66,7 @@ func main() {
 		monsterSearch:    mi,
 		monsterHistory:   []int{},
 		monsterHistIndex: 0,
-		encounter:        []EncounterEntry{},
+		encounter:        encounter,
 		encounterCursor:  0,
 		helpFilter:       hf,
 	})
