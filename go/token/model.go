@@ -199,26 +199,48 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusedPanel == 0 {
 					m.selectPrevPNG()
 				} else if m.focusedPanel == 1 {
-					if m.encounterCursor > 0 {
-						m.encounterCursor--
+					if len(m.encounter) > 0 {
+						if m.encounterCursor > 0 {
+							m.encounterCursor--
+						} else {
+							m.encounterCursor = len(m.encounter) - 1
+						}
 					}
 				} else {
-					m.monsterCursor--
-					m.clampMonsterCursor()
-					m.pushMonsterHistory()
+					list := m.filteredMonsters()
+					if len(list) > 0 {
+						if m.monsterCursor > 0 {
+							m.monsterCursor--
+						} else {
+							m.monsterCursor = len(list) - 1
+						}
+						m.clampMonsterCursor()
+						m.pushMonsterHistory()
+					}
 				}
 
 			case "down", "j":
 				if m.focusedPanel == 0 {
 					m.selectNextPNG()
 				} else if m.focusedPanel == 1 {
-					if m.encounterCursor < len(m.encounter)-1 {
-						m.encounterCursor++
+					if len(m.encounter) > 0 {
+						if m.encounterCursor < len(m.encounter)-1 {
+							m.encounterCursor++
+						} else {
+							m.encounterCursor = 0
+						}
 					}
 				} else {
-					m.monsterCursor++
-					m.clampMonsterCursor()
-					m.pushMonsterHistory()
+					list := m.filteredMonsters()
+					if len(list) > 0 {
+						if m.monsterCursor < len(list)-1 {
+							m.monsterCursor++
+						} else {
+							m.monsterCursor = 0
+						}
+						m.clampMonsterCursor()
+						m.pushMonsterHistory()
+					}
 				}
 
 			case "left", "h":
