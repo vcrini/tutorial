@@ -43,6 +43,17 @@ func (m model) View() string {
 		BottomRight: "┘",
 	}
 	panel := lipgloss.NewStyle().Border(border).Padding(0, 1)
+	helpBorder := lipgloss.Border{
+		Top:         "═",
+		Bottom:      "═",
+		Left:        "║",
+		Right:       "║",
+		TopLeft:     "╔",
+		TopRight:    "╗",
+		BottomLeft:  "╚",
+		BottomRight: "╝",
+	}
+	helpPanel := lipgloss.NewStyle().Border(helpBorder).Padding(0, 1)
 	titleStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("10")).Bold(true)
 	highlight := lipgloss.NewStyle().Foreground(lipgloss.Color("14")).Bold(true)
 	selectedPNGStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("13")).Bold(true)
@@ -308,7 +319,8 @@ func (m model) View() string {
 	body := lipgloss.JoinHorizontal(lipgloss.Top, listStack, detailsBox)
 	if m.showHelp {
 		var help strings.Builder
-		help.WriteString(titleStyle.Render(" Help ") + "\n\n")
+		helpTitle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(listWidth + detailWidth - 4).Align(lipgloss.Center).Render("HELP")
+		help.WriteString(helpTitle + "\n\n")
 		help.WriteString("Tab: cambia pannello\n")
 		help.WriteString("1/2/3: focus pannello (PNGs/Incontro/Mostri)\n")
 		help.WriteString("q/Esc/Ctrl+C: esci\n")
@@ -321,8 +333,8 @@ func (m model) View() string {
 		help.WriteString("t: toggle dettagli compact/full\n")
 		help.WriteString("Incontro: d/x/backspace: rimuovi\n")
 		help.WriteString("?: mostra/nasconde help\n")
-		helpBox := panel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight))
-		return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, helpBox, messageBar)
+		helpBox := helpPanel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight+4))
+		return helpBox
 	}
 	return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar)
 }
