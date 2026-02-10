@@ -124,8 +124,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "d", "x", "backspace", "delete":
 				if m.focusedPanel == 0 {
 					m.deleteSelectedPNG()
+					handled = true
 				}
-				handled = true
 
 			case "n":
 				if m.focusedPanel == 0 {
