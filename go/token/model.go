@@ -52,6 +52,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.height = msg.Height
 			return m, nil
 		case tea.KeyMsg:
+			handled := false
 			switch msg.String() {
 			case "esc":
 				if m.showHelp {
@@ -74,9 +75,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "1":
 				m.focusedPanel = 0
 				m.monsterSearch.Blur()
+				handled = true
 			case "2":
 				m.focusedPanel = 1
 				m.monsterSearch.Focus()
+				handled = true
 			case "tab":
 				if m.focusedPanel == 0 {
 					m.focusedPanel = 1
@@ -85,8 +88,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.focusedPanel = 0
 					m.monsterSearch.Blur()
 				}
+				handled = true
 			case "?":
 				m.showHelp = !m.showHelp
+				handled = true
 
 			case "up", "k":
 				if m.focusedPanel == 0 {
@@ -108,16 +113,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.focusedPanel == 0 {
 					m.decrementSelectedToken()
 				}
+				handled = true
 
 			case "right", "l":
 				if m.focusedPanel == 0 {
 					m.incrementSelectedToken()
 				}
+				handled = true
 
 			case "d", "x", "backspace", "delete":
 				if m.focusedPanel == 0 {
 					m.deleteSelectedPNG()
 				}
+				handled = true
 
 			case "n":
 				if m.focusedPanel == 0 {
@@ -126,18 +134,21 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.message = "Inserisci il nome del nuovo PNG:"
 					return m, textinput.Blink
 				}
+				handled = true
 
 			case "r":
 				if m.focusedPanel == 0 {
 					return m.handleMenuChoice("Resetta Tutti i Token PNG")
 				}
+				handled = true
 
 			case "enter":
 				if m.focusedPanel == 0 {
 					return m.handleMenuChoice(m.choices[m.cursor])
 				}
+				handled = true
 			}
-			if m.focusedPanel == 1 {
+			if m.focusedPanel == 1 && !handled {
 				var cmd tea.Cmd
 				m.monsterSearch, cmd = m.monsterSearch.Update(msg)
 				m.clampMonsterCursor()
