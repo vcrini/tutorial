@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 func limitLines(s string, max int) string {
@@ -23,6 +24,36 @@ func maxInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func fitWidth(s string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		trimmed := ansi.Truncate(line, width, "")
+		lines[i] = lipgloss.NewStyle().Width(width).MaxWidth(width).Render(trimmed)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func clampWidth(s string, width int) string {
+	if width <= 0 {
+		return ""
+	}
+	return lipgloss.NewStyle().Width(width).MaxWidth(width).Render(s)
+}
+
+func clampFinalWidth(s string, width int) string {
+	if width <= 0 {
+		return s
+	}
+	lines := strings.Split(s, "\n")
+	for i, line := range lines {
+		lines[i] = ansi.Truncate(line, width, "")
+	}
+	return strings.Join(lines, "\n")
 }
 
 // View rende l'interfaccia utente.
@@ -71,6 +102,18 @@ func (m model) View() string {
 		listWidth = 26
 	}
 	detailWidth := totalWidth - listWidth
+	if detailWidth < 26 {
+		detailWidth = 26
+		listWidth = totalWidth - detailWidth
+	}
+	listContentWidth := listWidth - 2
+	if listContentWidth < 1 {
+		listContentWidth = 1
+	}
+	detailContentWidth := detailWidth - 2
+	if detailContentWidth < 1 {
+		detailContentWidth = 1
+	}
 
 	totalHeight := m.height
 	if totalHeight <= 0 {
@@ -83,7 +126,7 @@ func (m model) View() string {
 
 	// Header
 	header := titleStyle.Render(" PNG Manager ")
-	headerBar := panel.Width(listWidth + detailWidth).Render(header)
+	headerBar := panel.Width(listWidth + detailWidth - 2).Render(header)
 
 	// Pannello lista PNG
 	var listPanel strings.Builder
@@ -117,7 +160,7 @@ func (m model) View() string {
 	if leftPanelHeight < 4 {
 		leftPanelHeight = 4
 	}
-	listBox := panel.Width(listWidth).Render(limitLines(listPanel.String(), leftPanelHeight))
+	listBox := panel.Width(listContentWidth).Render(limitLines(fitWidth(listPanel.String(), listContentWidth), leftPanelHeight))
 
 	// Pannello dettagli (PNG o Mostri)
 	var details strings.Builder
@@ -126,6 +169,42 @@ func (m model) View() string {
 		modeLabel = "Compact"
 	}
 	details.WriteString(titleStyle.Render(" Dettagli ") + dim.Render(" ["+modeLabel+"]") + "\n\n")
+	if m.encounterEditing {
+		var modal strings.Builder
+		lines := []string{
+			"FERITE",
+			"",
+			m.encounterInput.View(),
+			"",
+			"Invio per confermare",
+			"Esc per annullare",
+		}
+		title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Align(lipgloss.Center).Render("FERITE")
+		lines[0] = title
+		for i, line := range lines {
+			if i == 0 {
+				modal.WriteString(line + "\n\n")
+				continue
+			}
+			if line == "Invio per confermare" || line == "Esc per annullare" {
+				modal.WriteString(dim.Render(line) + "\n")
+			} else {
+				modal.WriteString(line + "\n")
+			}
+		}
+		maxLine := 0
+		for _, line := range lines {
+			if w := lipgloss.Width(line); w > maxLine {
+				maxLine = w
+			}
+		}
+		modalWidth := maxLine + 4
+		if modalWidth < 20 {
+			modalWidth = 20
+		}
+		modalBox := helpPanel.Width(modalWidth).Render(strings.TrimRight(modal.String(), "\n"))
+		details.WriteString(modalBox + "\n\n")
+	}
 	if m.focusedPanel == 2 {
 		filtered := m.filteredMonsters()
 		if len(filtered) == 0 {
@@ -275,7 +354,7 @@ func (m model) View() string {
 			encounter.WriteString(prefix + line + "\n")
 		}
 	}
-	encounterBox := panel.Width(listWidth).Render(limitLines(encounter.String(), leftPanelHeight))
+	encounterBox := panel.Width(listContentWidth).Render(limitLines(fitWidth(encounter.String(), listContentWidth), leftPanelHeight))
 
 	// Pannello mostri (sotto Incontro)
 	var monsters strings.Builder
@@ -322,37 +401,22 @@ func (m model) View() string {
 			}
 		}
 	}
-	monstersBox := panel.Width(listWidth).Render(limitLines(monsters.String(), leftPanelHeight))
+	monstersBox := panel.Width(listContentWidth).Render(limitLines(fitWidth(monsters.String(), listContentWidth), leftPanelHeight))
 
 	listStack := lipgloss.JoinVertical(lipgloss.Left, listBox, encounterBox, monstersBox)
+	listStackHeight := lipgloss.Height(listBox) + lipgloss.Height(encounterBox) + lipgloss.Height(monstersBox)
 
-	detailsBox := panel.Width(detailWidth).Render(limitLines(details.String(), bodyContentHeight*2))
+	detailsBox := panel.Width(detailContentWidth).Height(listStackHeight).Render(limitLines(fitWidth(details.String(), detailContentWidth), bodyContentHeight*2))
 
 	// Barra messaggi con hint contestuale
 	message := m.message
 	if message == "" {
 		message = "Pronto."
 	}
-	messageBar := panel.Width(listWidth + detailWidth).Render(highlight.Render(" Msg ") + " " + message + "  " + dim.Render("?: help"))
+	messageBar := panel.Width(listWidth + detailWidth - 2).Render(fitWidth(highlight.Render(" Msg ")+" "+message+"  "+dim.Render("?: help"), listWidth+detailWidth-2))
 
 	// Layout finale
 	body := lipgloss.JoinHorizontal(lipgloss.Top, listStack, detailsBox)
-	if m.encounterEditing {
-		var modal strings.Builder
-		modalWidth := listWidth
-		if modalWidth < 28 {
-			modalWidth = 28
-		}
-		title := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(modalWidth - 4).Align(lipgloss.Center).Render("FERITE")
-		modal.WriteString(title + "\n\n")
-		modal.WriteString(m.encounterInput.View() + "\n\n")
-		modal.WriteString(dim.Render("Invio per confermare") + "\n")
-		modal.WriteString(dim.Render("Esc per annullare") + "\n")
-		modalBox := helpPanel.Width(modalWidth).Render(limitLines(modal.String(), 8))
-
-		overlay := lipgloss.Place(listWidth+detailWidth, bodyContentHeight+4, lipgloss.Center, lipgloss.Center, modalBox)
-		return overlay
-	}
 	if m.showHelp {
 		var help strings.Builder
 		helpTitle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("10")).Width(listWidth + detailWidth - 4).Align(lipgloss.Center).Render("HELP")
@@ -403,8 +467,8 @@ func (m model) View() string {
 				help.WriteString(line + "\n")
 			}
 		}
-		helpBox := helpPanel.Width(listWidth + detailWidth).Render(limitLines(help.String(), bodyContentHeight+4))
-		return helpBox
+		helpBox := helpPanel.Width(listWidth + detailWidth - 2).Render(limitLines(help.String(), bodyContentHeight+4))
+		return clampFinalWidth(helpBox, totalWidth)
 	}
-	return lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar)
+	return clampFinalWidth(lipgloss.JoinVertical(lipgloss.Left, headerBar, body, messageBar), totalWidth)
 }
