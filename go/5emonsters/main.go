@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] j/k [-:-] naviga  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] ← [-:-] danno encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 
 //go:embed data/5e.yaml
 var embeddedMonstersYAML []byte
@@ -33,6 +33,13 @@ type Monster struct {
 
 type dataset struct {
 	Monsters []map[string]any `yaml:"monsters"`
+}
+
+type EncounterEntry struct {
+	MonsterIndex int
+	Ordinal      int
+	BaseHP       int
+	CurrentHP    int
 }
 
 type UI struct {
@@ -52,6 +59,7 @@ type UI struct {
 	envDrop    *tview.DropDown
 	crDrop     *tview.DropDown
 	typeDrop   *tview.DropDown
+	encounter  *tview.List
 	list       *tview.List
 	detailMeta *tview.TextView
 	detailRaw  *tview.TextView
@@ -61,6 +69,9 @@ type UI struct {
 	focusOrder []tview.Primitive
 	rawText    string
 	rawQuery   string
+
+	encounterSerial map[int]int
+	encounterItems  []EncounterEntry
 }
 
 func main() {
@@ -95,12 +106,14 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 	setTheme()
 
 	ui := &UI{
-		app:         tview.NewApplication(),
-		monsters:    monsters,
-		envOptions:  append([]string{"All"}, envs...),
-		crOptions:   append([]string{"All"}, crs...),
-		typeOptions: append([]string{"All"}, types...),
-		filtered:    make([]int, 0, len(monsters)),
+		app:             tview.NewApplication(),
+		monsters:        monsters,
+		envOptions:      append([]string{"All"}, envs...),
+		crOptions:       append([]string{"All"}, crs...),
+		typeOptions:     append([]string{"All"}, types...),
+		filtered:        make([]int, 0, len(monsters)),
+		encounterSerial: map[int]int{},
+		encounterItems:  make([]EncounterEntry, 0, 16),
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -177,7 +190,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 
 	ui.list = tview.NewList()
 	ui.list.SetBorder(true)
-	ui.list.SetTitle(" Monsters ")
+	ui.list.SetTitle(" [2]-Monsters ")
 	ui.list.SetTitleColor(tcell.ColorGold)
 	ui.list.SetBorderColor(tcell.ColorGold)
 	ui.list.SetMainTextColor(tcell.ColorWhite)
@@ -191,6 +204,23 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 	ui.list.SetSelectedFunc(func(index int, _, _ string, _ rune) {
 		ui.renderDetailByListIndex(index)
 	})
+
+	ui.encounter = tview.NewList()
+	ui.encounter.SetBorder(true)
+	ui.encounter.SetTitle(" [1]-Encounters ")
+	ui.encounter.SetTitleColor(tcell.ColorGold)
+	ui.encounter.SetBorderColor(tcell.ColorGold)
+	ui.encounter.SetMainTextColor(tcell.ColorWhite)
+	ui.encounter.SetSelectedTextColor(tcell.ColorBlack)
+	ui.encounter.SetSelectedBackgroundColor(tcell.ColorGold)
+	ui.encounter.ShowSecondaryText(false)
+	ui.encounter.SetChangedFunc(func(index int, _, _ string, _ rune) {
+		ui.renderDetailByEncounterIndex(index)
+	})
+	ui.encounter.SetSelectedFunc(func(index int, _, _ string, _ rune) {
+		ui.renderDetailByEncounterIndex(index)
+	})
+	ui.encounter.AddItem("Nessun mostro nell'encounter", "", 0, nil)
 
 	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
@@ -208,7 +238,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 		SetScrollable(true).
 		SetWordWrap(false)
 	ui.detailRaw.SetBorder(true)
-	ui.detailRaw.SetTitle(" Raw ")
+	ui.detailRaw.SetTitle(" [3]-Raw ")
 	ui.detailRaw.SetTitleColor(tcell.ColorGold)
 	ui.detailRaw.SetBorderColor(tcell.ColorGold)
 	ui.detailRaw.SetTextColor(tcell.ColorWhite)
@@ -230,9 +260,14 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 		AddItem(ui.crDrop, 14, 0, false).
 		AddItem(ui.typeDrop, 22, 0, false)
 
+	leftPanel := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.encounter, 8, 0, false).
+		AddItem(ui.list, 0, 1, false)
+
 	mainRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(ui.list, 0, 1, false).
+		AddItem(leftPanel, 0, 1, false).
 		AddItem(detailPanel, 0, 1, false)
 
 	root := tview.NewFlex().
@@ -243,7 +278,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
+	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.encounter, ui.list, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
 	ui.envDrop.SetCurrentOption(0)
 	ui.crDrop.SetCurrentOption(0)
@@ -251,6 +286,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focus := ui.app.GetFocus()
+		_, focusIsInputField := focus.(*tview.InputField)
 		switch {
 		case event.Key() == tcell.KeyRune && event.Rune() == 'q':
 			ui.app.Stop()
@@ -258,6 +294,10 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 		case event.Key() == tcell.KeyRune && event.Rune() == '/':
 			if focus == ui.list {
 				ui.openRawSearch(ui.list)
+				return nil
+			}
+			if focus == ui.encounter {
+				ui.openRawSearch(ui.encounter)
 				return nil
 			}
 			if focus == ui.detailRaw {
@@ -290,6 +330,21 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 				return nil
 			}
 			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'a':
+			ui.addSelectedMonsterToEncounter()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyLeft:
+			ui.openEncounterDamageInput()
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '1':
+			ui.app.SetFocus(ui.encounter)
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '2':
+			ui.app.SetFocus(ui.list)
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '3':
+			ui.app.SetFocus(ui.detailRaw)
+			return nil
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'j':
 			return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'k':
@@ -410,8 +465,22 @@ func (ui *UI) renderDetailByListIndex(listIndex int) {
 		ui.rawText = ""
 		return
 	}
+	ui.renderDetailByMonsterIndex(ui.filtered[listIndex])
+}
 
-	m := ui.monsters[ui.filtered[listIndex]]
+func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
+	if encounterIndex < 0 || encounterIndex >= len(ui.encounterItems) {
+		return
+	}
+	ui.renderDetailByMonsterIndex(ui.encounterItems[encounterIndex].MonsterIndex)
+}
+
+func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
+	if monsterIndex < 0 || monsterIndex >= len(ui.monsters) {
+		return
+	}
+
+	m := ui.monsters[monsterIndex]
 	raw, _ := json.MarshalIndent(m.Raw, "", "  ")
 
 	builder := &strings.Builder{}
@@ -499,6 +568,127 @@ func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
 	})
 
 	ui.pages.AddPage("raw-search", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) addSelectedMonsterToEncounter() {
+	if len(ui.filtered) == 0 {
+		return
+	}
+
+	listIndex := ui.list.GetCurrentItem()
+	if listIndex < 0 || listIndex >= len(ui.filtered) {
+		return
+	}
+
+	monsterIndex := ui.filtered[listIndex]
+	ui.encounterSerial[monsterIndex]++
+	ordinal := ui.encounterSerial[monsterIndex]
+	baseHP, ok := extractHPAverageInt(ui.monsters[monsterIndex].Raw)
+	if !ok {
+		baseHP = 0
+	}
+	ui.encounterItems = append(ui.encounterItems, EncounterEntry{
+		MonsterIndex: monsterIndex,
+		Ordinal:      ordinal,
+		BaseHP:       baseHP,
+		CurrentHP:    baseHP,
+	})
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
+
+	m := ui.monsters[monsterIndex]
+	ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunto[-:-] %s #%d  %s", m.Name, ordinal, helpText))
+}
+
+func (ui *UI) renderEncounterList() {
+	ui.encounter.Clear()
+	if len(ui.encounterItems) == 0 {
+		ui.encounter.AddItem("Nessun mostro nell'encounter", "", 0, nil)
+		return
+	}
+
+	for _, item := range ui.encounterItems {
+		m := ui.monsters[item.MonsterIndex]
+		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
+		if item.BaseHP > 0 {
+			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, item.BaseHP)
+		} else {
+			label = fmt.Sprintf("%s [HP ?]", label)
+		}
+		ui.encounter.AddItem(label, "", 0, nil)
+	}
+}
+
+func (ui *UI) openEncounterDamageInput() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	entry := ui.encounterItems[index]
+	if entry.BaseHP <= 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s #%d[-:-]  %s", ui.monsters[entry.MonsterIndex].Name, entry.Ordinal, helpText))
+		return
+	}
+
+	input := tview.NewInputField().
+		SetLabel("-HP ").
+		SetFieldWidth(12)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Damage Encounter ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 40, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("encounter-damage")
+		ui.app.SetFocus(ui.encounter)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+
+		text := strings.TrimSpace(input.GetText())
+		damage, err := strconv.Atoi(text)
+		if err != nil || damage <= 0 {
+			ui.status.SetText(fmt.Sprintf(" [white:red] valore danno non valido[-:-] \"%s\"  %s", text, helpText))
+			return
+		}
+
+		ui.encounterItems[index].CurrentHP -= damage
+		if ui.encounterItems[index].CurrentHP < 0 {
+			ui.encounterItems[index].CurrentHP = 0
+		}
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(index)
+		ui.renderDetailByEncounterIndex(index)
+
+		m := ui.monsters[ui.encounterItems[index].MonsterIndex]
+		ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s #%d -%d HP (%d/%d)  %s",
+			m.Name,
+			ui.encounterItems[index].Ordinal,
+			damage,
+			ui.encounterItems[index].CurrentHP,
+			ui.encounterItems[index].BaseHP,
+			helpText,
+		))
+	})
+
+	ui.pages.AddPage("encounter-damage", modal, true, true)
 	ui.app.SetFocus(input)
 }
 
@@ -763,6 +953,37 @@ func extractHP(raw map[string]any) (average string, formula string) {
 		// Fallback for odd records where hp can be a scalar.
 		one := asString(hp)
 		return one, ""
+	}
+}
+
+func extractHPAverageInt(raw map[string]any) (int, bool) {
+	if raw == nil {
+		return 0, false
+	}
+	hp := raw["hp"]
+	if hp == nil {
+		return 0, false
+	}
+
+	getAvg := func(v any) (int, bool) {
+		s := strings.TrimSpace(asString(v))
+		if s == "" {
+			return 0, false
+		}
+		i, err := strconv.Atoi(s)
+		if err != nil {
+			return 0, false
+		}
+		return i, true
+	}
+
+	switch x := hp.(type) {
+	case map[string]any:
+		return getAvg(x["average"])
+	case map[any]any:
+		return getAvg(x["average"])
+	default:
+		return 0, false
 	}
 }
 
