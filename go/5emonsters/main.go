@@ -94,6 +94,9 @@ type UI struct {
 	encountersPath  string
 	encounterUndo   []EncounterUndoState
 	encounterRedo   []EncounterUndoState
+
+	helpVisible     bool
+	helpReturnFocus tview.Primitive
 }
 
 func main() {
@@ -317,7 +320,18 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focus := ui.app.GetFocus()
 		_, focusIsInputField := focus.(*tview.InputField)
+
+		if ui.helpVisible {
+			if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == '?') {
+				ui.closeHelpOverlay()
+			}
+			return nil
+		}
+
 		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == '?':
+			ui.openHelpOverlay(focus)
+			return nil
 		case event.Key() == tcell.KeyRune && event.Rune() == 'q':
 			ui.app.Stop()
 			return nil
@@ -402,6 +416,108 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	}
 	ui.renderEncounterList()
 	return ui
+}
+
+func (ui *UI) openHelpOverlay(focus tview.Primitive) {
+	ui.helpReturnFocus = focus
+	ui.helpVisible = true
+
+	text := tview.NewTextView().
+		SetDynamicColors(true).
+		SetWrap(true).
+		SetWordWrap(true)
+	text.SetBorder(true)
+	text.SetBorderColor(tcell.ColorGold)
+	text.SetTitleColor(tcell.ColorGold)
+	text.SetTitle(fmt.Sprintf(" Help - %s ", ui.panelNameForFocus(focus)))
+	text.SetText(ui.helpForFocus(focus))
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(text, 16, 0, true).
+			AddItem(nil, 0, 1, false), 84, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("help-overlay", modal, true, true)
+	ui.app.SetFocus(text)
+}
+
+func (ui *UI) closeHelpOverlay() {
+	ui.pages.RemovePage("help-overlay")
+	ui.helpVisible = false
+	if ui.helpReturnFocus != nil {
+		ui.app.SetFocus(ui.helpReturnFocus)
+	} else {
+		ui.app.SetFocus(ui.list)
+	}
+}
+
+func (ui *UI) panelNameForFocus(focus tview.Primitive) string {
+	switch focus {
+	case ui.encounter:
+		return "Encounters"
+	case ui.list:
+		return "Monsters"
+	case ui.detailRaw:
+		return "Raw"
+	case ui.nameInput:
+		return "Name Filter"
+	case ui.envDrop:
+		return "Env Filter"
+	case ui.crDrop:
+		return "CR Filter"
+	case ui.typeDrop:
+		return "Type Filter"
+	default:
+		return "Panel"
+	}
+}
+
+func (ui *UI) helpForFocus(focus tview.Primitive) string {
+	header := "[black:gold]Global[-:-]\n" +
+		"  ? : apri/chiudi questo help\n" +
+		"  Esc : chiudi help\n" +
+		"  q : esci programma\n" +
+		"  Tab / Shift+Tab : cambia focus\n" +
+		"  1 / 2 / 3 : vai a Encounters / Monsters / Raw\n\n"
+
+	switch focus {
+	case ui.encounter:
+		return header +
+			"[black:gold]Encounters[-:-]\n" +
+			"  j / k (o frecce) : seleziona entry\n" +
+			"  / : cerca nel Raw del mostro selezionato\n" +
+			"  d : elimina entry selezionata\n" +
+			"  u : undo ultima operazione encounter\n" +
+			"  r : redo operazione encounter annullata\n" +
+			"  freccia sinistra : sottrai HP\n" +
+			"  freccia destra : aggiungi HP\n"
+	case ui.list:
+		return header +
+			"[black:gold]Monsters[-:-]\n" +
+			"  j / k (o frecce) : naviga mostri\n" +
+			"  / : cerca nel Raw del mostro selezionato\n" +
+			"  a : aggiungi mostro a Encounters\n" +
+			"  PgUp / PgDn : scroll del pannello Raw\n"
+	case ui.detailRaw:
+		return header +
+			"[black:gold]Raw[-:-]\n" +
+			"  / : cerca testo nel Raw corrente\n" +
+			"  j / k (o frecce) : scroll contenuto\n"
+	case ui.nameInput:
+		return header +
+			"[black:gold]Name Filter[-:-]\n" +
+			"  scrivi testo : filtro per nome\n" +
+			"  Enter / Esc : torna a Monsters\n"
+	case ui.envDrop, ui.crDrop, ui.typeDrop:
+		return header +
+			"[black:gold]Filter Dropdown[-:-]\n" +
+			"  frecce / Invio : cambia valore filtro\n"
+	default:
+		return header + "[black:gold]Panel[-:-]\n  Nessuna scorciatoia specifica.\n"
+	}
 }
 
 func (ui *UI) focusNext() {
