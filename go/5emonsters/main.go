@@ -350,7 +350,8 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		_, focusIsInputField := focus.(*tview.InputField)
 
 		if ui.helpVisible {
-			if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == '?') {
+			if event.Key() == tcell.KeyEscape ||
+				(event.Key() == tcell.KeyRune && (event.Rune() == '?' || event.Rune() == 'q')) {
 				ui.closeHelpOverlay()
 				return nil
 			}
@@ -366,6 +367,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 			ui.app.Stop()
 			return nil
 		case event.Key() == tcell.KeyRune && event.Rune() == '/':
+			if focusIsInputField {
+				return event
+			}
 			if focus == ui.list {
 				ui.openRawSearch(ui.list)
 				return nil
@@ -377,9 +381,6 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 			if focus == ui.detailRaw {
 				ui.openRawSearch(ui.detailRaw)
 				return nil
-			}
-			if focus == ui.nameInput {
-				return event
 			}
 			ui.app.SetFocus(ui.nameInput)
 			return nil
