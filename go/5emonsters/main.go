@@ -124,8 +124,9 @@ type UI struct {
 	turnIndex       int
 	turnRound       int
 
-	helpVisible     bool
-	helpReturnFocus tview.Primitive
+	helpVisible      bool
+	helpReturnFocus  tview.Primitive
+	addCustomVisible bool
 }
 
 func main() {
@@ -351,6 +352,10 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focus := ui.app.GetFocus()
 		_, focusIsInputField := focus.(*tview.InputField)
+
+		if ui.addCustomVisible && event.Key() == tcell.KeyTab {
+			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
+		}
 
 		if ui.helpVisible {
 			if event.Key() == tcell.KeyEscape ||
@@ -999,6 +1004,13 @@ func (ui *UI) openAddCustomEncounterForm() {
 	form.SetTitle(" Add Custom Encounter ")
 	form.SetBorderColor(tcell.ColorGold)
 	form.SetTitleColor(tcell.ColorGold)
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyTab {
+			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
+		}
+		return event
+	})
+	ui.addCustomVisible = true
 
 	nameField := tview.NewInputField().SetLabel("Name: ").SetFieldWidth(28)
 	initField := tview.NewInputField().SetLabel("Init (x or x/x): ").SetFieldWidth(16)
@@ -1064,6 +1076,7 @@ func (ui *UI) openAddCustomEncounterForm() {
 		})
 
 		ui.pages.RemovePage("encounter-add-custom")
+		ui.addCustomVisible = false
 		ui.renderEncounterList()
 		ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
 		ui.renderDetailByEncounterIndex(len(ui.encounterItems) - 1)
@@ -1072,6 +1085,7 @@ func (ui *UI) openAddCustomEncounterForm() {
 	})
 	form.AddButton("Cancel", func() {
 		ui.pages.RemovePage("encounter-add-custom")
+		ui.addCustomVisible = false
 		ui.app.SetFocus(ui.encounter)
 	})
 
