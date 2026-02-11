@@ -909,6 +909,9 @@ func (ui *UI) renderEncounterList() {
 	for _, item := range ui.encounterItems {
 		m := ui.monsters[item.MonsterIndex]
 		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
+		if init, ok := extractInitFromDex(m.Raw); ok {
+			label = fmt.Sprintf("%s [Init %d]", label, init)
+		}
 		maxHP := ui.encounterMaxHP(item)
 		if maxHP > 0 {
 			if item.CurrentHP <= 0 {
@@ -1551,6 +1554,40 @@ func extractType(v any) string {
 		return asString(x["type"])
 	}
 	return ""
+}
+
+func extractInitFromDex(raw map[string]any) (int, bool) {
+	if raw == nil {
+		return 0, false
+	}
+	dexRaw, ok := raw["dex"]
+	if !ok {
+		return 0, false
+	}
+	dex, ok := anyToInt(dexRaw)
+	if !ok {
+		return 0, false
+	}
+	return (dex / 2) - 5, true
+}
+
+func anyToInt(v any) (int, bool) {
+	switch x := v.(type) {
+	case int:
+		return x, true
+	case int64:
+		return int(x), true
+	case float64:
+		return int(x), true
+	case string:
+		n, err := strconv.Atoi(strings.TrimSpace(x))
+		if err != nil {
+			return 0, false
+		}
+		return n, true
+	default:
+		return 0, false
+	}
 }
 
 func extractHP(raw map[string]any) (average string, formula string) {
