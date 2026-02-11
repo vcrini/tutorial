@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] u [-:-] undo  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] u/r [-:-] undo/redo  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
 
 //go:embed data/5e.yaml
@@ -93,6 +93,7 @@ type UI struct {
 	encounterItems  []EncounterEntry
 	encountersPath  string
 	encounterUndo   []EncounterUndoState
+	encounterRedo   []EncounterUndoState
 }
 
 func main() {
@@ -369,10 +370,13 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 			ui.openEncounterHPInput(1)
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
-			ui.openEncounterDeleteConfirm()
+			ui.deleteSelectedEncounterEntry()
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'u':
 			ui.undoEncounterCommand()
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'r':
+			ui.redoEncounterCommand()
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '1':
 			ui.app.SetFocus(ui.encounter)
@@ -764,7 +768,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 	ui.app.SetFocus(input)
 }
 
-func (ui *UI) openEncounterDeleteConfirm() {
+func (ui *UI) deleteSelectedEncounterEntry() {
 	if len(ui.encounterItems) == 0 {
 		return
 	}
@@ -775,63 +779,21 @@ func (ui *UI) openEncounterDeleteConfirm() {
 	entry := ui.encounterItems[index]
 	name := ui.monsters[entry.MonsterIndex].Name
 
-	input := tview.NewInputField().
-		SetLabel("Conferma [s/n]: ").
-		SetFieldWidth(4)
-	input.SetLabelColor(tcell.ColorGold)
-	input.SetFieldBackgroundColor(tcell.ColorWhite)
-	input.SetFieldTextColor(tcell.ColorBlack)
-	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
-	input.SetBackgroundColor(tcell.ColorBlack)
-	input.SetBorder(true)
-	input.SetTitle(fmt.Sprintf(" Elimina %s #%d ", name, entry.Ordinal))
-	input.SetBorderColor(tcell.ColorGold)
-	input.SetTitleColor(tcell.ColorGold)
-
-	modal := tview.NewFlex().
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 3, 0, true).
-			AddItem(nil, 0, 1, false), 54, 0, true).
-		AddItem(nil, 0, 1, false)
-
-	input.SetDoneFunc(func(key tcell.Key) {
-		ui.pages.RemovePage("encounter-delete")
-		ui.app.SetFocus(ui.encounter)
-		if key == tcell.KeyEscape {
-			ui.status.SetText(fmt.Sprintf(" [black:gold] annullato[-:-] delete %s #%d  %s", name, entry.Ordinal, helpText))
-			return
+	ui.pushEncounterUndo()
+	ui.encounterItems = append(ui.encounterItems[:index], ui.encounterItems[index+1:]...)
+	ui.renderEncounterList()
+	if len(ui.encounterItems) > 0 {
+		if index >= len(ui.encounterItems) {
+			index = len(ui.encounterItems) - 1
 		}
-		if key != tcell.KeyEnter {
-			return
-		}
-
-		answer := strings.ToLower(strings.TrimSpace(input.GetText()))
-		if answer != "s" {
-			ui.status.SetText(fmt.Sprintf(" [black:gold] annullato[-:-] delete %s #%d  %s", name, entry.Ordinal, helpText))
-			return
-		}
-
-		ui.pushEncounterUndo()
-		ui.encounterItems = append(ui.encounterItems[:index], ui.encounterItems[index+1:]...)
-		ui.renderEncounterList()
-		if len(ui.encounterItems) > 0 {
-			if index >= len(ui.encounterItems) {
-				index = len(ui.encounterItems) - 1
-			}
-			ui.encounter.SetCurrentItem(index)
-			ui.renderDetailByEncounterIndex(index)
-		} else {
-			ui.detailMeta.SetText("Nessun mostro nell'encounter.")
-			ui.detailRaw.SetText("")
-			ui.rawText = ""
-		}
-		ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s #%d  %s", name, entry.Ordinal, helpText))
-	})
-
-	ui.pages.AddPage("encounter-delete", modal, true, true)
-	ui.app.SetFocus(input)
+		ui.encounter.SetCurrentItem(index)
+		ui.renderDetailByEncounterIndex(index)
+	} else {
+		ui.detailMeta.SetText("Nessun mostro nell'encounter.")
+		ui.detailRaw.SetText("")
+		ui.rawText = ""
+	}
+	ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s #%d  %s", name, entry.Ordinal, helpText))
 }
 
 func (ui *UI) pushEncounterUndo() {
@@ -841,6 +803,7 @@ func (ui *UI) pushEncounterUndo() {
 		Selected: ui.encounter.GetCurrentItem(),
 	}
 	ui.encounterUndo = append(ui.encounterUndo, snap)
+	ui.encounterRedo = ui.encounterRedo[:0]
 }
 
 func (ui *UI) undoEncounterCommand() {
@@ -848,15 +811,42 @@ func (ui *UI) undoEncounterCommand() {
 		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna operazione da annullare[-:-]  %s", helpText))
 		return
 	}
+	current := ui.captureEncounterState()
 	last := ui.encounterUndo[len(ui.encounterUndo)-1]
 	ui.encounterUndo = ui.encounterUndo[:len(ui.encounterUndo)-1]
+	ui.encounterRedo = append(ui.encounterRedo, current)
+	ui.restoreEncounterState(last)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] undo[-:-] operazione encounter annullata  %s", helpText))
+}
 
-	ui.encounterItems = append([]EncounterEntry(nil), last.Items...)
-	ui.encounterSerial = cloneIntMap(last.Serial)
+func (ui *UI) redoEncounterCommand() {
+	if len(ui.encounterRedo) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna operazione da ripristinare[-:-]  %s", helpText))
+		return
+	}
+	current := ui.captureEncounterState()
+	last := ui.encounterRedo[len(ui.encounterRedo)-1]
+	ui.encounterRedo = ui.encounterRedo[:len(ui.encounterRedo)-1]
+	ui.encounterUndo = append(ui.encounterUndo, current)
+	ui.restoreEncounterState(last)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] redo[-:-] operazione encounter ripristinata  %s", helpText))
+}
+
+func (ui *UI) captureEncounterState() EncounterUndoState {
+	return EncounterUndoState{
+		Items:    append([]EncounterEntry(nil), ui.encounterItems...),
+		Serial:   cloneIntMap(ui.encounterSerial),
+		Selected: ui.encounter.GetCurrentItem(),
+	}
+}
+
+func (ui *UI) restoreEncounterState(state EncounterUndoState) {
+	ui.encounterItems = append([]EncounterEntry(nil), state.Items...)
+	ui.encounterSerial = cloneIntMap(state.Serial)
 	ui.renderEncounterList()
 
 	if len(ui.encounterItems) > 0 {
-		idx := last.Selected
+		idx := state.Selected
 		if idx < 0 {
 			idx = 0
 		}
@@ -865,12 +855,12 @@ func (ui *UI) undoEncounterCommand() {
 		}
 		ui.encounter.SetCurrentItem(idx)
 		ui.renderDetailByEncounterIndex(idx)
-	} else {
-		ui.detailMeta.SetText("Nessun mostro nell'encounter.")
-		ui.detailRaw.SetText("")
-		ui.rawText = ""
+		return
 	}
-	ui.status.SetText(fmt.Sprintf(" [black:gold] undo[-:-] operazione encounter annullata  %s", helpText))
+
+	ui.detailMeta.SetText("Nessun mostro nell'encounter.")
+	ui.detailRaw.SetText("")
+	ui.rawText = ""
 }
 
 func (ui *UI) loadEncounters() error {
