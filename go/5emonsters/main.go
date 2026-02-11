@@ -58,8 +58,11 @@ type EncounterEntry struct {
 }
 
 type PersistedEncounters struct {
-	Version int                      `yaml:"version"`
-	Items   []PersistedEncounterItem `yaml:"items"`
+	Version   int                      `yaml:"version"`
+	Items     []PersistedEncounterItem `yaml:"items"`
+	TurnMode  bool                     `yaml:"turn_mode,omitempty"`
+	TurnIndex int                      `yaml:"turn_index,omitempty"`
+	TurnRound int                      `yaml:"turn_round,omitempty"`
 }
 
 type PersistedEncounterItem struct {
@@ -929,13 +932,17 @@ func (ui *UI) openEncounterLoadInput() {
 		}
 		ui.encounterUndo = ui.encounterUndo[:0]
 		ui.encounterRedo = ui.encounterRedo[:0]
-		ui.turnMode = false
-		ui.turnIndex = 0
-		ui.turnRound = 0
 		ui.renderEncounterList()
 		if len(ui.encounterItems) > 0 {
-			ui.encounter.SetCurrentItem(0)
-			ui.renderDetailByEncounterIndex(0)
+			idx := 0
+			if ui.turnMode {
+				idx = ui.turnIndex
+			}
+			if idx < 0 || idx >= len(ui.encounterItems) {
+				idx = 0
+			}
+			ui.encounter.SetCurrentItem(idx)
+			ui.renderDetailByEncounterIndex(idx)
 		} else {
 			ui.detailMeta.SetText("Nessun mostro nell'encounter.")
 			ui.detailRaw.SetText("")
@@ -1624,6 +1631,9 @@ func (ui *UI) loadEncounters() error {
 
 	ui.encounterItems = ui.encounterItems[:0]
 	ui.encounterSerial = map[int]int{}
+	ui.turnMode = false
+	ui.turnIndex = 0
+	ui.turnRound = 0
 
 	for _, it := range data.Items {
 		monsterIndex := -1
@@ -1695,13 +1705,27 @@ func (ui *UI) loadEncounters() error {
 			ui.encounterSerial[monsterIndex] = ordinal
 		}
 	}
+	if len(ui.encounterItems) > 0 {
+		ui.turnMode = data.TurnMode
+		ui.turnIndex = data.TurnIndex
+		ui.turnRound = data.TurnRound
+		if ui.turnRound <= 0 {
+			ui.turnRound = 1
+		}
+		if ui.turnIndex < 0 || ui.turnIndex >= len(ui.encounterItems) {
+			ui.turnIndex = 0
+		}
+	}
 	return nil
 }
 
 func (ui *UI) saveEncounters() error {
 	data := PersistedEncounters{
-		Version: 1,
-		Items:   make([]PersistedEncounterItem, 0, len(ui.encounterItems)),
+		Version:   1,
+		Items:     make([]PersistedEncounterItem, 0, len(ui.encounterItems)),
+		TurnMode:  ui.turnMode,
+		TurnIndex: ui.turnIndex,
+		TurnRound: ui.turnRound,
 	}
 
 	for _, it := range ui.encounterItems {
