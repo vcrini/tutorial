@@ -762,7 +762,7 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 
 func (ui *UI) renderDetailByCustomEntry(entry EncounterEntry) {
 	builder := &strings.Builder{}
-	fmt.Fprintf(builder, "[yellow]%s #%d[-]\n", ui.encounterEntryName(entry), entry.Ordinal)
+	fmt.Fprintf(builder, "[yellow]%s[-]\n", ui.encounterEntryDisplay(entry))
 	if init, ok := ui.encounterInitBase(entry); ok {
 		if entry.HasInitRoll {
 			fmt.Fprintf(builder, "[white]Init:[-] %d/%d\n", entry.InitRoll, init)
@@ -1061,7 +1061,7 @@ func (ui *UI) openAddCustomEncounterForm() {
 		ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
 		ui.renderDetailByEncounterIndex(len(ui.encounterItems) - 1)
 		ui.app.SetFocus(ui.encounter)
-		ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunta[-:-] entry custom %s #%d  %s", name, ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunta[-:-] entry custom %s  %s", name, helpText))
 	})
 	form.AddButton("Cancel", func() {
 		ui.pages.RemovePage("encounter-add-custom")
@@ -1100,7 +1100,7 @@ func (ui *UI) renderEncounterList() {
 	}
 
 	for i, item := range ui.encounterItems {
-		label := fmt.Sprintf("%s #%d", ui.encounterEntryName(item), item.Ordinal)
+		label := ui.encounterEntryDisplay(item)
 		if init, ok := ui.encounterInitBase(item); ok {
 			if item.HasInitRoll {
 				label = fmt.Sprintf("%s [Init %d/%d]", label, item.InitRoll, init)
@@ -1138,7 +1138,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 	}
 	entry := ui.encounterItems[index]
 	if entry.BaseHP <= 0 {
-		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s[-:-]  %s", ui.encounterEntryDisplay(entry), helpText))
 		return
 	}
 	if direction == 0 {
@@ -1201,20 +1201,17 @@ func (ui *UI) openEncounterHPInput(direction int) {
 		ui.encounter.SetCurrentItem(index)
 		ui.renderDetailByEncounterIndex(index)
 
-		mName := ui.encounterEntryName(ui.encounterItems[index])
 		if direction < 0 {
-			ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s #%d -%d HP (%d/%d)  %s",
-				mName,
-				ui.encounterItems[index].Ordinal,
+			ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s -%d HP (%d/%d)  %s",
+				ui.encounterEntryDisplay(ui.encounterItems[index]),
 				damage,
 				ui.encounterItems[index].CurrentHP,
 				ui.encounterMaxHP(ui.encounterItems[index]),
 				helpText,
 			))
 		} else {
-			ui.status.SetText(fmt.Sprintf(" [black:gold] cura[-:-] %s #%d +%d HP (%d/%d)  %s",
-				mName,
-				ui.encounterItems[index].Ordinal,
+			ui.status.SetText(fmt.Sprintf(" [black:gold] cura[-:-] %s +%d HP (%d/%d)  %s",
+				ui.encounterEntryDisplay(ui.encounterItems[index]),
 				damage,
 				ui.encounterItems[index].CurrentHP,
 				ui.encounterMaxHP(ui.encounterItems[index]),
@@ -1236,7 +1233,6 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 		return
 	}
 	entry := ui.encounterItems[index]
-	name := ui.encounterEntryName(entry)
 
 	ui.pushEncounterUndo()
 	ui.encounterItems = append(ui.encounterItems[:index], ui.encounterItems[index+1:]...)
@@ -1269,7 +1265,7 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 		ui.detailRaw.SetText("")
 		ui.rawText = ""
 	}
-	ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s #%d  %s", name, entry.Ordinal, helpText))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s  %s", ui.encounterEntryDisplay(entry), helpText))
 }
 
 func (ui *UI) toggleEncounterHPMode() {
@@ -1283,7 +1279,7 @@ func (ui *UI) toggleEncounterHPMode() {
 
 	entry := ui.encounterItems[index]
 	if strings.TrimSpace(entry.HPFormula) == "" {
-		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non disponibile per %s[-:-]  %s", ui.encounterEntryDisplay(entry), helpText))
 		return
 	}
 
@@ -1296,7 +1292,7 @@ func (ui *UI) toggleEncounterHPMode() {
 		}
 		ui.renderEncounterList()
 		ui.encounter.SetCurrentItem(index)
-		ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> average  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s -> average  %s", ui.encounterEntryDisplay(entry), helpText))
 		return
 	}
 
@@ -1314,7 +1310,7 @@ func (ui *UI) toggleEncounterHPMode() {
 	}
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(index)
-	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> formula (%s = %d)  %s", ui.encounterEntryName(entry), entry.Ordinal, entry.HPFormula, rolled, helpText))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s -> formula (%s = %d)  %s", ui.encounterEntryDisplay(entry), entry.HPFormula, rolled, helpText))
 }
 
 func (ui *UI) rollEncounterInitiative() {
@@ -1329,7 +1325,7 @@ func (ui *UI) rollEncounterInitiative() {
 	entry := ui.encounterItems[index]
 	initValue, ok := ui.encounterInitBase(entry)
 	if !ok {
-		ui.status.SetText(fmt.Sprintf(" [white:red] init non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] init non disponibile per %s[-:-]  %s", ui.encounterEntryDisplay(entry), helpText))
 		return
 	}
 
@@ -1340,7 +1336,7 @@ func (ui *UI) rollEncounterInitiative() {
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(index)
 	ui.renderDetailByEncounterIndex(index)
-	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] %s #%d = %d/%d  %s", ui.encounterEntryName(entry), entry.Ordinal, roll, initValue, helpText))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] %s = %d/%d  %s", ui.encounterEntryDisplay(entry), roll, initValue, helpText))
 }
 
 func (ui *UI) rollAllEncounterInitiative() {
@@ -2359,6 +2355,14 @@ func (ui *UI) encounterEntryName(entry EncounterEntry) string {
 		return "Unknown"
 	}
 	return ui.monsters[entry.MonsterIndex].Name
+}
+
+func (ui *UI) encounterEntryDisplay(entry EncounterEntry) string {
+	name := ui.encounterEntryName(entry)
+	if entry.Custom {
+		return name
+	}
+	return fmt.Sprintf("%s #%d", name, entry.Ordinal)
 }
 
 func (ui *UI) encounterInitBase(entry EncounterEntry) (int, bool) {
