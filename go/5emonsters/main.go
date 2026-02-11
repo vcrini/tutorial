@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -19,8 +20,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
+const lastEncountersPathFile = ".encounters_last_path"
 
 //go:embed data/5e.yaml
 var embeddedMonstersYAML []byte
@@ -114,7 +116,7 @@ func main() {
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
 	encountersPath := strings.TrimSpace(os.Getenv("ENCOUNTERS_YAML"))
 	if encountersPath == "" {
-		encountersPath = defaultEncountersPath
+		encountersPath = readLastEncountersPath()
 	}
 	var (
 		monsters []Monster
@@ -397,6 +399,12 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			ui.deleteSelectedEncounterEntry()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 's':
+			ui.openEncounterSaveAsInput()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'l':
+			ui.openEncounterLoadInput()
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ' ':
 			ui.toggleEncounterHPMode()
 			return nil
@@ -504,6 +512,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  j / k (o frecce) : seleziona entry\n" +
 			"  / : cerca nel Raw del mostro selezionato\n" +
 			"  d : elimina entry selezionata\n" +
+			"  s : salva encounter su file (save as)\n" +
+			"  l : carica encounter da file (load)\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
@@ -745,6 +755,112 @@ func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
 	})
 
 	ui.pages.AddPage("raw-search", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) openEncounterSaveAsInput() {
+	input := tview.NewInputField().
+		SetLabel("File: ").
+		SetFieldWidth(52)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Save Encounters As ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetText(ui.encountersPath)
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 72, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("encounter-saveas")
+		ui.app.SetFocus(ui.encounter)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+		path := strings.TrimSpace(input.GetText())
+		if path == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
+			return
+		}
+		if err := ui.saveEncountersAs(path); err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] errore save encounters[-:-] %v  %s", err, helpText))
+			return
+		}
+		ui.status.SetText(fmt.Sprintf(" [black:gold] salvato[-:-] %s  %s", ui.encountersPath, helpText))
+	})
+
+	ui.pages.AddPage("encounter-saveas", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) openEncounterLoadInput() {
+	input := tview.NewInputField().
+		SetLabel("File: ").
+		SetFieldWidth(52)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Load Encounters ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetText(ui.encountersPath)
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 72, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("encounter-load")
+		ui.app.SetFocus(ui.encounter)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+		path := strings.TrimSpace(input.GetText())
+		if path == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
+			return
+		}
+
+		prev := ui.encountersPath
+		ui.encountersPath = path
+		if err := ui.loadEncounters(); err != nil {
+			ui.encountersPath = prev
+			ui.status.SetText(fmt.Sprintf(" [white:red] errore load encounters[-:-] %v  %s", err, helpText))
+			return
+		}
+		ui.encounterUndo = ui.encounterUndo[:0]
+		ui.encounterRedo = ui.encounterRedo[:0]
+		ui.renderEncounterList()
+		if len(ui.encounterItems) > 0 {
+			ui.encounter.SetCurrentItem(0)
+			ui.renderDetailByEncounterIndex(0)
+		} else {
+			ui.detailMeta.SetText("Nessun mostro nell'encounter.")
+			ui.detailRaw.SetText("")
+			ui.rawText = ""
+		}
+		_ = writeLastEncountersPath(ui.encountersPath)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] caricato[-:-] %s  %s", ui.encountersPath, helpText))
+	})
+
+	ui.pages.AddPage("encounter-load", modal, true, true)
 	ui.app.SetFocus(input)
 }
 
@@ -1147,7 +1263,51 @@ func (ui *UI) saveEncounters() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(ui.encountersPath, out, 0o644)
+	if err := os.WriteFile(ui.encountersPath, out, 0o644); err != nil {
+		return err
+	}
+	_ = writeLastEncountersPath(ui.encountersPath)
+	return nil
+}
+
+func (ui *UI) saveEncountersAs(path string) error {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return errors.New("empty path")
+	}
+	prev := ui.encountersPath
+	ui.encountersPath = path
+	if err := ui.saveEncounters(); err != nil {
+		ui.encountersPath = prev
+		return err
+	}
+	return nil
+}
+
+func readLastEncountersPath() string {
+	b, err := os.ReadFile(lastEncountersPathFile)
+	if err != nil {
+		return defaultEncountersPath
+	}
+	p := strings.TrimSpace(string(b))
+	if p == "" {
+		return defaultEncountersPath
+	}
+	return p
+}
+
+func writeLastEncountersPath(path string) error {
+	p := strings.TrimSpace(path)
+	if p == "" {
+		return nil
+	}
+	dir := filepath.Dir(lastEncountersPathFile)
+	if dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(lastEncountersPathFile, []byte(p+"\n"), 0o644)
 }
 
 func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {
