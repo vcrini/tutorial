@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 func mkMonster(id int, name string, dex int, hpAvg int, hpFormula string) Monster {
@@ -344,6 +346,111 @@ func TestEncounterEntryDisplayCustomDoesNotShowOrdinal(t *testing.T) {
 	regular := EncounterEntry{MonsterIndex: 0, Ordinal: 2}
 	if got := ui.encounterEntryDisplay(regular); got != "Aarakocra #2" {
 		t.Fatalf("expected regular display with ordinal, got %q", got)
+	}
+}
+
+func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+
+	encHelp := ui.helpForFocus(ui.encounter)
+	for _, expected := range []string{
+		"i : tira iniziativa entry selezionata",
+		"I : tira iniziativa per tutte le entry",
+		"S : ordina entry per tiro iniziativa",
+		"* : attiva/disattiva turn mode",
+		"n / p : turno successivo / precedente",
+	} {
+		if !strings.Contains(encHelp, expected) {
+			t.Fatalf("encounters help missing %q:\n%s", expected, encHelp)
+		}
+	}
+
+	monHelp := ui.helpForFocus(ui.list)
+	if !strings.Contains(monHelp, "a : aggiungi mostro a Encounters") {
+		t.Fatalf("monsters help missing add shortcut:\n%s", monHelp)
+	}
+	if !strings.Contains(monHelp, "/ : cerca nel Raw del mostro selezionato") {
+		t.Fatalf("monsters help missing raw search shortcut:\n%s", monHelp)
+	}
+
+	rawHelp := ui.helpForFocus(ui.detailRaw)
+	if !strings.Contains(rawHelp, "/ : cerca testo nel Raw corrente") {
+		t.Fatalf("raw help missing raw find shortcut:\n%s", rawHelp)
+	}
+}
+
+func TestTurnModeFullCycleAndRenderMarkers(t *testing.T) {
+	ui := makeTestUI(t, []Monster{
+		mkMonster(1, "A", 12, 5, "1d1"), // init base 1
+		mkMonster(2, "B", 16, 5, "1d1"), // init base 3 (highest)
+		mkMonster(3, "C", 8, 5, "1d1"),  // init base -1
+	})
+	ui.encounterItems = []EncounterEntry{
+		{MonsterIndex: 0, Ordinal: 1, BaseHP: 5, CurrentHP: 5},
+		{MonsterIndex: 1, Ordinal: 1, BaseHP: 5, CurrentHP: 5},
+		{MonsterIndex: 2, Ordinal: 1, BaseHP: 5, CurrentHP: 5},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(2)
+
+	ui.toggleEncounterTurnMode()
+	if !ui.turnMode || ui.turnRound != 1 || ui.turnIndex != 1 {
+		t.Fatalf("turn mode should start on top initiative: mode=%v round=%d idx=%d", ui.turnMode, ui.turnRound, ui.turnIndex)
+	}
+	line, _ := ui.encounter.GetItemText(1)
+	if !strings.Contains(line, "*[1]") {
+		t.Fatalf("active turn marker missing after start: %q", line)
+	}
+
+	ui.nextEncounterTurn()
+	if ui.turnIndex != 2 || ui.turnRound != 1 {
+		t.Fatalf("unexpected state after next: idx=%d round=%d", ui.turnIndex, ui.turnRound)
+	}
+	ui.nextEncounterTurn()
+	if ui.turnIndex != 0 || ui.turnRound != 2 {
+		t.Fatalf("unexpected wrap after next: idx=%d round=%d", ui.turnIndex, ui.turnRound)
+	}
+	line, _ = ui.encounter.GetItemText(0)
+	if !strings.Contains(line, "*[2]") {
+		t.Fatalf("expected round increment marker on first row, got: %q", line)
+	}
+
+	ui.prevEncounterTurn()
+	if ui.turnIndex != 2 || ui.turnRound != 1 {
+		t.Fatalf("unexpected state after prev wrap: idx=%d round=%d", ui.turnIndex, ui.turnRound)
+	}
+	ui.prevEncounterTurn()
+	if ui.turnIndex != 1 || ui.turnRound != 1 {
+		t.Fatalf("unexpected state after prev: idx=%d round=%d", ui.turnIndex, ui.turnRound)
+	}
+
+	ui.toggleEncounterTurnMode()
+	if ui.turnMode || ui.turnRound != 0 {
+		t.Fatalf("turn mode should be disabled after second toggle: mode=%v round=%d", ui.turnMode, ui.turnRound)
+	}
+	line, _ = ui.encounter.GetItemText(0)
+	if strings.Contains(line, "*[") || strings.HasPrefix(strings.TrimSpace(line), "1 ") {
+		t.Fatalf("turn prefixes should be removed when turn mode is off, got: %q", line)
+	}
+}
+
+func TestGlobalInputCaptureTurnsTabIntoEnterWhileAddCustomVisible(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	capture := ui.app.GetInputCapture()
+	if capture == nil {
+		t.Fatal("expected global input capture to be configured")
+	}
+
+	ui.addCustomVisible = true
+	ev := capture(tcell.NewEventKey(tcell.KeyTab, 0, tcell.ModNone))
+	if ev == nil || ev.Key() != tcell.KeyEnter {
+		t.Fatalf("expected tab to be translated to enter in add custom mode, got %#v", ev)
+	}
+
+	ui.addCustomVisible = false
+	ev = capture(tcell.NewEventKey(tcell.KeyTab, 0, tcell.ModNone))
+	if ev != nil {
+		t.Fatalf("expected tab to be consumed by focus navigation when add custom mode is off, got %#v", ev)
 	}
 }
 
