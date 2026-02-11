@@ -6,17 +6,20 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] u/r [-:-] undo/redo  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
 
 //go:embed data/5e.yaml
@@ -41,6 +44,9 @@ type EncounterEntry struct {
 	Ordinal      int
 	BaseHP       int
 	CurrentHP    int
+	HPFormula    string
+	UseRolledHP  bool
+	RolledHP     int
 }
 
 type PersistedEncounters struct {
@@ -49,10 +55,13 @@ type PersistedEncounters struct {
 }
 
 type PersistedEncounterItem struct {
-	MonsterID int `yaml:"monster_id"`
-	Ordinal   int `yaml:"ordinal"`
-	BaseHP    int `yaml:"base_hp"`
-	CurrentHP int `yaml:"current_hp"`
+	MonsterID int    `yaml:"monster_id"`
+	Ordinal   int    `yaml:"ordinal"`
+	BaseHP    int    `yaml:"base_hp"`
+	CurrentHP int    `yaml:"current_hp"`
+	HPFormula string `yaml:"hp_formula,omitempty"`
+	UseRolled bool   `yaml:"use_rolled,omitempty"`
+	RolledHP  int    `yaml:"rolled_hp,omitempty"`
 }
 
 type EncounterUndoState struct {
@@ -100,6 +109,8 @@ type UI struct {
 }
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
 	encountersPath := strings.TrimSpace(os.Getenv("ENCOUNTERS_YAML"))
 	if encountersPath == "" {
@@ -386,6 +397,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			ui.deleteSelectedEncounterEntry()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			ui.toggleEncounterHPMode()
+			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'u':
 			ui.undoEncounterCommand()
 			return nil
@@ -492,6 +506,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  d : elimina entry selezionata\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
+			"  spazio : switch HP average/formula (roll)\n" +
 			"  freccia sinistra : sottrai HP\n" +
 			"  freccia destra : aggiungi HP\n"
 	case ui.list:
@@ -751,11 +766,15 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 	if !ok {
 		baseHP = 0
 	}
+	_, hpFormula := extractHP(ui.monsters[monsterIndex].Raw)
 	ui.encounterItems = append(ui.encounterItems, EncounterEntry{
 		MonsterIndex: monsterIndex,
 		Ordinal:      ordinal,
 		BaseHP:       baseHP,
 		CurrentHP:    baseHP,
+		HPFormula:    hpFormula,
+		UseRolledHP:  false,
+		RolledHP:     0,
 	})
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
@@ -774,11 +793,12 @@ func (ui *UI) renderEncounterList() {
 	for _, item := range ui.encounterItems {
 		m := ui.monsters[item.MonsterIndex]
 		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
-		if item.BaseHP > 0 {
+		maxHP := ui.encounterMaxHP(item)
+		if maxHP > 0 {
 			if item.CurrentHP <= 0 {
 				label = "X " + label
 			}
-			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, item.BaseHP)
+			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, maxHP)
 		} else {
 			label = fmt.Sprintf("%s [HP ?]", label)
 		}
@@ -850,8 +870,9 @@ func (ui *UI) openEncounterHPInput(direction int) {
 			}
 		} else {
 			ui.encounterItems[index].CurrentHP += damage
-			if ui.encounterItems[index].CurrentHP > ui.encounterItems[index].BaseHP {
-				ui.encounterItems[index].CurrentHP = ui.encounterItems[index].BaseHP
+			maxHP := ui.encounterMaxHP(ui.encounterItems[index])
+			if maxHP > 0 && ui.encounterItems[index].CurrentHP > maxHP {
+				ui.encounterItems[index].CurrentHP = maxHP
 			}
 		}
 		ui.renderEncounterList()
@@ -865,7 +886,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 				ui.encounterItems[index].Ordinal,
 				damage,
 				ui.encounterItems[index].CurrentHP,
-				ui.encounterItems[index].BaseHP,
+				ui.encounterMaxHP(ui.encounterItems[index]),
 				helpText,
 			))
 		} else {
@@ -874,7 +895,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 				ui.encounterItems[index].Ordinal,
 				damage,
 				ui.encounterItems[index].CurrentHP,
-				ui.encounterItems[index].BaseHP,
+				ui.encounterMaxHP(ui.encounterItems[index]),
 				helpText,
 			))
 		}
@@ -910,6 +931,53 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 		ui.rawText = ""
 	}
 	ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s #%d  %s", name, entry.Ordinal, helpText))
+}
+
+func (ui *UI) toggleEncounterHPMode() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+
+	entry := ui.encounterItems[index]
+	if strings.TrimSpace(entry.HPFormula) == "" {
+		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non disponibile per %s #%d[-:-]  %s", ui.monsters[entry.MonsterIndex].Name, entry.Ordinal, helpText))
+		return
+	}
+
+	if entry.UseRolledHP {
+		ui.pushEncounterUndo()
+		ui.encounterItems[index].UseRolledHP = false
+		maxHP := ui.encounterMaxHP(ui.encounterItems[index])
+		if maxHP > 0 && ui.encounterItems[index].CurrentHP > maxHP {
+			ui.encounterItems[index].CurrentHP = maxHP
+		}
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(index)
+		m := ui.monsters[entry.MonsterIndex]
+		ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> average  %s", m.Name, entry.Ordinal, helpText))
+		return
+	}
+
+	rolled, ok := rollHPFormula(entry.HPFormula)
+	if !ok {
+		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non supportata[-:-] \"%s\"  %s", entry.HPFormula, helpText))
+		return
+	}
+	ui.pushEncounterUndo()
+	ui.encounterItems[index].UseRolledHP = true
+	ui.encounterItems[index].RolledHP = rolled
+	maxHP := ui.encounterMaxHP(ui.encounterItems[index])
+	if maxHP > 0 && ui.encounterItems[index].CurrentHP > maxHP {
+		ui.encounterItems[index].CurrentHP = maxHP
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(index)
+	m := ui.monsters[entry.MonsterIndex]
+	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> formula (%s = %d)  %s", m.Name, entry.Ordinal, entry.HPFormula, rolled, helpText))
 }
 
 func (ui *UI) pushEncounterUndo() {
@@ -1018,14 +1086,22 @@ func (ui *UI) loadEncounters() error {
 				baseHP = avg
 			}
 		}
+		hpFormula := strings.TrimSpace(it.HPFormula)
+		if hpFormula == "" {
+			_, hpFormula = extractHP(ui.monsters[monsterIndex].Raw)
+		}
 
 		currentHP := it.CurrentHP
 		if baseHP > 0 {
 			if currentHP < 0 {
 				currentHP = 0
 			}
-			if currentHP > baseHP {
-				currentHP = baseHP
+			maxHP := baseHP
+			if it.UseRolled && it.RolledHP > 0 {
+				maxHP = it.RolledHP
+			}
+			if maxHP > 0 && currentHP > maxHP {
+				currentHP = maxHP
 			}
 		}
 
@@ -1034,6 +1110,9 @@ func (ui *UI) loadEncounters() error {
 			Ordinal:      ordinal,
 			BaseHP:       baseHP,
 			CurrentHP:    currentHP,
+			HPFormula:    hpFormula,
+			UseRolledHP:  it.UseRolled,
+			RolledHP:     it.RolledHP,
 		})
 		if ordinal > ui.encounterSerial[monsterIndex] {
 			ui.encounterSerial[monsterIndex] = ordinal
@@ -1058,6 +1137,9 @@ func (ui *UI) saveEncounters() error {
 			Ordinal:   it.Ordinal,
 			BaseHP:    it.BaseHP,
 			CurrentHP: it.CurrentHP,
+			HPFormula: it.HPFormula,
+			UseRolled: it.UseRolledHP,
+			RolledHP:  it.RolledHP,
 		})
 	}
 
@@ -1563,6 +1645,51 @@ func blankIfEmpty(v, fallback string) string {
 		return fallback
 	}
 	return v
+}
+
+func (ui *UI) encounterMaxHP(entry EncounterEntry) int {
+	if entry.UseRolledHP && entry.RolledHP > 0 {
+		return entry.RolledHP
+	}
+	return entry.BaseHP
+}
+
+var hpFormulaRe = regexp.MustCompile(`^\s*(\d+)\s*[dD]\s*(\d+)(?:\s*([+-])\s*(\d+))?\s*$`)
+
+func rollHPFormula(formula string) (int, bool) {
+	m := hpFormulaRe.FindStringSubmatch(strings.TrimSpace(formula))
+	if len(m) == 0 {
+		return 0, false
+	}
+
+	nDice, err1 := strconv.Atoi(m[1])
+	dieFaces, err2 := strconv.Atoi(m[2])
+	if err1 != nil || err2 != nil || nDice <= 0 || dieFaces <= 0 {
+		return 0, false
+	}
+	if nDice > 200 || dieFaces > 10000 {
+		return 0, false
+	}
+
+	total := 0
+	for i := 0; i < nDice; i++ {
+		total += rand.Intn(dieFaces) + 1
+	}
+	if m[3] != "" && m[4] != "" {
+		mod, err := strconv.Atoi(m[4])
+		if err != nil {
+			return 0, false
+		}
+		if m[3] == "-" {
+			total -= mod
+		} else {
+			total += mod
+		}
+	}
+	if total < 0 {
+		total = 0
+	}
+	return total, true
 }
 
 func cloneIntMap(src map[int]int) map[int]int {
