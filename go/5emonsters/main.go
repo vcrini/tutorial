@@ -36,19 +36,22 @@ type dataset struct {
 }
 
 type UI struct {
-	app        *tview.Application
-	monsters   []Monster
-	filtered   []int
-	envOptions []string
-	crOptions  []string
+	app         *tview.Application
+	monsters    []Monster
+	filtered    []int
+	envOptions  []string
+	crOptions   []string
+	typeOptions []string
 
 	nameFilter string
 	envFilter  string
 	crFilter   string
+	typeFilter string
 
 	nameInput *tview.InputField
 	envDrop   *tview.DropDown
 	crDrop    *tview.DropDown
+	typeDrop  *tview.DropDown
 	list      *tview.List
 	detail    *tview.TextView
 	status    *tview.TextView
@@ -63,36 +66,38 @@ func main() {
 		monsters []Monster
 		envs     []string
 		crs      []string
+		types    []string
 		err      error
 	)
 
 	if yamlPath != "" {
-		monsters, envs, crs, err = loadMonstersFromPath(yamlPath)
+		monsters, envs, crs, types, err = loadMonstersFromPath(yamlPath)
 		if err != nil {
 			log.Fatalf("errore caricamento YAML esterno (%s): %v", yamlPath, err)
 		}
 	} else {
-		monsters, envs, crs, err = loadMonstersFromBytes(embeddedMonstersYAML)
+		monsters, envs, crs, types, err = loadMonstersFromBytes(embeddedMonstersYAML)
 		if err != nil {
 			log.Fatalf("errore caricamento YAML embedded: %v", err)
 		}
 	}
 
-	ui := newUI(monsters, envs, crs)
+	ui := newUI(monsters, envs, crs, types)
 	if err := ui.run(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func newUI(monsters []Monster, envs, crs []string) *UI {
+func newUI(monsters []Monster, envs, crs, types []string) *UI {
 	setTheme()
 
 	ui := &UI{
-		app:        tview.NewApplication(),
-		monsters:   monsters,
-		envOptions: append([]string{"All"}, envs...),
-		crOptions:  append([]string{"All"}, crs...),
-		filtered:   make([]int, 0, len(monsters)),
+		app:         tview.NewApplication(),
+		monsters:    monsters,
+		envOptions:  append([]string{"All"}, envs...),
+		crOptions:   append([]string{"All"}, crs...),
+		typeOptions: append([]string{"All"}, types...),
+		filtered:    make([]int, 0, len(monsters)),
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -149,6 +154,24 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
 
+	ui.typeDrop = tview.NewDropDown().
+		SetLabel(" Type ").
+		SetOptions(ui.typeOptions, func(option string, _ int) {
+			if option == "All" {
+				ui.typeFilter = ""
+			} else {
+				ui.typeFilter = option
+			}
+			ui.applyFilters()
+		})
+	ui.typeDrop.SetLabelColor(tcell.ColorGold)
+	ui.typeDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	ui.typeDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.typeDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
+
 	ui.list = tview.NewList()
 	ui.list.SetBorder(true)
 	ui.list.SetTitle(" Monsters ")
@@ -158,7 +181,7 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 	ui.list.SetSecondaryTextColor(tcell.ColorLightGray)
 	ui.list.SetSelectedTextColor(tcell.ColorBlack)
 	ui.list.SetSelectedBackgroundColor(tcell.ColorGold)
-	ui.list.ShowSecondaryText(true)
+	ui.list.ShowSecondaryText(false)
 	ui.list.SetChangedFunc(func(index int, _, _ string, _ rune) {
 		ui.renderDetailByListIndex(index)
 	})
@@ -184,9 +207,10 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 
 	filterRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(ui.nameInput, 30, 0, true).
-		AddItem(ui.envDrop, 26, 0, false).
-		AddItem(ui.crDrop, 18, 0, false)
+		AddItem(ui.nameInput, 28, 0, true).
+		AddItem(ui.envDrop, 22, 0, false).
+		AddItem(ui.crDrop, 14, 0, false).
+		AddItem(ui.typeDrop, 22, 0, false)
 
 	mainRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -201,10 +225,11 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.list, ui.detail}
+	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detail}
 	ui.app.SetFocus(ui.list)
 	ui.envDrop.SetCurrentOption(0)
 	ui.crDrop.SetCurrentOption(0)
+	ui.typeDrop.SetCurrentOption(0)
 
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focus := ui.app.GetFocus()
@@ -315,6 +340,9 @@ func (ui *UI) applyFilters() {
 		if !matchEnv(m.Environment, ui.envFilter) {
 			continue
 		}
+		if !matchType(m.Type, ui.typeFilter) {
+			continue
+		}
 		ui.filtered = append(ui.filtered, i)
 	}
 
@@ -326,12 +354,7 @@ func (ui *UI) renderList() {
 
 	for _, idx := range ui.filtered {
 		m := ui.monsters[idx]
-		env := "n/a"
-		if len(m.Environment) > 0 {
-			env = strings.Join(m.Environment, ", ")
-		}
-		secondary := fmt.Sprintf("[lightgray]%s | %s | %s", blankIfEmpty(m.Type, "type?"), blankIfEmpty(m.Source, "src?"), env)
-		ui.list.AddItem(m.Name, secondary, 0, nil)
+		ui.list.AddItem(m.Name, "", 0, nil)
 	}
 
 	ui.status.SetText(fmt.Sprintf(" [black:gold] %d risultati [-:-] %s", len(ui.filtered), helpText))
@@ -373,26 +396,27 @@ func (ui *UI) renderDetailByListIndex(listIndex int) {
 	ui.detail.SetText(builder.String())
 }
 
-func loadMonstersFromPath(path string) ([]Monster, []string, []string, error) {
+func loadMonstersFromPath(path string) ([]Monster, []string, []string, []string, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	return loadMonstersFromBytes(b)
 }
 
-func loadMonstersFromBytes(b []byte) ([]Monster, []string, []string, error) {
+func loadMonstersFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
 	var ds dataset
 	if err := yaml.Unmarshal(b, &ds); err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	if len(ds.Monsters) == 0 {
-		return nil, nil, nil, errors.New("nessun mostro trovato nel yaml")
+		return nil, nil, nil, nil, errors.New("nessun mostro trovato nel yaml")
 	}
 
 	monsters := make([]Monster, 0, len(ds.Monsters))
 	envSet := map[string]struct{}{}
 	crSet := map[string]struct{}{}
+	typeSet := map[string]struct{}{}
 
 	for i, raw := range ds.Monsters {
 		name := asString(raw["name"])
@@ -420,13 +444,18 @@ func loadMonstersFromBytes(b []byte) ([]Monster, []string, []string, error) {
 			Type:        extractType(raw["type"]),
 			Raw:         raw,
 		})
+		mType := extractType(raw["type"])
+		if mType == "" {
+			mType = "Unknown"
+		}
+		typeSet[mType] = struct{}{}
 	}
 
 	sort.Slice(monsters, func(i, j int) bool {
 		return strings.ToLower(monsters[i].Name) < strings.ToLower(monsters[j].Name)
 	})
 
-	return monsters, keysSorted(envSet), sortCR(keysSorted(crSet)), nil
+	return monsters, keysSorted(envSet), sortCR(keysSorted(crSet)), keysSorted(typeSet), nil
 }
 
 func matchName(monsterName, query string) bool {
@@ -453,6 +482,16 @@ func matchEnv(monsterEnvs []string, query string) bool {
 		}
 	}
 	return false
+}
+
+func matchType(monsterType, query string) bool {
+	if query == "" {
+		return true
+	}
+	if strings.TrimSpace(monsterType) == "" {
+		monsterType = "Unknown"
+	}
+	return strings.EqualFold(strings.TrimSpace(monsterType), strings.TrimSpace(query))
 }
 
 func asString(v any) string {
