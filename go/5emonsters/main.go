@@ -1528,10 +1528,7 @@ func (ui *UI) toggleEncounterTurnMode() {
 		ui.status.SetText(fmt.Sprintf(" [black:gold] turn mode[-:-] disattivato  %s", helpText))
 		return
 	}
-	idx := ui.encounter.GetCurrentItem()
-	if idx < 0 || idx >= len(ui.encounterItems) {
-		idx = 0
-	}
+	idx := ui.findTopInitiativeEncounterIndex()
 	ui.turnMode = true
 	ui.turnIndex = idx
 	ui.turnRound = 1
@@ -1539,6 +1536,34 @@ func (ui *UI) toggleEncounterTurnMode() {
 	ui.encounter.SetCurrentItem(idx)
 	ui.renderDetailByEncounterIndex(idx)
 	ui.status.SetText(fmt.Sprintf(" [black:gold] turn mode[-:-] attivo (round 1)  %s", helpText))
+}
+
+func (ui *UI) findTopInitiativeEncounterIndex() int {
+	if len(ui.encounterItems) == 0 {
+		return 0
+	}
+	best := 0
+	bestVal := -1 << 30
+	bestHas := false
+	for i, e := range ui.encounterItems {
+		v, ok := ui.encounterInitBase(e)
+		if e.HasInitRoll {
+			v = e.InitRoll
+			ok = true
+		}
+		if !ok {
+			continue
+		}
+		if !bestHas || v > bestVal {
+			bestHas = true
+			bestVal = v
+			best = i
+		}
+	}
+	if bestHas {
+		return best
+	}
+	return 0
 }
 
 func (ui *UI) nextEncounterTurn() {
