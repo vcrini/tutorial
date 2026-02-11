@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
 
@@ -415,6 +415,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'I':
 			ui.rollAllEncounterInitiative()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'S':
+			ui.sortEncounterByInitiative()
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ' ':
 			ui.toggleEncounterHPMode()
 			return nil
@@ -526,6 +529,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  l : carica encounter da file (load)\n" +
 			"  i : tira iniziativa entry selezionata\n" +
 			"  I : tira iniziativa per tutte le entry\n" +
+			"  S : ordina entry per tiro iniziativa\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
@@ -1181,6 +1185,61 @@ func (ui *UI) rollAllEncounterInitiative() {
 		return
 	}
 	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] tirata per %d entry  %s", rolledCount, helpText))
+}
+
+func (ui *UI) sortEncounterByInitiative() {
+	if len(ui.encounterItems) < 2 {
+		return
+	}
+
+	current := ui.encounter.GetCurrentItem()
+	if current < 0 || current >= len(ui.encounterItems) {
+		current = 0
+	}
+	selected := ui.encounterItems[current]
+
+	ui.pushEncounterUndo()
+
+	sort.SliceStable(ui.encounterItems, func(i, j int) bool {
+		a := ui.encounterItems[i]
+		b := ui.encounterItems[j]
+
+		if a.HasInitRoll != b.HasInitRoll {
+			return a.HasInitRoll
+		}
+		if a.HasInitRoll && b.HasInitRoll && a.InitRoll != b.InitRoll {
+			return a.InitRoll > b.InitRoll
+		}
+
+		aInit, aok := extractInitFromDex(ui.monsters[a.MonsterIndex].Raw)
+		bInit, bok := extractInitFromDex(ui.monsters[b.MonsterIndex].Raw)
+		if aok != bok {
+			return aok
+		}
+		if aok && bok && aInit != bInit {
+			return aInit > bInit
+		}
+
+		an := ui.monsters[a.MonsterIndex].Name
+		bn := ui.monsters[b.MonsterIndex].Name
+		if strings.ToLower(an) != strings.ToLower(bn) {
+			return strings.ToLower(an) < strings.ToLower(bn)
+		}
+		return a.Ordinal < b.Ordinal
+	})
+
+	ui.renderEncounterList()
+
+	newIndex := 0
+	for i, it := range ui.encounterItems {
+		if it.MonsterIndex == selected.MonsterIndex && it.Ordinal == selected.Ordinal {
+			newIndex = i
+			break
+		}
+	}
+	ui.encounter.SetCurrentItem(newIndex)
+	ui.renderDetailByEncounterIndex(newIndex)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] sort[-:-] encounters ordinati per iniziativa  %s", helpText))
 }
 
 func (ui *UI) pushEncounterUndo() {
