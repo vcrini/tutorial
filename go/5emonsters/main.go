@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i [-:-] roll init  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
 
@@ -49,6 +49,8 @@ type EncounterEntry struct {
 	HPFormula    string
 	UseRolledHP  bool
 	RolledHP     int
+	HasInitRoll  bool
+	InitRoll     int
 }
 
 type PersistedEncounters struct {
@@ -57,13 +59,15 @@ type PersistedEncounters struct {
 }
 
 type PersistedEncounterItem struct {
-	MonsterID int    `yaml:"monster_id"`
-	Ordinal   int    `yaml:"ordinal"`
-	BaseHP    int    `yaml:"base_hp"`
-	CurrentHP int    `yaml:"current_hp"`
-	HPFormula string `yaml:"hp_formula,omitempty"`
-	UseRolled bool   `yaml:"use_rolled,omitempty"`
-	RolledHP  int    `yaml:"rolled_hp,omitempty"`
+	MonsterID  int    `yaml:"monster_id"`
+	Ordinal    int    `yaml:"ordinal"`
+	BaseHP     int    `yaml:"base_hp"`
+	CurrentHP  int    `yaml:"current_hp"`
+	HPFormula  string `yaml:"hp_formula,omitempty"`
+	UseRolled  bool   `yaml:"use_rolled,omitempty"`
+	RolledHP   int    `yaml:"rolled_hp,omitempty"`
+	InitRolled bool   `yaml:"init_rolled,omitempty"`
+	InitRoll   int    `yaml:"init_roll,omitempty"`
 }
 
 type EncounterUndoState struct {
@@ -405,6 +409,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'l':
 			ui.openEncounterLoadInput()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'i':
+			ui.rollEncounterInitiative()
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ' ':
 			ui.toggleEncounterHPMode()
 			return nil
@@ -514,6 +521,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  d : elimina entry selezionata\n" +
 			"  s : salva encounter su file (save as)\n" +
 			"  l : carica encounter da file (load)\n" +
+			"  i : tira iniziativa (1d20 + Init)\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
@@ -891,6 +899,8 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 		HPFormula:    hpFormula,
 		UseRolledHP:  false,
 		RolledHP:     0,
+		HasInitRoll:  false,
+		InitRoll:     0,
 	})
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
@@ -910,7 +920,11 @@ func (ui *UI) renderEncounterList() {
 		m := ui.monsters[item.MonsterIndex]
 		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
 		if init, ok := extractInitFromDex(m.Raw); ok {
-			label = fmt.Sprintf("%s [Init %d]", label, init)
+			if item.HasInitRoll {
+				label = fmt.Sprintf("%s [Init %d/%d]", label, item.InitRoll, init)
+			} else {
+				label = fmt.Sprintf("%s [Init %d]", label, init)
+			}
 		}
 		maxHP := ui.encounterMaxHP(item)
 		if maxHP > 0 {
@@ -1099,6 +1113,33 @@ func (ui *UI) toggleEncounterHPMode() {
 	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> formula (%s = %d)  %s", m.Name, entry.Ordinal, entry.HPFormula, rolled, helpText))
 }
 
+func (ui *UI) rollEncounterInitiative() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+
+	entry := ui.encounterItems[index]
+	m := ui.monsters[entry.MonsterIndex]
+	initValue, ok := extractInitFromDex(m.Raw)
+	if !ok {
+		ui.status.SetText(fmt.Sprintf(" [white:red] dex non disponibile per %s #%d[-:-]  %s", m.Name, entry.Ordinal, helpText))
+		return
+	}
+
+	ui.pushEncounterUndo()
+	roll := (rand.Intn(20) + 1) + initValue
+	ui.encounterItems[index].HasInitRoll = true
+	ui.encounterItems[index].InitRoll = roll
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(index)
+	ui.renderDetailByEncounterIndex(index)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] %s #%d = %d/%d  %s", m.Name, entry.Ordinal, roll, initValue, helpText))
+}
+
 func (ui *UI) pushEncounterUndo() {
 	snap := EncounterUndoState{
 		Items:    append([]EncounterEntry(nil), ui.encounterItems...),
@@ -1232,6 +1273,8 @@ func (ui *UI) loadEncounters() error {
 			HPFormula:    hpFormula,
 			UseRolledHP:  it.UseRolled,
 			RolledHP:     it.RolledHP,
+			HasInitRoll:  it.InitRolled,
+			InitRoll:     it.InitRoll,
 		})
 		if ordinal > ui.encounterSerial[monsterIndex] {
 			ui.encounterSerial[monsterIndex] = ordinal
@@ -1252,13 +1295,15 @@ func (ui *UI) saveEncounters() error {
 		}
 		m := ui.monsters[it.MonsterIndex]
 		data.Items = append(data.Items, PersistedEncounterItem{
-			MonsterID: m.ID,
-			Ordinal:   it.Ordinal,
-			BaseHP:    it.BaseHP,
-			CurrentHP: it.CurrentHP,
-			HPFormula: it.HPFormula,
-			UseRolled: it.UseRolledHP,
-			RolledHP:  it.RolledHP,
+			MonsterID:  m.ID,
+			Ordinal:    it.Ordinal,
+			BaseHP:     it.BaseHP,
+			CurrentHP:  it.CurrentHP,
+			HPFormula:  it.HPFormula,
+			UseRolled:  it.UseRolledHP,
+			RolledHP:   it.RolledHP,
+			InitRolled: it.HasInitRoll,
+			InitRoll:   it.InitRoll,
 		})
 	}
 
