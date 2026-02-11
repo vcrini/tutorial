@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
 
@@ -109,6 +109,9 @@ type UI struct {
 	encountersPath  string
 	encounterUndo   []EncounterUndoState
 	encounterRedo   []EncounterUndoState
+	turnMode        bool
+	turnIndex       int
+	turnRound       int
 
 	helpVisible     bool
 	helpReturnFocus tview.Primitive
@@ -418,6 +421,15 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'S':
 			ui.sortEncounterByInitiative()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == '*':
+			ui.toggleEncounterTurnMode()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'n':
+			ui.nextEncounterTurn()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'p':
+			ui.prevEncounterTurn()
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ' ':
 			ui.toggleEncounterHPMode()
 			return nil
@@ -530,6 +542,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  i : tira iniziativa entry selezionata\n" +
 			"  I : tira iniziativa per tutte le entry\n" +
 			"  S : ordina entry per tiro iniziativa\n" +
+			"  * : attiva/disattiva turn mode\n" +
+			"  n / p : turno successivo / precedente\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
@@ -863,6 +877,9 @@ func (ui *UI) openEncounterLoadInput() {
 		}
 		ui.encounterUndo = ui.encounterUndo[:0]
 		ui.encounterRedo = ui.encounterRedo[:0]
+		ui.turnMode = false
+		ui.turnIndex = 0
+		ui.turnRound = 0
 		ui.renderEncounterList()
 		if len(ui.encounterItems) > 0 {
 			ui.encounter.SetCurrentItem(0)
@@ -920,11 +937,23 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 func (ui *UI) renderEncounterList() {
 	ui.encounter.Clear()
 	if len(ui.encounterItems) == 0 {
+		ui.turnMode = false
 		ui.encounter.AddItem("Nessun mostro nell'encounter", "", 0, nil)
 		return
 	}
+	if ui.turnMode {
+		if ui.turnRound <= 0 {
+			ui.turnRound = 1
+		}
+		if ui.turnIndex < 0 {
+			ui.turnIndex = 0
+		}
+		if ui.turnIndex >= len(ui.encounterItems) {
+			ui.turnIndex = 0
+		}
+	}
 
-	for _, item := range ui.encounterItems {
+	for i, item := range ui.encounterItems {
 		m := ui.monsters[item.MonsterIndex]
 		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
 		if init, ok := extractInitFromDex(m.Raw); ok {
@@ -942,6 +971,13 @@ func (ui *UI) renderEncounterList() {
 			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, maxHP)
 		} else {
 			label = fmt.Sprintf("%s [HP ?]", label)
+		}
+		if ui.turnMode {
+			prefix := fmt.Sprintf("%d", i+1)
+			if i == ui.turnIndex {
+				prefix += fmt.Sprintf("*[%d]", ui.turnRound)
+			}
+			label = prefix + " " + label
 		}
 		ui.encounter.AddItem(label, "", 0, nil)
 	}
@@ -1059,6 +1095,23 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 
 	ui.pushEncounterUndo()
 	ui.encounterItems = append(ui.encounterItems[:index], ui.encounterItems[index+1:]...)
+	if ui.turnMode {
+		if len(ui.encounterItems) == 0 {
+			ui.turnMode = false
+			ui.turnIndex = 0
+			ui.turnRound = 0
+		} else {
+			if index < ui.turnIndex {
+				ui.turnIndex--
+			}
+			if ui.turnIndex >= len(ui.encounterItems) {
+				ui.turnIndex = 0
+			}
+			if ui.turnRound <= 0 {
+				ui.turnRound = 1
+			}
+		}
+	}
 	ui.renderEncounterList()
 	if len(ui.encounterItems) > 0 {
 		if index >= len(ui.encounterItems) {
@@ -1197,6 +1250,12 @@ func (ui *UI) sortEncounterByInitiative() {
 		current = 0
 	}
 	selected := ui.encounterItems[current]
+	active := EncounterEntry{}
+	hasActive := false
+	if ui.turnMode && ui.turnIndex >= 0 && ui.turnIndex < len(ui.encounterItems) {
+		active = ui.encounterItems[ui.turnIndex]
+		hasActive = true
+	}
 
 	ui.pushEncounterUndo()
 
@@ -1231,11 +1290,17 @@ func (ui *UI) sortEncounterByInitiative() {
 	ui.renderEncounterList()
 
 	newIndex := 0
+	newTurnIndex := -1
 	for i, it := range ui.encounterItems {
 		if it.MonsterIndex == selected.MonsterIndex && it.Ordinal == selected.Ordinal {
 			newIndex = i
-			break
 		}
+		if hasActive && it.MonsterIndex == active.MonsterIndex && it.Ordinal == active.Ordinal {
+			newTurnIndex = i
+		}
+	}
+	if ui.turnMode && hasActive && newTurnIndex >= 0 {
+		ui.turnIndex = newTurnIndex
 	}
 	ui.encounter.SetCurrentItem(newIndex)
 	ui.renderDetailByEncounterIndex(newIndex)
@@ -1307,6 +1372,73 @@ func (ui *UI) restoreEncounterState(state EncounterUndoState) {
 	ui.detailMeta.SetText("Nessun mostro nell'encounter.")
 	ui.detailRaw.SetText("")
 	ui.rawText = ""
+}
+
+func (ui *UI) toggleEncounterTurnMode() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	if ui.turnMode {
+		ui.turnMode = false
+		ui.turnRound = 0
+		ui.renderEncounterList()
+		idx := ui.encounter.GetCurrentItem()
+		if idx < 0 {
+			idx = 0
+		}
+		ui.encounter.SetCurrentItem(idx)
+		ui.renderDetailByEncounterIndex(idx)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] turn mode[-:-] disattivato  %s", helpText))
+		return
+	}
+	idx := ui.encounter.GetCurrentItem()
+	if idx < 0 || idx >= len(ui.encounterItems) {
+		idx = 0
+	}
+	ui.turnMode = true
+	ui.turnIndex = idx
+	ui.turnRound = 1
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(idx)
+	ui.renderDetailByEncounterIndex(idx)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] turn mode[-:-] attivo (round 1)  %s", helpText))
+}
+
+func (ui *UI) nextEncounterTurn() {
+	if !ui.turnMode || len(ui.encounterItems) == 0 {
+		return
+	}
+	if ui.turnIndex >= len(ui.encounterItems)-1 {
+		ui.turnIndex = 0
+		ui.turnRound++
+		if ui.turnRound <= 0 {
+			ui.turnRound = 1
+		}
+	} else {
+		ui.turnIndex++
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(ui.turnIndex)
+	ui.renderDetailByEncounterIndex(ui.turnIndex)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] turn[-:-] round %d, entry %d  %s", ui.turnRound, ui.turnIndex+1, helpText))
+}
+
+func (ui *UI) prevEncounterTurn() {
+	if !ui.turnMode || len(ui.encounterItems) == 0 {
+		return
+	}
+	if ui.turnIndex <= 0 {
+		ui.turnIndex = len(ui.encounterItems) - 1
+		if ui.turnRound > 1 {
+			ui.turnRound--
+		}
+	} else {
+		ui.turnIndex--
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(ui.turnIndex)
+	ui.renderDetailByEncounterIndex(ui.turnIndex)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] turn[-:-] round %d, entry %d  %s", ui.turnRound, ui.turnIndex+1, helpText))
 }
 
 func (ui *UI) loadEncounters() error {
