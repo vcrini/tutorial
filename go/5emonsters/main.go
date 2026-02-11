@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca nome  [black:gold] tab [-:-] focus  [black:gold] j/k [-:-] naviga  [black:gold] PgUp/PgDn [-:-] scroll dettagli "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] j/k [-:-] naviga  [black:gold] PgUp/PgDn [-:-] scroll Raw "
 
 //go:embed data/5e.yaml
 var embeddedMonstersYAML []byte
@@ -48,16 +48,19 @@ type UI struct {
 	crFilter   string
 	typeFilter string
 
-	nameInput *tview.InputField
-	envDrop   *tview.DropDown
-	crDrop    *tview.DropDown
-	typeDrop  *tview.DropDown
-	list      *tview.List
-	detail    *tview.TextView
-	status    *tview.TextView
-	pages     *tview.Pages
+	nameInput  *tview.InputField
+	envDrop    *tview.DropDown
+	crDrop     *tview.DropDown
+	typeDrop   *tview.DropDown
+	list       *tview.List
+	detailMeta *tview.TextView
+	detailRaw  *tview.TextView
+	status     *tview.TextView
+	pages      *tview.Pages
 
 	focusOrder []tview.Primitive
+	rawText    string
+	rawQuery   string
 }
 
 func main() {
@@ -189,16 +192,31 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 		ui.renderDetailByListIndex(index)
 	})
 
-	ui.detail = tview.NewTextView().
+	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true).
 		SetWordWrap(true)
-	ui.detail.SetBorder(true)
-	ui.detail.SetTitle(" Details ")
-	ui.detail.SetTitleColor(tcell.ColorGold)
-	ui.detail.SetBorderColor(tcell.ColorGold)
-	ui.detail.SetTextColor(tcell.ColorWhite)
-	ui.detail.SetWrap(true)
+	ui.detailMeta.SetBorder(true)
+	ui.detailMeta.SetTitle(" Details ")
+	ui.detailMeta.SetTitleColor(tcell.ColorGold)
+	ui.detailMeta.SetBorderColor(tcell.ColorGold)
+	ui.detailMeta.SetTextColor(tcell.ColorWhite)
+	ui.detailMeta.SetWrap(true)
+
+	ui.detailRaw = tview.NewTextView().
+		SetDynamicColors(true).
+		SetScrollable(true).
+		SetWordWrap(false)
+	ui.detailRaw.SetBorder(true)
+	ui.detailRaw.SetTitle(" Raw ")
+	ui.detailRaw.SetTitleColor(tcell.ColorGold)
+	ui.detailRaw.SetBorderColor(tcell.ColorGold)
+	ui.detailRaw.SetTextColor(tcell.ColorWhite)
+
+	detailPanel := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.detailMeta, 10, 0, false).
+		AddItem(ui.detailRaw, 0, 1, false)
 
 	ui.status = tview.NewTextView().
 		SetDynamicColors(true).
@@ -215,7 +233,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 	mainRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(ui.list, 0, 1, false).
-		AddItem(ui.detail, 0, 1, false)
+		AddItem(detailPanel, 0, 1, false)
 
 	root := tview.NewFlex().
 		SetDirection(tview.FlexRow).
@@ -225,7 +243,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detail}
+	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
 	ui.envDrop.SetCurrentOption(0)
 	ui.crDrop.SetCurrentOption(0)
@@ -238,6 +256,17 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 			ui.app.Stop()
 			return nil
 		case event.Key() == tcell.KeyRune && event.Rune() == '/':
+			if focus == ui.list {
+				ui.openRawSearch(ui.list)
+				return nil
+			}
+			if focus == ui.detailRaw {
+				ui.openRawSearch(ui.detailRaw)
+				return nil
+			}
+			if focus == ui.nameInput {
+				return event
+			}
 			ui.app.SetFocus(ui.nameInput)
 			return nil
 		case event.Key() == tcell.KeyTab:
@@ -305,12 +334,12 @@ func (ui *UI) scrollDetailByPage(direction int) {
 		return
 	}
 
-	_, _, _, height := ui.detail.GetInnerRect()
+	_, _, _, height := ui.detailRaw.GetInnerRect()
 	if height <= 0 {
 		height = 10
 	}
 
-	row, _ := ui.detail.GetScrollOffset()
+	row, _ := ui.detailRaw.GetScrollOffset()
 	step := height - 1
 	if step < 1 {
 		step = 1
@@ -320,7 +349,7 @@ func (ui *UI) scrollDetailByPage(direction int) {
 	if nextRow < 0 {
 		nextRow = 0
 	}
-	ui.detail.ScrollTo(nextRow, 0)
+	ui.detailRaw.ScrollTo(nextRow, 0)
 }
 
 func (ui *UI) run() error {
@@ -360,7 +389,9 @@ func (ui *UI) renderList() {
 	ui.status.SetText(fmt.Sprintf(" [black:gold] %d risultati [-:-] %s", len(ui.filtered), helpText))
 
 	if len(ui.filtered) == 0 {
-		ui.detail.SetText("Nessun mostro con i filtri correnti.")
+		ui.detailMeta.SetText("Nessun mostro con i filtri correnti.")
+		ui.detailRaw.SetText("")
+		ui.rawText = ""
 		return
 	}
 
@@ -374,7 +405,9 @@ func (ui *UI) renderList() {
 
 func (ui *UI) renderDetailByListIndex(listIndex int) {
 	if listIndex < 0 || listIndex >= len(ui.filtered) {
-		ui.detail.SetText("Seleziona un mostro dalla lista.")
+		ui.detailMeta.SetText("Seleziona un mostro dalla lista.")
+		ui.detailRaw.SetText("")
+		ui.rawText = ""
 		return
 	}
 
@@ -386,14 +419,168 @@ func (ui *UI) renderDetailByListIndex(listIndex int) {
 	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(m.Source, "n/a"))
 	fmt.Fprintf(builder, "[white]Type:[-] %s\n", blankIfEmpty(m.Type, "n/a"))
 	fmt.Fprintf(builder, "[white]CR:[-] %s\n", blankIfEmpty(m.CR, "n/a"))
+	if ac := extractAC(m.Raw); ac != "" {
+		fmt.Fprintf(builder, "[white]AC:[-] %s\n", ac)
+	}
+	if speed := extractSpeed(m.Raw); speed != "" {
+		fmt.Fprintf(builder, "[white]Speed:[-] %s\n", speed)
+	}
+	hpAverage, hpFormula := extractHP(m.Raw)
+	if hpAverage != "" || hpFormula != "" {
+		switch {
+		case hpAverage != "" && hpFormula != "":
+			fmt.Fprintf(builder, "[white]HP:[-] %s (%s)\n", hpAverage, hpFormula)
+		case hpAverage != "":
+			fmt.Fprintf(builder, "[white]HP:[-] %s\n", hpAverage)
+		default:
+			fmt.Fprintf(builder, "[white]HP:[-] %s\n", hpFormula)
+		}
+	}
 	if len(m.Environment) > 0 {
 		fmt.Fprintf(builder, "[white]Environment:[-] %s\n", strings.Join(m.Environment, ", "))
 	} else {
 		fmt.Fprintf(builder, "[white]Environment:[-] n/a\n")
 	}
-	fmt.Fprintf(builder, "\n[deepskyblue]Raw JSON[-]\n%s", string(raw))
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = string(raw)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
 
-	ui.detail.SetText(builder.String())
+func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
+	input := tview.NewInputField().
+		SetLabel("/ ").
+		SetFieldWidth(40)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Find In Raw ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetText(ui.rawQuery)
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 52, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("raw-search")
+		ui.app.SetFocus(returnFocus)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+		query := strings.TrimSpace(input.GetText())
+		if query == "" {
+			ui.rawQuery = ""
+			ui.renderRawWithHighlight("", -1)
+			ui.status.SetText(helpText)
+			return
+		}
+		line, ok := ui.findRawMatch(query)
+		if !ok {
+			ui.rawQuery = query
+			ui.renderRawWithHighlight(query, -1)
+			ui.status.SetText(fmt.Sprintf(" [white:red] nessun match nel Raw [-:-] \"%s\"  %s", query, helpText))
+			return
+		}
+		ui.rawQuery = query
+		ui.renderRawWithHighlight(query, line)
+		ui.detailRaw.ScrollTo(line, 0)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] trovato nel Raw[-:-] \"%s\" (riga %d)  %s", query, line+1, helpText))
+	})
+
+	ui.pages.AddPage("raw-search", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {
+	if ui.rawText == "" {
+		ui.detailRaw.SetText("")
+		return
+	}
+
+	lines := strings.Split(ui.rawText, "\n")
+	var b strings.Builder
+	for i, line := range lines {
+		if i > 0 {
+			b.WriteByte('\n')
+		}
+		if query != "" && i == lineToHighlight {
+			b.WriteString(highlightEscaped(line, query))
+		} else {
+			b.WriteString(tview.Escape(line))
+		}
+	}
+	ui.detailRaw.SetText(b.String())
+}
+
+func highlightEscaped(line, query string) string {
+	if query == "" {
+		return tview.Escape(line)
+	}
+	lowerLine := strings.ToLower(line)
+	lowerQuery := strings.ToLower(query)
+
+	var b strings.Builder
+	start := 0
+	for {
+		idx := strings.Index(lowerLine[start:], lowerQuery)
+		if idx < 0 {
+			b.WriteString(tview.Escape(line[start:]))
+			break
+		}
+		abs := start + idx
+		end := abs + len(query)
+		b.WriteString(tview.Escape(line[start:abs]))
+		b.WriteString("[black:gold]")
+		b.WriteString(tview.Escape(line[abs:end]))
+		b.WriteString("[-:-]")
+		start = end
+		if start >= len(line) {
+			break
+		}
+	}
+	return b.String()
+}
+
+func (ui *UI) findRawMatch(query string) (int, bool) {
+	if strings.TrimSpace(query) == "" || ui.rawText == "" {
+		return 0, false
+	}
+	lines := strings.Split(ui.rawText, "\n")
+	if len(lines) == 0 {
+		return 0, false
+	}
+
+	q := strings.ToLower(query)
+	start, _ := ui.detailRaw.GetScrollOffset()
+	if start < 0 {
+		start = 0
+	}
+	if start >= len(lines) {
+		start = len(lines) - 1
+	}
+
+	for i := start + 1; i < len(lines); i++ {
+		if strings.Contains(strings.ToLower(lines[i]), q) {
+			return i, true
+		}
+	}
+	for i := 0; i <= start && i < len(lines); i++ {
+		if strings.Contains(strings.ToLower(lines[i]), q) {
+			return i, true
+		}
+	}
+	return 0, false
 }
 
 func loadMonstersFromPath(path string) ([]Monster, []string, []string, []string, error) {
@@ -556,6 +743,172 @@ func extractType(v any) string {
 		return asString(x["type"])
 	}
 	return ""
+}
+
+func extractHP(raw map[string]any) (average string, formula string) {
+	if raw == nil {
+		return "", ""
+	}
+	hp := raw["hp"]
+	if hp == nil {
+		return "", ""
+	}
+
+	switch x := hp.(type) {
+	case map[string]any:
+		return asString(x["average"]), asString(x["formula"])
+	case map[any]any:
+		return asString(x["average"]), asString(x["formula"])
+	default:
+		// Fallback for odd records where hp can be a scalar.
+		one := asString(hp)
+		return one, ""
+	}
+}
+
+func extractAC(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	ac := raw["ac"]
+	if ac == nil {
+		return ""
+	}
+
+	one := func(v any) string {
+		switch x := v.(type) {
+		case map[string]any:
+			if s := asString(x["ac"]); s != "" {
+				return s
+			}
+		case map[any]any:
+			if s := asString(x["ac"]); s != "" {
+				return s
+			}
+		default:
+			return asString(v)
+		}
+		return ""
+	}
+
+	switch x := ac.(type) {
+	case []any:
+		values := make([]string, 0, len(x))
+		for _, item := range x {
+			if s := one(item); s != "" {
+				values = append(values, s)
+			}
+		}
+		return strings.Join(values, ", ")
+	default:
+		return one(ac)
+	}
+}
+
+func extractSpeed(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	v := raw["speed"]
+	if v == nil {
+		return ""
+	}
+
+	switch x := v.(type) {
+	case string:
+		return strings.TrimSpace(x)
+	case map[string]any:
+		return formatSpeedMapStringAny(x)
+	case map[any]any:
+		tmp := map[string]any{}
+		for k, val := range x {
+			key := asString(k)
+			if key != "" {
+				tmp[key] = val
+			}
+		}
+		return formatSpeedMapStringAny(tmp)
+	default:
+		return asString(v)
+	}
+}
+
+func formatSpeedMapStringAny(m map[string]any) string {
+	order := []string{"walk", "burrow", "climb", "fly", "swim"}
+	used := map[string]struct{}{}
+	parts := make([]string, 0, len(m))
+
+	formatVal := func(key string, val any) string {
+		switch x := val.(type) {
+		case int:
+			return fmt.Sprintf("%s %d ft.", key, x)
+		case int64:
+			return fmt.Sprintf("%s %d ft.", key, x)
+		case float64:
+			if x == float64(int64(x)) {
+				return fmt.Sprintf("%s %d ft.", key, int64(x))
+			}
+			return fmt.Sprintf("%s %s ft.", key, strconv.FormatFloat(x, 'f', -1, 64))
+		case string:
+			s := strings.TrimSpace(x)
+			if s == "" {
+				return ""
+			}
+			return fmt.Sprintf("%s %s", key, s)
+		case map[string]any:
+			n := asString(x["number"])
+			c := asString(x["condition"])
+			if n != "" && c != "" {
+				return fmt.Sprintf("%s %s ft. %s", key, n, c)
+			}
+			if n != "" {
+				return fmt.Sprintf("%s %s ft.", key, n)
+			}
+			if c != "" {
+				return fmt.Sprintf("%s %s", key, c)
+			}
+			return ""
+		case map[any]any:
+			n := asString(x["number"])
+			c := asString(x["condition"])
+			if n != "" && c != "" {
+				return fmt.Sprintf("%s %s ft. %s", key, n, c)
+			}
+			if n != "" {
+				return fmt.Sprintf("%s %s ft.", key, n)
+			}
+			if c != "" {
+				return fmt.Sprintf("%s %s", key, c)
+			}
+			return ""
+		default:
+			s := asString(val)
+			if s == "" {
+				return ""
+			}
+			return fmt.Sprintf("%s %s", key, s)
+		}
+	}
+
+	for _, key := range order {
+		if val, ok := m[key]; ok {
+			if s := formatVal(key, val); s != "" {
+				parts = append(parts, s)
+			}
+			used[key] = struct{}{}
+		}
+	}
+
+	for key, val := range m {
+		if _, ok := used[key]; ok || key == "canHover" {
+			continue
+		}
+		if s := formatVal(key, val); s != "" {
+			parts = append(parts, s)
+		}
+	}
+
+	return strings.Join(parts, ", ")
 }
 
 func keysSorted(set map[string]struct{}) []string {
