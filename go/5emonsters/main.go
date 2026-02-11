@@ -44,6 +44,10 @@ type dataset struct {
 type EncounterEntry struct {
 	MonsterIndex int
 	Ordinal      int
+	Custom       bool
+	CustomName   string
+	CustomInit   int
+	CustomAC     string
 	BaseHP       int
 	CurrentHP    int
 	HPFormula    string
@@ -61,6 +65,10 @@ type PersistedEncounters struct {
 type PersistedEncounterItem struct {
 	MonsterID  int    `yaml:"monster_id"`
 	Ordinal    int    `yaml:"ordinal"`
+	Custom     bool   `yaml:"custom,omitempty"`
+	CustomName string `yaml:"custom_name,omitempty"`
+	CustomInit int    `yaml:"custom_init,omitempty"`
+	CustomAC   string `yaml:"custom_ac,omitempty"`
 	BaseHP     int    `yaml:"base_hp"`
 	CurrentHP  int    `yaml:"current_hp"`
 	HPFormula  string `yaml:"hp_formula,omitempty"`
@@ -344,8 +352,10 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		if ui.helpVisible {
 			if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == '?') {
 				ui.closeHelpOverlay()
+				return nil
 			}
-			return nil
+			// Let the help TextView handle scrolling keys (j/k, arrows, PgUp/PgDn).
+			return event
 		}
 
 		switch {
@@ -396,6 +406,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.addSelectedMonsterToEncounter()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
+			ui.openAddCustomEncounterForm()
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyLeft:
 			ui.openEncounterHPInput(-1)
@@ -471,6 +484,7 @@ func (ui *UI) openHelpOverlay(focus tview.Primitive) {
 
 	text := tview.NewTextView().
 		SetDynamicColors(true).
+		SetScrollable(true).
 		SetWrap(true).
 		SetWordWrap(true)
 	text.SetBorder(true)
@@ -479,12 +493,16 @@ func (ui *UI) openHelpOverlay(focus tview.Primitive) {
 	text.SetTitle(fmt.Sprintf(" Help - %s ", ui.panelNameForFocus(focus)))
 	text.SetText(ui.helpForFocus(focus))
 
+	helpBody := ui.helpForFocus(focus) + "\n[gray]Scroll: j/k, frecce, PgUp/PgDn[-]"
+	text.SetText(helpBody)
+
+	// Bigger modal so panel-specific shortcuts are not clipped on common terminal sizes.
 	modal := tview.NewFlex().
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
-			AddItem(text, 16, 0, true).
-			AddItem(nil, 0, 1, false), 84, 0, true).
+			AddItem(text, 22, 0, true).
+			AddItem(nil, 0, 1, false), 92, 0, true).
 		AddItem(nil, 0, 1, false)
 
 	ui.pages.AddPage("help-overlay", modal, true, true)
@@ -536,6 +554,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"[black:gold]Encounters[-:-]\n" +
 			"  j / k (o frecce) : seleziona entry\n" +
 			"  / : cerca nel Raw del mostro selezionato\n" +
+			"  a : aggiungi entry custom\n" +
 			"  d : elimina entry selezionata\n" +
 			"  s : salva encounter su file (save as)\n" +
 			"  l : carica encounter da file (load)\n" +
@@ -689,7 +708,12 @@ func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
 	if encounterIndex < 0 || encounterIndex >= len(ui.encounterItems) {
 		return
 	}
-	ui.renderDetailByMonsterIndex(ui.encounterItems[encounterIndex].MonsterIndex)
+	entry := ui.encounterItems[encounterIndex]
+	if entry.Custom {
+		ui.renderDetailByCustomEntry(entry)
+		return
+	}
+	ui.renderDetailByMonsterIndex(entry.MonsterIndex)
 }
 
 func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
@@ -730,6 +754,33 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
 	ui.rawText = string(raw)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
+
+func (ui *UI) renderDetailByCustomEntry(entry EncounterEntry) {
+	builder := &strings.Builder{}
+	fmt.Fprintf(builder, "[yellow]%s #%d[-]\n", ui.encounterEntryName(entry), entry.Ordinal)
+	if init, ok := ui.encounterInitBase(entry); ok {
+		if entry.HasInitRoll {
+			fmt.Fprintf(builder, "[white]Init:[-] %d/%d\n", entry.InitRoll, init)
+		} else {
+			fmt.Fprintf(builder, "[white]Init:[-] %d\n", init)
+		}
+	}
+	if strings.TrimSpace(entry.CustomAC) != "" {
+		fmt.Fprintf(builder, "[white]AC:[-] %s\n", entry.CustomAC)
+	}
+	maxHP := ui.encounterMaxHP(entry)
+	if maxHP > 0 {
+		fmt.Fprintf(builder, "[white]HP:[-] %d/%d\n", entry.CurrentHP, maxHP)
+	} else {
+		fmt.Fprintf(builder, "[white]HP:[-] ?\n")
+	}
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = fmt.Sprintf("{\n  \"custom\": true,\n  \"name\": %q,\n  \"init\": %d,\n  \"ac\": %q,\n  \"hp\": {\"current\": %d, \"max\": %d}\n}", ui.encounterEntryName(entry), entry.CustomInit, entry.CustomAC, entry.CurrentHP, maxHP)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
@@ -934,6 +985,100 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 	ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunto[-:-] %s #%d  %s", m.Name, ordinal, helpText))
 }
 
+func (ui *UI) openAddCustomEncounterForm() {
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Add Custom Encounter ")
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+
+	nameField := tview.NewInputField().SetLabel("Name: ").SetFieldWidth(28)
+	initField := tview.NewInputField().SetLabel("Init (x or x/x): ").SetFieldWidth(16)
+	hpField := tview.NewInputField().SetLabel("HP (z or x/y): ").SetFieldWidth(16)
+	acField := tview.NewInputField().SetLabel("AC (optional): ").SetFieldWidth(8)
+
+	setFieldStyle := func(f *tview.InputField) {
+		f.SetLabelColor(tcell.ColorGold)
+		f.SetFieldBackgroundColor(tcell.ColorWhite)
+		f.SetFieldTextColor(tcell.ColorBlack)
+		f.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	}
+	setFieldStyle(nameField)
+	setFieldStyle(initField)
+	setFieldStyle(hpField)
+	setFieldStyle(acField)
+
+	form.AddFormItem(nameField)
+	form.AddFormItem(initField)
+	form.AddFormItem(hpField)
+	form.AddFormItem(acField)
+
+	form.AddButton("Save", func() {
+		name := strings.TrimSpace(nameField.GetText())
+		if name == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome non valido[-:-]  %s", helpText))
+			return
+		}
+
+		hasRoll, initRoll, initBase, ok := parseInitInput(initField.GetText())
+		if !ok {
+			ui.status.SetText(fmt.Sprintf(" [white:red] init non valida[-:-]  %s", helpText))
+			return
+		}
+
+		currentHP, maxHP, ok := parseHPInput(hpField.GetText())
+		if !ok {
+			ui.status.SetText(fmt.Sprintf(" [white:red] HP non validi[-:-]  %s", helpText))
+			return
+		}
+
+		ac := strings.TrimSpace(acField.GetText())
+		if ac != "" {
+			if _, err := strconv.Atoi(ac); err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] AC non valida[-:-]  %s", helpText))
+				return
+			}
+		}
+
+		ui.pushEncounterUndo()
+		ordinal := ui.nextCustomOrdinal(name)
+		ui.encounterItems = append(ui.encounterItems, EncounterEntry{
+			MonsterIndex: -1,
+			Ordinal:      ordinal,
+			Custom:       true,
+			CustomName:   name,
+			CustomInit:   initBase,
+			CustomAC:     ac,
+			BaseHP:       maxHP,
+			CurrentHP:    currentHP,
+			HasInitRoll:  hasRoll,
+			InitRoll:     initRoll,
+		})
+
+		ui.pages.RemovePage("encounter-add-custom")
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
+		ui.renderDetailByEncounterIndex(len(ui.encounterItems) - 1)
+		ui.app.SetFocus(ui.encounter)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunta[-:-] entry custom %s #%d  %s", name, ordinal, helpText))
+	})
+	form.AddButton("Cancel", func() {
+		ui.pages.RemovePage("encounter-add-custom")
+		ui.app.SetFocus(ui.encounter)
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 12, 0, true).
+			AddItem(nil, 0, 1, false), 74, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("encounter-add-custom", modal, true, true)
+	ui.app.SetFocus(form)
+}
+
 func (ui *UI) renderEncounterList() {
 	ui.encounter.Clear()
 	if len(ui.encounterItems) == 0 {
@@ -954,9 +1099,8 @@ func (ui *UI) renderEncounterList() {
 	}
 
 	for i, item := range ui.encounterItems {
-		m := ui.monsters[item.MonsterIndex]
-		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
-		if init, ok := extractInitFromDex(m.Raw); ok {
+		label := fmt.Sprintf("%s #%d", ui.encounterEntryName(item), item.Ordinal)
+		if init, ok := ui.encounterInitBase(item); ok {
 			if item.HasInitRoll {
 				label = fmt.Sprintf("%s [Init %d/%d]", label, item.InitRoll, init)
 			} else {
@@ -993,7 +1137,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 	}
 	entry := ui.encounterItems[index]
 	if entry.BaseHP <= 0 {
-		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s #%d[-:-]  %s", ui.monsters[entry.MonsterIndex].Name, entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
 		return
 	}
 	if direction == 0 {
@@ -1056,10 +1200,10 @@ func (ui *UI) openEncounterHPInput(direction int) {
 		ui.encounter.SetCurrentItem(index)
 		ui.renderDetailByEncounterIndex(index)
 
-		m := ui.monsters[ui.encounterItems[index].MonsterIndex]
+		mName := ui.encounterEntryName(ui.encounterItems[index])
 		if direction < 0 {
 			ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s #%d -%d HP (%d/%d)  %s",
-				m.Name,
+				mName,
 				ui.encounterItems[index].Ordinal,
 				damage,
 				ui.encounterItems[index].CurrentHP,
@@ -1068,7 +1212,7 @@ func (ui *UI) openEncounterHPInput(direction int) {
 			))
 		} else {
 			ui.status.SetText(fmt.Sprintf(" [black:gold] cura[-:-] %s #%d +%d HP (%d/%d)  %s",
-				m.Name,
+				mName,
 				ui.encounterItems[index].Ordinal,
 				damage,
 				ui.encounterItems[index].CurrentHP,
@@ -1091,7 +1235,7 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 		return
 	}
 	entry := ui.encounterItems[index]
-	name := ui.monsters[entry.MonsterIndex].Name
+	name := ui.encounterEntryName(entry)
 
 	ui.pushEncounterUndo()
 	ui.encounterItems = append(ui.encounterItems[:index], ui.encounterItems[index+1:]...)
@@ -1138,7 +1282,7 @@ func (ui *UI) toggleEncounterHPMode() {
 
 	entry := ui.encounterItems[index]
 	if strings.TrimSpace(entry.HPFormula) == "" {
-		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non disponibile per %s #%d[-:-]  %s", ui.monsters[entry.MonsterIndex].Name, entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] formula HP non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
 		return
 	}
 
@@ -1151,8 +1295,7 @@ func (ui *UI) toggleEncounterHPMode() {
 		}
 		ui.renderEncounterList()
 		ui.encounter.SetCurrentItem(index)
-		m := ui.monsters[entry.MonsterIndex]
-		ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> average  %s", m.Name, entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> average  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
 		return
 	}
 
@@ -1170,8 +1313,7 @@ func (ui *UI) toggleEncounterHPMode() {
 	}
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(index)
-	m := ui.monsters[entry.MonsterIndex]
-	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> formula (%s = %d)  %s", m.Name, entry.Ordinal, entry.HPFormula, rolled, helpText))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] hp mode[-:-] %s #%d -> formula (%s = %d)  %s", ui.encounterEntryName(entry), entry.Ordinal, entry.HPFormula, rolled, helpText))
 }
 
 func (ui *UI) rollEncounterInitiative() {
@@ -1184,10 +1326,9 @@ func (ui *UI) rollEncounterInitiative() {
 	}
 
 	entry := ui.encounterItems[index]
-	m := ui.monsters[entry.MonsterIndex]
-	initValue, ok := extractInitFromDex(m.Raw)
+	initValue, ok := ui.encounterInitBase(entry)
 	if !ok {
-		ui.status.SetText(fmt.Sprintf(" [white:red] dex non disponibile per %s #%d[-:-]  %s", m.Name, entry.Ordinal, helpText))
+		ui.status.SetText(fmt.Sprintf(" [white:red] init non disponibile per %s #%d[-:-]  %s", ui.encounterEntryName(entry), entry.Ordinal, helpText))
 		return
 	}
 
@@ -1198,7 +1339,7 @@ func (ui *UI) rollEncounterInitiative() {
 	ui.renderEncounterList()
 	ui.encounter.SetCurrentItem(index)
 	ui.renderDetailByEncounterIndex(index)
-	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] %s #%d = %d/%d  %s", m.Name, entry.Ordinal, roll, initValue, helpText))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] initiative[-:-] %s #%d = %d/%d  %s", ui.encounterEntryName(entry), entry.Ordinal, roll, initValue, helpText))
 }
 
 func (ui *UI) rollAllEncounterInitiative() {
@@ -1210,8 +1351,7 @@ func (ui *UI) rollAllEncounterInitiative() {
 	rolledCount := 0
 	for i := range ui.encounterItems {
 		entry := ui.encounterItems[i]
-		m := ui.monsters[entry.MonsterIndex]
-		initValue, ok := extractInitFromDex(m.Raw)
+		initValue, ok := ui.encounterInitBase(entry)
 		if !ok {
 			continue
 		}
@@ -1270,8 +1410,8 @@ func (ui *UI) sortEncounterByInitiative() {
 			return a.InitRoll > b.InitRoll
 		}
 
-		aInit, aok := extractInitFromDex(ui.monsters[a.MonsterIndex].Raw)
-		bInit, bok := extractInitFromDex(ui.monsters[b.MonsterIndex].Raw)
+		aInit, aok := ui.encounterInitBase(a)
+		bInit, bok := ui.encounterInitBase(b)
 		if aok != bok {
 			return aok
 		}
@@ -1279,8 +1419,8 @@ func (ui *UI) sortEncounterByInitiative() {
 			return aInit > bInit
 		}
 
-		an := ui.monsters[a.MonsterIndex].Name
-		bn := ui.monsters[b.MonsterIndex].Name
+		an := ui.encounterEntryName(a)
+		bn := ui.encounterEntryName(b)
 		if strings.ToLower(an) != strings.ToLower(bn) {
 			return strings.ToLower(an) < strings.ToLower(bn)
 		}
@@ -1464,44 +1604,62 @@ func (ui *UI) loadEncounters() error {
 	ui.encounterSerial = map[int]int{}
 
 	for _, it := range data.Items {
-		monsterIndex, ok := idToIndex[it.MonsterID]
-		if !ok {
-			continue
+		monsterIndex := -1
+		if !it.Custom {
+			var ok bool
+			monsterIndex, ok = idToIndex[it.MonsterID]
+			if !ok {
+				continue
+			}
 		}
 
 		ordinal := it.Ordinal
 		if ordinal <= 0 {
-			ordinal = ui.encounterSerial[monsterIndex] + 1
+			if it.Custom {
+				maxOrd := 0
+				for _, e := range ui.encounterItems {
+					if e.Custom && strings.EqualFold(strings.TrimSpace(e.CustomName), strings.TrimSpace(it.CustomName)) && e.Ordinal > maxOrd {
+						maxOrd = e.Ordinal
+					}
+				}
+				ordinal = maxOrd + 1
+			} else {
+				ordinal = ui.encounterSerial[monsterIndex] + 1
+			}
 		}
 
 		baseHP := it.BaseHP
-		if baseHP <= 0 {
-			if avg, ok := extractHPAverageInt(ui.monsters[monsterIndex].Raw); ok {
-				baseHP = avg
-			}
-		}
 		hpFormula := strings.TrimSpace(it.HPFormula)
-		if hpFormula == "" {
-			_, hpFormula = extractHP(ui.monsters[monsterIndex].Raw)
+		if !it.Custom {
+			if baseHP <= 0 {
+				if avg, ok := extractHPAverageInt(ui.monsters[monsterIndex].Raw); ok {
+					baseHP = avg
+				}
+			}
+			if hpFormula == "" {
+				_, hpFormula = extractHP(ui.monsters[monsterIndex].Raw)
+			}
 		}
 
 		currentHP := it.CurrentHP
-		if baseHP > 0 {
-			if currentHP < 0 {
-				currentHP = 0
-			}
-			maxHP := baseHP
-			if it.UseRolled && it.RolledHP > 0 {
-				maxHP = it.RolledHP
-			}
-			if maxHP > 0 && currentHP > maxHP {
-				currentHP = maxHP
-			}
+		maxHP := baseHP
+		if it.UseRolled && it.RolledHP > 0 {
+			maxHP = it.RolledHP
+		}
+		if currentHP < 0 {
+			currentHP = 0
+		}
+		if maxHP > 0 && currentHP > maxHP {
+			currentHP = maxHP
 		}
 
-		ui.encounterItems = append(ui.encounterItems, EncounterEntry{
+		entry := EncounterEntry{
 			MonsterIndex: monsterIndex,
 			Ordinal:      ordinal,
+			Custom:       it.Custom,
+			CustomName:   it.CustomName,
+			CustomInit:   it.CustomInit,
+			CustomAC:     it.CustomAC,
 			BaseHP:       baseHP,
 			CurrentHP:    currentHP,
 			HPFormula:    hpFormula,
@@ -1509,8 +1667,9 @@ func (ui *UI) loadEncounters() error {
 			RolledHP:     it.RolledHP,
 			HasInitRoll:  it.InitRolled,
 			InitRoll:     it.InitRoll,
-		})
-		if ordinal > ui.encounterSerial[monsterIndex] {
+		}
+		ui.encounterItems = append(ui.encounterItems, entry)
+		if !it.Custom && ordinal > ui.encounterSerial[monsterIndex] {
 			ui.encounterSerial[monsterIndex] = ordinal
 		}
 	}
@@ -1524,13 +1683,12 @@ func (ui *UI) saveEncounters() error {
 	}
 
 	for _, it := range ui.encounterItems {
-		if it.MonsterIndex < 0 || it.MonsterIndex >= len(ui.monsters) {
-			continue
-		}
-		m := ui.monsters[it.MonsterIndex]
-		data.Items = append(data.Items, PersistedEncounterItem{
-			MonsterID:  m.ID,
+		item := PersistedEncounterItem{
 			Ordinal:    it.Ordinal,
+			Custom:     it.Custom,
+			CustomName: it.CustomName,
+			CustomInit: it.CustomInit,
+			CustomAC:   it.CustomAC,
 			BaseHP:     it.BaseHP,
 			CurrentHP:  it.CurrentHP,
 			HPFormula:  it.HPFormula,
@@ -1538,7 +1696,14 @@ func (ui *UI) saveEncounters() error {
 			RolledHP:   it.RolledHP,
 			InitRolled: it.HasInitRoll,
 			InitRoll:   it.InitRoll,
-		})
+		}
+		if !it.Custom {
+			if it.MonsterIndex < 0 || it.MonsterIndex >= len(ui.monsters) {
+				continue
+			}
+			item.MonsterID = ui.monsters[it.MonsterIndex].ID
+		}
+		data.Items = append(data.Items, item)
 	}
 
 	out, err := yaml.Marshal(data)
@@ -2121,6 +2286,88 @@ func blankIfEmpty(v, fallback string) string {
 		return fallback
 	}
 	return v
+}
+
+func (ui *UI) nextCustomOrdinal(name string) int {
+	name = strings.TrimSpace(strings.ToLower(name))
+	maxOrd := 0
+	for _, it := range ui.encounterItems {
+		if it.Custom && strings.TrimSpace(strings.ToLower(it.CustomName)) == name && it.Ordinal > maxOrd {
+			maxOrd = it.Ordinal
+		}
+	}
+	return maxOrd + 1
+}
+
+func parseInitInput(s string) (hasRoll bool, roll int, base int, ok bool) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return false, 0, 0, false
+	}
+	if strings.Contains(s, "/") {
+		parts := strings.SplitN(s, "/", 2)
+		a, errA := strconv.Atoi(strings.TrimSpace(parts[0]))
+		b, errB := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if errA != nil || errB != nil {
+			return false, 0, 0, false
+		}
+		return true, a, b, true
+	}
+	v, err := strconv.Atoi(s)
+	if err != nil {
+		return false, 0, 0, false
+	}
+	return false, 0, v, true
+}
+
+func parseHPInput(s string) (current int, max int, ok bool) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return 0, 0, false
+	}
+	if strings.Contains(s, "/") {
+		parts := strings.SplitN(s, "/", 2)
+		c, errC := strconv.Atoi(strings.TrimSpace(parts[0]))
+		m, errM := strconv.Atoi(strings.TrimSpace(parts[1]))
+		if errC != nil || errM != nil || m < 0 {
+			return 0, 0, false
+		}
+		if c < 0 {
+			c = 0
+		}
+		if c > m && m > 0 {
+			c = m
+		}
+		return c, m, true
+	}
+	v, err := strconv.Atoi(s)
+	if err != nil || v < 0 {
+		return 0, 0, false
+	}
+	return v, v, true
+}
+
+func (ui *UI) encounterEntryName(entry EncounterEntry) string {
+	if entry.Custom {
+		if strings.TrimSpace(entry.CustomName) == "" {
+			return "Custom"
+		}
+		return entry.CustomName
+	}
+	if entry.MonsterIndex < 0 || entry.MonsterIndex >= len(ui.monsters) {
+		return "Unknown"
+	}
+	return ui.monsters[entry.MonsterIndex].Name
+}
+
+func (ui *UI) encounterInitBase(entry EncounterEntry) (int, bool) {
+	if entry.Custom {
+		return entry.CustomInit, true
+	}
+	if entry.MonsterIndex < 0 || entry.MonsterIndex >= len(ui.monsters) {
+		return 0, false
+	}
+	return extractInitFromDex(ui.monsters[entry.MonsterIndex].Raw)
 }
 
 func (ui *UI) encounterMaxHP(entry EncounterEntry) int {
