@@ -186,13 +186,17 @@ func TestTurnModeAndAdvance(t *testing.T) {
 	ui.encounter.SetCurrentItem(1)
 
 	ui.toggleEncounterTurnMode()
-	if !ui.turnMode || ui.turnRound != 1 || ui.turnIndex != 1 {
+	if !ui.turnMode || ui.turnRound != 1 || ui.turnIndex != 0 {
 		t.Fatalf("unexpected turn mode state: mode=%v round=%d idx=%d", ui.turnMode, ui.turnRound, ui.turnIndex)
 	}
 
 	ui.nextEncounterTurn()
-	if ui.turnIndex != 2 || ui.turnRound != 1 {
+	if ui.turnIndex != 1 || ui.turnRound != 1 {
 		t.Fatalf("unexpected next turn: idx=%d round=%d", ui.turnIndex, ui.turnRound)
+	}
+	ui.nextEncounterTurn()
+	if ui.turnIndex != 2 || ui.turnRound != 1 {
+		t.Fatalf("unexpected second next turn: idx=%d round=%d", ui.turnIndex, ui.turnRound)
 	}
 	ui.nextEncounterTurn()
 	if ui.turnIndex != 0 || ui.turnRound != 2 {
@@ -269,8 +273,12 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	ui.encounterItems = []EncounterEntry{
 		{MonsterIndex: 0, Ordinal: 1, BaseHP: 13, CurrentHP: 8, HPFormula: "3d8", UseRolledHP: true, RolledHP: 10, HasInitRoll: true, InitRoll: 15},
 		{MonsterIndex: 1, Ordinal: 1, BaseHP: 20, CurrentHP: 20, HPFormula: "4d8", UseRolledHP: false, RolledHP: 0, HasInitRoll: false, InitRoll: 0},
+		{MonsterIndex: -1, Ordinal: 1, Custom: true, CustomName: "Solum", CustomInit: 2, CustomAC: "13", BaseHP: 10, CurrentHP: 6, HPFormula: "", UseRolledHP: false, RolledHP: 0, HasInitRoll: true, InitRoll: 12},
 	}
 	ui.encounterSerial = map[int]int{0: 1, 1: 1}
+	ui.turnMode = true
+	ui.turnIndex = 2
+	ui.turnRound = 3
 
 	if err := ui.saveEncountersAs(path); err != nil {
 		t.Fatalf("saveEncountersAs failed: %v", err)
@@ -280,8 +288,8 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	if err := ui2.loadEncounters(); err != nil {
 		t.Fatalf("loadEncounters failed: %v", err)
 	}
-	if len(ui2.encounterItems) != 2 {
-		t.Fatalf("expected 2 encounter items, got %d", len(ui2.encounterItems))
+	if len(ui2.encounterItems) != 3 {
+		t.Fatalf("expected 3 encounter items, got %d", len(ui2.encounterItems))
 	}
 	if !ui2.encounterItems[0].UseRolledHP || ui2.encounterItems[0].RolledHP != 10 {
 		t.Fatalf("rolled hp not restored: %#v", ui2.encounterItems[0])
@@ -289,9 +297,53 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	if !ui2.encounterItems[0].HasInitRoll || ui2.encounterItems[0].InitRoll != 15 {
 		t.Fatalf("init roll not restored: %#v", ui2.encounterItems[0])
 	}
+	if !ui2.encounterItems[2].Custom || ui2.encounterItems[2].CustomName != "Solum" || ui2.encounterItems[2].CustomInit != 2 || ui2.encounterItems[2].CustomAC != "13" {
+		t.Fatalf("custom entry not restored: %#v", ui2.encounterItems[2])
+	}
+	if !ui2.turnMode || ui2.turnIndex != 2 || ui2.turnRound != 3 {
+		t.Fatalf("turn progress not restored: mode=%v idx=%d round=%d", ui2.turnMode, ui2.turnIndex, ui2.turnRound)
+	}
 
 	if got := readLastEncountersPath(); got != path {
 		t.Fatalf("expected last path %q, got %q", path, got)
+	}
+}
+
+func TestParseCustomInputs(t *testing.T) {
+	if hasRoll, roll, base, ok := parseInitInput("17/2"); !ok || !hasRoll || roll != 17 || base != 2 {
+		t.Fatalf("unexpected parsed init with roll: ok=%v hasRoll=%v roll=%d base=%d", ok, hasRoll, roll, base)
+	}
+	if hasRoll, roll, base, ok := parseInitInput(" 3 "); !ok || hasRoll || roll != 0 || base != 3 {
+		t.Fatalf("unexpected parsed init base only: ok=%v hasRoll=%v roll=%d base=%d", ok, hasRoll, roll, base)
+	}
+	if _, _, _, ok := parseInitInput("bad"); ok {
+		t.Fatal("expected invalid init input to fail")
+	}
+
+	if cur, max, ok := parseHPInput("13"); !ok || cur != 13 || max != 13 {
+		t.Fatalf("unexpected parsed hp single value: ok=%v cur=%d max=%d", ok, cur, max)
+	}
+	if cur, max, ok := parseHPInput("17/20"); !ok || cur != 17 || max != 20 {
+		t.Fatalf("unexpected parsed hp pair: ok=%v cur=%d max=%d", ok, cur, max)
+	}
+	if cur, max, ok := parseHPInput("21/20"); !ok || cur != 20 || max != 20 {
+		t.Fatalf("unexpected parsed hp clamped: ok=%v cur=%d max=%d", ok, cur, max)
+	}
+	if _, _, ok := parseHPInput("8/-1"); ok {
+		t.Fatal("expected invalid hp input to fail")
+	}
+}
+
+func TestEncounterEntryDisplayCustomDoesNotShowOrdinal(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	custom := EncounterEntry{Custom: true, CustomName: "Solum", Ordinal: 5}
+	if got := ui.encounterEntryDisplay(custom); got != "Solum" {
+		t.Fatalf("expected custom display without ordinal, got %q", got)
+	}
+
+	regular := EncounterEntry{MonsterIndex: 0, Ordinal: 2}
+	if got := ui.encounterEntryDisplay(regular); got != "Aarakocra #2" {
+		t.Fatalf("expected regular display with ordinal, got %q", got)
 	}
 }
 
