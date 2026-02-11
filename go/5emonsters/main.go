@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,7 +16,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const defaultYAMLPath = "/Users/vcrini/Downloads/5e.yaml"
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca nome  [black:gold] tab [-:-] focus  [black:gold] j/k [-:-] naviga  [black:gold] PgUp/PgDn [-:-] scroll dettagli "
+
+//go:embed data/5e.yaml
+var embeddedMonstersYAML []byte
 
 type Monster struct {
 	ID          int
@@ -55,13 +59,23 @@ type UI struct {
 
 func main() {
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
-	if yamlPath == "" {
-		yamlPath = defaultYAMLPath
-	}
+	var (
+		monsters []Monster
+		envs     []string
+		crs      []string
+		err      error
+	)
 
-	monsters, envs, crs, err := loadMonsters(yamlPath)
-	if err != nil {
-		log.Fatalf("errore caricamento YAML (%s): %v", yamlPath, err)
+	if yamlPath != "" {
+		monsters, envs, crs, err = loadMonstersFromPath(yamlPath)
+		if err != nil {
+			log.Fatalf("errore caricamento YAML esterno (%s): %v", yamlPath, err)
+		}
+	} else {
+		monsters, envs, crs, err = loadMonstersFromBytes(embeddedMonstersYAML)
+		if err != nil {
+			log.Fatalf("errore caricamento YAML embedded: %v", err)
+		}
 	}
 
 	ui := newUI(monsters, envs, crs)
@@ -71,6 +85,8 @@ func main() {
 }
 
 func newUI(monsters []Monster, envs, crs []string) *UI {
+	setTheme()
+
 	ui := &UI{
 		app:        tview.NewApplication(),
 		monsters:   monsters,
@@ -82,6 +98,10 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 	ui.nameInput = tview.NewInputField().
 		SetLabel(" Name ").
 		SetFieldWidth(26)
+	ui.nameInput.SetLabelColor(tcell.ColorGold)
+	ui.nameInput.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	ui.nameInput.SetFieldTextColor(tcell.ColorWhite)
+	ui.nameInput.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite))
 	ui.nameInput.SetChangedFunc(func(text string) {
 		ui.nameFilter = strings.TrimSpace(text)
 		ui.applyFilters()
@@ -103,6 +123,13 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 			}
 			ui.applyFilters()
 		})
+	ui.envDrop.SetLabelColor(tcell.ColorGold)
+	ui.envDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	ui.envDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.envDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
 
 	ui.crDrop = tview.NewDropDown().
 		SetLabel(" CR ").
@@ -114,10 +141,23 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 			}
 			ui.applyFilters()
 		})
+	ui.crDrop.SetLabelColor(tcell.ColorGold)
+	ui.crDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	ui.crDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.crDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
 
 	ui.list = tview.NewList()
 	ui.list.SetBorder(true)
 	ui.list.SetTitle(" Monsters ")
+	ui.list.SetTitleColor(tcell.ColorGold)
+	ui.list.SetBorderColor(tcell.ColorGold)
+	ui.list.SetMainTextColor(tcell.ColorWhite)
+	ui.list.SetSecondaryTextColor(tcell.ColorLightGray)
+	ui.list.SetSelectedTextColor(tcell.ColorBlack)
+	ui.list.SetSelectedBackgroundColor(tcell.ColorGold)
 	ui.list.ShowSecondaryText(true)
 	ui.list.SetChangedFunc(func(index int, _, _ string, _ rune) {
 		ui.renderDetailByListIndex(index)
@@ -132,11 +172,15 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 		SetWordWrap(true)
 	ui.detail.SetBorder(true)
 	ui.detail.SetTitle(" Details ")
+	ui.detail.SetTitleColor(tcell.ColorGold)
+	ui.detail.SetBorderColor(tcell.ColorGold)
+	ui.detail.SetTextColor(tcell.ColorWhite)
 	ui.detail.SetWrap(true)
 
 	ui.status = tview.NewTextView().
 		SetDynamicColors(true).
-		SetText(" [green]j/k[-] o [green][A [B[-]: naviga  [green]/[-]: filtro nome  [green]tab[-]: cambia focus  [green]q[-]: esci ")
+		SetText(helpText)
+	ui.status.SetBackgroundColor(tcell.ColorBlack)
 
 	filterRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -151,7 +195,7 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 
 	root := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(filterRow, 3, 0, true).
+		AddItem(filterRow, 4, 0, true).
 		AddItem(mainRow, 0, 1, false).
 		AddItem(ui.status, 1, 0, false)
 
@@ -286,11 +330,11 @@ func (ui *UI) renderList() {
 		if len(m.Environment) > 0 {
 			env = strings.Join(m.Environment, ", ")
 		}
-		secondary := fmt.Sprintf("[gray]%s | %s | %s", blankIfEmpty(m.Type, "type?"), blankIfEmpty(m.Source, "src?"), env)
+		secondary := fmt.Sprintf("[lightgray]%s | %s | %s", blankIfEmpty(m.Type, "type?"), blankIfEmpty(m.Source, "src?"), env)
 		ui.list.AddItem(m.Name, secondary, 0, nil)
 	}
 
-	ui.status.SetText(fmt.Sprintf(" [yellow]%d[-] risultati  |  [green]j/k[-] o frecce: naviga  [green]/[-]: filtro nome  [green]tab[-]: focus  [green]q[-]: esci ", len(ui.filtered)))
+	ui.status.SetText(fmt.Sprintf(" [black:gold] %d risultati [-:-] %s", len(ui.filtered), helpText))
 
 	if len(ui.filtered) == 0 {
 		ui.detail.SetText("Nessun mostro con i filtri correnti.")
@@ -324,17 +368,20 @@ func (ui *UI) renderDetailByListIndex(listIndex int) {
 	} else {
 		fmt.Fprintf(builder, "[white]Environment:[-] n/a\n")
 	}
-	fmt.Fprintf(builder, "\n[gray]Raw JSON[-]\n%s", string(raw))
+	fmt.Fprintf(builder, "\n[deepskyblue]Raw JSON[-]\n%s", string(raw))
 
 	ui.detail.SetText(builder.String())
 }
 
-func loadMonsters(path string) ([]Monster, []string, []string, error) {
+func loadMonstersFromPath(path string) ([]Monster, []string, []string, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		return nil, nil, nil, err
 	}
+	return loadMonstersFromBytes(b)
+}
 
+func loadMonstersFromBytes(b []byte) ([]Monster, []string, []string, error) {
 	var ds dataset
 	if err := yaml.Unmarshal(b, &ds); err != nil {
 		return nil, nil, nil, err
@@ -527,4 +574,18 @@ func blankIfEmpty(v, fallback string) string {
 		return fallback
 	}
 	return v
+}
+
+func setTheme() {
+	tview.Styles.PrimitiveBackgroundColor = tcell.ColorBlack
+	tview.Styles.ContrastBackgroundColor = tcell.ColorBlack
+	tview.Styles.MoreContrastBackgroundColor = tcell.ColorBlack
+	tview.Styles.BorderColor = tcell.ColorGold
+	tview.Styles.TitleColor = tcell.ColorGold
+	tview.Styles.GraphicsColor = tcell.ColorGold
+	tview.Styles.PrimaryTextColor = tcell.ColorWhite
+	tview.Styles.SecondaryTextColor = tcell.ColorLightGray
+	tview.Styles.TertiaryTextColor = tcell.ColorAqua
+	tview.Styles.InverseTextColor = tcell.ColorBlack
+	tview.Styles.ContrastSecondaryTextColor = tcell.ColorBlack
 }
