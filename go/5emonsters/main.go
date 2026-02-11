@@ -16,7 +16,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] ← [-:-] danno encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const defaultEncountersPath = "encounters.yaml"
 
 //go:embed data/5e.yaml
 var embeddedMonstersYAML []byte
@@ -40,6 +41,18 @@ type EncounterEntry struct {
 	Ordinal      int
 	BaseHP       int
 	CurrentHP    int
+}
+
+type PersistedEncounters struct {
+	Version int                      `yaml:"version"`
+	Items   []PersistedEncounterItem `yaml:"items"`
+}
+
+type PersistedEncounterItem struct {
+	MonsterID int `yaml:"monster_id"`
+	Ordinal   int `yaml:"ordinal"`
+	BaseHP    int `yaml:"base_hp"`
+	CurrentHP int `yaml:"current_hp"`
 }
 
 type UI struct {
@@ -72,10 +85,15 @@ type UI struct {
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
+	encountersPath  string
 }
 
 func main() {
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
+	encountersPath := strings.TrimSpace(os.Getenv("ENCOUNTERS_YAML"))
+	if encountersPath == "" {
+		encountersPath = defaultEncountersPath
+	}
 	var (
 		monsters []Monster
 		envs     []string
@@ -96,13 +114,16 @@ func main() {
 		}
 	}
 
-	ui := newUI(monsters, envs, crs, types)
+	ui := newUI(monsters, envs, crs, types, encountersPath)
 	if err := ui.run(); err != nil {
 		log.Fatal(err)
 	}
+	if err := ui.saveEncounters(); err != nil {
+		log.Printf("errore salvataggio encounters (%s): %v", encountersPath, err)
+	}
 }
 
-func newUI(monsters []Monster, envs, crs, types []string) *UI {
+func newUI(monsters []Monster, envs, crs, types []string, encountersPath string) *UI {
 	setTheme()
 
 	ui := &UI{
@@ -114,6 +135,7 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 		filtered:        make([]int, 0, len(monsters)),
 		encounterSerial: map[int]int{},
 		encounterItems:  make([]EncounterEntry, 0, 16),
+		encountersPath:  encountersPath,
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -334,7 +356,10 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 			ui.addSelectedMonsterToEncounter()
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyLeft:
-			ui.openEncounterDamageInput()
+			ui.openEncounterHPInput(-1)
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRight:
+			ui.openEncounterHPInput(1)
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '1':
 			ui.app.SetFocus(ui.encounter)
@@ -355,6 +380,10 @@ func newUI(monsters []Monster, envs, crs, types []string) *UI {
 	})
 
 	ui.applyFilters()
+	if err := ui.loadEncounters(); err != nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] errore load encounters[-:-] %v  %s", err, helpText))
+	}
+	ui.renderEncounterList()
 	return ui
 }
 
@@ -612,6 +641,9 @@ func (ui *UI) renderEncounterList() {
 		m := ui.monsters[item.MonsterIndex]
 		label := fmt.Sprintf("%s #%d", m.Name, item.Ordinal)
 		if item.BaseHP > 0 {
+			if item.CurrentHP <= 0 {
+				label = "X " + label
+			}
 			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, item.BaseHP)
 		} else {
 			label = fmt.Sprintf("%s [HP ?]", label)
@@ -620,7 +652,7 @@ func (ui *UI) renderEncounterList() {
 	}
 }
 
-func (ui *UI) openEncounterDamageInput() {
+func (ui *UI) openEncounterHPInput(direction int) {
 	if len(ui.encounterItems) == 0 {
 		return
 	}
@@ -633,9 +665,12 @@ func (ui *UI) openEncounterDamageInput() {
 		ui.status.SetText(fmt.Sprintf(" [white:red] HP non disponibile per %s #%d[-:-]  %s", ui.monsters[entry.MonsterIndex].Name, entry.Ordinal, helpText))
 		return
 	}
+	if direction == 0 {
+		return
+	}
 
 	input := tview.NewInputField().
-		SetLabel("-HP ").
+		SetLabel("HP ").
 		SetFieldWidth(12)
 	input.SetLabelColor(tcell.ColorGold)
 	input.SetFieldBackgroundColor(tcell.ColorWhite)
@@ -643,7 +678,11 @@ func (ui *UI) openEncounterDamageInput() {
 	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
 	input.SetBackgroundColor(tcell.ColorBlack)
 	input.SetBorder(true)
-	input.SetTitle(" Damage Encounter ")
+	if direction < 0 {
+		input.SetTitle(" Damage Encounter ")
+	} else {
+		input.SetTitle(" Heal Encounter ")
+	}
 	input.SetBorderColor(tcell.ColorGold)
 	input.SetTitleColor(tcell.ColorGold)
 
@@ -669,27 +708,134 @@ func (ui *UI) openEncounterDamageInput() {
 			return
 		}
 
-		ui.encounterItems[index].CurrentHP -= damage
-		if ui.encounterItems[index].CurrentHP < 0 {
-			ui.encounterItems[index].CurrentHP = 0
+		if direction < 0 {
+			ui.encounterItems[index].CurrentHP -= damage
+			if ui.encounterItems[index].CurrentHP < 0 {
+				ui.encounterItems[index].CurrentHP = 0
+			}
+		} else {
+			ui.encounterItems[index].CurrentHP += damage
+			if ui.encounterItems[index].CurrentHP > ui.encounterItems[index].BaseHP {
+				ui.encounterItems[index].CurrentHP = ui.encounterItems[index].BaseHP
+			}
 		}
 		ui.renderEncounterList()
 		ui.encounter.SetCurrentItem(index)
 		ui.renderDetailByEncounterIndex(index)
 
 		m := ui.monsters[ui.encounterItems[index].MonsterIndex]
-		ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s #%d -%d HP (%d/%d)  %s",
-			m.Name,
-			ui.encounterItems[index].Ordinal,
-			damage,
-			ui.encounterItems[index].CurrentHP,
-			ui.encounterItems[index].BaseHP,
-			helpText,
-		))
+		if direction < 0 {
+			ui.status.SetText(fmt.Sprintf(" [black:gold] danno[-:-] %s #%d -%d HP (%d/%d)  %s",
+				m.Name,
+				ui.encounterItems[index].Ordinal,
+				damage,
+				ui.encounterItems[index].CurrentHP,
+				ui.encounterItems[index].BaseHP,
+				helpText,
+			))
+		} else {
+			ui.status.SetText(fmt.Sprintf(" [black:gold] cura[-:-] %s #%d +%d HP (%d/%d)  %s",
+				m.Name,
+				ui.encounterItems[index].Ordinal,
+				damage,
+				ui.encounterItems[index].CurrentHP,
+				ui.encounterItems[index].BaseHP,
+				helpText,
+			))
+		}
 	})
 
 	ui.pages.AddPage("encounter-damage", modal, true, true)
 	ui.app.SetFocus(input)
+}
+
+func (ui *UI) loadEncounters() error {
+	b, err := os.ReadFile(ui.encountersPath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+
+	var data PersistedEncounters
+	if err := yaml.Unmarshal(b, &data); err != nil {
+		return err
+	}
+
+	idToIndex := make(map[int]int, len(ui.monsters))
+	for i, m := range ui.monsters {
+		idToIndex[m.ID] = i
+	}
+
+	ui.encounterItems = ui.encounterItems[:0]
+	ui.encounterSerial = map[int]int{}
+
+	for _, it := range data.Items {
+		monsterIndex, ok := idToIndex[it.MonsterID]
+		if !ok {
+			continue
+		}
+
+		ordinal := it.Ordinal
+		if ordinal <= 0 {
+			ordinal = ui.encounterSerial[monsterIndex] + 1
+		}
+
+		baseHP := it.BaseHP
+		if baseHP <= 0 {
+			if avg, ok := extractHPAverageInt(ui.monsters[monsterIndex].Raw); ok {
+				baseHP = avg
+			}
+		}
+
+		currentHP := it.CurrentHP
+		if baseHP > 0 {
+			if currentHP < 0 {
+				currentHP = 0
+			}
+			if currentHP > baseHP {
+				currentHP = baseHP
+			}
+		}
+
+		ui.encounterItems = append(ui.encounterItems, EncounterEntry{
+			MonsterIndex: monsterIndex,
+			Ordinal:      ordinal,
+			BaseHP:       baseHP,
+			CurrentHP:    currentHP,
+		})
+		if ordinal > ui.encounterSerial[monsterIndex] {
+			ui.encounterSerial[monsterIndex] = ordinal
+		}
+	}
+	return nil
+}
+
+func (ui *UI) saveEncounters() error {
+	data := PersistedEncounters{
+		Version: 1,
+		Items:   make([]PersistedEncounterItem, 0, len(ui.encounterItems)),
+	}
+
+	for _, it := range ui.encounterItems {
+		if it.MonsterIndex < 0 || it.MonsterIndex >= len(ui.monsters) {
+			continue
+		}
+		m := ui.monsters[it.MonsterIndex]
+		data.Items = append(data.Items, PersistedEncounterItem{
+			MonsterID: m.ID,
+			Ordinal:   it.Ordinal,
+			BaseHP:    it.BaseHP,
+			CurrentHP: it.CurrentHP,
+		})
+	}
+
+	out, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(ui.encountersPath, out, 0o644)
 }
 
 func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {
