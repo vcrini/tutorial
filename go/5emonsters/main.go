@@ -180,6 +180,18 @@ func newUI(monsters []Monster, envs, crs []string) *UI {
 		case focus == ui.nameInput && event.Key() == tcell.KeyEscape:
 			ui.app.SetFocus(ui.list)
 			return nil
+		case focus == ui.list && event.Key() == tcell.KeyPgUp:
+			if len(ui.filtered) > 0 {
+				ui.scrollDetailByPage(-1)
+				return nil
+			}
+			return event
+		case focus == ui.list && event.Key() == tcell.KeyPgDn:
+			if len(ui.filtered) > 0 {
+				ui.scrollDetailByPage(1)
+				return nil
+			}
+			return event
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'j':
 			return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'k':
@@ -217,6 +229,29 @@ func (ui *UI) focusPrev() {
 		}
 	}
 	ui.app.SetFocus(ui.list)
+}
+
+func (ui *UI) scrollDetailByPage(direction int) {
+	if direction == 0 {
+		return
+	}
+
+	_, _, _, height := ui.detail.GetInnerRect()
+	if height <= 0 {
+		height = 10
+	}
+
+	row, _ := ui.detail.GetScrollOffset()
+	step := height - 1
+	if step < 1 {
+		step = 1
+	}
+
+	nextRow := row + (step * direction)
+	if nextRow < 0 {
+		nextRow = 0
+	}
+	ui.detail.ScrollTo(nextRow, 0)
 }
 
 func (ui *UI) run() error {
