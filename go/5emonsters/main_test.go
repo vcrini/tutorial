@@ -436,6 +436,20 @@ func TestRollDiceExpression(t *testing.T) {
 	if total != 1 || !strings.HasSuffix(breakdown, " ko") {
 		t.Fatalf("expected conditional ko, got total=%d breakdown=%q", total, breakdown)
 	}
+	total, breakdown, err = rollDiceExpression("d1v+5")
+	if err != nil {
+		t.Fatalf("unexpected v mode error: %v", err)
+	}
+	if total != 6 || !strings.Contains(breakdown, "1d1v(") {
+		t.Fatalf("expected v mode parsed, got total=%d breakdown=%q", total, breakdown)
+	}
+	total, breakdown, err = rollDiceExpression("d1s+1")
+	if err != nil {
+		t.Fatalf("unexpected s mode error: %v", err)
+	}
+	if total != 2 || !strings.Contains(breakdown, "1d1s(") {
+		t.Fatalf("expected s mode parsed, got total=%d breakdown=%q", total, breakdown)
+	}
 
 	if _, _, err := rollDiceExpression("2d+1"); err == nil {
 		t.Fatal("expected invalid expression error")
@@ -448,6 +462,15 @@ func TestRollDiceExpression(t *testing.T) {
 	}
 	if _, _, err := rollDiceExpression("1d6 > x"); err == nil {
 		t.Fatal("expected invalid threshold error")
+	}
+}
+
+func TestChooseDiceMode(t *testing.T) {
+	if got := chooseDiceMode('v', 7, 13); got != 13 {
+		t.Fatalf("v mode should choose max, got %d", got)
+	}
+	if got := chooseDiceMode('s', 7, 13); got != 7 {
+		t.Fatalf("s mode should choose min, got %d", got)
 	}
 }
 

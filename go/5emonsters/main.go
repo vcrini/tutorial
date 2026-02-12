@@ -694,6 +694,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"\n" +
 			"[black:gold]Esempi[-:-]\n" +
 			"  2d6+d20+1\n" +
+			"  d20v+5   (v = scegli il tiro piu alto su 2)\n" +
+			"  d20s+1   (s = scegli il tiro piu basso su 2)\n" +
 			"  d2,d3,d4\n" +
 			"  4d10+6d6+5\n" +
 			"  1d6 x2\n" +
@@ -3186,6 +3188,7 @@ func parseHPInput(s string) (current int, max int, ok bool) {
 }
 
 var diceBatchRe = regexp.MustCompile(`(?i)^(.*?)(?:\s*x\s*(\d+))$`)
+var diceModeRe = regexp.MustCompile(`^(\d+)([vVsS])?$`)
 
 func expandDiceRollInput(input string) ([]string, error) {
 	parts := strings.Split(input, ",")
@@ -3298,9 +3301,17 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 				}
 				count = v
 			}
-			sides, convErr := strconv.Atoi(sidesStr)
+			mode := byte(0)
+			m := diceModeRe.FindStringSubmatch(sidesStr)
+			if len(m) != 3 {
+				return 0, "", fmt.Errorf("facce non valide: %q", sidesStr)
+			}
+			sides, convErr := strconv.Atoi(m[1])
 			if convErr != nil || sides <= 0 {
 				return 0, "", fmt.Errorf("facce non valide: %q", sidesStr)
+			}
+			if m[2] != "" {
+				mode = strings.ToLower(m[2])[0]
 			}
 			if count > 1000 || sides > 100000 {
 				return 0, "", errors.New("limite dadi superato")
@@ -3308,12 +3319,24 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 			rolls := make([]string, 0, count)
 			termTotal := 0
 			for i := 0; i < count; i++ {
-				r := rand.Intn(sides) + 1
-				termTotal += r
-				rolls = append(rolls, strconv.Itoa(r))
+				if mode == 0 {
+					r := rand.Intn(sides) + 1
+					termTotal += r
+					rolls = append(rolls, strconv.Itoa(r))
+					continue
+				}
+				r1 := rand.Intn(sides) + 1
+				r2 := rand.Intn(sides) + 1
+				chosen := chooseDiceMode(mode, r1, r2)
+				termTotal += chosen
+				rolls = append(rolls, fmt.Sprintf("%d|%d->%d", r1, r2, chosen))
 			}
 			sum += sign * termTotal
-			termPiece := fmt.Sprintf("%dd%d(%s)", count, sides, strings.Join(rolls, "+"))
+			modeSuffix := ""
+			if mode != 0 {
+				modeSuffix = string(mode)
+			}
+			termPiece := fmt.Sprintf("%dd%d%s(%s)", count, sides, modeSuffix, strings.Join(rolls, "+"))
 			if sign < 0 {
 				termPiece = "-" + termPiece
 			}
@@ -3358,6 +3381,23 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 		}
 	}
 	return final, breakdown, nil
+}
+
+func chooseDiceMode(mode byte, a int, b int) int {
+	switch mode {
+	case 'v':
+		if a >= b {
+			return a
+		}
+		return b
+	case 's':
+		if a <= b {
+			return a
+		}
+		return b
+	default:
+		return a
+	}
 }
 
 func (ui *UI) encounterEntryName(entry EncounterEntry) string {
