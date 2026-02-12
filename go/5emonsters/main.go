@@ -521,6 +521,18 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.addSelectedMonsterToEncounter()
 			return nil
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'n':
+			ui.app.SetFocus(ui.nameInput)
+			return nil
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'e':
+			ui.app.SetFocus(ui.envDrop)
+			return nil
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'c':
+			ui.app.SetFocus(ui.crDrop)
+			return nil
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 't':
+			ui.app.SetFocus(ui.typeDrop)
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
 			return nil
@@ -733,6 +745,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  j / k (o frecce) : naviga mostri\n" +
 			"  / : cerca nella Description del mostro selezionato\n" +
 			"  a : aggiungi mostro a Encounters\n" +
+			"  n / e / c / t : focus su Name / Env / CR / Type\n" +
 			"  PgUp / PgDn : scroll del pannello Description\n"
 	case ui.detailRaw:
 		return header +
