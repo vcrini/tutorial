@@ -19,13 +19,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
-const defaultEncountersPath = "encounters.yaml"
-const lastEncountersPathFile = ".encounters_last_path"
-const defaultDicePath = "dice.yaml"
-const lastDicePathFile = ".dice_last_path"
+const (
+	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	defaultEncountersPath  = "encounters.yaml"
+	lastEncountersPathFile = ".encounters_last_path"
+	defaultDicePath        = "dice.yaml"
+	lastDicePathFile       = ".dice_last_path"
+)
 
-//go:embed data/5e.yaml
+//go:embed data/monster.yaml
 var embeddedMonstersYAML []byte
 
 type Monster struct {
@@ -3393,8 +3395,10 @@ func parseHPInput(s string) (current int, max int, ok bool) {
 	return v, v, true
 }
 
-var diceBatchRe = regexp.MustCompile(`(?i)^(.*?)(?:\s*x\s*(\d+))$`)
-var diceTermForDoubleRe = regexp.MustCompile(`(?i)(\d*)d(\d+[a-zA-Z]*)`)
+var (
+	diceBatchRe         = regexp.MustCompile(`(?i)^(.*?)(?:\s*x\s*(\d+))$`)
+	diceTermForDoubleRe = regexp.MustCompile(`(?i)(\d*)d(\d+[a-zA-Z]*)`)
+)
 
 func expandDiceRollInput(input string) ([]string, error) {
 	parts := strings.Split(input, ",")
@@ -3716,8 +3720,10 @@ func (ui *UI) encounterMaxHP(entry EncounterEntry) int {
 	return entry.BaseHP
 }
 
-var hpFormulaRe = regexp.MustCompile(`^\s*(\d+)\s*[dD]\s*(\d+)(?:\s*([+-])\s*(\d+))?\s*$`)
-var finalResultRe = regexp.MustCompile(`[-+]?\d+`)
+var (
+	hpFormulaRe   = regexp.MustCompile(`^\s*(\d+)\s*[dD]\s*(\d+)(?:\s*([+-])\s*(\d+))?\s*$`)
+	finalResultRe = regexp.MustCompile(`[-+]?\d+`)
+)
 
 func rollHPFormula(formula string) (int, bool) {
 	m := hpFormulaRe.FindStringSubmatch(strings.TrimSpace(formula))
