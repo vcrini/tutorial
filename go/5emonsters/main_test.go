@@ -369,12 +369,12 @@ func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	if !strings.Contains(monHelp, "a : aggiungi mostro a Encounters") {
 		t.Fatalf("monsters help missing add shortcut:\n%s", monHelp)
 	}
-	if !strings.Contains(monHelp, "/ : cerca nel Raw del mostro selezionato") {
+	if !strings.Contains(monHelp, "/ : cerca nella Description del mostro selezionato") {
 		t.Fatalf("monsters help missing raw search shortcut:\n%s", monHelp)
 	}
 
 	rawHelp := ui.helpForFocus(ui.detailRaw)
-	if !strings.Contains(rawHelp, "/ : cerca testo nel Raw corrente") {
+	if !strings.Contains(rawHelp, "/ : cerca testo nella Description corrente") {
 		t.Fatalf("raw help missing raw find shortcut:\n%s", rawHelp)
 	}
 }

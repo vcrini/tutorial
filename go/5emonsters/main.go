@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Raw)  [black:gold] tab [-:-] focus  [black:gold] 1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Raw "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
 
@@ -104,16 +104,20 @@ type UI struct {
 	envDrop    *tview.DropDown
 	crDrop     *tview.DropDown
 	typeDrop   *tview.DropDown
+	dice       *tview.TextView
 	encounter  *tview.List
 	list       *tview.List
 	detailMeta *tview.TextView
 	detailRaw  *tview.TextView
 	status     *tview.TextView
 	pages      *tview.Pages
+	leftPanel  *tview.Flex
+	filterHost *tview.Pages
 
 	focusOrder []tview.Primitive
 	rawText    string
 	rawQuery   string
+	wideFilter bool
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -287,6 +291,17 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	})
 	ui.encounter.AddItem("Nessun mostro nell'encounter", "", 0, nil)
 
+	ui.dice = tview.NewTextView().
+		SetDynamicColors(true).
+		SetScrollable(false).
+		SetWordWrap(true)
+	ui.dice.SetBorder(true)
+	ui.dice.SetTitle(" [0]-Dice ")
+	ui.dice.SetTitleColor(tcell.ColorGold)
+	ui.dice.SetBorderColor(tcell.ColorGold)
+	ui.dice.SetTextColor(tcell.ColorWhite)
+	ui.dice.SetText("Roll helper panel.\nUse encounters shortcuts: [gold]i[-] one, [gold]I[-] all, [gold]S[-] sort.")
+
 	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true).
@@ -303,7 +318,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		SetScrollable(true).
 		SetWordWrap(false)
 	ui.detailRaw.SetBorder(true)
-	ui.detailRaw.SetTitle(" [3]-Raw ")
+	ui.detailRaw.SetTitle(" [3]-Description ")
 	ui.detailRaw.SetTitleColor(tcell.ColorGold)
 	ui.detailRaw.SetBorderColor(tcell.ColorGold)
 	ui.detailRaw.SetTextColor(tcell.ColorWhite)
@@ -318,36 +333,57 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		SetText(helpText)
 	ui.status.SetBackgroundColor(tcell.ColorBlack)
 
-	filterRow := tview.NewFlex().
+	filterRowSingle := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(ui.nameInput, 28, 0, true).
-		AddItem(ui.envDrop, 22, 0, false).
-		AddItem(ui.crDrop, 14, 0, false).
-		AddItem(ui.typeDrop, 22, 0, false)
+		AddItem(ui.nameInput, 0, 3, true).
+		AddItem(ui.envDrop, 0, 2, false).
+		AddItem(ui.crDrop, 0, 1, false).
+		AddItem(ui.typeDrop, 0, 2, false)
 
-	leftPanel := tview.NewFlex().
+	filterRowTop := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(ui.nameInput, 0, 2, true).
+		AddItem(ui.envDrop, 0, 1, false)
+
+	filterRowBottom := tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(ui.crDrop, 0, 1, false).
+		AddItem(ui.typeDrop, 0, 2, false)
+
+	filterRow := tview.NewFlex().
 		SetDirection(tview.FlexRow).
+		AddItem(filterRowTop, 1, 0, false).
+		AddItem(filterRowBottom, 1, 0, false)
+
+	ui.filterHost = tview.NewPages().
+		AddPage("single", filterRowSingle, true, false).
+		AddPage("double", filterRow, true, true)
+
+	ui.leftPanel = tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.dice, 4, 0, false).
 		AddItem(ui.encounter, 8, 0, false).
+		AddItem(ui.filterHost, 2, 0, true).
 		AddItem(ui.list, 0, 1, false)
 
 	mainRow := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(leftPanel, 0, 1, false).
+		AddItem(ui.leftPanel, 0, 1, false).
 		AddItem(detailPanel, 0, 1, false)
 
 	root := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(filterRow, 4, 0, true).
 		AddItem(mainRow, 0, 1, false).
 		AddItem(ui.status, 1, 0, false)
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.encounter, ui.list, ui.detailRaw}
+	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
 	ui.envDrop.SetCurrentOption(0)
 	ui.crDrop.SetCurrentOption(0)
 	ui.typeDrop.SetCurrentOption(0)
+	ui.updateFilterLayout(0)
 
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		focus := ui.app.GetFocus()
@@ -470,6 +506,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '3':
 			ui.app.SetFocus(ui.detailRaw)
 			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '0':
+			ui.app.SetFocus(ui.dice)
+			return nil
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'j':
 			return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'k':
@@ -477,6 +516,11 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		default:
 			return event
 		}
+	})
+	ui.app.SetBeforeDrawFunc(func(screen tcell.Screen) bool {
+		w, _ := screen.Size()
+		ui.updateFilterLayout(w)
+		return false
 	})
 
 	ui.applyFilters()
@@ -530,12 +574,14 @@ func (ui *UI) closeHelpOverlay() {
 
 func (ui *UI) panelNameForFocus(focus tview.Primitive) string {
 	switch focus {
+	case ui.dice:
+		return "Dice"
 	case ui.encounter:
 		return "Encounters"
 	case ui.list:
 		return "Monsters"
 	case ui.detailRaw:
-		return "Raw"
+		return "Description"
 	case ui.nameInput:
 		return "Name Filter"
 	case ui.envDrop:
@@ -555,14 +601,20 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		"  Esc : chiudi help\n" +
 		"  q : esci programma\n" +
 		"  Tab / Shift+Tab : cambia focus\n" +
-		"  1 / 2 / 3 : vai a Encounters / Monsters / Raw\n\n"
+		"  0 / 1 / 2 / 3 : vai a Dice / Encounters / Monsters / Description\n\n"
 
 	switch focus {
+	case ui.dice:
+		return header +
+			"[black:gold]Dice[-:-]\n" +
+			"  pannello informativo per i tiri e scorciatoie initiative\n" +
+			"  1 : passa a Encounters\n" +
+			"  i / I / S : usa i comandi iniziativa su Encounters\n"
 	case ui.encounter:
 		return header +
 			"[black:gold]Encounters[-:-]\n" +
 			"  j / k (o frecce) : seleziona entry\n" +
-			"  / : cerca nel Raw del mostro selezionato\n" +
+			"  / : cerca nella Description del mostro selezionato\n" +
 			"  a : aggiungi entry custom\n" +
 			"  d : elimina entry selezionata\n" +
 			"  s : salva encounter su file (save as)\n" +
@@ -581,13 +633,13 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		return header +
 			"[black:gold]Monsters[-:-]\n" +
 			"  j / k (o frecce) : naviga mostri\n" +
-			"  / : cerca nel Raw del mostro selezionato\n" +
+			"  / : cerca nella Description del mostro selezionato\n" +
 			"  a : aggiungi mostro a Encounters\n" +
-			"  PgUp / PgDn : scroll del pannello Raw\n"
+			"  PgUp / PgDn : scroll del pannello Description\n"
 	case ui.detailRaw:
 		return header +
-			"[black:gold]Raw[-:-]\n" +
-			"  / : cerca testo nel Raw corrente\n" +
+			"[black:gold]Description[-:-]\n" +
+			"  / : cerca testo nella Description corrente\n" +
 			"  j / k (o frecce) : scroll contenuto\n"
 	case ui.nameInput:
 		return header +
@@ -650,6 +702,24 @@ func (ui *UI) scrollDetailByPage(direction int) {
 		nextRow = 0
 	}
 	ui.detailRaw.ScrollTo(nextRow, 0)
+}
+
+func (ui *UI) updateFilterLayout(screenWidth int) {
+	if ui.filterHost == nil || ui.leftPanel == nil {
+		return
+	}
+	wide := screenWidth >= 140
+	if ui.wideFilter == wide {
+		return
+	}
+	ui.wideFilter = wide
+	if wide {
+		ui.filterHost.SwitchToPage("single")
+		ui.leftPanel.ResizeItem(ui.filterHost, 1, 0)
+	} else {
+		ui.filterHost.SwitchToPage("double")
+		ui.leftPanel.ResizeItem(ui.filterHost, 2, 0)
+	}
 }
 
 func (ui *UI) run() error {
@@ -805,7 +875,7 @@ func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
 	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
 	input.SetBackgroundColor(tcell.ColorBlack)
 	input.SetBorder(true)
-	input.SetTitle(" Find In Raw ")
+	input.SetTitle(" Find In Description ")
 	input.SetBorderColor(tcell.ColorGold)
 	input.SetTitleColor(tcell.ColorGold)
 	input.SetText(ui.rawQuery)
@@ -835,13 +905,13 @@ func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
 		if !ok {
 			ui.rawQuery = query
 			ui.renderRawWithHighlight(query, -1)
-			ui.status.SetText(fmt.Sprintf(" [white:red] nessun match nel Raw [-:-] \"%s\"  %s", query, helpText))
+			ui.status.SetText(fmt.Sprintf(" [white:red] nessun match nella Description [-:-] \"%s\"  %s", query, helpText))
 			return
 		}
 		ui.rawQuery = query
 		ui.renderRawWithHighlight(query, line)
 		ui.detailRaw.ScrollTo(line, 0)
-		ui.status.SetText(fmt.Sprintf(" [black:gold] trovato nel Raw[-:-] \"%s\" (riga %d)  %s", query, line+1, helpText))
+		ui.status.SetText(fmt.Sprintf(" [black:gold] trovato nella Description[-:-] \"%s\" (riga %d)  %s", query, line+1, helpText))
 	})
 
 	ui.pages.AddPage("raw-search", modal, true, true)

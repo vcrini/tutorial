@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
+	"bytes"
 	"embed"
 	"errors"
 	"flag"
 	"fmt"
-	"html"
+	"io"
 	"os"
 	"regexp"
 	"sort"
@@ -14,7 +16,7 @@ import (
 	"unicode"
 )
 
-//go:embed config/it_IT.dic
+//go:embed config/current_version/morph-it_048.txt
 var embeddedFS embed.FS
 
 var (
@@ -29,6 +31,8 @@ func main() {
 	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 	fs.SetOutput(os.Stderr)
 	limit := fs.Int("limit", 0, "massimo numero di parole da stampare per numero (0 = nessun limite)")
+	morphPath := fs.String("morph", "", "percorso a lessico POS Morph-it (opzionale, override del file embedded)")
+	concreteOnly := fs.Bool("concrete-only", true, "filtra nomi astratti e forme non concrete")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		os.Exit(2)
 	}
@@ -37,7 +41,7 @@ func main() {
 		os.Exit(2)
 	}
 	if fs.NArg() != 1 {
-		fmt.Fprintln(os.Stderr, "uso: go run . [-limit N] <numero 001-1000 | intervallo 001-1000>")
+		fmt.Fprintln(os.Stderr, "uso: go run . [-limit N] [-morph FILE] [-concrete-only=true|false] <numero 001-1000 | intervallo 001-1000>")
 		os.Exit(2)
 	}
 
@@ -47,15 +51,9 @@ func main() {
 		os.Exit(2)
 	}
 
-	raw, err := embeddedFS.ReadFile("config/it_IT.dic")
+	lemmas, err := loadMorphLemmas(*morphPath)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "errore lettura dizionario embedded:", err)
-		os.Exit(1)
-	}
-
-	lemmas, err := parseHunspellLemmas(string(raw))
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "errore parsing dizionario:", err)
+		fmt.Fprintln(os.Stderr, "errore lettura/parsing lessico Morph-it:", err)
 		os.Exit(1)
 	}
 
@@ -66,6 +64,9 @@ func main() {
 		for _, lemma := range lemmas {
 			word := normalizeWord(lemma)
 			if word == "" {
+				continue
+			}
+			if *concreteOnly && !isLikelyConcreteNoun(word) {
 				continue
 			}
 			if _, ok := seen[word]; ok {
@@ -170,57 +171,6 @@ func formatNumber(n int) string {
 	return fmt.Sprintf("%03d", n)
 }
 
-func parseHunspellLemmas(raw string) ([]string, error) {
-	data := strings.TrimSpace(raw)
-	if strings.HasPrefix(data, "<!DOCTYPE html>") {
-		start := strings.Index(data, "<td class='lines'><pre><code>")
-		end := strings.Index(data, "</code></pre></td>")
-		if start < 0 || end < 0 || end <= start {
-			return nil, errors.New("html del dizionario non contiene il blocco con le righe")
-		}
-		start += len("<td class='lines'><pre><code>")
-		data = html.UnescapeString(data[start:end])
-	}
-
-	lines := strings.Split(data, "\n")
-	if len(lines) == 0 {
-		return nil, errors.New("dizionario vuoto")
-	}
-
-	lemmas := make([]string, 0, len(lines))
-	for i, line := range lines {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		if i == 0 && isNumber(line) {
-			continue
-		}
-
-		if slash := strings.IndexByte(line, '/'); slash >= 0 {
-			line = line[:slash]
-		}
-		line = strings.TrimSpace(line)
-		if line != "" {
-			lemmas = append(lemmas, line)
-		}
-	}
-
-	if len(lemmas) == 0 {
-		return nil, errors.New("nessun lemma estratto")
-	}
-	return lemmas, nil
-}
-
-func isNumber(s string) bool {
-	for _, r := range s {
-		if r < '0' || r > '9' {
-			return false
-		}
-	}
-	return s != ""
-}
-
 func normalizeWord(s string) string {
 	s = strings.TrimSpace(s)
 	s = accentReplacer.Replace(s)
@@ -242,6 +192,102 @@ func matchesTarget(word string, targetDigits string) bool {
 		return false
 	}
 	return wordDigits == targetDigits
+}
+
+func isLikelyConcreteNoun(word string) bool {
+	if len(word) < 3 {
+		return false
+	}
+
+	// Heuristics: scarta forme verbali/aggettivali e nomi astratti più comuni.
+	blockedSuffixes := []string{
+		"are", "ere", "ire",
+		"arsi", "ersi", "irsi",
+		"ando", "endo",
+		"ato", "ata", "ati", "ate",
+		"uto", "uta", "uti", "ute",
+		"ito", "ita", "iti", "ite",
+		"zione", "zioni", "mento", "menti", "ismo", "ismi", "ezza", "ezze", "anza", "anze", "enza", "enze",
+		"mente",
+		"ale", "ali", "ile", "ili", "iale", "iali", "oso", "osa", "osi", "ose",
+		"ico", "ica", "ici", "iche", "ivo", "iva", "ivi", "ive",
+	}
+	for _, sfx := range blockedSuffixes {
+		if strings.HasSuffix(word, sfx) {
+			return false
+		}
+	}
+
+	last := word[len(word)-1]
+	switch last {
+	case 'a', 'e', 'i', 'o':
+		return true
+	default:
+		return false
+	}
+}
+
+func loadMorphLemmas(path string) ([]string, error) {
+	var r io.Reader
+	if path == "" {
+		raw, err := embeddedFS.ReadFile("config/current_version/morph-it_048.txt")
+		if err != nil {
+			return nil, err
+		}
+		r = bytes.NewReader(raw)
+	} else {
+		f, err := os.Open(path)
+		if err != nil {
+			return nil, err
+		}
+		defer f.Close()
+		r = f
+	}
+
+	lemmasSet, err := parseMorphNouns(r)
+	if err != nil {
+		return nil, err
+	}
+	lemmas := make([]string, 0, len(lemmasSet))
+	for lemma := range lemmasSet {
+		lemmas = append(lemmas, lemma)
+	}
+	return lemmas, nil
+}
+
+func parseMorphNouns(r io.Reader) (map[string]struct{}, error) {
+	nouns := make(map[string]struct{}, 64_000)
+	sc := bufio.NewScanner(r)
+	for sc.Scan() {
+		line := strings.TrimSpace(sc.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		parts := strings.Split(line, "\t")
+		if len(parts) < 3 {
+			continue
+		}
+
+		lemma := normalizeWord(parts[1])
+		if lemma == "" {
+			continue
+		}
+		tag := strings.ToUpper(parts[2])
+		if !looksLikeNounTag(tag) {
+			continue
+		}
+		nouns[lemma] = struct{}{}
+	}
+	if err := sc.Err(); err != nil {
+		return nil, err
+	}
+	return nouns, nil
+}
+
+func looksLikeNounTag(tag string) bool {
+	return strings.Contains(tag, "NOUN") ||
+		strings.Contains(tag, "NOM") ||
+		strings.Contains(tag, "SOST")
 }
 
 func wordToDigits(word string) (string, bool) {
