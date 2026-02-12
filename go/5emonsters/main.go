@@ -1016,29 +1016,12 @@ func (ui *UI) renderDiceList() {
 }
 
 func highlightDiceFinalResult(output string) string {
-	anchor := strings.LastIndex(output, "->")
-	if anchor >= 0 {
-		return highlightFirstNumberFrom(output, anchor+2)
+	locs := finalResultRe.FindAllStringIndex(output, -1)
+	if len(locs) == 0 {
+		return output
 	}
-	anchor = strings.LastIndex(output, "=")
-	if anchor >= 0 {
-		return highlightFirstNumberFrom(output, anchor+1)
-	}
-	return output
-}
-
-func highlightFirstNumberFrom(s string, start int) string {
-	if start < 0 || start >= len(s) {
-		return s
-	}
-	tail := s[start:]
-	loc := finalResultRe.FindStringIndex(tail)
-	if loc == nil {
-		return s
-	}
-	a := start + loc[0]
-	b := start + loc[1]
-	return s[:a] + "[black:gold]" + s[a:b] + "[-:-]" + s[b:]
+	last := locs[len(locs)-1]
+	return output[:last[0]] + "[black:gold]" + output[last[0]:last[1]] + "[-:-]" + output[last[1]:]
 }
 
 func (ui *UI) deleteSelectedDiceResult() {
@@ -3251,22 +3234,28 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 	}
 	checkTarget := 0
 	hasCheck := false
+	checkOnSuccessExpr := ""
 	if strings.Contains(expr, ">") {
 		parts := strings.Split(expr, ">")
 		if len(parts) != 2 {
 			return 0, "", errors.New("condizione > non valida")
 		}
 		expr = strings.TrimSpace(parts[0])
-		targetRaw := strings.TrimSpace(parts[1])
-		if expr == "" || targetRaw == "" {
+		condRaw := strings.TrimSpace(parts[1])
+		if expr == "" || condRaw == "" {
 			return 0, "", errors.New("condizione > non valida")
 		}
-		v, convErr := strconv.Atoi(targetRaw)
+		m := regexp.MustCompile(`^([+-]?\d+)(?:\s+(.+))?$`).FindStringSubmatch(condRaw)
+		if len(m) != 3 {
+			return 0, "", fmt.Errorf("soglia non valida: %q", condRaw)
+		}
+		v, convErr := strconv.Atoi(strings.TrimSpace(m[1]))
 		if convErr != nil {
-			return 0, "", fmt.Errorf("soglia non valida: %q", targetRaw)
+			return 0, "", fmt.Errorf("soglia non valida: %q", condRaw)
 		}
 		checkTarget = v
 		hasCheck = true
+		checkOnSuccessExpr = strings.TrimSpace(m[2])
 	}
 
 	// Tokenize on + and - while preserving each term sign.
@@ -3350,10 +3339,22 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 		breakdown = fmt.Sprintf("%s -> 0", breakdown)
 	}
 	if hasCheck {
-		if final > checkTarget {
-			breakdown += " ok"
+		if checkOnSuccessExpr == "" {
+			if final > checkTarget {
+				breakdown += " ok"
+			} else {
+				breakdown += " ko"
+			}
 		} else {
-			breakdown += " ko"
+			if final > checkTarget {
+				_, successBreakdown, successErr := rollDiceExpression(checkOnSuccessExpr)
+				if successErr != nil {
+					return 0, "", fmt.Errorf("espressione success non valida: %w", successErr)
+				}
+				breakdown += " -> " + successBreakdown
+			} else {
+				breakdown += " ko"
+			}
 		}
 	}
 	return final, breakdown, nil
