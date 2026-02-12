@@ -408,6 +408,20 @@ func TestRollDiceExpression(t *testing.T) {
 	if total != 0 {
 		t.Fatalf("expected clamped total 0 for 2d1-5, got %d", total)
 	}
+	total, breakdown, err = rollDiceExpression("1d1+2 > 2")
+	if err != nil {
+		t.Fatalf("unexpected check error: %v", err)
+	}
+	if total != 3 || !strings.HasSuffix(breakdown, " ok") {
+		t.Fatalf("expected checked ok result, got total=%d breakdown=%q", total, breakdown)
+	}
+	total, breakdown, err = rollDiceExpression("1d1 > 2")
+	if err != nil {
+		t.Fatalf("unexpected check ko error: %v", err)
+	}
+	if total != 1 || !strings.HasSuffix(breakdown, " ko") {
+		t.Fatalf("expected checked ko result, got total=%d breakdown=%q", total, breakdown)
+	}
 
 	if _, _, err := rollDiceExpression("2d+1"); err == nil {
 		t.Fatal("expected invalid expression error")
@@ -417,6 +431,9 @@ func TestRollDiceExpression(t *testing.T) {
 	}
 	if _, _, err := rollDiceExpression("2d6++1"); err == nil {
 		t.Fatal("expected invalid empty token error")
+	}
+	if _, _, err := rollDiceExpression("1d6 > x"); err == nil {
+		t.Fatal("expected invalid threshold error")
 	}
 }
 

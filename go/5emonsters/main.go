@@ -3111,6 +3111,25 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 	if expr == "" {
 		return 0, "", errors.New("vuota")
 	}
+	checkTarget := 0
+	hasCheck := false
+	if strings.Contains(expr, ">") {
+		parts := strings.Split(expr, ">")
+		if len(parts) != 2 {
+			return 0, "", errors.New("condizione > non valida")
+		}
+		expr = strings.TrimSpace(parts[0])
+		targetRaw := strings.TrimSpace(parts[1])
+		if expr == "" || targetRaw == "" {
+			return 0, "", errors.New("condizione > non valida")
+		}
+		v, convErr := strconv.Atoi(targetRaw)
+		if convErr != nil {
+			return 0, "", fmt.Errorf("soglia non valida: %q", targetRaw)
+		}
+		checkTarget = v
+		hasCheck = true
+	}
 
 	// Tokenize on + and - while preserving each term sign.
 	terms := make([]string, 0, 8)
@@ -3186,10 +3205,20 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 			pieces = append(pieces, strconv.Itoa(v))
 		}
 	}
+	final := sum
+	breakdown = fmt.Sprintf("%s = %d", strings.Join(pieces, " + "), sum)
 	if sum < 0 {
-		return 0, fmt.Sprintf("%s = %d -> 0", strings.Join(pieces, " + "), sum), nil
+		final = 0
+		breakdown = fmt.Sprintf("%s -> 0", breakdown)
 	}
-	return sum, fmt.Sprintf("%s = %d", strings.Join(pieces, " + "), sum), nil
+	if hasCheck {
+		if final > checkTarget {
+			breakdown += " ok"
+		} else {
+			breakdown += " ko"
+		}
+	}
+	return final, breakdown, nil
 }
 
 func (ui *UI) encounterEntryName(entry EncounterEntry) string {
