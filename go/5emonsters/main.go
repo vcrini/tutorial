@@ -20,9 +20,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] Enter[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
+const defaultDicePath = "dice.yaml"
+const lastDicePathFile = ".dice_last_path"
 
 //go:embed data/5e.yaml
 var embeddedMonstersYAML []byte
@@ -81,6 +83,11 @@ type PersistedEncounterItem struct {
 	InitRoll   int    `yaml:"init_roll,omitempty"`
 }
 
+type PersistedDice struct {
+	Version int      `yaml:"version"`
+	Items   []string `yaml:"items"`
+}
+
 type EncounterUndoState struct {
 	Items    []EncounterEntry
 	Serial   map[int]int
@@ -104,7 +111,7 @@ type UI struct {
 	envDrop     *tview.DropDown
 	crDrop      *tview.DropDown
 	typeDrop    *tview.DropDown
-	dice        *tview.TextView
+	dice        *tview.List
 	encounter   *tview.List
 	list        *tview.List
 	detailMeta  *tview.TextView
@@ -125,6 +132,7 @@ type UI struct {
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
 	encountersPath  string
+	dicePath        string
 	encounterUndo   []EncounterUndoState
 	encounterRedo   []EncounterUndoState
 	turnMode        bool
@@ -143,8 +151,12 @@ func main() {
 
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
 	encountersPath := strings.TrimSpace(os.Getenv("ENCOUNTERS_YAML"))
+	dicePath := strings.TrimSpace(os.Getenv("DICE_YAML"))
 	if encountersPath == "" {
 		encountersPath = readLastEncountersPath()
+	}
+	if dicePath == "" {
+		dicePath = readLastDicePath()
 	}
 	var (
 		monsters []Monster
@@ -166,16 +178,19 @@ func main() {
 		}
 	}
 
-	ui := newUI(monsters, envs, crs, types, encountersPath)
+	ui := newUI(monsters, envs, crs, types, encountersPath, dicePath)
 	if err := ui.run(); err != nil {
 		log.Fatal(err)
 	}
 	if err := ui.saveEncounters(); err != nil {
 		log.Printf("errore salvataggio encounters (%s): %v", encountersPath, err)
 	}
+	if err := ui.saveDiceResults(); err != nil {
+		log.Printf("errore salvataggio dice (%s): %v", ui.dicePath, err)
+	}
 }
 
-func newUI(monsters []Monster, envs, crs, types []string, encountersPath string) *UI {
+func newUI(monsters []Monster, envs, crs, types []string, encountersPath string, dicePath string) *UI {
 	setTheme()
 
 	ui := &UI{
@@ -188,6 +203,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		encounterSerial: map[int]int{},
 		encounterItems:  make([]EncounterEntry, 0, 16),
 		encountersPath:  encountersPath,
+		dicePath:        dicePath,
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -296,16 +312,15 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	})
 	ui.encounter.AddItem("Nessun mostro nell'encounter", "", 0, nil)
 
-	ui.dice = tview.NewTextView().
-		SetDynamicColors(true).
-		SetScrollable(true).
-		SetWordWrap(true)
+	ui.dice = tview.NewList()
 	ui.dice.SetBorder(true)
 	ui.dice.SetTitle(" [0]-Dice ")
 	ui.dice.SetTitleColor(tcell.ColorGold)
 	ui.dice.SetBorderColor(tcell.ColorGold)
-	ui.dice.SetTextColor(tcell.ColorWhite)
-	ui.dice.SetText("")
+	ui.dice.SetMainTextColor(tcell.ColorWhite)
+	ui.dice.SetSelectedTextColor(tcell.ColorBlack)
+	ui.dice.SetSelectedBackgroundColor(tcell.ColorGold)
+	ui.dice.ShowSecondaryText(false)
 
 	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
@@ -412,8 +427,14 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case event.Key() == tcell.KeyRune && event.Rune() == '?':
 			ui.openHelpOverlay(focus)
 			return nil
-		case focus == ui.dice && event.Key() == tcell.KeyEnter:
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openDiceRollInput()
+			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 's':
+			ui.openDiceSaveAsInput()
+			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'l':
+			ui.openDiceLoadInput()
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'f':
 			ui.toggleFullscreenForFocus(focus)
@@ -538,6 +559,9 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	if err := ui.loadEncounters(); err != nil {
 		ui.status.SetText(fmt.Sprintf(" [white:red] errore load encounters[-:-] %v  %s", err, helpText))
 	}
+	if err := ui.loadDiceResults(); err != nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] errore load dice[-:-] %v  %s", err, helpText))
+	}
 	ui.renderEncounterList()
 	return ui
 }
@@ -619,7 +643,9 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 	case ui.dice:
 		return header +
 			"[black:gold]Dice[-:-]\n" +
-			"  Enter : tira espressione dadi (es. 2d6+d20+1)\n" +
+			"  a : tira espressione dadi (es. 2d6+d20+1)\n" +
+			"  s : salva risultati dadi (save as)\n" +
+			"  l : carica risultati dadi (load)\n" +
 			"  f : fullscreen on/off del pannello Dice\n"
 	case ui.encounter:
 		return header +
@@ -723,7 +749,7 @@ func (ui *UI) openDiceRollInput() {
 	input.SetFieldBackgroundColor(tcell.ColorWhite)
 	input.SetFieldTextColor(tcell.ColorBlack)
 	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
-	input.SetTitle(" Dice Roll (e.g. 2d6+d20+1) ")
+	input.SetTitle(" Dice Roll (e.g. 2d6+d20+1 or 1d6-1) ")
 	input.SetBorder(true)
 	input.SetTitleColor(tcell.ColorGold)
 	input.SetBorderColor(tcell.ColorGold)
@@ -771,8 +797,121 @@ func (ui *UI) appendDiceLog(line string) {
 	if len(ui.diceLog) > 100 {
 		ui.diceLog = ui.diceLog[len(ui.diceLog)-100:]
 	}
-	ui.dice.SetText(strings.Join(ui.diceLog, "\n"))
-	ui.dice.ScrollToEnd()
+	ui.renderDiceList()
+}
+
+func (ui *UI) renderDiceList() {
+	ui.dice.Clear()
+	for i, line := range ui.diceLog {
+		ui.dice.AddItem(fmt.Sprintf("%d %s", i+1, line), "", 0, nil)
+	}
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
+}
+
+func (ui *UI) openDiceSaveAsInput() {
+	input := tview.NewInputField().
+		SetLabel("Dice file ").
+		SetFieldWidth(56)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetTitle(" Save Dice Results As ")
+	input.SetBorder(true)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetText(ui.dicePath)
+
+	closeModal := func() {
+		ui.pages.RemovePage("dice-save")
+		ui.app.SetFocus(ui.dice)
+	}
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEscape:
+			closeModal()
+		case tcell.KeyEnter:
+			path := strings.TrimSpace(input.GetText())
+			if path == "" {
+				ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
+				return
+			}
+			if err := ui.saveDiceResultsAs(path); err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] errore save dice[-:-] %v  %s", err, helpText))
+				return
+			}
+			ui.status.SetText(fmt.Sprintf(" [black:gold] salvato dice[-:-] %s  %s", ui.dicePath, helpText))
+			closeModal()
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 72, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("dice-save", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) openDiceLoadInput() {
+	input := tview.NewInputField().
+		SetLabel("Dice file ").
+		SetFieldWidth(56)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetTitle(" Load Dice Results ")
+	input.SetBorder(true)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetText(ui.dicePath)
+
+	closeModal := func() {
+		ui.pages.RemovePage("dice-load")
+		ui.app.SetFocus(ui.dice)
+	}
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEscape:
+			closeModal()
+		case tcell.KeyEnter:
+			path := strings.TrimSpace(input.GetText())
+			if path == "" {
+				ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
+				return
+			}
+			prev := ui.dicePath
+			ui.dicePath = path
+			if err := ui.loadDiceResults(); err != nil {
+				ui.dicePath = prev
+				ui.status.SetText(fmt.Sprintf(" [white:red] errore load dice[-:-] %v  %s", err, helpText))
+				return
+			}
+			ui.status.SetText(fmt.Sprintf(" [black:gold] caricato dice[-:-] %s  %s", ui.dicePath, helpText))
+			closeModal()
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 72, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("dice-load", modal, true, true)
+	ui.app.SetFocus(input)
 }
 
 func (ui *UI) updateFilterLayout(screenWidth int) {
@@ -2026,6 +2165,56 @@ func (ui *UI) saveEncountersAs(path string) error {
 	return nil
 }
 
+func (ui *UI) loadDiceResults() error {
+	b, err := os.ReadFile(ui.dicePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			ui.diceLog = nil
+			ui.renderDiceList()
+			return nil
+		}
+		return err
+	}
+	var data PersistedDice
+	if err := yaml.Unmarshal(b, &data); err != nil {
+		return err
+	}
+	ui.diceLog = append([]string(nil), data.Items...)
+	ui.renderDiceList()
+	_ = writeLastDicePath(ui.dicePath)
+	return nil
+}
+
+func (ui *UI) saveDiceResults() error {
+	data := PersistedDice{
+		Version: 1,
+		Items:   append([]string(nil), ui.diceLog...),
+	}
+	out, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	if err := os.WriteFile(ui.dicePath, out, 0o644); err != nil {
+		return err
+	}
+	_ = writeLastDicePath(ui.dicePath)
+	return nil
+}
+
+func (ui *UI) saveDiceResultsAs(path string) error {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return errors.New("empty path")
+	}
+	prev := ui.dicePath
+	ui.dicePath = path
+	if err := ui.saveDiceResults(); err != nil {
+		ui.dicePath = prev
+		return err
+	}
+	return nil
+}
+
 func readLastEncountersPath() string {
 	b, err := os.ReadFile(lastEncountersPathFile)
 	if err != nil {
@@ -2050,6 +2239,32 @@ func writeLastEncountersPath(path string) error {
 		}
 	}
 	return os.WriteFile(lastEncountersPathFile, []byte(p+"\n"), 0o644)
+}
+
+func readLastDicePath() string {
+	b, err := os.ReadFile(lastDicePathFile)
+	if err != nil {
+		return defaultDicePath
+	}
+	p := strings.TrimSpace(string(b))
+	if p == "" {
+		return defaultDicePath
+	}
+	return p
+}
+
+func writeLastDicePath(path string) error {
+	p := strings.TrimSpace(path)
+	if p == "" {
+		return nil
+	}
+	dir := filepath.Dir(lastDicePathFile)
+	if dir != "." && dir != "" {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(lastDicePathFile, []byte(p+"\n"), 0o644)
 }
 
 func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {

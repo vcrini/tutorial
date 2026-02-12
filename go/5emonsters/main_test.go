@@ -29,7 +29,8 @@ func mkMonster(id int, name string, dex int, hpAvg int, hpFormula string) Monste
 func makeTestUI(t *testing.T, monsters []Monster) *UI {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
-	ui := newUI(monsters, nil, nil, nil, path)
+	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
+	ui := newUI(monsters, nil, nil, nil, path, dicePath)
 	return ui
 }
 
@@ -271,7 +272,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 
 	monsters := []Monster{mkMonster(100, "A", 12, 13, "3d8"), mkMonster(200, "B", 14, 20, "4d8")}
 	path := filepath.Join(tmp, "my-enc.yaml")
-	ui := newUI(monsters, nil, nil, nil, path)
+	ui := newUI(monsters, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	ui.encounterItems = []EncounterEntry{
 		{MonsterIndex: 0, Ordinal: 1, BaseHP: 13, CurrentHP: 8, HPFormula: "3d8", UseRolledHP: true, RolledHP: 10, HasInitRoll: true, InitRoll: 15},
 		{MonsterIndex: 1, Ordinal: 1, BaseHP: 20, CurrentHP: 20, HPFormula: "4d8", UseRolledHP: false, RolledHP: 0, HasInitRoll: false, InitRoll: 0},
@@ -286,7 +287,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 		t.Fatalf("saveEncountersAs failed: %v", err)
 	}
 
-	ui2 := newUI(monsters, nil, nil, nil, path)
+	ui2 := newUI(monsters, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	if err := ui2.loadEncounters(); err != nil {
 		t.Fatalf("loadEncounters failed: %v", err)
 	}
