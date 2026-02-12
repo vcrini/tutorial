@@ -117,6 +117,7 @@ type UI struct {
 	focusOrder []tview.Primitive
 	rawText    string
 	rawQuery   string
+	diceLog    []string
 	wideFilter bool
 
 	encounterSerial map[int]int
@@ -293,14 +294,14 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 
 	ui.dice = tview.NewTextView().
 		SetDynamicColors(true).
-		SetScrollable(false).
+		SetScrollable(true).
 		SetWordWrap(true)
 	ui.dice.SetBorder(true)
 	ui.dice.SetTitle(" [0]-Dice ")
 	ui.dice.SetTitleColor(tcell.ColorGold)
 	ui.dice.SetBorderColor(tcell.ColorGold)
 	ui.dice.SetTextColor(tcell.ColorWhite)
-	ui.dice.SetText("Roll helper panel.\nUse encounters shortcuts: [gold]i[-] one, [gold]I[-] all, [gold]S[-] sort.")
+	ui.dice.SetText("")
 
 	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
@@ -361,7 +362,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 
 	ui.leftPanel = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(ui.dice, 4, 0, false).
+		AddItem(ui.dice, 5, 0, false).
 		AddItem(ui.encounter, 8, 0, false).
 		AddItem(ui.filterHost, 2, 0, true).
 		AddItem(ui.list, 0, 1, false)
@@ -413,6 +414,10 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case event.Key() == tcell.KeyRune && event.Rune() == '/':
 			if focusIsInputField {
 				return event
+			}
+			if focus == ui.dice {
+				ui.openDiceRollInput()
+				return nil
 			}
 			if focus == ui.list {
 				ui.openRawSearch(ui.list)
@@ -607,9 +612,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 	case ui.dice:
 		return header +
 			"[black:gold]Dice[-:-]\n" +
-			"  pannello informativo per i tiri e scorciatoie initiative\n" +
-			"  1 : passa a Encounters\n" +
-			"  i / I / S : usa i comandi iniziativa su Encounters\n"
+			"  / : tira espressione dadi (es. 2d6+d20+1)\n"
 	case ui.encounter:
 		return header +
 			"[black:gold]Encounters[-:-]\n" +
@@ -702,6 +705,66 @@ func (ui *UI) scrollDetailByPage(direction int) {
 		nextRow = 0
 	}
 	ui.detailRaw.ScrollTo(nextRow, 0)
+}
+
+func (ui *UI) openDiceRollInput() {
+	input := tview.NewInputField().
+		SetLabel("Roll ").
+		SetFieldWidth(40)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetTitle(" Dice Roll (e.g. 2d6+d20+1) ")
+	input.SetBorder(true)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetBorderColor(tcell.ColorGold)
+
+	closeModal := func() {
+		ui.pages.RemovePage("dice-roll")
+		ui.app.SetFocus(ui.dice)
+	}
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEscape:
+			closeModal()
+		case tcell.KeyEnter:
+			expr := strings.TrimSpace(input.GetText())
+			if expr == "" {
+				closeModal()
+				return
+			}
+			total, breakdown, err := rollDiceExpression(expr)
+			if err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
+				return
+			}
+			ui.appendDiceLog(fmt.Sprintf("[black:gold]%s[-:-] => %s", expr, breakdown))
+			ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] %s = %d  %s", expr, total, helpText))
+			closeModal()
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 60, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("dice-roll", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) appendDiceLog(line string) {
+	ui.diceLog = append(ui.diceLog, line)
+	if len(ui.diceLog) > 100 {
+		ui.diceLog = ui.diceLog[len(ui.diceLog)-100:]
+	}
+	ui.dice.SetText(strings.Join(ui.diceLog, "\n"))
+	ui.dice.ScrollToEnd()
 }
 
 func (ui *UI) updateFilterLayout(screenWidth int) {
@@ -2475,6 +2538,92 @@ func parseHPInput(s string) (current int, max int, ok bool) {
 		return 0, 0, false
 	}
 	return v, v, true
+}
+
+func rollDiceExpression(expr string) (total int, breakdown string, err error) {
+	expr = strings.TrimSpace(expr)
+	if expr == "" {
+		return 0, "", errors.New("vuota")
+	}
+
+	// Tokenize on + and - while preserving each term sign.
+	terms := make([]string, 0, 8)
+	start := 0
+	for i := 1; i < len(expr); i++ {
+		if expr[i] == '+' || expr[i] == '-' {
+			terms = append(terms, expr[start:i])
+			start = i
+		}
+	}
+	terms = append(terms, expr[start:])
+
+	pieces := make([]string, 0, len(terms))
+	sum := 0
+
+	for _, raw := range terms {
+		token := strings.TrimSpace(raw)
+		if token == "" {
+			return 0, "", errors.New("token vuoto")
+		}
+		sign := 1
+		if token[0] == '+' {
+			token = strings.TrimSpace(token[1:])
+		} else if token[0] == '-' {
+			sign = -1
+			token = strings.TrimSpace(token[1:])
+		}
+		if token == "" {
+			return 0, "", errors.New("token vuoto")
+		}
+		if i := strings.IndexAny(token, "dD"); i >= 0 {
+			countStr := strings.TrimSpace(token[:i])
+			sidesStr := strings.TrimSpace(token[i+1:])
+			count := 1
+			if countStr != "" {
+				v, convErr := strconv.Atoi(countStr)
+				if convErr != nil || v <= 0 {
+					return 0, "", fmt.Errorf("numero dadi non valido: %q", countStr)
+				}
+				count = v
+			}
+			sides, convErr := strconv.Atoi(sidesStr)
+			if convErr != nil || sides <= 0 {
+				return 0, "", fmt.Errorf("facce non valide: %q", sidesStr)
+			}
+			if count > 1000 || sides > 100000 {
+				return 0, "", errors.New("limite dadi superato")
+			}
+			rolls := make([]string, 0, count)
+			termTotal := 0
+			for i := 0; i < count; i++ {
+				r := rand.Intn(sides) + 1
+				termTotal += r
+				rolls = append(rolls, strconv.Itoa(r))
+			}
+			sum += sign * termTotal
+			termPiece := fmt.Sprintf("%dd%d(%s)", count, sides, strings.Join(rolls, "+"))
+			if sign < 0 {
+				termPiece = "-" + termPiece
+			}
+			pieces = append(pieces, termPiece)
+			continue
+		}
+
+		v, convErr := strconv.Atoi(token)
+		if convErr != nil {
+			return 0, "", fmt.Errorf("costante non valida: %q", token)
+		}
+		sum += sign * v
+		if sign < 0 {
+			pieces = append(pieces, "-"+strconv.Itoa(v))
+		} else {
+			pieces = append(pieces, strconv.Itoa(v))
+		}
+	}
+	if sum < 0 {
+		return 0, fmt.Sprintf("%s = %d -> 0", strings.Join(pieces, " + "), sum), nil
+	}
+	return sum, fmt.Sprintf("%s = %d", strings.Join(pieces, " + "), sum), nil
 }
 
 func (ui *UI) encounterEntryName(entry EncounterEntry) string {

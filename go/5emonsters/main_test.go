@@ -349,6 +349,51 @@ func TestEncounterEntryDisplayCustomDoesNotShowOrdinal(t *testing.T) {
 	}
 }
 
+func TestRollDiceExpression(t *testing.T) {
+	total, breakdown, err := rollDiceExpression("2d1+d1+5")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if total != 8 {
+		t.Fatalf("expected total 8, got %d", total)
+	}
+	if !strings.Contains(breakdown, "2d1(") || !strings.Contains(breakdown, "1d1(") || !strings.Contains(breakdown, " = 8") {
+		t.Fatalf("unexpected breakdown: %q", breakdown)
+	}
+
+	total, _, err = rollDiceExpression("d1+1")
+	if err != nil {
+		t.Fatalf("unexpected shorthand error: %v", err)
+	}
+	if total != 2 {
+		t.Fatalf("expected total 2 for d1+1, got %d", total)
+	}
+	total, _, err = rollDiceExpression("1d1-1")
+	if err != nil {
+		t.Fatalf("unexpected subtraction error: %v", err)
+	}
+	if total != 0 {
+		t.Fatalf("expected total 0 for 1d1-1, got %d", total)
+	}
+	total, _, err = rollDiceExpression("2d1-5")
+	if err != nil {
+		t.Fatalf("unexpected subtraction clamp error: %v", err)
+	}
+	if total != 0 {
+		t.Fatalf("expected clamped total 0 for 2d1-5, got %d", total)
+	}
+
+	if _, _, err := rollDiceExpression("2d+1"); err == nil {
+		t.Fatal("expected invalid expression error")
+	}
+	if _, _, err := rollDiceExpression("2d0"); err == nil {
+		t.Fatal("expected invalid dice faces error")
+	}
+	if _, _, err := rollDiceExpression("2d6++1"); err == nil {
+		t.Fatal("expected invalid empty token error")
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 
