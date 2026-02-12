@@ -116,21 +116,22 @@ type UI struct {
 	crFilter   string
 	typeFilter string
 
-	nameInput   *tview.InputField
-	envDrop     *tview.DropDown
-	crDrop      *tview.DropDown
-	typeDrop    *tview.DropDown
-	dice        *tview.List
-	encounter   *tview.List
-	list        *tview.List
-	detailMeta  *tview.TextView
-	detailRaw   *tview.TextView
-	status      *tview.TextView
-	pages       *tview.Pages
-	leftPanel   *tview.Flex
-	mainRow     *tview.Flex
-	detailPanel *tview.Flex
-	filterHost  *tview.Pages
+	nameInput     *tview.InputField
+	envDrop       *tview.DropDown
+	crDrop        *tview.DropDown
+	typeDrop      *tview.DropDown
+	dice          *tview.List
+	encounter     *tview.List
+	list          *tview.List
+	detailMeta    *tview.TextView
+	detailRaw     *tview.TextView
+	status        *tview.TextView
+	pages         *tview.Pages
+	leftPanel     *tview.Flex
+	monstersPanel *tview.Flex
+	mainRow       *tview.Flex
+	detailPanel   *tview.Flex
+	filterHost    *tview.Pages
 
 	focusOrder []tview.Primitive
 	rawText    string
@@ -291,10 +292,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 	)
 
 	ui.list = tview.NewList()
-	ui.list.SetBorder(true)
-	ui.list.SetTitle(" [2]-Monsters ")
-	ui.list.SetTitleColor(tcell.ColorGold)
-	ui.list.SetBorderColor(tcell.ColorGold)
+	ui.list.SetBorder(false)
 	ui.list.SetMainTextColor(tcell.ColorWhite)
 	ui.list.SetSecondaryTextColor(tcell.ColorLightGray)
 	ui.list.SetSelectedTextColor(tcell.ColorBlack)
@@ -398,12 +396,20 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 		AddPage("single", filterRowSingle, true, false).
 		AddPage("double", filterRow, true, true)
 
+	ui.monstersPanel = tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.filterHost, 2, 0, true).
+		AddItem(ui.list, 0, 1, false)
+	ui.monstersPanel.SetBorder(true)
+	ui.monstersPanel.SetTitle(" [2]-Monsters ")
+	ui.monstersPanel.SetTitleColor(tcell.ColorGold)
+	ui.monstersPanel.SetBorderColor(tcell.ColorGold)
+
 	ui.leftPanel = tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(ui.dice, 7, 0, false).
 		AddItem(ui.encounter, 8, 0, false).
-		AddItem(ui.filterHost, 2, 0, true).
-		AddItem(ui.list, 0, 1, false)
+		AddItem(ui.monstersPanel, 0, 1, true)
 
 	ui.mainRow = tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -1222,7 +1228,7 @@ func (ui *UI) openDiceLoadInput() {
 }
 
 func (ui *UI) updateFilterLayout(screenWidth int) {
-	if ui.filterHost == nil || ui.leftPanel == nil {
+	if ui.filterHost == nil || ui.leftPanel == nil || ui.monstersPanel == nil {
 		return
 	}
 	wide := screenWidth >= 140
@@ -1235,29 +1241,30 @@ func (ui *UI) updateFilterLayout(screenWidth int) {
 	}
 	if wide {
 		ui.filterHost.SwitchToPage("single")
-		ui.leftPanel.ResizeItem(ui.filterHost, 1, 0)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 1, 0)
 	} else {
 		ui.filterHost.SwitchToPage("double")
-		ui.leftPanel.ResizeItem(ui.filterHost, 2, 0)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 2, 0)
 	}
 }
 
 func (ui *UI) applyBaseLayout() {
-	if ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil {
+	if ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil || ui.monstersPanel == nil {
 		return
 	}
 	ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
 	ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
 	ui.leftPanel.ResizeItem(ui.dice, 7, 0)
 	ui.leftPanel.ResizeItem(ui.encounter, 8, 0)
+	ui.leftPanel.ResizeItem(ui.monstersPanel, 0, 1)
 	if ui.wideFilter {
 		ui.filterHost.SwitchToPage("single")
-		ui.leftPanel.ResizeItem(ui.filterHost, 1, 0)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 1, 0)
 	} else {
 		ui.filterHost.SwitchToPage("double")
-		ui.leftPanel.ResizeItem(ui.filterHost, 2, 0)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 2, 0)
 	}
-	ui.leftPanel.ResizeItem(ui.list, 0, 1)
+	ui.monstersPanel.ResizeItem(ui.list, 0, 1)
 	ui.detailPanel.ResizeItem(ui.detailMeta, 10, 0)
 	ui.detailPanel.ResizeItem(ui.detailRaw, 0, 1)
 }
@@ -1288,7 +1295,7 @@ func (ui *UI) toggleFullscreenForFocus(focus tview.Primitive) {
 		return
 	}
 	target := ui.fullscreenTargetForFocus(focus)
-	if target == "" || ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil {
+	if target == "" || ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil || ui.monstersPanel == nil {
 		return
 	}
 	ui.applyBaseLayout()
@@ -1301,29 +1308,29 @@ func (ui *UI) toggleFullscreenForFocus(focus tview.Primitive) {
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
 		ui.leftPanel.ResizeItem(ui.dice, 0, 1)
 		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
-		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
-		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+		ui.leftPanel.ResizeItem(ui.monstersPanel, 0, 0)
 	case "encounter":
 		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
 		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
 		ui.leftPanel.ResizeItem(ui.encounter, 0, 1)
-		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
-		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+		ui.leftPanel.ResizeItem(ui.monstersPanel, 0, 0)
 	case "filters":
 		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
 		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
 		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
-		ui.leftPanel.ResizeItem(ui.filterHost, 0, 1)
-		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+		ui.leftPanel.ResizeItem(ui.monstersPanel, 0, 1)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 0, 1)
+		ui.monstersPanel.ResizeItem(ui.list, 0, 0)
 	case "monsters":
 		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
 		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
 		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
-		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
-		ui.leftPanel.ResizeItem(ui.list, 0, 1)
+		ui.leftPanel.ResizeItem(ui.monstersPanel, 0, 1)
+		ui.monstersPanel.ResizeItem(ui.filterHost, 0, 0)
+		ui.monstersPanel.ResizeItem(ui.list, 0, 1)
 	case "description":
 		ui.mainRow.ResizeItem(ui.leftPanel, 0, 0)
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
