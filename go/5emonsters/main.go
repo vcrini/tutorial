@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -401,7 +400,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 
 	ui.leftPanel = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(ui.dice, 5, 0, false).
+		AddItem(ui.dice, 7, 0, false).
 		AddItem(ui.encounter, 8, 0, false).
 		AddItem(ui.filterHost, 2, 0, true).
 		AddItem(ui.list, 0, 1, false)
@@ -1249,7 +1248,7 @@ func (ui *UI) applyBaseLayout() {
 	}
 	ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
 	ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
-	ui.leftPanel.ResizeItem(ui.dice, 5, 0)
+	ui.leftPanel.ResizeItem(ui.dice, 7, 0)
 	ui.leftPanel.ResizeItem(ui.encounter, 8, 0)
 	if ui.wideFilter {
 		ui.filterHost.SwitchToPage("single")
@@ -1413,7 +1412,6 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	}
 
 	m := ui.monsters[monsterIndex]
-	raw, _ := json.MarshalIndent(m.Raw, "", "  ")
 
 	builder := &strings.Builder{}
 	fmt.Fprintf(builder, "[yellow]%s[-]\n", m.Name)
@@ -1444,7 +1442,7 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	}
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
-	ui.rawText = string(raw)
+	ui.rawText = buildMonsterDescriptionText(m)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
@@ -1471,10 +1469,198 @@ func (ui *UI) renderDetailByCustomEntry(entry EncounterEntry) {
 	}
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
-	ui.rawText = fmt.Sprintf("{\n  \"custom\": true,\n  \"name\": %q,\n  \"init\": %d,\n  \"ac\": %q,\n  \"hp\": {\"current\": %d, \"max\": %d}\n}", ui.encounterEntryName(entry), entry.CustomInit, entry.CustomAC, entry.CurrentHP, maxHP)
+	ui.rawText = buildCustomDescriptionText(entry, maxHP)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
+}
+
+func buildMonsterDescriptionText(m Monster) string {
+	raw := m.Raw
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "Name: %s\n", m.Name)
+	if src := strings.TrimSpace(m.Source); src != "" {
+		fmt.Fprintf(b, "Source: %s\n", src)
+	}
+	if t := strings.TrimSpace(m.Type); t != "" {
+		fmt.Fprintf(b, "Type: %s\n", t)
+	}
+	if cr := strings.TrimSpace(m.CR); cr != "" {
+		fmt.Fprintf(b, "Challenge: %s\n", cr)
+	}
+	if align := plainAny(raw["alignment"]); align != "" {
+		fmt.Fprintf(b, "Alignment: %s\n", align)
+	}
+	if ac := extractAC(raw); ac != "" {
+		fmt.Fprintf(b, "Armor Class: %s\n", ac)
+	}
+	hpAverage, hpFormula := extractHP(raw)
+	if hpAverage != "" || hpFormula != "" {
+		if hpAverage != "" && hpFormula != "" {
+			fmt.Fprintf(b, "Hit Points: %s (%s)\n", hpAverage, hpFormula)
+		} else if hpAverage != "" {
+			fmt.Fprintf(b, "Hit Points: %s\n", hpAverage)
+		} else {
+			fmt.Fprintf(b, "Hit Points: %s\n", hpFormula)
+		}
+	}
+	if speed := extractSpeed(raw); speed != "" {
+		fmt.Fprintf(b, "Speed: %s\n", speed)
+	}
+	if s := abilityBlock(raw); s != "" {
+		fmt.Fprintf(b, "\n%s\n", s)
+	}
+
+	orderedFields := []struct {
+		key   string
+		label string
+	}{
+		{"save", "Saving Throws"},
+		{"skill", "Skills"},
+		{"vulnerable", "Damage Vulnerabilities"},
+		{"resist", "Damage Resistances"},
+		{"immune", "Damage Immunities"},
+		{"conditionImmune", "Condition Immunities"},
+		{"senses", "Senses"},
+		{"languages", "Languages"},
+	}
+	for _, f := range orderedFields {
+		if txt := plainAny(raw[f.key]); txt != "" {
+			fmt.Fprintf(b, "%s: %s\n", f.label, txt)
+		}
+	}
+
+	sectionOrder := []struct {
+		key   string
+		label string
+	}{
+		{"trait", "Traits"},
+		{"action", "Actions"},
+		{"bonus", "Bonus Actions"},
+		{"reaction", "Reactions"},
+		{"legendary", "Legendary Actions"},
+		{"mythic", "Mythic Actions"},
+	}
+	for _, sec := range sectionOrder {
+		if body := plainSection(raw[sec.key]); body != "" {
+			fmt.Fprintf(b, "\n%s\n%s\n", sec.label, body)
+		}
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func buildCustomDescriptionText(entry EncounterEntry, maxHP int) string {
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "Name: %s\n", entry.CustomName)
+	fmt.Fprintf(b, "Initiative: %d\n", entry.CustomInit)
+	if entry.HasInitRoll {
+		fmt.Fprintf(b, "Initiative Roll: %d\n", entry.InitRoll)
+	}
+	if strings.TrimSpace(entry.CustomAC) != "" {
+		fmt.Fprintf(b, "Armor Class: %s\n", entry.CustomAC)
+	}
+	if maxHP > 0 {
+		fmt.Fprintf(b, "Hit Points: %d/%d\n", entry.CurrentHP, maxHP)
+	} else {
+		fmt.Fprintf(b, "Hit Points: ?\n")
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func abilityBlock(raw map[string]any) string {
+	keys := []string{"str", "dex", "con", "int", "wis", "cha"}
+	labels := []string{"STR", "DEX", "CON", "INT", "WIS", "CHA"}
+	values := make([]int, len(keys))
+	for i, k := range keys {
+		v, ok := anyToInt(raw[k])
+		if !ok {
+			return ""
+		}
+		values[i] = v
+	}
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "%s  %s  %s  %s  %s  %s\n", labels[0], labels[1], labels[2], labels[3], labels[4], labels[5])
+	for i, v := range values {
+		if i > 0 {
+			b.WriteString("  ")
+		}
+		mod := (v / 2) - 5
+		fmt.Fprintf(b, "%2d (%+d)", v, mod)
+	}
+	return b.String()
+}
+
+func plainSection(v any) string {
+	items, ok := v.([]any)
+	if !ok || len(items) == 0 {
+		return ""
+	}
+	lines := make([]string, 0, len(items))
+	for _, it := range items {
+		switch x := it.(type) {
+		case map[string]any:
+			name := strings.TrimSpace(asString(x["name"]))
+			body := strings.TrimSpace(plainAny(x["entries"]))
+			if name != "" && body != "" {
+				lines = append(lines, fmt.Sprintf("%s. %s", name, body))
+			} else if name != "" {
+				lines = append(lines, name)
+			} else if body != "" {
+				lines = append(lines, body)
+			}
+		default:
+			txt := strings.TrimSpace(plainAny(it))
+			if txt != "" {
+				lines = append(lines, txt)
+			}
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func plainAny(v any) string {
+	switch x := v.(type) {
+	case nil:
+		return ""
+	case string:
+		return strings.TrimSpace(x)
+	case int, int8, int16, int32, int64, float32, float64, bool:
+		return strings.TrimSpace(fmt.Sprintf("%v", x))
+	case []string:
+		return strings.Join(x, ", ")
+	case []any:
+		out := make([]string, 0, len(x))
+		for _, it := range x {
+			txt := strings.TrimSpace(plainAny(it))
+			if txt != "" {
+				out = append(out, txt)
+			}
+		}
+		return strings.Join(out, ", ")
+	case map[string]any:
+		keys := make([]string, 0, len(x))
+		for k := range x {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		pairs := make([]string, 0, len(keys))
+		for _, k := range keys {
+			txt := strings.TrimSpace(plainAny(x[k]))
+			if txt != "" {
+				pairs = append(pairs, fmt.Sprintf("%s %s", k, txt))
+			}
+		}
+		return strings.Join(pairs, ", ")
+	case map[any]any:
+		tmp := make(map[string]any, len(x))
+		for k, vv := range x {
+			tmp[asString(k)] = vv
+		}
+		return plainAny(tmp)
+	default:
+		return strings.TrimSpace(asString(v))
+	}
 }
 
 func (ui *UI) openRawSearch(returnFocus tview.Primitive) {
