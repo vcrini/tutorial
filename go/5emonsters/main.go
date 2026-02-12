@@ -20,7 +20,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+const helpText = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] Enter[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] a [-:-] add encounter  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 const defaultEncountersPath = "encounters.yaml"
 const lastEncountersPathFile = ".encounters_last_path"
 
@@ -100,19 +100,21 @@ type UI struct {
 	crFilter   string
 	typeFilter string
 
-	nameInput  *tview.InputField
-	envDrop    *tview.DropDown
-	crDrop     *tview.DropDown
-	typeDrop   *tview.DropDown
-	dice       *tview.TextView
-	encounter  *tview.List
-	list       *tview.List
-	detailMeta *tview.TextView
-	detailRaw  *tview.TextView
-	status     *tview.TextView
-	pages      *tview.Pages
-	leftPanel  *tview.Flex
-	filterHost *tview.Pages
+	nameInput   *tview.InputField
+	envDrop     *tview.DropDown
+	crDrop      *tview.DropDown
+	typeDrop    *tview.DropDown
+	dice        *tview.TextView
+	encounter   *tview.List
+	list        *tview.List
+	detailMeta  *tview.TextView
+	detailRaw   *tview.TextView
+	status      *tview.TextView
+	pages       *tview.Pages
+	leftPanel   *tview.Flex
+	mainRow     *tview.Flex
+	detailPanel *tview.Flex
+	filterHost  *tview.Pages
 
 	focusOrder []tview.Primitive
 	rawText    string
@@ -132,6 +134,8 @@ type UI struct {
 	helpVisible      bool
 	helpReturnFocus  tview.Primitive
 	addCustomVisible bool
+	fullscreenActive bool
+	fullscreenTarget string
 }
 
 func main() {
@@ -324,7 +328,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 	ui.detailRaw.SetBorderColor(tcell.ColorGold)
 	ui.detailRaw.SetTextColor(tcell.ColorWhite)
 
-	detailPanel := tview.NewFlex().
+	ui.detailPanel = tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(ui.detailMeta, 10, 0, false).
 		AddItem(ui.detailRaw, 0, 1, false)
@@ -367,14 +371,14 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		AddItem(ui.filterHost, 2, 0, true).
 		AddItem(ui.list, 0, 1, false)
 
-	mainRow := tview.NewFlex().
+	ui.mainRow = tview.NewFlex().
 		SetDirection(tview.FlexColumn).
 		AddItem(ui.leftPanel, 0, 1, false).
-		AddItem(detailPanel, 0, 1, false)
+		AddItem(ui.detailPanel, 0, 1, false)
 
 	root := tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(mainRow, 0, 1, false).
+		AddItem(ui.mainRow, 0, 1, false).
 		AddItem(ui.status, 1, 0, false)
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
@@ -408,16 +412,18 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string)
 		case event.Key() == tcell.KeyRune && event.Rune() == '?':
 			ui.openHelpOverlay(focus)
 			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyEnter:
+			ui.openDiceRollInput()
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'f':
+			ui.toggleFullscreenForFocus(focus)
+			return nil
 		case event.Key() == tcell.KeyRune && event.Rune() == 'q':
 			ui.app.Stop()
 			return nil
 		case event.Key() == tcell.KeyRune && event.Rune() == '/':
 			if focusIsInputField {
 				return event
-			}
-			if focus == ui.dice {
-				ui.openDiceRollInput()
-				return nil
 			}
 			if focus == ui.list {
 				ui.openRawSearch(ui.list)
@@ -605,6 +611,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		"  ? : apri/chiudi questo help\n" +
 		"  Esc : chiudi help\n" +
 		"  q : esci programma\n" +
+		"  f : fullscreen on/off pannello corrente\n" +
 		"  Tab / Shift+Tab : cambia focus\n" +
 		"  0 / 1 / 2 / 3 : vai a Dice / Encounters / Monsters / Description\n\n"
 
@@ -612,7 +619,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 	case ui.dice:
 		return header +
 			"[black:gold]Dice[-:-]\n" +
-			"  / : tira espressione dadi (es. 2d6+d20+1)\n"
+			"  Enter : tira espressione dadi (es. 2d6+d20+1)\n" +
+			"  f : fullscreen on/off del pannello Dice\n"
 	case ui.encounter:
 		return header +
 			"[black:gold]Encounters[-:-]\n" +
@@ -776,6 +784,9 @@ func (ui *UI) updateFilterLayout(screenWidth int) {
 		return
 	}
 	ui.wideFilter = wide
+	if ui.fullscreenActive {
+		return
+	}
 	if wide {
 		ui.filterHost.SwitchToPage("single")
 		ui.leftPanel.ResizeItem(ui.filterHost, 1, 0)
@@ -783,6 +794,97 @@ func (ui *UI) updateFilterLayout(screenWidth int) {
 		ui.filterHost.SwitchToPage("double")
 		ui.leftPanel.ResizeItem(ui.filterHost, 2, 0)
 	}
+}
+
+func (ui *UI) applyBaseLayout() {
+	if ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil {
+		return
+	}
+	ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
+	ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
+	ui.leftPanel.ResizeItem(ui.dice, 5, 0)
+	ui.leftPanel.ResizeItem(ui.encounter, 8, 0)
+	if ui.wideFilter {
+		ui.filterHost.SwitchToPage("single")
+		ui.leftPanel.ResizeItem(ui.filterHost, 1, 0)
+	} else {
+		ui.filterHost.SwitchToPage("double")
+		ui.leftPanel.ResizeItem(ui.filterHost, 2, 0)
+	}
+	ui.leftPanel.ResizeItem(ui.list, 0, 1)
+	ui.detailPanel.ResizeItem(ui.detailMeta, 10, 0)
+	ui.detailPanel.ResizeItem(ui.detailRaw, 0, 1)
+}
+
+func (ui *UI) fullscreenTargetForFocus(focus tview.Primitive) string {
+	switch focus {
+	case ui.dice:
+		return "dice"
+	case ui.encounter:
+		return "encounter"
+	case ui.list:
+		return "monsters"
+	case ui.detailRaw:
+		return "description"
+	case ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop:
+		return "filters"
+	default:
+		return ""
+	}
+}
+
+func (ui *UI) toggleFullscreenForFocus(focus tview.Primitive) {
+	if ui.fullscreenActive {
+		ui.fullscreenActive = false
+		ui.fullscreenTarget = ""
+		ui.applyBaseLayout()
+		ui.status.SetText(fmt.Sprintf(" [black:gold]fullscreen[-:-] disattivato  %s", helpText))
+		return
+	}
+	target := ui.fullscreenTargetForFocus(focus)
+	if target == "" || ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil {
+		return
+	}
+	ui.applyBaseLayout()
+	ui.fullscreenActive = true
+	ui.fullscreenTarget = target
+
+	switch target {
+	case "dice":
+		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
+		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
+		ui.leftPanel.ResizeItem(ui.dice, 0, 1)
+		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
+		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
+		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+	case "encounter":
+		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
+		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
+		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
+		ui.leftPanel.ResizeItem(ui.encounter, 0, 1)
+		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
+		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+	case "filters":
+		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
+		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
+		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
+		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
+		ui.leftPanel.ResizeItem(ui.filterHost, 0, 1)
+		ui.leftPanel.ResizeItem(ui.list, 0, 0)
+	case "monsters":
+		ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
+		ui.mainRow.ResizeItem(ui.detailPanel, 0, 0)
+		ui.leftPanel.ResizeItem(ui.dice, 0, 0)
+		ui.leftPanel.ResizeItem(ui.encounter, 0, 0)
+		ui.leftPanel.ResizeItem(ui.filterHost, 0, 0)
+		ui.leftPanel.ResizeItem(ui.list, 0, 1)
+	case "description":
+		ui.mainRow.ResizeItem(ui.leftPanel, 0, 0)
+		ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
+		ui.detailPanel.ResizeItem(ui.detailMeta, 0, 0)
+		ui.detailPanel.ResizeItem(ui.detailRaw, 0, 1)
+	}
+	ui.status.SetText(fmt.Sprintf(" [black:gold]fullscreen[-:-] %s  %s", target, helpText))
 }
 
 func (ui *UI) run() error {
