@@ -450,6 +450,20 @@ func TestRollDiceExpression(t *testing.T) {
 	if total != 1 || !strings.HasSuffix(breakdown, " ko") {
 		t.Fatalf("expected >= conditional ko, got total=%d breakdown=%q", total, breakdown)
 	}
+	total, breakdown, err = rollDiceExpression("d1c>0 d1+3")
+	if err != nil {
+		t.Fatalf("unexpected crit c > success error: %v", err)
+	}
+	if total != 1 || !strings.Contains(breakdown, "-> 2d1(") || !strings.Contains(breakdown, "= 5") {
+		t.Fatalf("expected doubled success dice on crit, got total=%d breakdown=%q", total, breakdown)
+	}
+	total, breakdown, err = rollDiceExpression("d1c>=1 d1+3")
+	if err != nil {
+		t.Fatalf("unexpected crit c >= success error: %v", err)
+	}
+	if total != 1 || !strings.Contains(breakdown, "-> 2d1(") || !strings.Contains(breakdown, "= 5") {
+		t.Fatalf("expected doubled success dice on crit with >=, got total=%d breakdown=%q", total, breakdown)
+	}
 	total, breakdown, err = rollDiceExpression("d1v+5")
 	if err != nil {
 		t.Fatalf("unexpected v mode error: %v", err)

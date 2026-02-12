@@ -3188,7 +3188,7 @@ func parseHPInput(s string) (current int, max int, ok bool) {
 }
 
 var diceBatchRe = regexp.MustCompile(`(?i)^(.*?)(?:\s*x\s*(\d+))$`)
-var diceModeRe = regexp.MustCompile(`^(\d+)([vVsS])?$`)
+var diceTermForDoubleRe = regexp.MustCompile(`(?i)(\d*)d(\d+[a-zA-Z]*)`)
 
 func expandDiceRollInput(input string) ([]string, error) {
 	parts := strings.Split(input, ",")
@@ -3282,8 +3282,10 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 
 	pieces := make([]string, 0, len(terms))
 	sum := 0
+	critEnabledOnFirstDice := false
+	critTriggered := false
 
-	for _, raw := range terms {
+	for termIndex, raw := range terms {
 		token := strings.TrimSpace(raw)
 		if token == "" {
 			return 0, "", errors.New("token vuoto")
@@ -3309,17 +3311,12 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 				}
 				count = v
 			}
-			mode := byte(0)
-			m := diceModeRe.FindStringSubmatch(sidesStr)
-			if len(m) != 3 {
+			sides, mode, critSuffix, convErr := parseDiceSidesSpec(sidesStr)
+			if convErr != nil {
 				return 0, "", fmt.Errorf("facce non valide: %q", sidesStr)
 			}
-			sides, convErr := strconv.Atoi(m[1])
-			if convErr != nil || sides <= 0 {
-				return 0, "", fmt.Errorf("facce non valide: %q", sidesStr)
-			}
-			if m[2] != "" {
-				mode = strings.ToLower(m[2])[0]
+			if termIndex == 0 && critSuffix {
+				critEnabledOnFirstDice = true
 			}
 			if count > 1000 || sides > 100000 {
 				return 0, "", errors.New("limite dadi superato")
@@ -3331,6 +3328,9 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 					r := rand.Intn(sides) + 1
 					termTotal += r
 					rolls = append(rolls, strconv.Itoa(r))
+					if termIndex == 0 && critSuffix && r == sides {
+						critTriggered = true
+					}
 					continue
 				}
 				r1 := rand.Intn(sides) + 1
@@ -3338,13 +3338,20 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 				chosen := chooseDiceMode(mode, r1, r2)
 				termTotal += chosen
 				rolls = append(rolls, fmt.Sprintf("%d|%d->%d", r1, r2, chosen))
+				if termIndex == 0 && critSuffix && chosen == sides {
+					critTriggered = true
+				}
 			}
 			sum += sign * termTotal
 			modeSuffix := ""
 			if mode != 0 {
 				modeSuffix = string(mode)
 			}
-			termPiece := fmt.Sprintf("%dd%d%s(%s)", count, sides, modeSuffix, strings.Join(rolls, "+"))
+			critSuffixStr := ""
+			if critSuffix {
+				critSuffixStr = "c"
+			}
+			termPiece := fmt.Sprintf("%dd%d%s%s(%s)", count, sides, modeSuffix, critSuffixStr, strings.Join(rolls, "+"))
 			if sign < 0 {
 				termPiece = "-" + termPiece
 			}
@@ -3382,7 +3389,11 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 			}
 		} else {
 			if success {
-				_, successBreakdown, successErr := rollDiceExpression(checkOnSuccessExpr)
+				successExpr := checkOnSuccessExpr
+				if critEnabledOnFirstDice && critTriggered {
+					successExpr = doubleDiceCounts(successExpr)
+				}
+				_, successBreakdown, successErr := rollDiceExpression(successExpr)
 				if successErr != nil {
 					return 0, "", fmt.Errorf("espressione success non valida: %w", successErr)
 				}
@@ -3410,6 +3421,55 @@ func chooseDiceMode(mode byte, a int, b int) int {
 	default:
 		return a
 	}
+}
+
+func parseDiceSidesSpec(spec string) (sides int, mode byte, crit bool, err error) {
+	m := regexp.MustCompile(`^(\d+)([a-zA-Z]*)$`).FindStringSubmatch(spec)
+	if len(m) != 3 {
+		return 0, 0, false, errors.New("invalid sides spec")
+	}
+	sides, err = strconv.Atoi(m[1])
+	if err != nil || sides <= 0 {
+		return 0, 0, false, errors.New("invalid sides")
+	}
+	suffix := strings.ToLower(strings.TrimSpace(m[2]))
+	for _, ch := range suffix {
+		switch ch {
+		case 'v':
+			if mode != 0 {
+				return 0, 0, false, errors.New("mode duplicate")
+			}
+			mode = 'v'
+		case 's':
+			if mode != 0 {
+				return 0, 0, false, errors.New("mode duplicate")
+			}
+			mode = 's'
+		case 'c':
+			crit = true
+		default:
+			return 0, 0, false, errors.New("unknown suffix")
+		}
+	}
+	return sides, mode, crit, nil
+}
+
+func doubleDiceCounts(expr string) string {
+	return diceTermForDoubleRe.ReplaceAllStringFunc(expr, func(term string) string {
+		m := diceTermForDoubleRe.FindStringSubmatch(term)
+		if len(m) != 3 {
+			return term
+		}
+		count := 1
+		if strings.TrimSpace(m[1]) != "" {
+			v, err := strconv.Atoi(strings.TrimSpace(m[1]))
+			if err != nil || v <= 0 {
+				return term
+			}
+			count = v
+		}
+		return fmt.Sprintf("%dd%s", count*2, m[2])
+	})
 }
 
 func (ui *UI) encounterEntryName(entry EncounterEntry) string {
