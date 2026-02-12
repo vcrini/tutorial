@@ -694,6 +694,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"\n" +
 			"[black:gold]Esempi[-:-]\n" +
 			"  2d6+d20+1\n" +
+			"  d2,d3,d4\n" +
 			"  4d10+6d6+5\n" +
 			"  1d6 x2\n" +
 			"  1d6-1\n" +
@@ -822,14 +823,14 @@ func (ui *UI) openDiceRollInput() {
 				closeModal()
 				return
 			}
-			expr, times, err := parseDiceRollBatch(exprInput)
+			batchExprs, err := expandDiceRollInput(exprInput)
 			if err != nil {
 				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
 				return
 			}
 			ui.pushDiceUndo()
 			lastTotal := 0
-			for i := 0; i < times; i++ {
+			for _, expr := range batchExprs {
 				total, breakdown, rollErr := rollDiceExpression(expr)
 				if rollErr != nil {
 					ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", rollErr, helpText))
@@ -841,10 +842,10 @@ func (ui *UI) openDiceRollInput() {
 					Output:     breakdown,
 				})
 			}
-			if times > 1 {
-				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] %s x%d creati (ultimo=%d)  %s", expr, times, lastTotal, helpText))
+			if len(batchExprs) > 1 {
+				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] creati %d lanci (ultimo=%d)  %s", len(batchExprs), lastTotal, helpText))
 			} else {
-				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] %s = %d  %s", expr, lastTotal, helpText))
+				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] %s = %d  %s", batchExprs[0], lastTotal, helpText))
 			}
 			closeModal()
 		}
@@ -900,28 +901,28 @@ func (ui *UI) openDiceReRollInput() {
 				closeModal()
 				return
 			}
-			expr, times, err := parseDiceRollBatch(exprInput)
+			batchExprs, err := expandDiceRollInput(exprInput)
 			if err != nil {
 				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
 				return
 			}
 			ui.pushDiceUndo()
-			total, breakdown, rollErr := rollDiceExpression(expr)
+			total, breakdown, rollErr := rollDiceExpression(batchExprs[0])
 			if rollErr != nil {
 				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", rollErr, helpText))
 				return
 			}
-			ui.diceLog[index] = DiceResult{Expression: expr, Output: breakdown}
+			ui.diceLog[index] = DiceResult{Expression: batchExprs[0], Output: breakdown}
 			insertAt := index + 1
 			lastTotal := total
-			for i := 1; i < times; i++ {
-				t, b, e := rollDiceExpression(expr)
+			for i := 1; i < len(batchExprs); i++ {
+				t, b, e := rollDiceExpression(batchExprs[i])
 				if e != nil {
 					ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", e, helpText))
 					return
 				}
 				lastTotal = t
-				entry := DiceResult{Expression: expr, Output: b}
+				entry := DiceResult{Expression: batchExprs[i], Output: b}
 				ui.diceLog = append(ui.diceLog, DiceResult{})
 				copy(ui.diceLog[insertAt+1:], ui.diceLog[insertAt:])
 				ui.diceLog[insertAt] = entry
@@ -929,10 +930,10 @@ func (ui *UI) openDiceReRollInput() {
 			}
 			ui.renderDiceList()
 			ui.dice.SetCurrentItem(index)
-			if times > 1 {
-				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] aggiornato %s x%d (ultimo=%d)  %s", expr, times, lastTotal, helpText))
+			if len(batchExprs) > 1 {
+				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] aggiornato in %d lanci (ultimo=%d)  %s", len(batchExprs), lastTotal, helpText))
 			} else {
-				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] aggiornato %s = %d  %s", expr, total, helpText))
+				ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] aggiornato %s = %d  %s", batchExprs[0], total, helpText))
 			}
 			closeModal()
 		}
@@ -3202,6 +3203,24 @@ func parseHPInput(s string) (current int, max int, ok bool) {
 }
 
 var diceBatchRe = regexp.MustCompile(`(?i)^(.*?)(?:\s*x\s*(\d+))$`)
+
+func expandDiceRollInput(input string) ([]string, error) {
+	parts := strings.Split(input, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		expr, times, err := parseDiceRollBatch(p)
+		if err != nil {
+			return nil, err
+		}
+		for i := 0; i < times; i++ {
+			out = append(out, expr)
+		}
+	}
+	if len(out) == 0 {
+		return nil, errors.New("vuota")
+	}
+	return out, nil
+}
 
 func parseDiceRollBatch(input string) (expr string, times int, err error) {
 	s := strings.TrimSpace(input)

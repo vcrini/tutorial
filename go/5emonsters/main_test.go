@@ -463,6 +463,24 @@ func TestParseDiceRollBatch(t *testing.T) {
 	}
 }
 
+func TestExpandDiceRollInput(t *testing.T) {
+	values, err := expandDiceRollInput("d2,d3,d4")
+	if err != nil {
+		t.Fatalf("unexpected comma parse error: %v", err)
+	}
+	if !reflect.DeepEqual(values, []string{"d2", "d3", "d4"}) {
+		t.Fatalf("unexpected comma expansion: %#v", values)
+	}
+
+	values, err = expandDiceRollInput("1d1x2,d2")
+	if err != nil {
+		t.Fatalf("unexpected mixed expansion error: %v", err)
+	}
+	if !reflect.DeepEqual(values, []string{"1d1", "1d1", "d2"}) {
+		t.Fatalf("unexpected mixed expansion: %#v", values)
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 
