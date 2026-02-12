@@ -437,6 +437,32 @@ func TestRollDiceExpression(t *testing.T) {
 	}
 }
 
+func TestParseDiceRollBatch(t *testing.T) {
+	expr, times, err := parseDiceRollBatch("1d6 x2")
+	if err != nil || expr != "1d6" || times != 2 {
+		t.Fatalf("unexpected batch parse: expr=%q times=%d err=%v", expr, times, err)
+	}
+	expr, times, err = parseDiceRollBatch("1d6x2")
+	if err != nil || expr != "1d6" || times != 2 {
+		t.Fatalf("unexpected no-space batch parse: expr=%q times=%d err=%v", expr, times, err)
+	}
+	expr, times, err = parseDiceRollBatch("1d20+5 > 10 x3")
+	if err != nil || expr != "1d20+5 > 10" || times != 3 {
+		t.Fatalf("unexpected batch+check parse: expr=%q times=%d err=%v", expr, times, err)
+	}
+	expr, times, err = parseDiceRollBatch("1d20+5>10x3")
+	if err != nil || expr != "1d20+5>10" || times != 3 {
+		t.Fatalf("unexpected no-space batch+check parse: expr=%q times=%d err=%v", expr, times, err)
+	}
+	expr, times, err = parseDiceRollBatch("2d6+1")
+	if err != nil || expr != "2d6+1" || times != 1 {
+		t.Fatalf("unexpected single parse: expr=%q times=%d err=%v", expr, times, err)
+	}
+	if _, _, err := parseDiceRollBatch("1d6 x0"); err == nil {
+		t.Fatal("expected invalid x0 batch")
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 
