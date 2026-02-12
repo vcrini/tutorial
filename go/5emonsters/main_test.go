@@ -239,6 +239,31 @@ func TestDeleteUndoRedoEncounter(t *testing.T) {
 	}
 }
 
+func TestDeleteUndoRedoDice(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.diceLog = []DiceResult{
+		{Expression: "1d1", Output: "1d1(1) = 1"},
+		{Expression: "2d1", Output: "2d1(1+1) = 2"},
+	}
+	ui.renderDiceList()
+	ui.dice.SetCurrentItem(0)
+
+	ui.deleteSelectedDiceResult()
+	if len(ui.diceLog) != 1 || ui.diceLog[0].Expression != "2d1" {
+		t.Fatalf("delete dice failed: %#v", ui.diceLog)
+	}
+
+	ui.undoDiceCommand()
+	if len(ui.diceLog) != 2 || ui.diceLog[0].Expression != "1d1" {
+		t.Fatalf("undo dice failed: %#v", ui.diceLog)
+	}
+
+	ui.redoDiceCommand()
+	if len(ui.diceLog) != 1 || ui.diceLog[0].Expression != "2d1" {
+		t.Fatalf("redo dice failed: %#v", ui.diceLog)
+	}
+}
+
 func TestSortEncounterByInitiative(t *testing.T) {
 	ui := makeTestUI(t, []Monster{
 		mkMonster(1, "A", 12, 5, "1d1"),

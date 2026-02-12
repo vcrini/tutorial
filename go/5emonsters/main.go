@@ -84,13 +84,23 @@ type PersistedEncounterItem struct {
 }
 
 type PersistedDice struct {
-	Version int      `yaml:"version"`
-	Items   []string `yaml:"items"`
+	Version int          `yaml:"version"`
+	Items   []DiceResult `yaml:"items"`
 }
 
 type EncounterUndoState struct {
 	Items    []EncounterEntry
 	Serial   map[int]int
+	Selected int
+}
+
+type DiceResult struct {
+	Expression string `yaml:"expression"`
+	Output     string `yaml:"output"`
+}
+
+type DiceUndoState struct {
+	Items    []DiceResult
 	Selected int
 }
 
@@ -126,7 +136,7 @@ type UI struct {
 	focusOrder []tview.Primitive
 	rawText    string
 	rawQuery   string
-	diceLog    []string
+	diceLog    []DiceResult
 	wideFilter bool
 
 	encounterSerial map[int]int
@@ -135,6 +145,8 @@ type UI struct {
 	dicePath        string
 	encounterUndo   []EncounterUndoState
 	encounterRedo   []EncounterUndoState
+	diceUndo        []DiceUndoState
+	diceRedo        []DiceUndoState
 	turnMode        bool
 	turnIndex       int
 	turnRound       int
@@ -430,6 +442,18 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openDiceRollInput()
 			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyEnter:
+			ui.rerollSelectedDiceResult()
+			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'e':
+			ui.openDiceReRollInput()
+			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'd':
+			ui.deleteSelectedDiceResult()
+			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'c':
+			ui.clearDiceResults()
+			return nil
 		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 's':
 			ui.openDiceSaveAsInput()
 			return nil
@@ -524,10 +548,18 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 			ui.toggleEncounterHPMode()
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'u':
-			ui.undoEncounterCommand()
+			if focus == ui.dice {
+				ui.undoDiceCommand()
+			} else {
+				ui.undoEncounterCommand()
+			}
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'r':
-			ui.redoEncounterCommand()
+			if focus == ui.dice {
+				ui.redoDiceCommand()
+			} else {
+				ui.redoEncounterCommand()
+			}
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '1':
 			ui.app.SetFocus(ui.encounter)
@@ -644,6 +676,10 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		return header +
 			"[black:gold]Dice[-:-]\n" +
 			"  a : tira espressione dadi (es. 2d6+d20+1)\n" +
+			"  Enter : rilancia riga selezionata\n" +
+			"  e : modifica + rilancia riga selezionata\n" +
+			"  d : elimina riga selezionata\n" +
+			"  c : cancella tutte le righe\n" +
 			"  s : salva risultati dadi (save as)\n" +
 			"  l : carica risultati dadi (load)\n" +
 			"  f : fullscreen on/off del pannello Dice\n"
@@ -774,7 +810,11 @@ func (ui *UI) openDiceRollInput() {
 				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
 				return
 			}
-			ui.appendDiceLog(fmt.Sprintf("[black:gold]%s[-:-] => %s", expr, breakdown))
+			ui.pushDiceUndo()
+			ui.appendDiceLog(DiceResult{
+				Expression: expr,
+				Output:     breakdown,
+			})
 			ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] %s = %d  %s", expr, total, helpText))
 			closeModal()
 		}
@@ -792,8 +832,102 @@ func (ui *UI) openDiceRollInput() {
 	ui.app.SetFocus(input)
 }
 
-func (ui *UI) appendDiceLog(line string) {
-	ui.diceLog = append(ui.diceLog, line)
+func (ui *UI) openDiceReRollInput() {
+	if len(ui.diceLog) == 0 {
+		ui.openDiceRollInput()
+		return
+	}
+	index := ui.dice.GetCurrentItem()
+	if index < 0 || index >= len(ui.diceLog) {
+		index = len(ui.diceLog) - 1
+	}
+
+	input := tview.NewInputField().
+		SetLabel("Roll ").
+		SetFieldWidth(40)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetTitle(" Edit + Re-roll Dice ")
+	input.SetBorder(true)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetText(ui.diceLog[index].Expression)
+
+	closeModal := func() {
+		ui.pages.RemovePage("dice-reroll")
+		ui.app.SetFocus(ui.dice)
+	}
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEscape:
+			closeModal()
+		case tcell.KeyEnter:
+			expr := strings.TrimSpace(input.GetText())
+			if expr == "" {
+				closeModal()
+				return
+			}
+			total, breakdown, err := rollDiceExpression(expr)
+			if err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
+				return
+			}
+			ui.pushDiceUndo()
+			ui.diceLog[index] = DiceResult{
+				Expression: expr,
+				Output:     breakdown,
+			}
+			ui.renderDiceList()
+			ui.dice.SetCurrentItem(index)
+			ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] aggiornato %s = %d  %s", expr, total, helpText))
+			closeModal()
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 60, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("dice-reroll", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) rerollSelectedDiceResult() {
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	index := ui.dice.GetCurrentItem()
+	if index < 0 || index >= len(ui.diceLog) {
+		index = len(ui.diceLog) - 1
+	}
+	expr := strings.TrimSpace(ui.diceLog[index].Expression)
+	if expr == "" {
+		return
+	}
+	total, breakdown, err := rollDiceExpression(expr)
+	if err != nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] espressione dadi non valida[-:-] %v  %s", err, helpText))
+		return
+	}
+	ui.pushDiceUndo()
+	ui.diceLog[index] = DiceResult{
+		Expression: expr,
+		Output:     breakdown,
+	}
+	ui.renderDiceList()
+	ui.dice.SetCurrentItem(index)
+	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] rilanciato %s = %d  %s", expr, total, helpText))
+}
+
+func (ui *UI) appendDiceLog(entry DiceResult) {
+	ui.diceLog = append(ui.diceLog, entry)
 	if len(ui.diceLog) > 100 {
 		ui.diceLog = ui.diceLog[len(ui.diceLog)-100:]
 	}
@@ -802,13 +936,103 @@ func (ui *UI) appendDiceLog(line string) {
 
 func (ui *UI) renderDiceList() {
 	ui.dice.Clear()
-	for i, line := range ui.diceLog {
-		ui.dice.AddItem(fmt.Sprintf("%d %s", i+1, line), "", 0, nil)
+	for i, row := range ui.diceLog {
+		ui.dice.AddItem(fmt.Sprintf("%d [black:gold]%s[-:-] => %s", i+1, row.Expression, row.Output), "", 0, nil)
 	}
 	if len(ui.diceLog) == 0 {
 		return
 	}
 	ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
+}
+
+func (ui *UI) deleteSelectedDiceResult() {
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	ui.pushDiceUndo()
+	index := ui.dice.GetCurrentItem()
+	if index < 0 || index >= len(ui.diceLog) {
+		index = len(ui.diceLog) - 1
+	}
+	ui.diceLog = append(ui.diceLog[:index], ui.diceLog[index+1:]...)
+	ui.renderDiceList()
+	if len(ui.diceLog) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] lista vuota  %s", helpText))
+		return
+	}
+	if index >= len(ui.diceLog) {
+		index = len(ui.diceLog) - 1
+	}
+	ui.dice.SetCurrentItem(index)
+	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] riga eliminata  %s", helpText))
+}
+
+func (ui *UI) clearDiceResults() {
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	ui.pushDiceUndo()
+	ui.diceLog = nil
+	ui.renderDiceList()
+	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] tutte le righe cancellate  %s", helpText))
+}
+
+func (ui *UI) pushDiceUndo() {
+	snap := DiceUndoState{
+		Items:    append([]DiceResult(nil), ui.diceLog...),
+		Selected: ui.dice.GetCurrentItem(),
+	}
+	ui.diceUndo = append(ui.diceUndo, snap)
+	ui.diceRedo = ui.diceRedo[:0]
+}
+
+func (ui *UI) captureDiceState() DiceUndoState {
+	return DiceUndoState{
+		Items:    append([]DiceResult(nil), ui.diceLog...),
+		Selected: ui.dice.GetCurrentItem(),
+	}
+}
+
+func (ui *UI) restoreDiceState(state DiceUndoState) {
+	ui.diceLog = append([]DiceResult(nil), state.Items...)
+	ui.renderDiceList()
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	idx := state.Selected
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= len(ui.diceLog) {
+		idx = len(ui.diceLog) - 1
+	}
+	ui.dice.SetCurrentItem(idx)
+}
+
+func (ui *UI) undoDiceCommand() {
+	if len(ui.diceUndo) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna operazione dice da annullare[-:-]  %s", helpText))
+		return
+	}
+	current := ui.captureDiceState()
+	last := ui.diceUndo[len(ui.diceUndo)-1]
+	ui.diceUndo = ui.diceUndo[:len(ui.diceUndo)-1]
+	ui.diceRedo = append(ui.diceRedo, current)
+	ui.restoreDiceState(last)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] undo[-:-] operazione dice annullata  %s", helpText))
+}
+
+func (ui *UI) redoDiceCommand() {
+	if len(ui.diceRedo) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna operazione dice da ripristinare[-:-]  %s", helpText))
+		return
+	}
+	current := ui.captureDiceState()
+	last := ui.diceRedo[len(ui.diceRedo)-1]
+	ui.diceRedo = ui.diceRedo[:len(ui.diceRedo)-1]
+	ui.diceUndo = append(ui.diceUndo, current)
+	ui.restoreDiceState(last)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] redo[-:-] operazione dice ripristinata  %s", helpText))
 }
 
 func (ui *UI) openDiceSaveAsInput() {
@@ -890,6 +1114,7 @@ func (ui *UI) openDiceLoadInput() {
 				ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
 				return
 			}
+			prevState := ui.captureDiceState()
 			prev := ui.dicePath
 			ui.dicePath = path
 			if err := ui.loadDiceResults(); err != nil {
@@ -897,6 +1122,8 @@ func (ui *UI) openDiceLoadInput() {
 				ui.status.SetText(fmt.Sprintf(" [white:red] errore load dice[-:-] %v  %s", err, helpText))
 				return
 			}
+			ui.diceUndo = append(ui.diceUndo, prevState)
+			ui.diceRedo = ui.diceRedo[:0]
 			ui.status.SetText(fmt.Sprintf(" [black:gold] caricato dice[-:-] %s  %s", ui.dicePath, helpText))
 			closeModal()
 		}
@@ -2177,9 +2404,31 @@ func (ui *UI) loadDiceResults() error {
 	}
 	var data PersistedDice
 	if err := yaml.Unmarshal(b, &data); err != nil {
-		return err
+		// Backward compatibility: old format had items as []string.
+		var legacy struct {
+			Version int      `yaml:"version"`
+			Items   []string `yaml:"items"`
+		}
+		if legacyErr := yaml.Unmarshal(b, &legacy); legacyErr != nil {
+			return err
+		}
+		data.Version = legacy.Version
+		data.Items = make([]DiceResult, 0, len(legacy.Items))
+		for _, it := range legacy.Items {
+			text := strings.TrimSpace(it)
+			if text == "" {
+				continue
+			}
+			expr := text
+			out := ""
+			if parts := strings.SplitN(text, "=>", 2); len(parts) == 2 {
+				expr = strings.TrimSpace(strings.ReplaceAll(strings.ReplaceAll(parts[0], "[black:gold]", ""), "[-:-]", ""))
+				out = strings.TrimSpace(parts[1])
+			}
+			data.Items = append(data.Items, DiceResult{Expression: expr, Output: out})
+		}
 	}
-	ui.diceLog = append([]string(nil), data.Items...)
+	ui.diceLog = append([]DiceResult(nil), data.Items...)
 	ui.renderDiceList()
 	_ = writeLastDicePath(ui.dicePath)
 	return nil
@@ -2188,7 +2437,7 @@ func (ui *UI) loadDiceResults() error {
 func (ui *UI) saveDiceResults() error {
 	data := PersistedDice{
 		Version: 1,
-		Items:   append([]string(nil), ui.diceLog...),
+		Items:   append([]DiceResult(nil), ui.diceLog...),
 	}
 	out, err := yaml.Marshal(data)
 	if err != nil {
