@@ -3235,16 +3235,24 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 	if expr == "" {
 		return 0, "", errors.New("vuota")
 	}
+	fullExpr := expr
 	checkTarget := 0
 	hasCheck := false
+	checkInclusive := false
 	checkOnSuccessExpr := ""
-	if strings.Contains(expr, ">") {
-		parts := strings.Split(expr, ">")
-		if len(parts) != 2 {
+	if opPos := strings.Index(expr, ">="); opPos >= 0 || strings.Contains(expr, ">") {
+		op := ">"
+		pos := strings.Index(expr, ">")
+		if gePos := strings.Index(expr, ">="); gePos >= 0 && (pos < 0 || gePos <= pos) {
+			op = ">="
+			pos = gePos
+			checkInclusive = true
+		}
+		if pos < 0 {
 			return 0, "", errors.New("condizione > non valida")
 		}
-		expr = strings.TrimSpace(parts[0])
-		condRaw := strings.TrimSpace(parts[1])
+		expr = strings.TrimSpace(expr[:pos])
+		condRaw := strings.TrimSpace(fullExpr[pos+len(op):])
 		if expr == "" || condRaw == "" {
 			return 0, "", errors.New("condizione > non valida")
 		}
@@ -3362,14 +3370,18 @@ func rollDiceExpression(expr string) (total int, breakdown string, err error) {
 		breakdown = fmt.Sprintf("%s -> 0", breakdown)
 	}
 	if hasCheck {
+		success := final > checkTarget
+		if checkInclusive {
+			success = final >= checkTarget
+		}
 		if checkOnSuccessExpr == "" {
-			if final > checkTarget {
+			if success {
 				breakdown += " ok"
 			} else {
 				breakdown += " ko"
 			}
 		} else {
-			if final > checkTarget {
+			if success {
 				_, successBreakdown, successErr := rollDiceExpression(checkOnSuccessExpr)
 				if successErr != nil {
 					return 0, "", fmt.Errorf("espressione success non valida: %w", successErr)
