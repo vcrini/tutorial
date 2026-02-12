@@ -137,6 +137,7 @@ type UI struct {
 	rawText    string
 	rawQuery   string
 	diceLog    []DiceResult
+	diceRender bool
 	wideFilter bool
 
 	encounterSerial map[int]int
@@ -329,10 +330,17 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 	ui.dice.SetTitle(" [0]-Dice ")
 	ui.dice.SetTitleColor(tcell.ColorGold)
 	ui.dice.SetBorderColor(tcell.ColorGold)
+	ui.dice.SetUseStyleTags(true, false)
 	ui.dice.SetMainTextColor(tcell.ColorWhite)
-	ui.dice.SetSelectedTextColor(tcell.ColorBlack)
-	ui.dice.SetSelectedBackgroundColor(tcell.ColorGold)
+	ui.dice.SetSelectedTextColor(tcell.ColorWhite)
+	ui.dice.SetSelectedBackgroundColor(tcell.ColorDefault)
 	ui.dice.ShowSecondaryText(false)
+	ui.dice.SetChangedFunc(func(index int, _, _ string, _ rune) {
+		if ui.diceRender {
+			return
+		}
+		ui.renderDiceList()
+	})
 
 	ui.detailMeta = tview.NewTextView().
 		SetDynamicColors(true).
@@ -975,17 +983,61 @@ func (ui *UI) appendDiceLog(entry DiceResult) {
 		ui.diceLog = ui.diceLog[len(ui.diceLog)-100:]
 	}
 	ui.renderDiceList()
+	if len(ui.diceLog) > 0 {
+		ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
+	}
 }
 
 func (ui *UI) renderDiceList() {
+	ui.diceRender = true
+	defer func() { ui.diceRender = false }()
+	current := ui.dice.GetCurrentItem()
+	if current < 0 {
+		current = 0
+	}
 	ui.dice.Clear()
 	for i, row := range ui.diceLog {
-		ui.dice.AddItem(fmt.Sprintf("%d [black:gold]%s[-:-] => %s", i+1, row.Expression, row.Output), "", 0, nil)
+		expr := row.Expression
+		out := row.Output
+		if i == current {
+			expr = "[black:gold]" + expr + "[-:-]"
+			out = highlightDiceFinalResult(out)
+		}
+		ui.dice.AddItem(fmt.Sprintf("%d %s => %s", i+1, expr, out), "", 0, nil)
 	}
 	if len(ui.diceLog) == 0 {
 		return
 	}
-	ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
+	if current >= len(ui.diceLog) {
+		current = len(ui.diceLog) - 1
+	}
+	ui.dice.SetCurrentItem(current)
+}
+
+func highlightDiceFinalResult(output string) string {
+	anchor := strings.LastIndex(output, "->")
+	if anchor >= 0 {
+		return highlightFirstNumberFrom(output, anchor+2)
+	}
+	anchor = strings.LastIndex(output, "=")
+	if anchor >= 0 {
+		return highlightFirstNumberFrom(output, anchor+1)
+	}
+	return output
+}
+
+func highlightFirstNumberFrom(s string, start int) string {
+	if start < 0 || start >= len(s) {
+		return s
+	}
+	tail := s[start:]
+	loc := finalResultRe.FindStringIndex(tail)
+	if loc == nil {
+		return s
+	}
+	a := start + loc[0]
+	b := start + loc[1]
+	return s[:a] + "[black:gold]" + s[a:b] + "[-:-]" + s[b:]
 }
 
 func (ui *UI) deleteSelectedDiceResult() {
@@ -3327,6 +3379,7 @@ func (ui *UI) encounterMaxHP(entry EncounterEntry) int {
 }
 
 var hpFormulaRe = regexp.MustCompile(`^\s*(\d+)\s*[dD]\s*(\d+)(?:\s*([+-])\s*(\d+))?\s*$`)
+var finalResultRe = regexp.MustCompile(`[-+]?\d+`)
 
 func rollHPFormula(formula string) (int, bool) {
 	m := hpFormulaRe.FindStringSubmatch(strings.TrimSpace(formula))
