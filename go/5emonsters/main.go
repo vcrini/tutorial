@@ -682,7 +682,14 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  c : cancella tutte le righe\n" +
 			"  s : salva risultati dadi (save as)\n" +
 			"  l : carica risultati dadi (load)\n" +
-			"  f : fullscreen on/off del pannello Dice\n"
+			"  f : fullscreen on/off del pannello Dice\n" +
+			"\n" +
+			"[black:gold]Esempi[-:-]\n" +
+			"  2d6+d20+1\n" +
+			"  4d10+6d6+5\n" +
+			"  1d6-1\n" +
+			"  1d20+5 > 2\n" +
+			"  2d6+d20-1 > 15\n"
 	case ui.encounter:
 		return header +
 			"[black:gold]Encounters[-:-]\n" +
