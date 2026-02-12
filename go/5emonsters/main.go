@@ -114,6 +114,7 @@ type PersistedDice struct {
 
 type PersistedFilterMode struct {
 	Name    string   `yaml:"name,omitempty"`
+	Env     string   `yaml:"env,omitempty"`
 	Sources []string `yaml:"sources,omitempty"`
 	CR      string   `yaml:"cr,omitempty"`
 	Type    string   `yaml:"type,omitempty"`
@@ -144,23 +145,26 @@ type DiceUndoState struct {
 }
 
 type UI struct {
-	app         *tview.Application
-	monsters    []Monster
-	items       []Monster
-	spells      []Monster
-	browseMode  BrowseMode
-	filtered    []int
-	envOptions  []string
-	crOptions   []string
-	typeOptions []string
+	app           *tview.Application
+	monsters      []Monster
+	items         []Monster
+	spells        []Monster
+	browseMode    BrowseMode
+	filtered      []int
+	envOptions    []string
+	sourceOptions []string
+	crOptions     []string
+	typeOptions   []string
 
-	nameFilter string
-	envFilters map[string]struct{}
-	crFilter   string
-	typeFilter string
+	nameFilter    string
+	envFilter     string
+	sourceFilters map[string]struct{}
+	crFilter      string
+	typeFilter    string
 
 	nameInput     *tview.InputField
 	envDrop       *tview.DropDown
+	sourceDrop    *tview.DropDown
 	crDrop        *tview.DropDown
 	typeDrop      *tview.DropDown
 	dice          *tview.List
@@ -272,8 +276,9 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		items:           items,
 		spells:          spells,
 		browseMode:      BrowseMonsters,
-		envFilters:      map[string]struct{}{},
+		sourceFilters:   map[string]struct{}{},
 		envOptions:      append([]string{"All"}, envs...),
+		sourceOptions:   []string{"All"},
 		crOptions:       append([]string{"All"}, crs...),
 		typeOptions:     append([]string{"All"}, types...),
 		filtered:        make([]int, 0, len(monsters)),
@@ -304,10 +309,28 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 
 	ui.envDrop = tview.NewDropDown().
 		SetLabel(" Env ")
+	ui.envDrop.SetOptions(ui.envOptions, func(option string, _ int) {
+		if option == "All" {
+			ui.envFilter = ""
+		} else {
+			ui.envFilter = option
+		}
+		ui.applyFilters()
+	})
 	ui.envDrop.SetLabelColor(tcell.ColorGold)
 	ui.envDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
 	ui.envDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.envDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
+
+	ui.sourceDrop = tview.NewDropDown().
+		SetLabel(" Source ")
+	ui.sourceDrop.SetLabelColor(tcell.ColorGold)
+	ui.sourceDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	ui.sourceDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.sourceDrop.SetListStyles(
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
@@ -429,15 +452,17 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 
 	filterRowSingle := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(ui.nameInput, 0, 3, true).
+		AddItem(ui.nameInput, 0, 4, true).
 		AddItem(ui.envDrop, 0, 2, false).
+		AddItem(ui.sourceDrop, 0, 2, false).
 		AddItem(ui.crDrop, 0, 1, false).
 		AddItem(ui.typeDrop, 0, 2, false)
 
 	filterRowTop := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
-		AddItem(ui.nameInput, 0, 2, true).
-		AddItem(ui.envDrop, 0, 1, false)
+		AddItem(ui.nameInput, 0, 3, true).
+		AddItem(ui.envDrop, 0, 1, false).
+		AddItem(ui.sourceDrop, 0, 1, false)
 
 	filterRowBottom := tview.NewFlex().
 		SetDirection(tview.FlexColumn).
@@ -480,7 +505,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
+	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
 	ui.modeFilters[BrowseMonsters] = PersistedFilterMode{}
 	ui.modeFilters[BrowseItems] = PersistedFilterMode{}
@@ -605,8 +630,12 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			}
 			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 's':
+			if ui.browseMode == BrowseMonsters {
+				ui.app.SetFocus(ui.sourceDrop)
+				return nil
+			}
 			if ui.browseMode == BrowseItems {
-				ui.app.SetFocus(ui.envDrop)
+				ui.app.SetFocus(ui.sourceDrop)
 				return nil
 			}
 			if ui.browseMode == BrowseSpells {
@@ -614,7 +643,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				if ui.spellShortcutAlt {
 					ui.app.SetFocus(ui.typeDrop)
 				} else {
-					ui.app.SetFocus(ui.envDrop)
+					ui.app.SetFocus(ui.sourceDrop)
 				}
 				ui.spellShortcutAlt = !ui.spellShortcutAlt
 				return nil
@@ -790,6 +819,8 @@ func (ui *UI) panelNameForFocus(focus tview.Primitive) string {
 		return "Name Filter"
 	case ui.envDrop:
 		return "Env Filter"
+	case ui.sourceDrop:
+		return "Source Filter"
 	case ui.crDrop:
 		return "CR Filter"
 	case ui.typeDrop:
@@ -859,7 +890,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  j / k (o frecce) : naviga mostri\n" +
 				"  / : cerca nella Description del mostro selezionato\n" +
 				"  a : aggiungi mostro a Encounters\n" +
-				"  n / e / c / t : focus su Name / Env(multi) / CR / Type\n" +
+				"  n / e / s / c / t : focus su Name / Env / Source(multi) / CR / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
 		}
@@ -889,7 +920,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"[black:gold]Name Filter[-:-]\n" +
 			"  scrivi testo : filtro per nome\n" +
 			"  Enter / Esc : torna a Monsters\n"
-	case ui.envDrop, ui.crDrop, ui.typeDrop:
+	case ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop:
 		return header +
 			"[black:gold]Filter Dropdown[-:-]\n" +
 			"  frecce / Invio : cambia valore filtro\n"
@@ -1424,7 +1455,7 @@ func (ui *UI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "monsters"
 	case ui.detailRaw:
 		return "description"
-	case ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop:
+	case ui.nameInput, ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop:
 		return "filters"
 	default:
 		return ""
@@ -1515,18 +1546,20 @@ func (ui *UI) setFilterOptionsForMode() {
 	switch ui.browseMode {
 	case BrowseItems:
 		ui.nameInput.SetLabel(" Name ")
-		ui.envDrop.SetLabel(" Source ")
+		ui.envDrop.SetLabel(" Env ")
+		ui.sourceDrop.SetLabel(" Source ")
 		ui.crDrop.SetLabel(" Rarity ")
 		ui.typeDrop.SetLabel(" Type ")
 		ui.envOptions = []string{"All"}
+		ui.sourceOptions = []string{"All"}
 		ui.crOptions = []string{"All"}
 		ui.typeOptions = []string{"All"}
-		seenEnv := map[string]struct{}{}
+		seenSource := map[string]struct{}{}
 		seenCR := map[string]struct{}{}
 		seenType := map[string]struct{}{}
 		for _, it := range ui.items {
 			if s := strings.TrimSpace(it.Source); s != "" {
-				seenEnv[s] = struct{}{}
+				seenSource[s] = struct{}{}
 			}
 			if s := strings.TrimSpace(it.CR); s != "" {
 				seenCR[s] = struct{}{}
@@ -1535,23 +1568,25 @@ func (ui *UI) setFilterOptionsForMode() {
 				seenType[s] = struct{}{}
 			}
 		}
-		ui.envOptions = append(ui.envOptions, keysSorted(seenEnv)...)
+		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
 		ui.crOptions = append(ui.crOptions, keysSorted(seenCR)...)
 		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
 	case BrowseSpells:
 		ui.nameInput.SetLabel(" Name ")
-		ui.envDrop.SetLabel(" Source ")
+		ui.envDrop.SetLabel(" Env ")
+		ui.sourceDrop.SetLabel(" Source ")
 		ui.crDrop.SetLabel(" Level ")
 		ui.typeDrop.SetLabel(" School ")
 		ui.envOptions = []string{"All"}
+		ui.sourceOptions = []string{"All"}
 		ui.crOptions = []string{"All"}
 		ui.typeOptions = []string{"All"}
-		seenEnv := map[string]struct{}{}
+		seenSource := map[string]struct{}{}
 		seenCR := map[string]struct{}{}
 		seenType := map[string]struct{}{}
 		for _, sp := range ui.spells {
 			if s := strings.TrimSpace(sp.Source); s != "" {
-				seenEnv[s] = struct{}{}
+				seenSource[s] = struct{}{}
 			}
 			if s := strings.TrimSpace(sp.CR); s != "" {
 				seenCR[s] = struct{}{}
@@ -1560,18 +1595,29 @@ func (ui *UI) setFilterOptionsForMode() {
 				seenType[s] = struct{}{}
 			}
 		}
-		ui.envOptions = append(ui.envOptions, keysSorted(seenEnv)...)
+		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
 		ui.crOptions = append(ui.crOptions, sortCR(keysSorted(seenCR))...)
 		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
 	default:
 		ui.nameInput.SetLabel(" Name ")
 		ui.envDrop.SetLabel(" Env ")
+		ui.sourceDrop.SetLabel(" Source ")
 		ui.crDrop.SetLabel(" CR ")
 		ui.typeDrop.SetLabel(" Type ")
 		ui.envOptions = append([]string{"All"}, ui.collectMonsterEnvOptions()...)
+		ui.sourceOptions = append([]string{"All"}, ui.collectMonsterSourceOptions()...)
 		ui.crOptions = append([]string{"All"}, ui.collectMonsterCROptions()...)
 		ui.typeOptions = append([]string{"All"}, ui.collectMonsterTypeOptions()...)
 	}
+	ui.envDrop.SetOptions(ui.envOptions, func(option string, _ int) {
+		if option == "All" {
+			ui.envFilter = ""
+		} else {
+			ui.envFilter = option
+		}
+		ui.applyFilters()
+	})
+	ui.setDropDownByValue(ui.envDrop, ui.envOptions, ui.envFilter)
 	ui.refreshSourceDropOptions()
 	ui.crDrop.SetOptions(ui.crOptions, func(option string, _ int) {
 		if option == "All" {
@@ -1589,19 +1635,23 @@ func (ui *UI) setFilterOptionsForMode() {
 		}
 		ui.applyFilters()
 	})
+	if ui.browseMode != BrowseMonsters {
+		ui.envFilter = ""
+		ui.envDrop.SetCurrentOption(0)
+	}
 	ui.setDropDownByValue(ui.crDrop, ui.crOptions, ui.crFilter)
 	ui.setDropDownByValue(ui.typeDrop, ui.typeOptions, ui.typeFilter)
 }
 
 func (ui *UI) refreshSourceDropOptions() {
-	display := make([]string, 0, len(ui.envOptions))
-	if len(ui.envFilters) == 0 {
+	display := make([]string, 0, len(ui.sourceOptions))
+	if len(ui.sourceFilters) == 0 {
 		display = append(display, "[x] All")
 	} else {
 		display = append(display, "[ ] All")
 	}
-	for _, opt := range ui.envOptions[1:] {
-		_, on := ui.envFilters[opt]
+	for _, opt := range ui.sourceOptions[1:] {
+		_, on := ui.sourceFilters[opt]
 		mark := "[ ]"
 		if on {
 			mark = "[x]"
@@ -1609,40 +1659,40 @@ func (ui *UI) refreshSourceDropOptions() {
 		display = append(display, fmt.Sprintf("%s %s", mark, opt))
 	}
 	ui.updatingSourceDrop = true
-	ui.envDrop.SetOptions(display, func(_ string, idx int) {
+	ui.sourceDrop.SetOptions(display, func(_ string, idx int) {
 		if ui.updatingSourceDrop {
 			return
 		}
 		if idx <= 0 {
-			ui.envFilters = map[string]struct{}{}
-		} else if idx < len(ui.envOptions) {
-			val := ui.envOptions[idx]
-			if _, ok := ui.envFilters[val]; ok {
-				delete(ui.envFilters, val)
+			ui.sourceFilters = map[string]struct{}{}
+		} else if idx < len(ui.sourceOptions) {
+			val := ui.sourceOptions[idx]
+			if _, ok := ui.sourceFilters[val]; ok {
+				delete(ui.sourceFilters, val)
 			} else {
-				ui.envFilters[val] = struct{}{}
+				ui.sourceFilters[val] = struct{}{}
 			}
 		}
 		ui.refreshSourceDropOptions()
 		ui.applyFilters()
 	})
-	ui.envDrop.SetCurrentOption(0)
+	ui.sourceDrop.SetCurrentOption(0)
 	ui.updatingSourceDrop = false
 }
 
 func (ui *UI) selectedSourcesSorted() []string {
-	return keysSorted(ui.envFilters)
+	return keysSorted(ui.sourceFilters)
 }
 
 func (ui *UI) setSelectedSources(values []string) {
-	ui.envFilters = map[string]struct{}{}
+	ui.sourceFilters = map[string]struct{}{}
 	allowed := map[string]struct{}{}
-	for _, v := range ui.envOptions[1:] {
+	for _, v := range ui.sourceOptions[1:] {
 		allowed[v] = struct{}{}
 	}
 	for _, v := range values {
 		if _, ok := allowed[v]; ok {
-			ui.envFilters[v] = struct{}{}
+			ui.sourceFilters[v] = struct{}{}
 		}
 	}
 }
@@ -1664,6 +1714,7 @@ func (ui *UI) setDropDownByValue(drop *tview.DropDown, options []string, value s
 func (ui *UI) saveCurrentModeFilters() {
 	ui.modeFilters[ui.browseMode] = PersistedFilterMode{
 		Name:    strings.TrimSpace(ui.nameFilter),
+		Env:     strings.TrimSpace(ui.envFilter),
 		Sources: ui.selectedSourcesSorted(),
 		CR:      strings.TrimSpace(ui.crFilter),
 		Type:    strings.TrimSpace(ui.typeFilter),
@@ -1676,6 +1727,7 @@ func (ui *UI) applyModeFilters(mode BrowseMode) {
 		state = PersistedFilterMode{}
 	}
 	ui.nameFilter = strings.TrimSpace(state.Name)
+	ui.envFilter = strings.TrimSpace(state.Env)
 	ui.crFilter = strings.TrimSpace(state.CR)
 	ui.typeFilter = strings.TrimSpace(state.Type)
 	ui.setFilterOptionsForMode()
@@ -1693,6 +1745,16 @@ func (ui *UI) collectMonsterEnvOptions() []string {
 			if strings.TrimSpace(env) != "" {
 				set[env] = struct{}{}
 			}
+		}
+	}
+	return keysSorted(set)
+}
+
+func (ui *UI) collectMonsterSourceOptions() []string {
+	set := map[string]struct{}{}
+	for _, m := range ui.monsters {
+		if s := strings.TrimSpace(m.Source); s != "" {
+			set[s] = struct{}{}
 		}
 	}
 	return keysSorted(set)
@@ -1750,7 +1812,10 @@ func (ui *UI) applyFilters() {
 		if !matchCR(m.CR, ui.crFilter) {
 			continue
 		}
-		if !matchEnvMulti(m.Environment, ui.envFilters) {
+		if !matchEnv(m.Environment, ui.envFilter) {
+			continue
+		}
+		if !matchEnvMulti([]string{m.Source}, ui.sourceFilters) {
 			continue
 		}
 		if !matchType(m.Type, ui.typeFilter) {

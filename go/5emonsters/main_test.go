@@ -563,6 +563,10 @@ func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	}
 
 	monHelp := ui.helpForFocus(ui.list)
+	if ui.browseMode != BrowseMonsters {
+		ui.browseMode = BrowseMonsters
+	}
+	monHelp = ui.helpForFocus(ui.list)
 	if !strings.Contains(monHelp, "a : aggiungi mostro a Encounters") {
 		t.Fatalf("monsters help missing add shortcut:\n%s", monHelp)
 	}
