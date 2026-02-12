@@ -20,15 +20,30 @@ import (
 )
 
 const (
-	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle Monsters/Items/Spells  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 	defaultEncountersPath  = "encounters.yaml"
 	lastEncountersPathFile = ".encounters_last_path"
 	defaultDicePath        = "dice.yaml"
 	lastDicePathFile       = ".dice_last_path"
+	filtersStatePath       = ".filters_state.yaml"
 )
 
 //go:embed data/monster.yaml
 var embeddedMonstersYAML []byte
+
+//go:embed data/item.yaml
+var embeddedItemsYAML []byte
+
+//go:embed data/spell.yaml
+var embeddedSpellsYAML []byte
+
+type BrowseMode int
+
+const (
+	BrowseMonsters BrowseMode = iota
+	BrowseItems
+	BrowseSpells
+)
 
 type Monster struct {
 	ID          int
@@ -42,6 +57,14 @@ type Monster struct {
 
 type dataset struct {
 	Monsters []map[string]any `yaml:"monsters"`
+}
+
+type itemsDataset struct {
+	Items []map[string]any `yaml:"items"`
+}
+
+type spellsDataset struct {
+	Spells []map[string]any `yaml:"spells"`
 }
 
 type EncounterEntry struct {
@@ -89,6 +112,21 @@ type PersistedDice struct {
 	Items   []DiceResult `yaml:"items"`
 }
 
+type PersistedFilterMode struct {
+	Name    string   `yaml:"name,omitempty"`
+	Sources []string `yaml:"sources,omitempty"`
+	CR      string   `yaml:"cr,omitempty"`
+	Type    string   `yaml:"type,omitempty"`
+}
+
+type PersistedFilters struct {
+	Version  int                 `yaml:"version"`
+	Active   string              `yaml:"active,omitempty"`
+	Monsters PersistedFilterMode `yaml:"monsters,omitempty"`
+	Items    PersistedFilterMode `yaml:"items,omitempty"`
+	Spells   PersistedFilterMode `yaml:"spells,omitempty"`
+}
+
 type EncounterUndoState struct {
 	Items    []EncounterEntry
 	Serial   map[int]int
@@ -108,13 +146,16 @@ type DiceUndoState struct {
 type UI struct {
 	app         *tview.Application
 	monsters    []Monster
+	items       []Monster
+	spells      []Monster
+	browseMode  BrowseMode
 	filtered    []int
 	envOptions  []string
 	crOptions   []string
 	typeOptions []string
 
 	nameFilter string
-	envFilter  string
+	envFilters map[string]struct{}
 	crFilter   string
 	typeFilter string
 
@@ -135,12 +176,13 @@ type UI struct {
 	detailPanel   *tview.Flex
 	filterHost    *tview.Pages
 
-	focusOrder []tview.Primitive
-	rawText    string
-	rawQuery   string
-	diceLog    []DiceResult
-	diceRender bool
-	wideFilter bool
+	focusOrder  []tview.Primitive
+	rawText     string
+	rawQuery    string
+	diceLog     []DiceResult
+	diceRender  bool
+	wideFilter  bool
+	modeFilters map[BrowseMode]PersistedFilterMode
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -154,11 +196,13 @@ type UI struct {
 	turnIndex       int
 	turnRound       int
 
-	helpVisible      bool
-	helpReturnFocus  tview.Primitive
-	addCustomVisible bool
-	fullscreenActive bool
-	fullscreenTarget string
+	helpVisible        bool
+	helpReturnFocus    tview.Primitive
+	addCustomVisible   bool
+	fullscreenActive   bool
+	fullscreenTarget   string
+	spellShortcutAlt   bool
+	updatingSourceDrop bool
 }
 
 func main() {
@@ -175,6 +219,8 @@ func main() {
 	}
 	var (
 		monsters []Monster
+		items    []Monster
+		spells   []Monster
 		envs     []string
 		crs      []string
 		types    []string
@@ -193,7 +239,16 @@ func main() {
 		}
 	}
 
-	ui := newUI(monsters, envs, crs, types, encountersPath, dicePath)
+	items, _, _, _, err = loadItemsFromBytes(embeddedItemsYAML)
+	if err != nil {
+		log.Fatalf("errore caricamento item YAML embedded: %v", err)
+	}
+	spells, _, _, _, err = loadSpellsFromBytes(embeddedSpellsYAML)
+	if err != nil {
+		log.Fatalf("errore caricamento spell YAML embedded: %v", err)
+	}
+
+	ui := newUI(monsters, items, spells, envs, crs, types, encountersPath, dicePath)
 	if err := ui.run(); err != nil {
 		log.Fatal(err)
 	}
@@ -203,14 +258,21 @@ func main() {
 	if err := ui.saveDiceResults(); err != nil {
 		log.Printf("errore salvataggio dice (%s): %v", ui.dicePath, err)
 	}
+	if err := ui.saveFilterStates(); err != nil {
+		log.Printf("errore salvataggio filtri: %v", err)
+	}
 }
 
-func newUI(monsters []Monster, envs, crs, types []string, encountersPath string, dicePath string) *UI {
+func newUI(monsters, items, spells []Monster, envs, crs, types []string, encountersPath string, dicePath string) *UI {
 	setTheme()
 
 	ui := &UI{
 		app:             tview.NewApplication(),
 		monsters:        monsters,
+		items:           items,
+		spells:          spells,
+		browseMode:      BrowseMonsters,
+		envFilters:      map[string]struct{}{},
 		envOptions:      append([]string{"All"}, envs...),
 		crOptions:       append([]string{"All"}, crs...),
 		typeOptions:     append([]string{"All"}, types...),
@@ -219,6 +281,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 		encounterItems:  make([]EncounterEntry, 0, 16),
 		encountersPath:  encountersPath,
 		dicePath:        dicePath,
+		modeFilters:     map[BrowseMode]PersistedFilterMode{},
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -240,15 +303,7 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 	})
 
 	ui.envDrop = tview.NewDropDown().
-		SetLabel(" Env ").
-		SetOptions(ui.envOptions, func(option string, _ int) {
-			if option == "All" {
-				ui.envFilter = ""
-			} else {
-				ui.envFilter = option
-			}
-			ui.applyFilters()
-		})
+		SetLabel(" Env ")
 	ui.envDrop.SetLabelColor(tcell.ColorGold)
 	ui.envDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
 	ui.envDrop.SetFieldTextColor(tcell.ColorWhite)
@@ -427,9 +482,14 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 	ui.app.SetRoot(ui.pages, true)
 	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
-	ui.envDrop.SetCurrentOption(0)
-	ui.crDrop.SetCurrentOption(0)
-	ui.typeDrop.SetCurrentOption(0)
+	ui.modeFilters[BrowseMonsters] = PersistedFilterMode{}
+	ui.modeFilters[BrowseItems] = PersistedFilterMode{}
+	ui.modeFilters[BrowseSpells] = PersistedFilterMode{}
+	if err := ui.loadFilterStates(); err != nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] errore load filtri[-:-] %v  %s", err, helpText))
+	}
+	ui.applyModeFilters(ui.browseMode)
+	ui.updateBrowsePanelTitle()
 	ui.updateFilterLayout(0)
 
 	ui.app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -527,14 +587,51 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 			ui.app.SetFocus(ui.nameInput)
 			return nil
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'e':
-			ui.app.SetFocus(ui.envDrop)
-			return nil
+			if ui.browseMode == BrowseMonsters {
+				ui.app.SetFocus(ui.envDrop)
+				return nil
+			}
+			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'c':
-			ui.app.SetFocus(ui.crDrop)
-			return nil
+			if ui.browseMode == BrowseMonsters {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 't':
-			ui.app.SetFocus(ui.typeDrop)
-			return nil
+			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems {
+				ui.app.SetFocus(ui.typeDrop)
+				return nil
+			}
+			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 's':
+			if ui.browseMode == BrowseItems {
+				ui.app.SetFocus(ui.envDrop)
+				return nil
+			}
+			if ui.browseMode == BrowseSpells {
+				// Requested "s" for both Source and School: alternate focus on repeated presses.
+				if ui.spellShortcutAlt {
+					ui.app.SetFocus(ui.typeDrop)
+				} else {
+					ui.app.SetFocus(ui.envDrop)
+				}
+				ui.spellShortcutAlt = !ui.spellShortcutAlt
+				return nil
+			}
+			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'r':
+			if ui.browseMode == BrowseItems {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'l':
+			if ui.browseMode == BrowseSpells {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
 			return nil
@@ -599,6 +696,12 @@ func newUI(monsters []Monster, envs, crs, types []string, encountersPath string,
 			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '0':
 			ui.app.SetFocus(ui.dice)
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '[':
+			ui.cycleBrowseMode(-1)
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == ']':
+			ui.cycleBrowseMode(1)
 			return nil
 		case focus != ui.nameInput && event.Key() == tcell.KeyRune && event.Rune() == 'j':
 			return tcell.NewEventKey(tcell.KeyDown, 0, tcell.ModNone)
@@ -673,7 +776,14 @@ func (ui *UI) panelNameForFocus(focus tview.Primitive) string {
 	case ui.encounter:
 		return "Encounters"
 	case ui.list:
-		return "Monsters"
+		switch ui.browseMode {
+		case BrowseItems:
+			return "Items"
+		case BrowseSpells:
+			return "Spells"
+		default:
+			return "Monsters"
+		}
 	case ui.detailRaw:
 		return "Description"
 	case ui.nameInput:
@@ -696,7 +806,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		"  q : esci programma\n" +
 		"  f : fullscreen on/off pannello corrente\n" +
 		"  Tab / Shift+Tab : cambia focus\n" +
-		"  0 / 1 / 2 / 3 : vai a Dice / Encounters / Monsters / Description\n\n"
+		"  0 / 1 / 2 / 3 : vai a Dice / Encounters / Catalogo / Description\n" +
+		"  [ / ] : ciclo Monsters / Items / Spells\n\n"
 
 	switch focus {
 	case ui.dice:
@@ -742,12 +853,31 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  freccia sinistra : sottrai HP\n" +
 			"  freccia destra : aggiungi HP\n"
 	case ui.list:
+		if ui.browseMode == BrowseMonsters {
+			return header +
+				"[black:gold]Monsters[-:-]\n" +
+				"  j / k (o frecce) : naviga mostri\n" +
+				"  / : cerca nella Description del mostro selezionato\n" +
+				"  a : aggiungi mostro a Encounters\n" +
+				"  n / e / c / t : focus su Name / Env(multi) / CR / Type\n" +
+				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
+				"  PgUp / PgDn : scroll del pannello Description\n"
+		}
+		if ui.browseMode == BrowseItems {
+			return header +
+				"[black:gold]Items[-:-]\n" +
+				"  j / k (o frecce) : naviga lista\n" +
+				"  / : cerca nella Description della voce selezionata\n" +
+				"  n / s / r / t : focus su Name / Source(multi) / Rarity / Type\n" +
+				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
+				"  PgUp / PgDn : scroll del pannello Description\n"
+		}
 		return header +
-			"[black:gold]Monsters[-:-]\n" +
-			"  j / k (o frecce) : naviga mostri\n" +
-			"  / : cerca nella Description del mostro selezionato\n" +
-			"  a : aggiungi mostro a Encounters\n" +
-			"  n / e / c / t : focus su Name / Env / CR / Type\n" +
+			"[black:gold]Spells[-:-]\n" +
+			"  j / k (o frecce) : naviga lista\n" +
+			"  / : cerca nella Description della voce selezionata\n" +
+			"  n / s / l / s : focus su Name / Source(multi) / Level / School (s alterna Source/School)\n" +
+			"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 			"  PgUp / PgDn : scroll del pannello Description\n"
 	case ui.detailRaw:
 		return header +
@@ -1359,17 +1489,268 @@ func (ui *UI) run() error {
 	return ui.app.Run()
 }
 
+func (ui *UI) browseModeName() string {
+	switch ui.browseMode {
+	case BrowseItems:
+		return "Items"
+	case BrowseSpells:
+		return "Spells"
+	default:
+		return "Monsters"
+	}
+}
+
+func (ui *UI) activeEntries() []Monster {
+	switch ui.browseMode {
+	case BrowseItems:
+		return ui.items
+	case BrowseSpells:
+		return ui.spells
+	default:
+		return ui.monsters
+	}
+}
+
+func (ui *UI) setFilterOptionsForMode() {
+	switch ui.browseMode {
+	case BrowseItems:
+		ui.nameInput.SetLabel(" Name ")
+		ui.envDrop.SetLabel(" Source ")
+		ui.crDrop.SetLabel(" Rarity ")
+		ui.typeDrop.SetLabel(" Type ")
+		ui.envOptions = []string{"All"}
+		ui.crOptions = []string{"All"}
+		ui.typeOptions = []string{"All"}
+		seenEnv := map[string]struct{}{}
+		seenCR := map[string]struct{}{}
+		seenType := map[string]struct{}{}
+		for _, it := range ui.items {
+			if s := strings.TrimSpace(it.Source); s != "" {
+				seenEnv[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(it.CR); s != "" {
+				seenCR[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(it.Type); s != "" {
+				seenType[s] = struct{}{}
+			}
+		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenEnv)...)
+		ui.crOptions = append(ui.crOptions, keysSorted(seenCR)...)
+		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
+	case BrowseSpells:
+		ui.nameInput.SetLabel(" Name ")
+		ui.envDrop.SetLabel(" Source ")
+		ui.crDrop.SetLabel(" Level ")
+		ui.typeDrop.SetLabel(" School ")
+		ui.envOptions = []string{"All"}
+		ui.crOptions = []string{"All"}
+		ui.typeOptions = []string{"All"}
+		seenEnv := map[string]struct{}{}
+		seenCR := map[string]struct{}{}
+		seenType := map[string]struct{}{}
+		for _, sp := range ui.spells {
+			if s := strings.TrimSpace(sp.Source); s != "" {
+				seenEnv[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(sp.CR); s != "" {
+				seenCR[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(sp.Type); s != "" {
+				seenType[s] = struct{}{}
+			}
+		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenEnv)...)
+		ui.crOptions = append(ui.crOptions, sortCR(keysSorted(seenCR))...)
+		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
+	default:
+		ui.nameInput.SetLabel(" Name ")
+		ui.envDrop.SetLabel(" Env ")
+		ui.crDrop.SetLabel(" CR ")
+		ui.typeDrop.SetLabel(" Type ")
+		ui.envOptions = append([]string{"All"}, ui.collectMonsterEnvOptions()...)
+		ui.crOptions = append([]string{"All"}, ui.collectMonsterCROptions()...)
+		ui.typeOptions = append([]string{"All"}, ui.collectMonsterTypeOptions()...)
+	}
+	ui.refreshSourceDropOptions()
+	ui.crDrop.SetOptions(ui.crOptions, func(option string, _ int) {
+		if option == "All" {
+			ui.crFilter = ""
+		} else {
+			ui.crFilter = option
+		}
+		ui.applyFilters()
+	})
+	ui.typeDrop.SetOptions(ui.typeOptions, func(option string, _ int) {
+		if option == "All" {
+			ui.typeFilter = ""
+		} else {
+			ui.typeFilter = option
+		}
+		ui.applyFilters()
+	})
+	ui.setDropDownByValue(ui.crDrop, ui.crOptions, ui.crFilter)
+	ui.setDropDownByValue(ui.typeDrop, ui.typeOptions, ui.typeFilter)
+}
+
+func (ui *UI) refreshSourceDropOptions() {
+	display := make([]string, 0, len(ui.envOptions))
+	if len(ui.envFilters) == 0 {
+		display = append(display, "[x] All")
+	} else {
+		display = append(display, "[ ] All")
+	}
+	for _, opt := range ui.envOptions[1:] {
+		_, on := ui.envFilters[opt]
+		mark := "[ ]"
+		if on {
+			mark = "[x]"
+		}
+		display = append(display, fmt.Sprintf("%s %s", mark, opt))
+	}
+	ui.updatingSourceDrop = true
+	ui.envDrop.SetOptions(display, func(_ string, idx int) {
+		if ui.updatingSourceDrop {
+			return
+		}
+		if idx <= 0 {
+			ui.envFilters = map[string]struct{}{}
+		} else if idx < len(ui.envOptions) {
+			val := ui.envOptions[idx]
+			if _, ok := ui.envFilters[val]; ok {
+				delete(ui.envFilters, val)
+			} else {
+				ui.envFilters[val] = struct{}{}
+			}
+		}
+		ui.refreshSourceDropOptions()
+		ui.applyFilters()
+	})
+	ui.envDrop.SetCurrentOption(0)
+	ui.updatingSourceDrop = false
+}
+
+func (ui *UI) selectedSourcesSorted() []string {
+	return keysSorted(ui.envFilters)
+}
+
+func (ui *UI) setSelectedSources(values []string) {
+	ui.envFilters = map[string]struct{}{}
+	allowed := map[string]struct{}{}
+	for _, v := range ui.envOptions[1:] {
+		allowed[v] = struct{}{}
+	}
+	for _, v := range values {
+		if _, ok := allowed[v]; ok {
+			ui.envFilters[v] = struct{}{}
+		}
+	}
+}
+
+func (ui *UI) setDropDownByValue(drop *tview.DropDown, options []string, value string) {
+	if strings.TrimSpace(value) == "" {
+		drop.SetCurrentOption(0)
+		return
+	}
+	for i, opt := range options {
+		if strings.EqualFold(opt, value) {
+			drop.SetCurrentOption(i)
+			return
+		}
+	}
+	drop.SetCurrentOption(0)
+}
+
+func (ui *UI) saveCurrentModeFilters() {
+	ui.modeFilters[ui.browseMode] = PersistedFilterMode{
+		Name:    strings.TrimSpace(ui.nameFilter),
+		Sources: ui.selectedSourcesSorted(),
+		CR:      strings.TrimSpace(ui.crFilter),
+		Type:    strings.TrimSpace(ui.typeFilter),
+	}
+}
+
+func (ui *UI) applyModeFilters(mode BrowseMode) {
+	state, ok := ui.modeFilters[mode]
+	if !ok {
+		state = PersistedFilterMode{}
+	}
+	ui.nameFilter = strings.TrimSpace(state.Name)
+	ui.crFilter = strings.TrimSpace(state.CR)
+	ui.typeFilter = strings.TrimSpace(state.Type)
+	ui.setFilterOptionsForMode()
+	ui.setSelectedSources(state.Sources)
+	ui.refreshSourceDropOptions()
+	ui.nameInput.SetText(ui.nameFilter)
+	ui.setDropDownByValue(ui.crDrop, ui.crOptions, ui.crFilter)
+	ui.setDropDownByValue(ui.typeDrop, ui.typeOptions, ui.typeFilter)
+}
+
+func (ui *UI) collectMonsterEnvOptions() []string {
+	set := map[string]struct{}{}
+	for _, m := range ui.monsters {
+		for _, env := range m.Environment {
+			if strings.TrimSpace(env) != "" {
+				set[env] = struct{}{}
+			}
+		}
+	}
+	return keysSorted(set)
+}
+
+func (ui *UI) collectMonsterCROptions() []string {
+	set := map[string]struct{}{}
+	for _, m := range ui.monsters {
+		if s := strings.TrimSpace(m.CR); s != "" {
+			set[s] = struct{}{}
+		}
+	}
+	return sortCR(keysSorted(set))
+}
+
+func (ui *UI) collectMonsterTypeOptions() []string {
+	set := map[string]struct{}{}
+	for _, m := range ui.monsters {
+		if s := strings.TrimSpace(m.Type); s != "" {
+			set[s] = struct{}{}
+		}
+	}
+	return keysSorted(set)
+}
+
+func (ui *UI) updateBrowsePanelTitle() {
+	ui.monstersPanel.SetTitle(fmt.Sprintf(" [2]-%s [ [ / ] ] ", ui.browseModeName()))
+}
+
+func (ui *UI) cycleBrowseMode(delta int) {
+	if delta == 0 {
+		return
+	}
+	count := 3
+	next := (int(ui.browseMode) + delta) % count
+	if next < 0 {
+		next += count
+	}
+	ui.saveCurrentModeFilters()
+	ui.browseMode = BrowseMode(next)
+	ui.spellShortcutAlt = false
+	ui.applyModeFilters(ui.browseMode)
+	ui.updateBrowsePanelTitle()
+	ui.applyFilters()
+	ui.status.SetText(fmt.Sprintf(" [black:gold]browse[-:-] %s  %s", ui.browseModeName(), helpText))
+}
+
 func (ui *UI) applyFilters() {
 	ui.filtered = ui.filtered[:0]
 
-	for i, m := range ui.monsters {
+	for i, m := range ui.activeEntries() {
 		if !matchName(m.Name, ui.nameFilter) {
 			continue
 		}
 		if !matchCR(m.CR, ui.crFilter) {
 			continue
 		}
-		if !matchEnv(m.Environment, ui.envFilter) {
+		if !matchEnvMulti(m.Environment, ui.envFilters) {
 			continue
 		}
 		if !matchType(m.Type, ui.typeFilter) {
@@ -1384,15 +1765,19 @@ func (ui *UI) applyFilters() {
 func (ui *UI) renderList() {
 	ui.list.Clear()
 
+	entries := ui.activeEntries()
 	for _, idx := range ui.filtered {
-		m := ui.monsters[idx]
+		if idx < 0 || idx >= len(entries) {
+			continue
+		}
+		m := entries[idx]
 		ui.list.AddItem(m.Name, "", 0, nil)
 	}
 
 	ui.status.SetText(fmt.Sprintf(" [black:gold] %d risultati [-:-] %s", len(ui.filtered), helpText))
 
 	if len(ui.filtered) == 0 {
-		ui.detailMeta.SetText("Nessun mostro con i filtri correnti.")
+		ui.detailMeta.SetText(fmt.Sprintf("Nessun risultato in %s con i filtri correnti.", ui.browseModeName()))
 		ui.detailRaw.SetText("")
 		ui.rawText = ""
 		return
@@ -1408,12 +1793,20 @@ func (ui *UI) renderList() {
 
 func (ui *UI) renderDetailByListIndex(listIndex int) {
 	if listIndex < 0 || listIndex >= len(ui.filtered) {
-		ui.detailMeta.SetText("Seleziona un mostro dalla lista.")
+		ui.detailMeta.SetText(fmt.Sprintf("Seleziona un elemento da %s.", ui.browseModeName()))
 		ui.detailRaw.SetText("")
 		ui.rawText = ""
 		return
 	}
-	ui.renderDetailByMonsterIndex(ui.filtered[listIndex])
+	activeIndex := ui.filtered[listIndex]
+	switch ui.browseMode {
+	case BrowseItems:
+		ui.renderDetailByItemIndex(activeIndex)
+	case BrowseSpells:
+		ui.renderDetailBySpellIndex(activeIndex)
+	default:
+		ui.renderDetailByMonsterIndex(activeIndex)
+	}
 }
 
 func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
@@ -1465,6 +1858,57 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
 	ui.rawText = buildMonsterDescriptionText(m)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
+
+func (ui *UI) renderDetailByItemIndex(itemIndex int) {
+	if itemIndex < 0 || itemIndex >= len(ui.items) {
+		return
+	}
+	it := ui.items[itemIndex]
+	builder := &strings.Builder{}
+	fmt.Fprintf(builder, "[yellow]%s[-]\n", it.Name)
+	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(it.Source, "n/a"))
+	fmt.Fprintf(builder, "[white]Type:[-] %s\n", blankIfEmpty(it.Type, "n/a"))
+	fmt.Fprintf(builder, "[white]Rarity:[-] %s\n", blankIfEmpty(it.CR, "n/a"))
+	if attune := strings.TrimSpace(asString(it.Raw["reqAttune"])); attune != "" {
+		fmt.Fprintf(builder, "[white]Attunement:[-] %s\n", attune)
+	}
+	if ac := strings.TrimSpace(asString(it.Raw["ac"])); ac != "" {
+		fmt.Fprintf(builder, "[white]AC:[-] %s\n", ac)
+	}
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = buildItemDescriptionText(it)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
+
+func (ui *UI) renderDetailBySpellIndex(spellIndex int) {
+	if spellIndex < 0 || spellIndex >= len(ui.spells) {
+		return
+	}
+	sp := ui.spells[spellIndex]
+	builder := &strings.Builder{}
+	fmt.Fprintf(builder, "[yellow]%s[-]\n", sp.Name)
+	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(sp.Source, "n/a"))
+	fmt.Fprintf(builder, "[white]School:[-] %s\n", blankIfEmpty(sp.Type, "n/a"))
+	fmt.Fprintf(builder, "[white]Level:[-] %s\n", blankIfEmpty(sp.CR, "n/a"))
+	if cast := extractSpellTime(sp.Raw); cast != "" {
+		fmt.Fprintf(builder, "[white]Casting Time:[-] %s\n", cast)
+	}
+	if rng := extractSpellRange(sp.Raw); rng != "" {
+		fmt.Fprintf(builder, "[white]Range:[-] %s\n", rng)
+	}
+	if dur := extractSpellDuration(sp.Raw); dur != "" {
+		fmt.Fprintf(builder, "[white]Duration:[-] %s\n", dur)
+	}
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = buildSpellDescriptionText(sp)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
@@ -1568,6 +2012,70 @@ func buildMonsterDescriptionText(m Monster) string {
 		if body := plainSection(raw[sec.key]); body != "" {
 			fmt.Fprintf(b, "\n%s\n%s\n", sec.label, body)
 		}
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func buildItemDescriptionText(it Monster) string {
+	raw := it.Raw
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "Name: %s\n", it.Name)
+	if src := strings.TrimSpace(it.Source); src != "" {
+		fmt.Fprintf(b, "Source: %s\n", src)
+	}
+	if t := strings.TrimSpace(it.Type); t != "" {
+		fmt.Fprintf(b, "Type: %s\n", t)
+	}
+	if rarity := strings.TrimSpace(it.CR); rarity != "" {
+		fmt.Fprintf(b, "Rarity: %s\n", rarity)
+	}
+	if req := strings.TrimSpace(asString(raw["reqAttune"])); req != "" {
+		fmt.Fprintf(b, "Attunement: %s\n", req)
+	}
+	if weight := strings.TrimSpace(asString(raw["weight"])); weight != "" {
+		fmt.Fprintf(b, "Weight: %s\n", weight)
+	}
+	if value := strings.TrimSpace(asString(raw["value"])); value != "" {
+		fmt.Fprintf(b, "Value: %s\n", value)
+	}
+	if entries := plainAny(raw["entries"]); entries != "" {
+		fmt.Fprintf(b, "\nDescription\n%s\n", entries)
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func buildSpellDescriptionText(sp Monster) string {
+	raw := sp.Raw
+	b := &strings.Builder{}
+
+	fmt.Fprintf(b, "Name: %s\n", sp.Name)
+	if src := strings.TrimSpace(sp.Source); src != "" {
+		fmt.Fprintf(b, "Source: %s\n", src)
+	}
+	if level := strings.TrimSpace(sp.CR); level != "" {
+		fmt.Fprintf(b, "Level: %s\n", level)
+	}
+	if school := strings.TrimSpace(sp.Type); school != "" {
+		fmt.Fprintf(b, "School: %s\n", school)
+	}
+	if cast := extractSpellTime(raw); cast != "" {
+		fmt.Fprintf(b, "Casting Time: %s\n", cast)
+	}
+	if rng := extractSpellRange(raw); rng != "" {
+		fmt.Fprintf(b, "Range: %s\n", rng)
+	}
+	if dur := extractSpellDuration(raw); dur != "" {
+		fmt.Fprintf(b, "Duration: %s\n", dur)
+	}
+	if comps := plainAny(raw["components"]); comps != "" {
+		fmt.Fprintf(b, "Components: %s\n", comps)
+	}
+	if entries := plainAny(raw["entries"]); entries != "" {
+		fmt.Fprintf(b, "\nDescription\n%s\n", entries)
+	}
+	if higher := plainAny(raw["entriesHigherLevel"]); higher != "" {
+		fmt.Fprintf(b, "\nAt Higher Levels\n%s\n", higher)
 	}
 	return strings.TrimSpace(b.String())
 }
@@ -1852,6 +2360,10 @@ func (ui *UI) openEncounterLoadInput() {
 }
 
 func (ui *UI) addSelectedMonsterToEncounter() {
+	if ui.browseMode != BrowseMonsters {
+		ui.status.SetText(fmt.Sprintf(" [white:red] aggiunta encounter disponibile solo da Monsters[-:-]  %s", helpText))
+		return
+	}
 	if len(ui.filtered) == 0 {
 		return
 	}
@@ -2753,6 +3265,63 @@ func (ui *UI) saveDiceResultsAs(path string) error {
 	return nil
 }
 
+func modeToKey(mode BrowseMode) string {
+	switch mode {
+	case BrowseItems:
+		return "items"
+	case BrowseSpells:
+		return "spells"
+	default:
+		return "monsters"
+	}
+}
+
+func modeFromKey(s string) BrowseMode {
+	switch strings.ToLower(strings.TrimSpace(s)) {
+	case "items":
+		return BrowseItems
+	case "spells":
+		return BrowseSpells
+	default:
+		return BrowseMonsters
+	}
+}
+
+func (ui *UI) loadFilterStates() error {
+	b, err := os.ReadFile(filtersStatePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	var data PersistedFilters
+	if err := yaml.Unmarshal(b, &data); err != nil {
+		return err
+	}
+	ui.modeFilters[BrowseMonsters] = data.Monsters
+	ui.modeFilters[BrowseItems] = data.Items
+	ui.modeFilters[BrowseSpells] = data.Spells
+	ui.browseMode = modeFromKey(data.Active)
+	return nil
+}
+
+func (ui *UI) saveFilterStates() error {
+	ui.saveCurrentModeFilters()
+	data := PersistedFilters{
+		Version:  1,
+		Active:   modeToKey(ui.browseMode),
+		Monsters: ui.modeFilters[BrowseMonsters],
+		Items:    ui.modeFilters[BrowseItems],
+		Spells:   ui.modeFilters[BrowseSpells],
+	}
+	out, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filtersStatePath, out, 0o644)
+}
+
 func readLastEncountersPath() string {
 	b, err := os.ReadFile(lastEncountersPathFile)
 	if err != nil {
@@ -2948,6 +3517,113 @@ func loadMonstersFromBytes(b []byte) ([]Monster, []string, []string, []string, e
 	return monsters, keysSorted(envSet), sortCR(keysSorted(crSet)), keysSorted(typeSet), nil
 }
 
+func loadItemsFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
+	var ds itemsDataset
+	if err := yaml.Unmarshal(b, &ds); err != nil {
+		return nil, nil, nil, nil, err
+	}
+	if len(ds.Items) == 0 {
+		return nil, nil, nil, nil, errors.New("nessun item trovato nel yaml")
+	}
+
+	items := make([]Monster, 0, len(ds.Items))
+	envSet := map[string]struct{}{}
+	crSet := map[string]struct{}{}
+	typeSet := map[string]struct{}{}
+
+	for i, raw := range ds.Items {
+		name := asString(raw["name"])
+		if name == "" {
+			continue
+		}
+		source := asString(raw["source"])
+		envs := []string{}
+		if source != "" {
+			envs = []string{source}
+			envSet[source] = struct{}{}
+		}
+		rarity := strings.TrimSpace(asString(raw["rarity"]))
+		if rarity == "" {
+			rarity = "Unknown"
+		}
+		crSet[rarity] = struct{}{}
+
+		itemType := extractItemType(raw)
+		if itemType == "" {
+			itemType = "Unknown"
+		}
+		typeSet[itemType] = struct{}{}
+
+		items = append(items, Monster{
+			ID:          i,
+			Name:        name,
+			CR:          rarity,
+			Environment: envs,
+			Source:      source,
+			Type:        itemType,
+			Raw:         raw,
+		})
+	}
+
+	sort.Slice(items, func(i, j int) bool {
+		return strings.ToLower(items[i].Name) < strings.ToLower(items[j].Name)
+	})
+	return items, keysSorted(envSet), keysSorted(crSet), keysSorted(typeSet), nil
+}
+
+func loadSpellsFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
+	var ds spellsDataset
+	if err := yaml.Unmarshal(b, &ds); err != nil {
+		return nil, nil, nil, nil, err
+	}
+	if len(ds.Spells) == 0 {
+		return nil, nil, nil, nil, errors.New("nessuna spell trovata nel yaml")
+	}
+
+	spells := make([]Monster, 0, len(ds.Spells))
+	envSet := map[string]struct{}{}
+	crSet := map[string]struct{}{}
+	typeSet := map[string]struct{}{}
+
+	for i, raw := range ds.Spells {
+		name := asString(raw["name"])
+		if name == "" {
+			continue
+		}
+		source := asString(raw["source"])
+		envs := []string{}
+		if source != "" {
+			envs = []string{source}
+			envSet[source] = struct{}{}
+		}
+		level := extractSpellLevel(raw["level"])
+		if level == "" {
+			level = "Unknown"
+		}
+		crSet[level] = struct{}{}
+		school := extractSpellSchool(raw["school"])
+		if school == "" {
+			school = "Unknown"
+		}
+		typeSet[school] = struct{}{}
+
+		spells = append(spells, Monster{
+			ID:          i,
+			Name:        name,
+			CR:          level,
+			Environment: envs,
+			Source:      source,
+			Type:        school,
+			Raw:         raw,
+		})
+	}
+
+	sort.Slice(spells, func(i, j int) bool {
+		return strings.ToLower(spells[i].Name) < strings.ToLower(spells[j].Name)
+	})
+	return spells, keysSorted(envSet), sortCR(keysSorted(crSet)), keysSorted(typeSet), nil
+}
+
 func matchName(monsterName, query string) bool {
 	if query == "" {
 		return true
@@ -2962,16 +3638,23 @@ func matchCR(monsterCR, query string) bool {
 	return strings.EqualFold(strings.TrimSpace(monsterCR), strings.TrimSpace(query))
 }
 
-func matchEnv(monsterEnvs []string, query string) bool {
-	if query == "" {
+func matchEnvMulti(values []string, selected map[string]struct{}) bool {
+	if len(selected) == 0 {
 		return true
 	}
-	for _, env := range monsterEnvs {
-		if strings.EqualFold(env, query) {
+	for _, v := range values {
+		if _, ok := selected[v]; ok {
 			return true
 		}
 	}
 	return false
+}
+
+func matchEnv(values []string, query string) bool {
+	if strings.TrimSpace(query) == "" {
+		return true
+	}
+	return matchEnvMulti(values, map[string]struct{}{strings.TrimSpace(query): {}})
 }
 
 func matchType(monsterType, query string) bool {
@@ -3046,6 +3729,118 @@ func extractType(v any) string {
 		return asString(x["type"])
 	}
 	return ""
+}
+
+func extractItemType(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	base := strings.TrimSpace(extractType(raw["type"]))
+	flags := make([]string, 0, 3)
+	boolFlag := func(key, label string) {
+		v, ok := raw[key]
+		if !ok {
+			return
+		}
+		b, ok := v.(bool)
+		if ok && b {
+			flags = append(flags, label)
+		}
+	}
+	boolFlag("wondrous", "wondrous")
+	boolFlag("weapon", "weapon")
+	boolFlag("armor", "armor")
+	boolFlag("staff", "staff")
+	boolFlag("ring", "ring")
+	boolFlag("potion", "potion")
+	boolFlag("wand", "wand")
+	boolFlag("rod", "rod")
+	boolFlag("scroll", "scroll")
+
+	if base == "" && len(flags) == 0 {
+		return ""
+	}
+	if base == "" {
+		return strings.Join(flags, ", ")
+	}
+	if len(flags) == 0 {
+		return base
+	}
+	return base + " (" + strings.Join(flags, ", ") + ")"
+}
+
+func extractSpellLevel(v any) string {
+	switch x := v.(type) {
+	case int:
+		if x == 0 {
+			return "0"
+		}
+		return strconv.Itoa(x)
+	case int64:
+		if x == 0 {
+			return "0"
+		}
+		return strconv.FormatInt(x, 10)
+	case float64:
+		i := int(x)
+		if i == 0 {
+			return "0"
+		}
+		return strconv.Itoa(i)
+	case string:
+		s := strings.TrimSpace(x)
+		if s == "" {
+			return ""
+		}
+		return s
+	default:
+		return ""
+	}
+}
+
+func extractSpellSchool(v any) string {
+	code := strings.TrimSpace(asString(v))
+	switch strings.ToUpper(code) {
+	case "A":
+		return "Abjuration"
+	case "C":
+		return "Conjuration"
+	case "D":
+		return "Divination"
+	case "E":
+		return "Enchantment"
+	case "V":
+		return "Evocation"
+	case "I":
+		return "Illusion"
+	case "N":
+		return "Necromancy"
+	case "T":
+		return "Transmutation"
+	default:
+		return code
+	}
+}
+
+func extractSpellRange(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	return plainAny(raw["range"])
+}
+
+func extractSpellTime(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	return plainAny(raw["time"])
+}
+
+func extractSpellDuration(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	return plainAny(raw["duration"])
 }
 
 func extractInitFromDex(raw map[string]any) (int, bool) {
