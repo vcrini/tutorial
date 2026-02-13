@@ -1785,7 +1785,7 @@ func (ui *UI) collectMonsterTypeOptions() []string {
 }
 
 func (ui *UI) updateBrowsePanelTitle() {
-	ui.monstersPanel.SetTitle(fmt.Sprintf(" [2]-%s [ [ / ] ] ", ui.browseModeName()))
+	ui.monstersPanel.SetTitle(fmt.Sprintf(" [2]-%s [Monsters > Items > Spells] ", ui.browseModeName()))
 }
 
 func (ui *UI) cycleBrowseMode(delta int) {
