@@ -590,6 +590,10 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case event.Key() == tcell.KeyBacktab:
 			ui.focusPrev()
 			return nil
+		case event.Key() == tcell.KeyEscape &&
+			(focus == ui.list || focus == ui.nameInput || focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop):
+			ui.app.SetFocus(ui.list)
+			return nil
 		case focus == ui.nameInput && event.Key() == tcell.KeyEscape:
 			ui.app.SetFocus(ui.list)
 			return nil
