@@ -681,6 +681,35 @@ func TestGenerateLairTreasureIncludesTypesInExtras(t *testing.T) {
 	}
 }
 
+func TestFormatItemBasePriceAndMagicEconomy(t *testing.T) {
+	raw := map[string]any{"value": 2500, "wondrous": true}
+	price := formatItemBasePrice(raw)
+	if price == "" {
+		t.Fatal("expected formatted price")
+	}
+	if !strings.Contains(price, "gp") {
+		t.Fatalf("expected gp in formatted price, got %q", price)
+	}
+
+	econ, ok := magicItemEconomy(raw, "rare")
+	if !ok {
+		t.Fatal("expected magical economy for rare item")
+	}
+	if !strings.Contains(econ.BuyCost, "5,000") {
+		t.Fatalf("unexpected buy cost: %q", econ.BuyCost)
+	}
+	if len(econ.Procedure) == 0 {
+		t.Fatal("expected non-empty crafting procedure")
+	}
+}
+
+func TestMagicItemEconomyNonMagical(t *testing.T) {
+	raw := map[string]any{"value": 50}
+	if _, ok := magicItemEconomy(raw, ""); ok {
+		t.Fatal("expected non-magical item to not have magic economy")
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 

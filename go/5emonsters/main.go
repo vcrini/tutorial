@@ -2213,11 +2213,21 @@ func (ui *UI) renderDetailByItemIndex(itemIndex int) {
 	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(it.Source, "n/a"))
 	fmt.Fprintf(builder, "[white]Type:[-] %s\n", blankIfEmpty(it.Type, "n/a"))
 	fmt.Fprintf(builder, "[white]Rarity:[-] %s\n", blankIfEmpty(it.CR, "n/a"))
+	if price := formatItemBasePrice(it.Raw); price != "" {
+		fmt.Fprintf(builder, "[white]Price:[-] %s\n", price)
+	}
 	if attune := strings.TrimSpace(asString(it.Raw["reqAttune"])); attune != "" {
 		fmt.Fprintf(builder, "[white]Attunement:[-] %s\n", attune)
 	}
 	if ac := strings.TrimSpace(asString(it.Raw["ac"])); ac != "" {
 		fmt.Fprintf(builder, "[white]AC:[-] %s\n", ac)
+	}
+	if econ, ok := magicItemEconomy(it.Raw, it.CR); ok {
+		fmt.Fprintf(builder, "[white]Buy Cost:[-] %s\n", econ.BuyCost)
+		fmt.Fprintf(builder, "[white]Find Time:[-] %s\n", econ.FindTime)
+		fmt.Fprintf(builder, "[white]Craft Cost:[-] %s\n", econ.CraftCost)
+		fmt.Fprintf(builder, "[white]Craft Time:[-] %s\n", econ.CraftTime)
+		fmt.Fprintf(builder, "[white]Craft Procedure:[-] %s\n", strings.Join(econ.Procedure, " -> "))
 	}
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
@@ -2370,6 +2380,9 @@ func buildItemDescriptionText(it Monster) string {
 	if rarity := strings.TrimSpace(it.CR); rarity != "" {
 		fmt.Fprintf(b, "Rarity: %s\n", rarity)
 	}
+	if price := formatItemBasePrice(raw); price != "" {
+		fmt.Fprintf(b, "Price: %s\n", price)
+	}
 	if req := strings.TrimSpace(asString(raw["reqAttune"])); req != "" {
 		fmt.Fprintf(b, "Attunement: %s\n", req)
 	}
@@ -2378,6 +2391,13 @@ func buildItemDescriptionText(it Monster) string {
 	}
 	if value := strings.TrimSpace(asString(raw["value"])); value != "" {
 		fmt.Fprintf(b, "Value: %s\n", value)
+	}
+	if econ, ok := magicItemEconomy(raw, it.CR); ok {
+		fmt.Fprintf(b, "Buy Cost: %s\n", econ.BuyCost)
+		fmt.Fprintf(b, "Find Time in Shop: %s\n", econ.FindTime)
+		fmt.Fprintf(b, "Craft Cost: %s\n", econ.CraftCost)
+		fmt.Fprintf(b, "Craft Time: %s\n", econ.CraftTime)
+		fmt.Fprintf(b, "Craft Procedure: %s\n", strings.Join(econ.Procedure, " -> "))
 	}
 	if entries := plainAny(raw["entries"]); entries != "" {
 		fmt.Fprintf(b, "\nDescription\n%s\n", entries)
@@ -4107,6 +4127,163 @@ func extractItemType(raw map[string]any) string {
 		return base
 	}
 	return base + " (" + strings.Join(flags, ", ") + ")"
+}
+
+type itemEconomyInfo struct {
+	BuyCost   string
+	FindTime  string
+	CraftCost string
+	CraftTime string
+	Procedure []string
+}
+
+func formatItemBasePrice(raw map[string]any) string {
+	if raw == nil {
+		return ""
+	}
+	v, ok := raw["value"]
+	if !ok || v == nil {
+		return ""
+	}
+	cp, ok := anyToInt64(v)
+	if !ok || cp <= 0 {
+		return ""
+	}
+	return formatCopperValue(cp)
+}
+
+func magicItemEconomy(raw map[string]any, rarity string) (itemEconomyInfo, bool) {
+	if !isMagicalItem(raw, rarity) {
+		return itemEconomyInfo{}, false
+	}
+	key := normalizeRarity(rarity)
+	switch key {
+	case "common":
+		return itemEconomyInfo{
+			BuyCost:   "50-100 gp",
+			FindTime:  "1d4 giorni",
+			CraftCost: "50 gp + componenti",
+			CraftTime: "1 workweek",
+			Procedure: []string{"trova formula/schemi", "materiali speciali adatti alla rarita", "strumenti/proficienze richieste", "tempo di downtime e spesa del costo"},
+		}, true
+	case "uncommon":
+		return itemEconomyInfo{
+			BuyCost:   "101-500 gp",
+			FindTime:  "1d6 giorni",
+			CraftCost: "200 gp + componenti",
+			CraftTime: "2 workweeks",
+			Procedure: []string{"formula dell'oggetto", "raccolta ingredienti rari", "proficienza strumenti o Arcana", "craft in downtime"},
+		}, true
+	case "rare":
+		return itemEconomyInfo{
+			BuyCost:   "501-5,000 gp",
+			FindTime:  "1d4 settimane",
+			CraftCost: "2,000 gp + componenti rari",
+			CraftTime: "10 workweeks",
+			Procedure: []string{"schema/formula completa", "componenti da creature o luoghi speciali", "supporto artigiano o incantatore esperto", "downtime continuativo"},
+		}, true
+	case "very rare":
+		return itemEconomyInfo{
+			BuyCost:   "5,001-50,000 gp",
+			FindTime:  "1d6 settimane",
+			CraftCost: "20,000 gp + componenti molto rari",
+			CraftTime: "25 workweeks",
+			Procedure: []string{"ricerca avanzata della formula", "quest per materiale chiave", "laboratorio/forgia adeguata", "downtime esteso con verifica DM"},
+		}, true
+	case "legendary":
+		return itemEconomyInfo{
+			BuyCost:   "50,001+ gp",
+			FindTime:  "2d6 settimane (o piu)",
+			CraftCost: "100,000 gp + componenti leggendari",
+			CraftTime: "50 workweeks",
+			Procedure: []string{"formula unica o perduta", "componenti leggendari ottenuti tramite avventura", "maestria elevata e laboratorio speciale", "craft lungo supervisionato dal DM"},
+		}, true
+	case "artifact":
+		return itemEconomyInfo{
+			BuyCost:   "non acquistabile",
+			FindTime:  "non disponibile in negozio",
+			CraftCost: "non craftabile con regole standard",
+			CraftTime: "n/a",
+			Procedure: []string{"solo rituali/quest eccezionali", "intervento narrativo del DM", "fonti di potere uniche"},
+		}, true
+	default:
+		return itemEconomyInfo{
+			BuyCost:   "variabile (a discrezione DM)",
+			FindTime:  "da alcuni giorni a settimane",
+			CraftCost: "in base a rarita/effetto",
+			CraftTime: "in base a rarita/effetto",
+			Procedure: []string{"definisci rarita effettiva", "determina formula e componenti", "applica downtime coerente"},
+		}, true
+	}
+}
+
+func isMagicalItem(raw map[string]any, rarity string) bool {
+	key := normalizeRarity(rarity)
+	switch key {
+	case "common", "uncommon", "rare", "very rare", "legendary", "artifact", "varies":
+		return true
+	}
+	if raw == nil {
+		return false
+	}
+	for _, k := range []string{"wondrous", "staff", "wand", "rod", "ring", "potion", "scroll"} {
+		if b, ok := raw[k].(bool); ok && b {
+			return true
+		}
+	}
+	return false
+}
+
+func normalizeRarity(r string) string {
+	s := strings.ToLower(strings.TrimSpace(r))
+	s = strings.ReplaceAll(s, "_", " ")
+	s = strings.Join(strings.Fields(s), " ")
+	return s
+}
+
+func anyToInt64(v any) (int64, bool) {
+	switch x := v.(type) {
+	case int:
+		return int64(x), true
+	case int64:
+		return x, true
+	case float64:
+		return int64(x), true
+	case string:
+		f, err := strconv.ParseFloat(strings.TrimSpace(x), 64)
+		if err != nil {
+			return 0, false
+		}
+		return int64(f), true
+	default:
+		return 0, false
+	}
+}
+
+func formatCopperValue(cp int64) string {
+	if cp <= 0 {
+		return "0 cp"
+	}
+	pp := cp / 1000
+	cp = cp % 1000
+	gp := cp / 100
+	cp = cp % 100
+	sp := cp / 10
+	cp = cp % 10
+	parts := make([]string, 0, 4)
+	if pp > 0 {
+		parts = append(parts, fmt.Sprintf("%d pp", pp))
+	}
+	if gp > 0 {
+		parts = append(parts, fmt.Sprintf("%d gp", gp))
+	}
+	if sp > 0 {
+		parts = append(parts, fmt.Sprintf("%d sp", sp))
+	}
+	if cp > 0 {
+		parts = append(parts, fmt.Sprintf("%d cp", cp))
+	}
+	return strings.Join(parts, " ")
 }
 
 func extractSpellLevel(v any) string {
