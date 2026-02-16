@@ -546,6 +546,75 @@ func TestExpandDiceRollInput(t *testing.T) {
 	}
 }
 
+func TestGenerateIndividualTreasure(t *testing.T) {
+	seq := []int{0, 0, 0, 0, 0, 0} // d100=1, then minimal dice rolls
+	i := 0
+	randFn := func(max int) int {
+		if i >= len(seq) {
+			return 0
+		}
+		v := seq[i]
+		i++
+		if v < 0 {
+			v = 0
+		}
+		if v >= max {
+			v = max - 1
+		}
+		return v
+	}
+
+	out, err := generateIndividualTreasure("1/2", randFn)
+	if err != nil {
+		t.Fatalf("unexpected treasure error: %v", err)
+	}
+	if out.Band != "CR 0-4" {
+		t.Fatalf("unexpected band: %s", out.Band)
+	}
+	if out.D100 != 1 {
+		t.Fatalf("unexpected d100: %d", out.D100)
+	}
+	if out.Coins["cp"] != 5 {
+		t.Fatalf("expected 5 cp, got %+v", out.Coins)
+	}
+}
+
+func TestGenerateIndividualTreasureHighCR(t *testing.T) {
+	seq := []int{55, 0, 0, 0} // d100=56 -> CR 17+ last row
+	i := 0
+	randFn := func(max int) int {
+		if i >= len(seq) {
+			return 0
+		}
+		v := seq[i]
+		i++
+		if v < 0 {
+			v = 0
+		}
+		if v >= max {
+			v = max - 1
+		}
+		return v
+	}
+
+	out, err := generateIndividualTreasure("20", randFn)
+	if err != nil {
+		t.Fatalf("unexpected treasure error: %v", err)
+	}
+	if out.Band != "CR 17+" {
+		t.Fatalf("unexpected band: %s", out.Band)
+	}
+	if out.Coins["gp"] != 1000 || out.Coins["pp"] != 200 {
+		t.Fatalf("unexpected coins: %+v", out.Coins)
+	}
+}
+
+func TestGenerateIndividualTreasureInvalidCR(t *testing.T) {
+	if _, err := generateIndividualTreasure("bad-cr", nil); err == nil {
+		t.Fatal("expected invalid CR error")
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 

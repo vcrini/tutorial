@@ -144,6 +144,20 @@ type DiceUndoState struct {
 	Selected int
 }
 
+type treasureCoinRoll struct {
+	Currency  string
+	DiceN     int
+	DiceSides int
+	Mult      int
+}
+
+type treasureOutcome struct {
+	Band      string
+	D100      int
+	Coins     map[string]int
+	Breakdown []string
+}
+
 type UI struct {
 	app           *tview.Application
 	monsters      []Monster
@@ -659,7 +673,11 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				return nil
 			}
 			return event
-		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'l':
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'm':
+			if ui.browseMode == BrowseMonsters {
+				ui.openTreasureByCRInput()
+				return nil
+			}
 			if ui.browseMode == BrowseSpells {
 				ui.app.SetFocus(ui.crDrop)
 				return nil
@@ -894,6 +912,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  j / k (o frecce) : naviga mostri\n" +
 				"  / : cerca nella Description del mostro selezionato\n" +
 				"  a : aggiungi mostro a Encounters\n" +
+				"  m : genera tesoro da CR (regole 5e)\n" +
 				"  n / e / s / c / t : focus su Name / Env / Source(multi) / CR / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -980,6 +999,109 @@ func (ui *UI) scrollDetailByPage(direction int) {
 		nextRow = 0
 	}
 	ui.detailRaw.ScrollTo(nextRow, 0)
+}
+
+func (ui *UI) openTreasureByCRInput() {
+	input := tview.NewInputField().
+		SetLabel("CR: ").
+		SetFieldWidth(16)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Generate Treasure (5e Individual) ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	if ui.browseMode == BrowseMonsters && len(ui.filtered) > 0 {
+		cur := ui.list.GetCurrentItem()
+		if cur >= 0 && cur < len(ui.filtered) {
+			idx := ui.filtered[cur]
+			if idx >= 0 && idx < len(ui.monsters) {
+				if cr := strings.TrimSpace(ui.monsters[idx].CR); cr != "" {
+					input.SetText(cr)
+				}
+			}
+		}
+	}
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 44, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("treasure-input")
+		ui.app.SetFocus(ui.list)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+		crText := strings.TrimSpace(input.GetText())
+		outcome, err := generateIndividualTreasure(crText, rand.Intn)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] CR non valido[-:-] \"%s\"  %s", crText, helpText))
+			return
+		}
+		ui.renderTreasureOutcome(crText, outcome)
+		ui.status.SetText(fmt.Sprintf(" [black:gold]tesoro[-:-] generato per CR %s  %s", crText, helpText))
+	})
+
+	ui.pages.AddPage("treasure-input", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) renderTreasureOutcome(crText string, out treasureOutcome) {
+	order := []string{"cp", "sp", "ep", "gp", "pp"}
+	coins := make([]string, 0, len(order))
+	totalGP := 0.0
+	values := map[string]float64{
+		"cp": 0.01,
+		"sp": 0.1,
+		"ep": 0.5,
+		"gp": 1.0,
+		"pp": 10.0,
+	}
+	for _, c := range order {
+		n := out.Coins[c]
+		if n <= 0 {
+			continue
+		}
+		coins = append(coins, fmt.Sprintf("%d %s", n, c))
+		totalGP += float64(n) * values[c]
+	}
+	if len(coins) == 0 {
+		coins = append(coins, "0 gp")
+	}
+	meta := &strings.Builder{}
+	fmt.Fprintf(meta, "[yellow]Treasure Generator[-]\n")
+	fmt.Fprintf(meta, "[white]CR:[-] %s\n", crText)
+	fmt.Fprintf(meta, "[white]Table:[-] Individual Treasure (%s)\n", out.Band)
+	fmt.Fprintf(meta, "[white]d100:[-] %d\n", out.D100)
+	fmt.Fprintf(meta, "[white]Coins:[-] %s\n", strings.Join(coins, ", "))
+	fmt.Fprintf(meta, "[white]GP eq:[-] %.2f", totalGP)
+	ui.detailMeta.SetText(meta.String())
+	ui.detailMeta.ScrollToBeginning()
+
+	raw := &strings.Builder{}
+	fmt.Fprintf(raw, "Treasure Generation (D&D 5e - Individual Treasure)\n")
+	fmt.Fprintf(raw, "CR input: %s\n", crText)
+	fmt.Fprintf(raw, "Band: %s\n", out.Band)
+	fmt.Fprintf(raw, "d100 roll: %d\n", out.D100)
+	fmt.Fprintf(raw, "\nRoll Breakdown\n")
+	for _, line := range out.Breakdown {
+		fmt.Fprintf(raw, "- %s\n", line)
+	}
+	fmt.Fprintf(raw, "\nResult\n%s\n", strings.Join(coins, ", "))
+	fmt.Fprintf(raw, "GP equivalent: %.2f\n", totalGP)
+
+	ui.rawText = strings.TrimSpace(raw.String())
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
 }
 
 func (ui *UI) openDiceRollInput() {
@@ -4191,6 +4313,105 @@ func crToFloat(cr string) (float64, bool) {
 		return 0, false
 	}
 	return v, true
+}
+
+func generateIndividualTreasure(crText string, randIntn func(int) int) (treasureOutcome, error) {
+	cr, ok := crToFloat(crText)
+	if !ok {
+		return treasureOutcome{}, errors.New("invalid cr")
+	}
+	if randIntn == nil {
+		randIntn = rand.Intn
+	}
+	d100 := randIntn(100) + 1
+
+	roll := func(n, sides, mult int, cur string) (int, string) {
+		sum := 0
+		for i := 0; i < n; i++ {
+			sum += randIntn(sides) + 1
+		}
+		total := sum * mult
+		if mult == 1 {
+			return total, fmt.Sprintf("%s: %dd%d = %d", cur, n, sides, total)
+		}
+		return total, fmt.Sprintf("%s: %dd%d x %d = %d", cur, n, sides, mult, total)
+	}
+
+	out := treasureOutcome{
+		D100:      d100,
+		Coins:     map[string]int{},
+		Breakdown: []string{},
+	}
+	add := func(cur string, n, sides, mult int) {
+		total, detail := roll(n, sides, mult, cur)
+		out.Coins[cur] += total
+		out.Breakdown = append(out.Breakdown, detail)
+	}
+
+	switch {
+	case cr <= 4:
+		out.Band = "CR 0-4"
+		switch {
+		case d100 <= 30:
+			add("cp", 5, 6, 1)
+		case d100 <= 60:
+			add("sp", 4, 6, 1)
+		case d100 <= 70:
+			add("ep", 3, 6, 1)
+		case d100 <= 95:
+			add("gp", 3, 6, 1)
+		default:
+			add("pp", 1, 6, 1)
+		}
+	case cr <= 10:
+		out.Band = "CR 5-10"
+		switch {
+		case d100 <= 30:
+			add("cp", 4, 6, 100)
+			add("ep", 1, 6, 10)
+		case d100 <= 60:
+			add("sp", 6, 6, 10)
+			add("gp", 2, 6, 10)
+		case d100 <= 70:
+			add("ep", 3, 6, 10)
+			add("gp", 2, 6, 10)
+		case d100 <= 95:
+			add("gp", 4, 6, 10)
+		default:
+			add("gp", 2, 6, 10)
+			add("pp", 3, 6, 1)
+		}
+	case cr <= 16:
+		out.Band = "CR 11-16"
+		switch {
+		case d100 <= 20:
+			add("sp", 4, 6, 100)
+			add("gp", 1, 6, 100)
+		case d100 <= 35:
+			add("ep", 1, 6, 100)
+			add("gp", 1, 6, 100)
+		case d100 <= 75:
+			add("gp", 2, 6, 100)
+			add("pp", 1, 6, 10)
+		default:
+			add("gp", 2, 6, 100)
+			add("pp", 2, 6, 10)
+		}
+	default:
+		out.Band = "CR 17+"
+		switch {
+		case d100 <= 15:
+			add("ep", 2, 6, 1000)
+			add("gp", 8, 6, 100)
+		case d100 <= 55:
+			add("gp", 1, 6, 1000)
+			add("pp", 1, 6, 100)
+		default:
+			add("gp", 1, 6, 1000)
+			add("pp", 2, 6, 100)
+		}
+	}
+	return out, nil
 }
 
 func blankIfEmpty(v, fallback string) string {
