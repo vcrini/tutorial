@@ -742,6 +742,44 @@ func TestFilterItemsByTreasureKinds(t *testing.T) {
 	}
 }
 
+func TestFilterSpellsByLevel(t *testing.T) {
+	spells := []Monster{
+		{Name: "Magic Missile", CR: "1", Type: "Evocation"},
+		{Name: "Fireball", CR: "3", Type: "Evocation"},
+		{Name: "Wish", CR: "9", Type: "Conjuration"},
+	}
+	got := filterSpellsByLevel(spells, "3")
+	if len(got) != 1 || got[0].Name != "Fireball" {
+		t.Fatalf("unexpected level filter result: %#v", got)
+	}
+	got = filterSpellsByLevel(spells, "random")
+	if len(got) != 3 {
+		t.Fatalf("random should return all spells, got %d", len(got))
+	}
+	got = filterSpellsByFilter(spells, SpellTreasureFilter{Level: "3", School: "Evocation"})
+	if len(got) != 1 || got[0].Name != "Fireball" {
+		t.Fatalf("unexpected advanced spell filter result: %#v", got)
+	}
+}
+
+func TestSaveTreasureToPath(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.treasureText = "sample treasure"
+	path := filepath.Join(t.TempDir(), "tesoro-test.yaml")
+	if err := ui.saveTreasureToPath(path, false); err != nil {
+		t.Fatalf("saveTreasureToPath failed: %v", err)
+	}
+	if !fileExists(path) {
+		t.Fatalf("expected file to exist: %s", path)
+	}
+	if err := ui.saveTreasureToPath(path, false); err == nil {
+		t.Fatal("expected overwrite protection error")
+	}
+	if err := ui.saveTreasureToPath(path, true); err != nil {
+		t.Fatalf("expected overwrite save to succeed: %v", err)
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 

@@ -1,7 +1,9 @@
 package main
 
 import (
+	crand "crypto/rand"
 	_ "embed"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"log"
@@ -219,15 +221,16 @@ type UI struct {
 	turnIndex       int
 	turnRound       int
 
-	helpVisible         bool
-	helpReturnFocus     tview.Primitive
-	addCustomVisible    bool
-	fullscreenActive    bool
-	fullscreenTarget    string
-	spellShortcutAlt    bool
-	updatingSourceDrop  bool
-	activeBottomPanel   string
-	itemTreasureVisible bool
+	helpVisible          bool
+	helpReturnFocus      tview.Primitive
+	addCustomVisible     bool
+	fullscreenActive     bool
+	fullscreenTarget     string
+	spellShortcutAlt     bool
+	updatingSourceDrop   bool
+	activeBottomPanel    string
+	itemTreasureVisible  bool
+	spellTreasureVisible bool
 }
 
 func main() {
@@ -589,9 +592,14 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			return event
 		}
 
-		if ui.itemTreasureVisible {
+		if ui.itemTreasureVisible || ui.spellTreasureVisible {
 			if event.Key() == tcell.KeyEscape {
-				ui.closeItemTreasureModal()
+				if ui.itemTreasureVisible {
+					ui.closeItemTreasureModal()
+				}
+				if ui.spellTreasureVisible {
+					ui.closeSpellTreasureModal()
+				}
 				return nil
 			}
 			// While modal is open, do not process global shortcuts (1/2/3/q/...).
@@ -756,6 +764,10 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				ui.openItemTreasureInput()
 				return nil
 			}
+			if ui.browseMode == BrowseSpells {
+				ui.openSpellTreasureInput()
+				return nil
+			}
 			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
@@ -790,6 +802,12 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'S':
 			ui.sortEncounterByInitiative()
 			return nil
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'S':
+			if ui.browseMode == BrowseItems {
+				ui.openTreasureSaveAsInput()
+				return nil
+			}
+			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == '*':
 			ui.toggleEncounterTurnMode()
 			return nil
@@ -1008,6 +1026,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  j / k (o frecce) : naviga lista\n" +
 				"  / : cerca nella Description della voce selezionata\n" +
 				"  g : genera treasure items (tipo + quantita)\n" +
+				"  S : salva Treasure su file\n" +
 				"  n / s / r / t : focus su Name / Source(multi) / Rarity / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -1016,6 +1035,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"[black:gold]Spells[-:-]\n" +
 			"  j / k (o frecce) : naviga lista\n" +
 			"  / : cerca nella Description della voce selezionata\n" +
+			"  g : genera spells (level + quantita)\n" +
 			"  n / s / l / s : focus su Name / Source(multi) / Level / School (s alterna Source/School)\n" +
 			"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 			"  PgUp / PgDn : scroll del pannello Description\n"
@@ -1341,6 +1361,286 @@ func (ui *UI) openItemTreasureInput() {
 	ui.pages.AddPage("items-treasure-input", modal, true, true)
 	ui.itemTreasureVisible = true
 	ui.app.SetFocus(typeList)
+}
+
+func (ui *UI) openSpellTreasureInput() {
+	levelOptions := []string{"random", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	schoolOptions := []string{"random"}
+	schoolSet := map[string]struct{}{}
+	for _, sp := range ui.spells {
+		if s := strings.TrimSpace(sp.Type); s != "" {
+			schoolSet[s] = struct{}{}
+		}
+	}
+	schoolOptions = append(schoolOptions, keysSorted(schoolSet)...)
+
+	level := "random"
+	school := "random"
+	qty := "1"
+
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Generate Spell Treasure ")
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+	form.SetFieldBackgroundColor(tcell.ColorWhite)
+	form.SetFieldTextColor(tcell.ColorBlack)
+	form.SetLabelColor(tcell.ColorGold)
+	form.AddDropDown("Level", levelOptions, 0, func(option string, _ int) { level = option })
+	form.AddDropDown("School", schoolOptions, 0, func(option string, _ int) { school = option })
+	form.AddInputField("Qty", qty, 8, nil, func(text string) { qty = text })
+
+	closeModal := func() {
+		ui.closeSpellTreasureModal()
+	}
+	runGenerate := func() {
+		count, err := strconv.Atoi(strings.TrimSpace(qty))
+		if err != nil || count <= 0 {
+			ui.status.SetText(fmt.Sprintf(" [white:red] quantita non valida[-:-] \"%s\"  %s", qty, helpText))
+			return
+		}
+		filter := SpellTreasureFilter{
+			Level:  level,
+			School: school,
+		}
+		spells, err := ui.generateSpellTreasure(filter, count)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] %v[-:-]  %s", err, helpText))
+			return
+		}
+		ui.renderGeneratedSpellTreasure(filter, spells)
+		ui.status.SetText(fmt.Sprintf(" [black:gold]spell treasure[-:-] generate %d spells (level=%s school=%s)  %s", len(spells), filter.Level, filter.School, helpText))
+		closeModal()
+	}
+	form.AddButton("Generate", runGenerate)
+	form.AddButton("Cancel", closeModal)
+	form.SetCancelFunc(closeModal)
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape {
+			closeModal()
+			return nil
+		}
+		if event.Key() == tcell.KeyEnter {
+			formIdx, btnIdx := form.GetFocusedItemIndex()
+			if formIdx == 2 && btnIdx < 0 {
+				runGenerate()
+				return nil
+			}
+		}
+		return event
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 13, 0, true).
+			AddItem(nil, 0, 1, false), 64, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("spells-treasure-input", modal, true, true)
+	ui.spellTreasureVisible = true
+	ui.app.SetFocus(form)
+}
+
+func (ui *UI) openTreasureSaveAsInput() {
+	content := strings.TrimSpace(ui.treasureText)
+	if content == "" || strings.EqualFold(content, "Nessun tesoro generato.") {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessun Treasure da salvare[-:-]  %s", helpText))
+		return
+	}
+	defaultName := fmt.Sprintf("tesoro-%s.yaml", newShortUUID())
+	input := tview.NewInputField().
+		SetLabel("File: ").
+		SetFieldWidth(60).
+		SetText(defaultName)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBorder(true)
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	input.SetTitle(" Save Treasure As ")
+
+	closeModal := func() {
+		ui.pages.RemovePage("treasure-saveas")
+		ui.app.SetFocus(ui.list)
+	}
+	trySave := func(path string, overwrite bool) {
+		if err := ui.saveTreasureToPath(path, overwrite); err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] errore save treasure[-:-] %v  %s", err, helpText))
+			return
+		}
+		ui.status.SetText(fmt.Sprintf(" [black:gold]treasure salvato[-:-] %s  %s", path, helpText))
+		closeModal()
+	}
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			closeModal()
+			return
+		}
+		path := strings.TrimSpace(input.GetText())
+		if path == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome file non valido[-:-]  %s", helpText))
+			return
+		}
+		if fileExists(path) {
+			ui.openTreasureOverwriteConfirm(path, func(confirmed bool) {
+				if !confirmed {
+					ui.status.SetText(fmt.Sprintf(" [black:gold]save treasure[-:-] annullato (file esistente)  %s", helpText))
+					return
+				}
+				trySave(path, true)
+			})
+			return
+		}
+		trySave(path, false)
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 76, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("treasure-saveas", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) openTreasureOverwriteConfirm(path string, done func(bool)) {
+	msg := tview.NewTextView().
+		SetDynamicColors(true).
+		SetWrap(true).
+		SetWordWrap(true)
+	msg.SetBorder(true)
+	msg.SetBorderColor(tcell.ColorGold)
+	msg.SetTitleColor(tcell.ColorGold)
+	msg.SetTitle(" Overwrite Warning ")
+	msg.SetText(fmt.Sprintf("Il file esiste gia:\n[white]%s[-]\n\nSovrascrivere? [black:gold]y[-:-]/[black:gold]n[-:-]", path))
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(msg, 8, 0, true).
+			AddItem(nil, 0, 1, false), 76, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	msg.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && (event.Rune() == 'n' || event.Rune() == 'N')) {
+			ui.pages.RemovePage("treasure-overwrite")
+			done(false)
+			return nil
+		}
+		if event.Key() == tcell.KeyRune && (event.Rune() == 'y' || event.Rune() == 'Y') {
+			ui.pages.RemovePage("treasure-overwrite")
+			done(true)
+			return nil
+		}
+		return event
+	})
+
+	ui.pages.AddPage("treasure-overwrite", modal, true, true)
+	ui.app.SetFocus(msg)
+}
+
+func (ui *UI) saveTreasureToPath(path string, overwrite bool) error {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return errors.New("empty path")
+	}
+	if !overwrite && fileExists(path) {
+		return errors.New("file already exists")
+	}
+	content := strings.TrimSpace(ui.treasureText)
+	if content == "" {
+		return errors.New("empty treasure content")
+	}
+	return os.WriteFile(path, []byte(content+"\n"), 0o644)
+}
+
+func fileExists(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil
+}
+
+func newShortUUID() string {
+	var b [16]byte
+	if _, err := crand.Read(b[:]); err != nil {
+		return fmt.Sprintf("%d", time.Now().UnixNano())
+	}
+	hexv := hex.EncodeToString(b[:])
+	if len(hexv) < 16 {
+		return hexv
+	}
+	return hexv[:16]
+}
+
+type SpellTreasureFilter struct {
+	Level  string
+	School string
+}
+
+func (ui *UI) generateSpellTreasure(filter SpellTreasureFilter, count int) ([]Monster, error) {
+	if count < 1 {
+		return nil, errors.New("quantita deve essere >= 1")
+	}
+	candidates := filterSpellsByFilter(ui.spells, filter)
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("nessuna spell trovata per level=%q school=%q", filter.Level, filter.School)
+	}
+	out := make([]Monster, 0, count)
+	for i := 0; i < count; i++ {
+		idx := rand.Intn(len(candidates))
+		out = append(out, candidates[idx])
+	}
+	return out, nil
+}
+
+func filterSpellsByFilter(spells []Monster, filter SpellTreasureFilter) []Monster {
+	level := strings.TrimSpace(strings.ToLower(filter.Level))
+	school := strings.TrimSpace(strings.ToLower(filter.School))
+	out := make([]Monster, 0, len(spells))
+	for _, sp := range spells {
+		if level != "" && level != "random" && !strings.EqualFold(strings.TrimSpace(sp.CR), level) {
+			continue
+		}
+		if school != "" && school != "random" && !strings.EqualFold(strings.TrimSpace(sp.Type), school) {
+			continue
+		}
+		out = append(out, sp)
+	}
+	return out
+}
+
+func filterSpellsByLevel(spells []Monster, level string) []Monster {
+	return filterSpellsByFilter(spells, SpellTreasureFilter{Level: level})
+}
+
+func (ui *UI) renderGeneratedSpellTreasure(filter SpellTreasureFilter, spells []Monster) {
+	meta := &strings.Builder{}
+	fmt.Fprintf(meta, "[yellow]Spell Treasure[-]\n")
+	fmt.Fprintf(meta, "[white]Level:[-] %s\n", blankIfEmpty(filter.Level, "random"))
+	fmt.Fprintf(meta, "[white]School:[-] %s\n", blankIfEmpty(filter.School, "random"))
+	fmt.Fprintf(meta, "[white]Count:[-] %d\n", len(spells))
+	ui.detailMeta.SetText(meta.String())
+	ui.detailMeta.ScrollToBeginning()
+
+	lines := make([]string, 0, len(spells))
+	for i, sp := range spells {
+		lines = append(lines, fmt.Sprintf("%d. %s [%s] (Level %s, %s)", i+1, sp.Name, sp.Source, sp.CR, sp.Type))
+	}
+	ui.treasureText = fmt.Sprintf("[yellow]Generated Spells[-]\n[white]Level:[-] %s  [white]School:[-] %s  [white]Qty:[-] %d\n\n%s", blankIfEmpty(filter.Level, "random"), blankIfEmpty(filter.School, "random"), len(spells), strings.Join(lines, "\n"))
+	ui.detailTreasure.SetText(ui.treasureText)
+	ui.detailTreasure.ScrollToBeginning()
+	ui.activeBottomPanel = "treasure"
+	if ui.detailBottom != nil {
+		ui.detailBottom.SwitchToPage("treasure")
+	}
 }
 
 func (ui *UI) generateItemTreasureByKinds(kinds []string, count int) ([]Monster, error) {
@@ -2101,6 +2401,12 @@ func (ui *UI) run() error {
 func (ui *UI) closeItemTreasureModal() {
 	ui.pages.RemovePage("items-treasure-input")
 	ui.itemTreasureVisible = false
+	ui.app.SetFocus(ui.list)
+}
+
+func (ui *UI) closeSpellTreasureModal() {
+	ui.pages.RemovePage("spells-treasure-input")
+	ui.spellTreasureVisible = false
 	ui.app.SetFocus(ui.list)
 }
 
