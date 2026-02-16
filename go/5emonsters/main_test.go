@@ -710,6 +710,38 @@ func TestMagicItemEconomyNonMagical(t *testing.T) {
 	}
 }
 
+func TestFilterItemsByTreasureType(t *testing.T) {
+	items := []Monster{
+		{Name: "Potion of Healing", Type: "potion", Raw: map[string]any{"potion": true}},
+		{Name: "Ring of Protection", Type: "ring", Raw: map[string]any{"ring": true}},
+		{Name: "Staff of Power", Type: "staff", Raw: map[string]any{"staff": true}},
+	}
+	got := filterItemsByTreasureType(items, "potion")
+	if len(got) != 1 || got[0].Name != "Potion of Healing" {
+		t.Fatalf("unexpected potion filter result: %#v", got)
+	}
+	got = filterItemsByTreasureType(items, "random")
+	if len(got) != 3 {
+		t.Fatalf("expected random to return all items, got %d", len(got))
+	}
+}
+
+func TestFilterItemsByTreasureKinds(t *testing.T) {
+	items := []Monster{
+		{ID: 1, Name: "Potion of Healing", Type: "potion", Raw: map[string]any{"potion": true}},
+		{ID: 2, Name: "Ring of Protection", Type: "ring", Raw: map[string]any{"ring": true}},
+		{ID: 3, Name: "Staff of Power", Type: "staff", Raw: map[string]any{"staff": true}},
+	}
+	got := filterItemsByTreasureKinds(items, []string{"potion", "ring"})
+	if len(got) != 2 {
+		t.Fatalf("expected 2 filtered items, got %d", len(got))
+	}
+	got = filterItemsByTreasureKinds(items, []string{"random"})
+	if len(got) != 3 {
+		t.Fatalf("expected random to include all, got %d", len(got))
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 

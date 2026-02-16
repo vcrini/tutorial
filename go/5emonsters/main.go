@@ -219,14 +219,15 @@ type UI struct {
 	turnIndex       int
 	turnRound       int
 
-	helpVisible        bool
-	helpReturnFocus    tview.Primitive
-	addCustomVisible   bool
-	fullscreenActive   bool
-	fullscreenTarget   string
-	spellShortcutAlt   bool
-	updatingSourceDrop bool
-	activeBottomPanel  string
+	helpVisible         bool
+	helpReturnFocus     tview.Primitive
+	addCustomVisible    bool
+	fullscreenActive    bool
+	fullscreenTarget    string
+	spellShortcutAlt    bool
+	updatingSourceDrop  bool
+	activeBottomPanel   string
+	itemTreasureVisible bool
 }
 
 func main() {
@@ -355,6 +356,21 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
+	ui.sourceDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			ui.toggleCurrentSourceOption()
+			return nil
+		case event.Key() == tcell.KeyEnter:
+			ui.app.SetFocus(ui.crDrop)
+			return nil
+		case event.Key() == tcell.KeyEscape:
+			ui.app.SetFocus(ui.list)
+			return nil
+		default:
+			return event
+		}
+	})
 
 	ui.crDrop = tview.NewDropDown().
 		SetLabel(" CR ").
@@ -573,6 +589,15 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			return event
 		}
 
+		if ui.itemTreasureVisible {
+			if event.Key() == tcell.KeyEscape {
+				ui.closeItemTreasureModal()
+				return nil
+			}
+			// While modal is open, do not process global shortcuts (1/2/3/q/...).
+			return event
+		}
+
 		switch {
 		case event.Key() == tcell.KeyRune && event.Rune() == '?':
 			ui.openHelpOverlay(focus)
@@ -627,6 +652,15 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			return nil
 		case event.Key() == tcell.KeyBacktab:
 			ui.focusPrev()
+			return nil
+		case focus == ui.sourceDrop && event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			ui.toggleCurrentSourceOption()
+			return nil
+		case focus == ui.sourceDrop && event.Key() == tcell.KeyEnter:
+			ui.focusNext()
+			return nil
+		case focus == ui.sourceDrop && event.Key() == tcell.KeyEscape:
+			ui.app.SetFocus(ui.list)
 			return nil
 		case event.Key() == tcell.KeyEscape &&
 			(focus == ui.list || focus == ui.nameInput || focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop):
@@ -714,6 +748,12 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			}
 			if ui.browseMode == BrowseSpells {
 				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'g':
+			if ui.browseMode == BrowseItems {
+				ui.openItemTreasureInput()
 				return nil
 			}
 			return event
@@ -967,6 +1007,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"[black:gold]Items[-:-]\n" +
 				"  j / k (o frecce) : naviga lista\n" +
 				"  / : cerca nella Description della voce selezionata\n" +
+				"  g : genera treasure items (tipo + quantita)\n" +
 				"  n / s / r / t : focus su Name / Source(multi) / Rarity / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -1169,6 +1210,268 @@ func (ui *UI) currentMonsterCR() string {
 		return ""
 	}
 	return strings.TrimSpace(ui.monsters[idx].CR)
+}
+
+func (ui *UI) openItemTreasureInput() {
+	typeOptions := []string{"random", "potion", "scroll", "staff", "wand", "rod", "ring", "weapon", "armor", "wondrous"}
+	selectedTypes := map[string]struct{}{"random": {}}
+
+	typeList := tview.NewList()
+	typeList.SetBorder(true)
+	typeList.SetTitle(" Type (Space=toggle, Enter=Qty) ")
+	typeList.SetBorderColor(tcell.ColorGold)
+	typeList.SetTitleColor(tcell.ColorGold)
+	typeList.SetMainTextColor(tcell.ColorWhite)
+	typeList.SetSelectedTextColor(tcell.ColorBlack)
+	typeList.SetSelectedBackgroundColor(tcell.ColorGold)
+	typeList.ShowSecondaryText(false)
+
+	renderTypes := func() {
+		current := typeList.GetCurrentItem()
+		typeList.Clear()
+		for _, opt := range typeOptions {
+			mark := "[ ]"
+			if _, ok := selectedTypes[opt]; ok {
+				mark = "[x]"
+			}
+			typeList.AddItem(fmt.Sprintf("%s %s", mark, opt), "", 0, nil)
+		}
+		if current < 0 {
+			current = 0
+		}
+		if current >= len(typeOptions) {
+			current = len(typeOptions) - 1
+		}
+		typeList.SetCurrentItem(current)
+	}
+
+	toggleAt := func(idx int) {
+		if idx < 0 || idx >= len(typeOptions) {
+			return
+		}
+		opt := typeOptions[idx]
+		if opt == "random" {
+			selectedTypes = map[string]struct{}{"random": {}}
+			return
+		}
+		delete(selectedTypes, "random")
+		if _, ok := selectedTypes[opt]; ok {
+			delete(selectedTypes, opt)
+		} else {
+			selectedTypes[opt] = struct{}{}
+		}
+		if len(selectedTypes) == 0 {
+			selectedTypes["random"] = struct{}{}
+		}
+	}
+
+	closeModal := func() {
+		ui.closeItemTreasureModal()
+	}
+	qtyInput := tview.NewInputField().SetLabel(" Qty ").SetFieldWidth(8).SetText("1")
+	qtyInput.SetLabelColor(tcell.ColorGold)
+	qtyInput.SetFieldBackgroundColor(tcell.ColorWhite)
+	qtyInput.SetFieldTextColor(tcell.ColorBlack)
+	qtyInput.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	qtyInput.SetBorder(true)
+	qtyInput.SetBorderColor(tcell.ColorGold)
+
+	runGenerate := func() {
+		count, err := strconv.Atoi(strings.TrimSpace(qtyInput.GetText()))
+		if err != nil || count <= 0 {
+			ui.status.SetText(fmt.Sprintf(" [white:red] quantita non valida[-:-] \"%s\"  %s", qtyInput.GetText(), helpText))
+			return
+		}
+		kinds := keysSorted(selectedTypes)
+		items, err := ui.generateItemTreasureByKinds(kinds, count)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] %v[-:-]  %s", err, helpText))
+			return
+		}
+		ui.renderGeneratedItemTreasure(strings.Join(kinds, ","), items)
+		ui.status.SetText(fmt.Sprintf(" [black:gold]item treasure[-:-] generati %d item (%s)  %s", len(items), strings.Join(kinds, ","), helpText))
+		closeModal()
+	}
+
+	typeList.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			idx := typeList.GetCurrentItem()
+			toggleAt(idx)
+			renderTypes()
+			return nil
+		case event.Key() == tcell.KeyEnter:
+			ui.app.SetFocus(qtyInput)
+			return nil
+		case event.Key() == tcell.KeyEscape:
+			closeModal()
+			return nil
+		default:
+			return event
+		}
+	})
+	qtyInput.SetDoneFunc(func(key tcell.Key) {
+		switch key {
+		case tcell.KeyEnter:
+			runGenerate()
+		case tcell.KeyEscape:
+			closeModal()
+		}
+	})
+
+	renderTypes()
+
+	modalBody := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(typeList, 11, 0, true).
+		AddItem(qtyInput, 3, 0, false)
+	modalBody.SetBorder(true)
+	modalBody.SetTitle(" Generate Item Treasure ")
+	modalBody.SetTitleColor(tcell.ColorGold)
+	modalBody.SetBorderColor(tcell.ColorGold)
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(modalBody, 16, 0, true).
+			AddItem(nil, 0, 1, false), 62, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("items-treasure-input", modal, true, true)
+	ui.itemTreasureVisible = true
+	ui.app.SetFocus(typeList)
+}
+
+func (ui *UI) generateItemTreasureByKinds(kinds []string, count int) ([]Monster, error) {
+	if count < 1 {
+		return nil, errors.New("quantita deve essere >= 1")
+	}
+	candidates := filterItemsByTreasureKinds(ui.items, kinds)
+	if len(candidates) == 0 {
+		return nil, fmt.Errorf("nessun item trovato per tipo \"%s\"", strings.Join(kinds, ","))
+	}
+	out := make([]Monster, 0, count)
+	for i := 0; i < count; i++ {
+		idx := rand.Intn(len(candidates))
+		out = append(out, candidates[idx])
+	}
+	return out, nil
+}
+
+func filterItemsByTreasureKinds(items []Monster, kinds []string) []Monster {
+	if len(kinds) == 0 {
+		return append([]Monster(nil), items...)
+	}
+	set := map[string]struct{}{}
+	for _, k := range kinds {
+		k = strings.TrimSpace(k)
+		if k != "" {
+			set[k] = struct{}{}
+		}
+	}
+	if len(set) == 0 {
+		return append([]Monster(nil), items...)
+	}
+	if _, ok := set["random"]; ok {
+		return append([]Monster(nil), items...)
+	}
+	if _, ok := set["any"]; ok {
+		return append([]Monster(nil), items...)
+	}
+	if _, ok := set["*"]; ok {
+		return append([]Monster(nil), items...)
+	}
+	merged := make([]Monster, 0, len(items))
+	seen := map[int]struct{}{}
+	for k := range set {
+		for _, it := range filterItemsByTreasureType(items, k) {
+			if _, ok := seen[it.ID]; ok {
+				continue
+			}
+			seen[it.ID] = struct{}{}
+			merged = append(merged, it)
+		}
+	}
+	return merged
+}
+
+func filterItemsByTreasureType(items []Monster, kind string) []Monster {
+	kind = strings.ToLower(strings.TrimSpace(kind))
+	if kind == "" || kind == "random" || kind == "*" || kind == "any" {
+		return append([]Monster(nil), items...)
+	}
+	matches := make([]Monster, 0, len(items))
+	for _, it := range items {
+		raw := it.Raw
+		typ := strings.ToLower(strings.TrimSpace(it.Type))
+		name := strings.ToLower(strings.TrimSpace(it.Name))
+		hasFlag := func(key string) bool {
+			b, ok := raw[key].(bool)
+			return ok && b
+		}
+		ok := false
+		switch kind {
+		case "potion":
+			ok = hasFlag("potion") || strings.Contains(name, "potion")
+		case "scroll", "spell":
+			ok = hasFlag("scroll") || strings.Contains(name, "scroll")
+		case "staff":
+			ok = hasFlag("staff") || strings.Contains(typ, "staff")
+		case "wand":
+			ok = hasFlag("wand") || strings.Contains(typ, "wand")
+		case "rod":
+			ok = hasFlag("rod") || strings.Contains(typ, "rod")
+		case "ring":
+			ok = hasFlag("ring") || strings.Contains(typ, "ring")
+		case "weapon":
+			ok = hasFlag("weapon") || strings.Contains(typ, "weapon")
+		case "armor", "armour":
+			ok = hasFlag("armor") || strings.Contains(typ, "armor")
+		case "wondrous":
+			ok = hasFlag("wondrous") || strings.Contains(typ, "wondrous")
+		default:
+			ok = strings.Contains(typ, kind) || strings.Contains(name, kind)
+		}
+		if ok {
+			matches = append(matches, it)
+		}
+	}
+	return matches
+}
+
+func (ui *UI) renderGeneratedItemTreasure(kind string, items []Monster) {
+	kind = strings.TrimSpace(kind)
+	if kind == "" {
+		kind = "random"
+	}
+	meta := &strings.Builder{}
+	fmt.Fprintf(meta, "[yellow]Item Treasure[-]\n")
+	fmt.Fprintf(meta, "[white]Type:[-] %s\n", kind)
+	fmt.Fprintf(meta, "[white]Count:[-] %d\n", len(items))
+	ui.detailMeta.SetText(meta.String())
+	ui.detailMeta.ScrollToBeginning()
+
+	lines := make([]string, 0, len(items))
+	for i, it := range items {
+		rarity := strings.TrimSpace(it.CR)
+		if rarity == "" {
+			rarity = "n/a"
+		}
+		price := formatItemBasePrice(it.Raw)
+		if price == "" {
+			price = "n/a"
+		}
+		lines = append(lines, fmt.Sprintf("%d. %s [%s] (%s) - %s", i+1, it.Name, it.Source, rarity, price))
+	}
+
+	ui.treasureText = fmt.Sprintf("[yellow]Generated Items[-]\n[white]Type:[-] %s  [white]Qty:[-] %d\n\n%s", kind, len(items), strings.Join(lines, "\n"))
+	ui.detailTreasure.SetText(ui.treasureText)
+	ui.detailTreasure.ScrollToBeginning()
+	ui.activeBottomPanel = "treasure"
+	if ui.detailBottom != nil {
+		ui.detailBottom.SwitchToPage("treasure")
+	}
 }
 
 func (ui *UI) renderTreasureOutcome(crText string, out treasureOutcome) {
@@ -1795,6 +2098,12 @@ func (ui *UI) run() error {
 	return ui.app.Run()
 }
 
+func (ui *UI) closeItemTreasureModal() {
+	ui.pages.RemovePage("items-treasure-input")
+	ui.itemTreasureVisible = false
+	ui.app.SetFocus(ui.list)
+}
+
 func (ui *UI) browseModeName() string {
 	switch ui.browseMode {
 	case BrowseItems:
@@ -1920,6 +2229,7 @@ func (ui *UI) setFilterOptionsForMode() {
 
 func (ui *UI) refreshSourceDropOptions() {
 	display := make([]string, 0, len(ui.sourceOptions))
+	currentIdx, _ := ui.sourceDrop.GetCurrentOption()
 	if len(ui.sourceFilters) == 0 {
 		display = append(display, "[x] All")
 	} else {
@@ -1951,8 +2261,36 @@ func (ui *UI) refreshSourceDropOptions() {
 		ui.refreshSourceDropOptions()
 		ui.applyFilters()
 	})
-	ui.sourceDrop.SetCurrentOption(0)
+	if currentIdx < 0 {
+		currentIdx = 0
+	}
+	if currentIdx >= len(display) {
+		currentIdx = len(display) - 1
+	}
+	if currentIdx < 0 {
+		currentIdx = 0
+	}
+	ui.sourceDrop.SetCurrentOption(currentIdx)
 	ui.updatingSourceDrop = false
+}
+
+func (ui *UI) toggleCurrentSourceOption() {
+	if ui.sourceDrop == nil {
+		return
+	}
+	idx, _ := ui.sourceDrop.GetCurrentOption()
+	if idx <= 0 {
+		ui.sourceFilters = map[string]struct{}{}
+	} else if idx < len(ui.sourceOptions) {
+		val := ui.sourceOptions[idx]
+		if _, ok := ui.sourceFilters[val]; ok {
+			delete(ui.sourceFilters, val)
+		} else {
+			ui.sourceFilters[val] = struct{}{}
+		}
+	}
+	ui.refreshSourceDropOptions()
+	ui.applyFilters()
 }
 
 func (ui *UI) selectedSourcesSorted() []string {
