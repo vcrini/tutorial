@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle Monsters/Items/Spells  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle Monsters/Items/Spells  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 	defaultEncountersPath  = "encounters.yaml"
 	lastEncountersPathFile = ".encounters_last_path"
 	defaultDicePath        = "dice.yaml"
@@ -152,10 +152,12 @@ type treasureCoinRoll struct {
 }
 
 type treasureOutcome struct {
+	Kind      string
 	Band      string
 	D100      int
 	Coins     map[string]int
 	Breakdown []string
+	Extras    []string
 }
 
 type UI struct {
@@ -176,31 +178,34 @@ type UI struct {
 	crFilter      string
 	typeFilter    string
 
-	nameInput     *tview.InputField
-	envDrop       *tview.DropDown
-	sourceDrop    *tview.DropDown
-	crDrop        *tview.DropDown
-	typeDrop      *tview.DropDown
-	dice          *tview.List
-	encounter     *tview.List
-	list          *tview.List
-	detailMeta    *tview.TextView
-	detailRaw     *tview.TextView
-	status        *tview.TextView
-	pages         *tview.Pages
-	leftPanel     *tview.Flex
-	monstersPanel *tview.Flex
-	mainRow       *tview.Flex
-	detailPanel   *tview.Flex
-	filterHost    *tview.Pages
+	nameInput      *tview.InputField
+	envDrop        *tview.DropDown
+	sourceDrop     *tview.DropDown
+	crDrop         *tview.DropDown
+	typeDrop       *tview.DropDown
+	dice           *tview.List
+	encounter      *tview.List
+	list           *tview.List
+	detailMeta     *tview.TextView
+	detailTreasure *tview.TextView
+	detailRaw      *tview.TextView
+	detailBottom   *tview.Pages
+	status         *tview.TextView
+	pages          *tview.Pages
+	leftPanel      *tview.Flex
+	monstersPanel  *tview.Flex
+	mainRow        *tview.Flex
+	detailPanel    *tview.Flex
+	filterHost     *tview.Pages
 
-	focusOrder  []tview.Primitive
-	rawText     string
-	rawQuery    string
-	diceLog     []DiceResult
-	diceRender  bool
-	wideFilter  bool
-	modeFilters map[BrowseMode]PersistedFilterMode
+	focusOrder   []tview.Primitive
+	rawText      string
+	rawQuery     string
+	treasureText string
+	diceLog      []DiceResult
+	diceRender   bool
+	wideFilter   bool
+	modeFilters  map[BrowseMode]PersistedFilterMode
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -221,6 +226,7 @@ type UI struct {
 	fullscreenTarget   string
 	spellShortcutAlt   bool
 	updatingSourceDrop bool
+	activeBottomPanel  string
 }
 
 func main() {
@@ -285,22 +291,23 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 	setTheme()
 
 	ui := &UI{
-		app:             tview.NewApplication(),
-		monsters:        monsters,
-		items:           items,
-		spells:          spells,
-		browseMode:      BrowseMonsters,
-		sourceFilters:   map[string]struct{}{},
-		envOptions:      append([]string{"All"}, envs...),
-		sourceOptions:   []string{"All"},
-		crOptions:       append([]string{"All"}, crs...),
-		typeOptions:     append([]string{"All"}, types...),
-		filtered:        make([]int, 0, len(monsters)),
-		encounterSerial: map[int]int{},
-		encounterItems:  make([]EncounterEntry, 0, 16),
-		encountersPath:  encountersPath,
-		dicePath:        dicePath,
-		modeFilters:     map[BrowseMode]PersistedFilterMode{},
+		app:               tview.NewApplication(),
+		monsters:          monsters,
+		items:             items,
+		spells:            spells,
+		browseMode:        BrowseMonsters,
+		sourceFilters:     map[string]struct{}{},
+		envOptions:        append([]string{"All"}, envs...),
+		sourceOptions:     []string{"All"},
+		crOptions:         append([]string{"All"}, crs...),
+		typeOptions:       append([]string{"All"}, types...),
+		filtered:          make([]int, 0, len(monsters)),
+		encounterSerial:   map[int]int{},
+		encounterItems:    make([]EncounterEntry, 0, 16),
+		encountersPath:    encountersPath,
+		dicePath:          dicePath,
+		modeFilters:       map[BrowseMode]PersistedFilterMode{},
+		activeBottomPanel: "description",
 	}
 
 	ui.nameInput = tview.NewInputField().
@@ -444,6 +451,19 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 	ui.detailMeta.SetTextColor(tcell.ColorWhite)
 	ui.detailMeta.SetWrap(true)
 
+	ui.detailTreasure = tview.NewTextView().
+		SetDynamicColors(true).
+		SetScrollable(true).
+		SetWordWrap(true)
+	ui.detailTreasure.SetBorder(true)
+	ui.detailTreasure.SetTitle(" Treasure ")
+	ui.detailTreasure.SetTitleColor(tcell.ColorGold)
+	ui.detailTreasure.SetBorderColor(tcell.ColorGold)
+	ui.detailTreasure.SetTextColor(tcell.ColorWhite)
+	ui.detailTreasure.SetWrap(true)
+	ui.treasureText = "Nessun tesoro generato."
+	ui.detailTreasure.SetText(ui.treasureText)
+
 	ui.detailRaw = tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true).
@@ -454,10 +474,14 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 	ui.detailRaw.SetBorderColor(tcell.ColorGold)
 	ui.detailRaw.SetTextColor(tcell.ColorWhite)
 
+	ui.detailBottom = tview.NewPages().
+		AddPage("description", ui.detailRaw, true, true).
+		AddPage("treasure", ui.detailTreasure, true, false)
+
 	ui.detailPanel = tview.NewFlex().
 		SetDirection(tview.FlexRow).
-		AddItem(ui.detailMeta, 10, 0, false).
-		AddItem(ui.detailRaw, 0, 1, false)
+		AddItem(ui.detailMeta, 8, 0, false).
+		AddItem(ui.detailBottom, 0, 1, false)
 
 	ui.status = tview.NewTextView().
 		SetDynamicColors(true).
@@ -519,7 +543,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.app.SetRoot(ui.pages, true)
-	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailRaw}
+	ui.focusOrder = []tview.Primitive{ui.dice, ui.encounter, ui.nameInput, ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop, ui.list, ui.detailMeta, ui.detailTreasure, ui.detailRaw}
 	ui.app.SetFocus(ui.list)
 	ui.modeFilters[BrowseMonsters] = PersistedFilterMode{}
 	ui.modeFilters[BrowseItems] = PersistedFilterMode{}
@@ -683,6 +707,16 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				return nil
 			}
 			return event
+		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'l':
+			if ui.browseMode == BrowseMonsters {
+				ui.openLairTreasureByCRInput()
+				return nil
+			}
+			if ui.browseMode == BrowseSpells {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
 			return nil
@@ -695,6 +729,12 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			ui.deleteSelectedEncounterEntry()
 			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'd':
+			if focus == ui.list || focus == ui.detailMeta || focus == ui.detailTreasure || focus == ui.detailRaw {
+				ui.toggleDetailsTreasureFocus()
+				return nil
+			}
+			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 's':
 			ui.openEncounterSaveAsInput()
 			return nil
@@ -837,6 +877,10 @@ func (ui *UI) panelNameForFocus(focus tview.Primitive) string {
 		}
 	case ui.detailRaw:
 		return "Description"
+	case ui.detailMeta:
+		return "Details"
+	case ui.detailTreasure:
+		return "Treasure"
 	case ui.nameInput:
 		return "Name Filter"
 	case ui.envDrop:
@@ -913,6 +957,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  / : cerca nella Description del mostro selezionato\n" +
 				"  a : aggiungi mostro a Encounters\n" +
 				"  m : genera tesoro da CR (regole 5e)\n" +
+				"  l : genera lair treasure da CR (regole 5e)\n" +
 				"  n / e / s / c / t : focus su Name / Env / Source(multi) / CR / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -937,6 +982,11 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		return header +
 			"[black:gold]Description[-:-]\n" +
 			"  / : cerca testo nella Description corrente\n" +
+			"  j / k (o frecce) : scroll contenuto\n"
+	case ui.detailMeta, ui.detailTreasure:
+		return header +
+			"[black:gold]Details/Treasure[-:-]\n" +
+			"  d : switch focus tra Details e Treasure\n" +
 			"  j / k (o frecce) : scroll contenuto\n"
 	case ui.nameInput:
 		return header +
@@ -978,6 +1028,21 @@ func (ui *UI) focusPrev() {
 	ui.app.SetFocus(ui.list)
 }
 
+func (ui *UI) toggleDetailsTreasureFocus() {
+	if ui.detailBottom == nil {
+		return
+	}
+	if ui.activeBottomPanel == "treasure" {
+		ui.activeBottomPanel = "description"
+		ui.detailBottom.SwitchToPage("description")
+		ui.app.SetFocus(ui.detailRaw)
+		return
+	}
+	ui.activeBottomPanel = "treasure"
+	ui.detailBottom.SwitchToPage("treasure")
+	ui.app.SetFocus(ui.detailTreasure)
+}
+
 func (ui *UI) scrollDetailByPage(direction int) {
 	if direction == 0 {
 		return
@@ -1014,16 +1079,8 @@ func (ui *UI) openTreasureByCRInput() {
 	input.SetTitle(" Generate Treasure (5e Individual) ")
 	input.SetBorderColor(tcell.ColorGold)
 	input.SetTitleColor(tcell.ColorGold)
-	if ui.browseMode == BrowseMonsters && len(ui.filtered) > 0 {
-		cur := ui.list.GetCurrentItem()
-		if cur >= 0 && cur < len(ui.filtered) {
-			idx := ui.filtered[cur]
-			if idx >= 0 && idx < len(ui.monsters) {
-				if cr := strings.TrimSpace(ui.monsters[idx].CR); cr != "" {
-					input.SetText(cr)
-				}
-			}
-		}
+	if cr := ui.currentMonsterCR(); cr != "" {
+		input.SetText(cr)
 	}
 
 	modal := tview.NewFlex().
@@ -1054,6 +1111,66 @@ func (ui *UI) openTreasureByCRInput() {
 	ui.app.SetFocus(input)
 }
 
+func (ui *UI) openLairTreasureByCRInput() {
+	input := tview.NewInputField().
+		SetLabel("CR: ").
+		SetFieldWidth(16)
+	input.SetLabelColor(tcell.ColorGold)
+	input.SetFieldBackgroundColor(tcell.ColorWhite)
+	input.SetFieldTextColor(tcell.ColorBlack)
+	input.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	input.SetBackgroundColor(tcell.ColorBlack)
+	input.SetBorder(true)
+	input.SetTitle(" Generate Lair Treasure (5e Hoard) ")
+	input.SetBorderColor(tcell.ColorGold)
+	input.SetTitleColor(tcell.ColorGold)
+	if cr := ui.currentMonsterCR(); cr != "" {
+		input.SetText(cr)
+	}
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 3, 0, true).
+			AddItem(nil, 0, 1, false), 46, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		ui.pages.RemovePage("lair-treasure-input")
+		ui.app.SetFocus(ui.list)
+		if key == tcell.KeyEscape || key != tcell.KeyEnter {
+			return
+		}
+		crText := strings.TrimSpace(input.GetText())
+		outcome, err := generateLairTreasure(crText, rand.Intn)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] CR non valido[-:-] \"%s\"  %s", crText, helpText))
+			return
+		}
+		ui.renderTreasureOutcome(crText, outcome)
+		ui.status.SetText(fmt.Sprintf(" [black:gold]lair treasure[-:-] generato per CR %s  %s", crText, helpText))
+	})
+
+	ui.pages.AddPage("lair-treasure-input", modal, true, true)
+	ui.app.SetFocus(input)
+}
+
+func (ui *UI) currentMonsterCR() string {
+	if ui.browseMode != BrowseMonsters || len(ui.filtered) == 0 {
+		return ""
+	}
+	cur := ui.list.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.filtered) {
+		return ""
+	}
+	idx := ui.filtered[cur]
+	if idx < 0 || idx >= len(ui.monsters) {
+		return ""
+	}
+	return strings.TrimSpace(ui.monsters[idx].CR)
+}
+
 func (ui *UI) renderTreasureOutcome(crText string, out treasureOutcome) {
 	order := []string{"cp", "sp", "ep", "gp", "pp"}
 	coins := make([]string, 0, len(order))
@@ -1076,24 +1193,56 @@ func (ui *UI) renderTreasureOutcome(crText string, out treasureOutcome) {
 	if len(coins) == 0 {
 		coins = append(coins, "0 gp")
 	}
+	kind := strings.TrimSpace(out.Kind)
+	if kind == "" {
+		kind = "Individual Treasure"
+	}
 	meta := &strings.Builder{}
 	fmt.Fprintf(meta, "[yellow]Treasure Generator[-]\n")
 	fmt.Fprintf(meta, "[white]CR:[-] %s\n", crText)
-	fmt.Fprintf(meta, "[white]Table:[-] Individual Treasure (%s)\n", out.Band)
+	fmt.Fprintf(meta, "[white]Table:[-] %s (%s)\n", kind, out.Band)
 	fmt.Fprintf(meta, "[white]d100:[-] %d\n", out.D100)
 	fmt.Fprintf(meta, "[white]Coins:[-] %s\n", strings.Join(coins, ", "))
+	if len(out.Extras) > 0 {
+		fmt.Fprintf(meta, "[white]Extras:[-] %s\n", strings.Join(out.Extras, "; "))
+	}
 	fmt.Fprintf(meta, "[white]GP eq:[-] %.2f", totalGP)
 	ui.detailMeta.SetText(meta.String())
 	ui.detailMeta.ScrollToBeginning()
 
+	tre := &strings.Builder{}
+	fmt.Fprintf(tre, "[yellow]%s[-]\n", kind)
+	fmt.Fprintf(tre, "[white]CR:[-] %s   [white]Band:[-] %s   [white]d100:[-] %d\n", crText, out.Band, out.D100)
+	fmt.Fprintf(tre, "[white]Coins:[-] %s\n", strings.Join(coins, ", "))
+	if len(out.Extras) > 0 {
+		fmt.Fprintf(tre, "[white]Extras:[-]\n")
+		for _, ex := range out.Extras {
+			fmt.Fprintf(tre, "- %s\n", ex)
+		}
+	}
+	fmt.Fprintf(tre, "[white]GP eq:[-] %.2f", totalGP)
+	ui.treasureText = tre.String()
+	ui.detailTreasure.SetText(ui.treasureText)
+	ui.detailTreasure.ScrollToBeginning()
+	ui.activeBottomPanel = "treasure"
+	if ui.detailBottom != nil {
+		ui.detailBottom.SwitchToPage("treasure")
+	}
+
 	raw := &strings.Builder{}
-	fmt.Fprintf(raw, "Treasure Generation (D&D 5e - Individual Treasure)\n")
+	fmt.Fprintf(raw, "Treasure Generation (D&D 5e - %s)\n", kind)
 	fmt.Fprintf(raw, "CR input: %s\n", crText)
 	fmt.Fprintf(raw, "Band: %s\n", out.Band)
 	fmt.Fprintf(raw, "d100 roll: %d\n", out.D100)
 	fmt.Fprintf(raw, "\nRoll Breakdown\n")
 	for _, line := range out.Breakdown {
 		fmt.Fprintf(raw, "- %s\n", line)
+	}
+	if len(out.Extras) > 0 {
+		fmt.Fprintf(raw, "\nExtra Loot\n")
+		for _, line := range out.Extras {
+			fmt.Fprintf(raw, "- %s\n", line)
+		}
 	}
 	fmt.Fprintf(raw, "\nResult\n%s\n", strings.Join(coins, ", "))
 	fmt.Fprintf(raw, "GP equivalent: %.2f\n", totalGP)
@@ -1551,7 +1700,7 @@ func (ui *UI) updateFilterLayout(screenWidth int) {
 }
 
 func (ui *UI) applyBaseLayout() {
-	if ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil || ui.monstersPanel == nil {
+	if ui.mainRow == nil || ui.leftPanel == nil || ui.detailPanel == nil || ui.filterHost == nil || ui.monstersPanel == nil || ui.detailBottom == nil {
 		return
 	}
 	ui.mainRow.ResizeItem(ui.leftPanel, 0, 1)
@@ -1567,8 +1716,8 @@ func (ui *UI) applyBaseLayout() {
 		ui.monstersPanel.ResizeItem(ui.filterHost, 2, 0)
 	}
 	ui.monstersPanel.ResizeItem(ui.list, 0, 1)
-	ui.detailPanel.ResizeItem(ui.detailMeta, 10, 0)
-	ui.detailPanel.ResizeItem(ui.detailRaw, 0, 1)
+	ui.detailPanel.ResizeItem(ui.detailMeta, 8, 0)
+	ui.detailPanel.ResizeItem(ui.detailBottom, 0, 1)
 }
 
 func (ui *UI) fullscreenTargetForFocus(focus tview.Primitive) string {
@@ -1579,7 +1728,7 @@ func (ui *UI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "encounter"
 	case ui.list:
 		return "monsters"
-	case ui.detailRaw:
+	case ui.detailRaw, ui.detailTreasure, ui.detailMeta:
 		return "description"
 	case ui.nameInput, ui.envDrop, ui.sourceDrop, ui.crDrop, ui.typeDrop:
 		return "filters"
@@ -1637,7 +1786,7 @@ func (ui *UI) toggleFullscreenForFocus(focus tview.Primitive) {
 		ui.mainRow.ResizeItem(ui.leftPanel, 0, 0)
 		ui.mainRow.ResizeItem(ui.detailPanel, 0, 1)
 		ui.detailPanel.ResizeItem(ui.detailMeta, 0, 0)
-		ui.detailPanel.ResizeItem(ui.detailRaw, 0, 1)
+		ui.detailPanel.ResizeItem(ui.detailBottom, 0, 1)
 	}
 	ui.status.SetText(fmt.Sprintf(" [black:gold]fullscreen[-:-] %s  %s", target, helpText))
 }
@@ -4338,6 +4487,7 @@ func generateIndividualTreasure(crText string, randIntn func(int) int) (treasure
 	}
 
 	out := treasureOutcome{
+		Kind:      "Individual Treasure",
 		D100:      d100,
 		Coins:     map[string]int{},
 		Breakdown: []string{},
@@ -4412,6 +4562,294 @@ func generateIndividualTreasure(crText string, randIntn func(int) int) (treasure
 		}
 	}
 	return out, nil
+}
+
+func generateLairTreasure(crText string, randIntn func(int) int) (treasureOutcome, error) {
+	cr, ok := crToFloat(crText)
+	if !ok {
+		return treasureOutcome{}, errors.New("invalid cr")
+	}
+	if randIntn == nil {
+		randIntn = rand.Intn
+	}
+	d100 := randIntn(100) + 1
+
+	roll := func(n, sides, mult int, label string) (int, string) {
+		sum := 0
+		for i := 0; i < n; i++ {
+			sum += randIntn(sides) + 1
+		}
+		total := sum * mult
+		if mult == 1 {
+			return total, fmt.Sprintf("%s: %dd%d = %d", label, n, sides, total)
+		}
+		return total, fmt.Sprintf("%s: %dd%d x %d = %d", label, n, sides, mult, total)
+	}
+
+	out := treasureOutcome{
+		Kind:      "Lair (Hoard) Treasure",
+		D100:      d100,
+		Coins:     map[string]int{},
+		Breakdown: []string{},
+		Extras:    []string{},
+	}
+	addCoin := func(cur string, n, sides, mult int) {
+		total, detail := roll(n, sides, mult, cur)
+		out.Coins[cur] += total
+		out.Breakdown = append(out.Breakdown, detail)
+	}
+	addGemArt := func(kind string, n, sides, mult int, value int) {
+		total, detail := roll(n, sides, mult, kind)
+		out.Breakdown = append(out.Breakdown, detail)
+		if total <= 0 {
+			return
+		}
+		if kind == "gems" {
+			types := rollNamedLootTypes(total, gemTypeTableByValue(value), randIntn)
+			out.Extras = append(out.Extras, fmt.Sprintf("%d gems (%d gp ciascuna): %s", total, value, strings.Join(types, "; ")))
+			return
+		}
+		types := rollNamedLootTypes(total, artObjectTableByValue(value), randIntn)
+		out.Extras = append(out.Extras, fmt.Sprintf("%d art objects (%d gp ciascuno): %s", total, value, strings.Join(types, "; ")))
+	}
+	addMagic := func(n, sides int, table string) {
+		total, detail := roll(n, sides, 1, "Magic Items")
+		out.Breakdown = append(out.Breakdown, detail)
+		if total <= 0 {
+			return
+		}
+		types := rollNamedLootTypes(total, magicItemTypeByTable(table), randIntn)
+		out.Extras = append(out.Extras, fmt.Sprintf("%d item/i da Magic Item Table %s: %s", total, table, strings.Join(types, "; ")))
+	}
+
+	switch {
+	case cr <= 4:
+		out.Band = "CR 0-4"
+		addCoin("cp", 6, 6, 100)
+		addCoin("sp", 3, 6, 100)
+		addCoin("gp", 2, 6, 10)
+		switch {
+		case d100 <= 6:
+		case d100 <= 16:
+			addGemArt("gems", 2, 6, 1, 10)
+		case d100 <= 26:
+			addGemArt("art objects", 2, 4, 1, 25)
+		case d100 <= 36:
+			addGemArt("gems", 2, 6, 1, 50)
+		case d100 <= 44:
+			addGemArt("gems", 2, 6, 1, 10)
+			addMagic(1, 6, "A")
+		case d100 <= 52:
+			addGemArt("art objects", 2, 4, 1, 25)
+			addMagic(1, 6, "A")
+		case d100 <= 60:
+			addGemArt("gems", 2, 6, 1, 50)
+			addMagic(1, 6, "A")
+		case d100 <= 65:
+			addGemArt("gems", 2, 6, 1, 10)
+			addMagic(1, 4, "B")
+		case d100 <= 70:
+			addGemArt("art objects", 2, 4, 1, 25)
+			addMagic(1, 4, "B")
+		case d100 <= 75:
+			addGemArt("gems", 2, 6, 1, 50)
+			addMagic(1, 4, "B")
+		case d100 <= 78:
+			addGemArt("gems", 2, 6, 1, 10)
+			addMagic(1, 4, "C")
+		case d100 <= 80:
+			addGemArt("art objects", 2, 4, 1, 25)
+			addMagic(1, 4, "C")
+		case d100 <= 85:
+			addGemArt("gems", 2, 6, 1, 50)
+			addMagic(1, 4, "C")
+		case d100 <= 92:
+			addGemArt("art objects", 2, 4, 1, 25)
+			addMagic(1, 4, "F")
+		case d100 <= 97:
+			addGemArt("gems", 2, 6, 1, 50)
+			addMagic(1, 4, "F")
+		case d100 <= 99:
+			addGemArt("art objects", 2, 4, 1, 25)
+			addMagic(1, 4, "G")
+		default:
+			addGemArt("gems", 2, 6, 1, 50)
+			addMagic(1, 4, "G")
+		}
+	case cr <= 10:
+		out.Band = "CR 5-10"
+		addCoin("cp", 2, 6, 100)
+		addCoin("sp", 2, 6, 1000)
+		addCoin("gp", 6, 6, 100)
+		addCoin("pp", 3, 6, 10)
+		switch {
+		case d100 <= 4:
+		case d100 <= 10:
+			addGemArt("art objects", 2, 4, 1, 25)
+		case d100 <= 16:
+			addGemArt("gems", 3, 6, 1, 50)
+		case d100 <= 22:
+			addGemArt("gems", 3, 6, 1, 100)
+		case d100 <= 28:
+			addGemArt("art objects", 2, 4, 1, 250)
+		case d100 <= 44:
+			addGemArt("gems", 3, 6, 1, 100)
+			addMagic(1, 6, "A")
+		case d100 <= 63:
+			addGemArt("art objects", 2, 4, 1, 250)
+			addMagic(1, 4, "B")
+		case d100 <= 74:
+			addGemArt("gems", 3, 6, 1, 100)
+			addMagic(1, 4, "C")
+		case d100 <= 80:
+			addGemArt("art objects", 2, 4, 1, 250)
+			addMagic(1, 4, "D")
+		case d100 <= 94:
+			addGemArt("gems", 3, 6, 1, 100)
+			addMagic(1, 4, "F")
+		case d100 <= 98:
+			addGemArt("art objects", 2, 4, 1, 250)
+			addMagic(1, 4, "G")
+		default:
+			addGemArt("gems", 3, 6, 1, 100)
+			addMagic(1, 4, "H")
+		}
+	case cr <= 16:
+		out.Band = "CR 11-16"
+		addCoin("gp", 4, 6, 1000)
+		addCoin("pp", 5, 6, 100)
+		switch {
+		case d100 <= 3:
+		case d100 <= 15:
+			addGemArt("gems", 3, 6, 1, 500)
+			addMagic(1, 4, "A")
+			addMagic(1, 6, "B")
+		case d100 <= 29:
+			addGemArt("gems", 3, 6, 1, 1000)
+			addMagic(1, 4, "A")
+			addMagic(1, 6, "B")
+		case d100 <= 50:
+			addGemArt("art objects", 2, 4, 1, 250)
+			addMagic(1, 6, "C")
+		case d100 <= 66:
+			addGemArt("gems", 3, 6, 1, 1000)
+			addMagic(1, 4, "D")
+		case d100 <= 74:
+			addGemArt("art objects", 2, 4, 1, 750)
+			addMagic(1, 6, "E")
+		case d100 <= 82:
+			addGemArt("gems", 3, 6, 1, 1000)
+			addMagic(1, 4, "F")
+			addMagic(1, 4, "G")
+		case d100 <= 94:
+			addGemArt("art objects", 2, 4, 1, 750)
+			addMagic(1, 4, "H")
+		default:
+			addGemArt("gems", 3, 6, 1, 1000)
+			addMagic(1, 4, "I")
+		}
+	default:
+		out.Band = "CR 17+"
+		addCoin("gp", 12, 6, 1000)
+		addCoin("pp", 8, 6, 1000)
+		switch {
+		case d100 <= 2:
+		case d100 <= 14:
+			addGemArt("gems", 3, 6, 1, 1000)
+			addMagic(1, 8, "C")
+		case d100 <= 46:
+			addGemArt("art objects", 1, 10, 1, 2500)
+			addMagic(1, 6, "D")
+		case d100 <= 68:
+			addGemArt("gems", 1, 8, 1, 5000)
+			addMagic(1, 6, "E")
+		case d100 <= 76:
+			addGemArt("art objects", 1, 4, 1, 7500)
+			addMagic(1, 4, "F")
+			addMagic(1, 4, "G")
+		case d100 <= 93:
+			addGemArt("gems", 1, 8, 1, 5000)
+			addMagic(1, 6, "H")
+		default:
+			addGemArt("art objects", 1, 4, 1, 7500)
+			addMagic(1, 4, "I")
+		}
+	}
+
+	return out, nil
+}
+
+func rollNamedLootTypes(count int, pool []string, randIntn func(int) int) []string {
+	if count <= 0 || len(pool) == 0 {
+		return nil
+	}
+	out := make([]string, 0, count)
+	for i := 0; i < count; i++ {
+		idx := randIntn(len(pool))
+		out = append(out, pool[idx])
+	}
+	return out
+}
+
+func gemTypeTableByValue(value int) []string {
+	switch value {
+	case 10:
+		return []string{"azzurrite", "agata a bande", "occhio di tigre", "ematite", "lapislazzuli", "malachite"}
+	case 50:
+		return []string{"sardonica", "corniola", "diaspro sanguigno", "calcedonio", "quarzo stellato", "ambra"}
+	case 100:
+		return []string{"ametista", "granato", "perla", "spinello", "tormalina", "topazio"}
+	case 500:
+		return []string{"acquamarina", "perla nera", "peridoto", "zaffiro blu pallido", "topazio imperiale", "opale nero"}
+	case 1000:
+		return []string{"smeraldo", "rubino", "zaffiro", "diamante giallo", "opale di fuoco", "giada imperiale"}
+	case 5000:
+		return []string{"diamante", "rubino stellato", "smeraldo perfetto", "zaffiro stellato", "opale di fuoco puro", "diamante blu"}
+	default:
+		return []string{"gemma comune"}
+	}
+}
+
+func artObjectTableByValue(value int) []string {
+	switch value {
+	case 25:
+		return []string{"anello d'argento cesellato", "coppa di rame sbalzata", "maschera cerimoniale lignea", "bracciale d'avorio", "spilla in bronzo", "statuetta in osso"}
+	case 250:
+		return []string{"brocca d'argento filigranata", "collana con perle piccole", "arazzo fine", "specchio in argento", "cofanetto laccato con intarsi", "icona religiosa in argento"}
+	case 750:
+		return []string{"corona d'oro sottile", "calice d'oro e smalto", "pendente con zaffiro", "bracciale d'oro massiccio", "arazzo di corte", "strumento musicale intarsiato"}
+	case 2500:
+		return []string{"diadema con gemme", "scettro d'oro e avorio", "pettorale cerimoniale", "statuetta in oro pieno", "maschera rituale in oro", "coppa regale con rubini"}
+	case 7500:
+		return []string{"corona regale con diamanti", "scultura in giada e oro", "calice imperiale con zaffiri", "armilla in platino", "cofanetto reale tempestato di gemme", "statuetta divina in oro e gemme"}
+	default:
+		return []string{"oggetto d'arte comune"}
+	}
+}
+
+func magicItemTypeByTable(table string) []string {
+	switch strings.ToUpper(strings.TrimSpace(table)) {
+	case "A":
+		return []string{"pozione", "pergamena", "munizioni +1", "sacca utility", "piccolo oggetto wondrous", "trinket magico"}
+	case "B":
+		return []string{"pozione maggiore", "armatura +1", "arma +1", "bastone minore", "anello minore", "oggetto wondrous non comune"}
+	case "C":
+		return []string{"pergamena superiore", "pozione superiore", "scudo +1", "arma +2", "verga minore", "oggetto wondrous raro"}
+	case "D":
+		return []string{"armatura +2", "anello raro", "bastone raro", "bacchetta rara", "oggetto wondrous raro", "arma con proprietà speciale"}
+	case "E":
+		return []string{"pergamena alta magia", "pozione suprema", "verga rara", "anello potente", "bastone potente", "oggetto wondrous molto raro"}
+	case "F":
+		return []string{"arma +1/+2", "scudo +2", "armatura +1 con proprietà", "arma con danno extra", "oggetto wondrous marziale", "anello difensivo"}
+	case "G":
+		return []string{"arma +2", "armatura +2", "scudo +2", "verga offensiva", "bastone di potere", "oggetto wondrous molto raro"}
+	case "H":
+		return []string{"arma +3", "armatura +3", "anello leggendario", "bastone leggendario", "verga leggendaria", "oggetto wondrous leggendario"}
+	case "I":
+		return []string{"artefatto minore", "arma reliquia", "oggetto unico", "focus leggendario", "armatura mitica", "reliquia antica"}
+	default:
+		return []string{"oggetto magico"}
+	}
 }
 
 func blankIfEmpty(v, fallback string) string {

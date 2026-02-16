@@ -615,6 +615,72 @@ func TestGenerateIndividualTreasureInvalidCR(t *testing.T) {
 	}
 }
 
+func TestGenerateLairTreasure(t *testing.T) {
+	seq := []int{0, 0, 0, 0, 0, 0, 0, 0} // d100=1, then minimum dice
+	i := 0
+	randFn := func(max int) int {
+		if i >= len(seq) {
+			return 0
+		}
+		v := seq[i]
+		i++
+		if v < 0 {
+			v = 0
+		}
+		if v >= max {
+			v = max - 1
+		}
+		return v
+	}
+	out, err := generateLairTreasure("2", randFn)
+	if err != nil {
+		t.Fatalf("unexpected lair treasure error: %v", err)
+	}
+	if out.Kind != "Lair (Hoard) Treasure" {
+		t.Fatalf("unexpected kind: %s", out.Kind)
+	}
+	if out.Band != "CR 0-4" {
+		t.Fatalf("unexpected band: %s", out.Band)
+	}
+	if out.Coins["cp"] != 600 || out.Coins["sp"] != 300 || out.Coins["gp"] != 20 {
+		t.Fatalf("unexpected base coins: %+v", out.Coins)
+	}
+}
+
+func TestGenerateLairTreasureIncludesTypesInExtras(t *testing.T) {
+	seq := []int{
+		9,                // d100=10 -> CR 0-4, gems 10gp
+		0, 0, 0, 0, 0, 0, // base coins dice
+		0, 0, // gems count 2d6 -> 2
+		0, 1, // gem type picks
+	}
+	i := 0
+	randFn := func(max int) int {
+		if i >= len(seq) {
+			return 0
+		}
+		v := seq[i]
+		i++
+		if v < 0 {
+			v = 0
+		}
+		if v >= max {
+			v = max - 1
+		}
+		return v
+	}
+	out, err := generateLairTreasure("1", randFn)
+	if err != nil {
+		t.Fatalf("unexpected lair treasure error: %v", err)
+	}
+	if len(out.Extras) == 0 {
+		t.Fatalf("expected extras with detailed types, got none")
+	}
+	if !strings.Contains(out.Extras[0], ": ") {
+		t.Fatalf("expected typed extras, got %q", out.Extras[0])
+	}
+}
+
 func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
 
