@@ -359,21 +359,6 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
-	ui.sourceDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch {
-		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
-			ui.toggleCurrentSourceOption()
-			return nil
-		case event.Key() == tcell.KeyEnter:
-			ui.app.SetFocus(ui.crDrop)
-			return nil
-		case event.Key() == tcell.KeyEscape:
-			ui.app.SetFocus(ui.list)
-			return nil
-		default:
-			return event
-		}
-	})
 
 	ui.crDrop = tview.NewDropDown().
 		SetLabel(" CR ").
@@ -661,14 +646,8 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case event.Key() == tcell.KeyBacktab:
 			ui.focusPrev()
 			return nil
-		case focus == ui.sourceDrop && event.Key() == tcell.KeyRune && event.Rune() == ' ':
-			ui.toggleCurrentSourceOption()
-			return nil
-		case focus == ui.sourceDrop && event.Key() == tcell.KeyEnter:
-			ui.focusNext()
-			return nil
-		case focus == ui.sourceDrop && event.Key() == tcell.KeyEscape:
-			ui.app.SetFocus(ui.list)
+		case focus == ui.sourceDrop && (event.Key() == tcell.KeyEnter || (event.Key() == tcell.KeyRune && event.Rune() == ' ')):
+			ui.openSourceMultiSelectModal()
 			return nil
 		case event.Key() == tcell.KeyEscape &&
 			(focus == ui.list || focus == ui.nameInput || focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop):
@@ -2508,7 +2487,7 @@ func (ui *UI) setFilterOptionsForMode() {
 		ui.applyFilters()
 	})
 	ui.setDropDownByValue(ui.envDrop, ui.envOptions, ui.envFilter)
-	ui.refreshSourceDropOptions()
+	ui.refreshSourceDropOptions(-1)
 	ui.crDrop.SetOptions(ui.crOptions, func(option string, _ int) {
 		if option == "All" {
 			ui.crFilter = ""
@@ -2533,74 +2512,128 @@ func (ui *UI) setFilterOptionsForMode() {
 	ui.setDropDownByValue(ui.typeDrop, ui.typeOptions, ui.typeFilter)
 }
 
-func (ui *UI) refreshSourceDropOptions() {
-	display := make([]string, 0, len(ui.sourceOptions))
-	currentIdx, _ := ui.sourceDrop.GetCurrentOption()
-	if len(ui.sourceFilters) == 0 {
-		display = append(display, "[x] All")
-	} else {
-		display = append(display, "[ ] All")
-	}
-	for _, opt := range ui.sourceOptions[1:] {
-		_, on := ui.sourceFilters[opt]
-		mark := "[ ]"
-		if on {
-			mark = "[x]"
-		}
-		display = append(display, fmt.Sprintf("%s %s", mark, opt))
+func (ui *UI) refreshSourceDropOptions(preferredIdx int) {
+	_ = preferredIdx
+	label := "All"
+	if n := len(ui.sourceFilters); n > 0 {
+		label = fmt.Sprintf("%d selected", n)
 	}
 	ui.updatingSourceDrop = true
-	ui.sourceDrop.SetOptions(display, func(_ string, idx int) {
-		if ui.updatingSourceDrop {
-			return
-		}
-		if idx <= 0 {
-			ui.sourceFilters = map[string]struct{}{}
-		} else if idx < len(ui.sourceOptions) {
-			val := ui.sourceOptions[idx]
-			if _, ok := ui.sourceFilters[val]; ok {
-				delete(ui.sourceFilters, val)
-			} else {
-				ui.sourceFilters[val] = struct{}{}
-			}
-		}
-		ui.refreshSourceDropOptions()
-		ui.applyFilters()
-	})
-	if currentIdx < 0 {
-		currentIdx = 0
-	}
-	if currentIdx >= len(display) {
-		currentIdx = len(display) - 1
-	}
-	if currentIdx < 0 {
-		currentIdx = 0
-	}
-	ui.sourceDrop.SetCurrentOption(currentIdx)
+	ui.sourceDrop.SetOptions([]string{label}, nil)
+	ui.sourceDrop.SetCurrentOption(0)
 	ui.updatingSourceDrop = false
 }
 
 func (ui *UI) toggleCurrentSourceOption() {
-	if ui.sourceDrop == nil {
-		return
-	}
-	idx, _ := ui.sourceDrop.GetCurrentOption()
-	if idx <= 0 {
-		ui.sourceFilters = map[string]struct{}{}
-	} else if idx < len(ui.sourceOptions) {
-		val := ui.sourceOptions[idx]
-		if _, ok := ui.sourceFilters[val]; ok {
-			delete(ui.sourceFilters, val)
-		} else {
-			ui.sourceFilters[val] = struct{}{}
-		}
-	}
-	ui.refreshSourceDropOptions()
-	ui.applyFilters()
+	// legacy no-op; source multi-select now uses dedicated modal.
 }
 
 func (ui *UI) selectedSourcesSorted() []string {
 	return keysSorted(ui.sourceFilters)
+}
+
+func (ui *UI) openSourceMultiSelectModal() {
+	if len(ui.sourceOptions) <= 1 {
+		return
+	}
+	temp := map[string]struct{}{}
+	for k := range ui.sourceFilters {
+		temp[k] = struct{}{}
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true)
+	list.SetTitle(" Source Filter (Space=toggle, Enter=apply, Esc=cancel) ")
+	list.SetBorderColor(tcell.ColorGold)
+	list.SetTitleColor(tcell.ColorGold)
+	list.SetMainTextColor(tcell.ColorWhite)
+	list.SetSelectedTextColor(tcell.ColorBlack)
+	list.SetSelectedBackgroundColor(tcell.ColorGold)
+	list.ShowSecondaryText(false)
+
+	render := func() {
+		cur := list.GetCurrentItem()
+		list.Clear()
+		if len(temp) == 0 {
+			list.AddItem("[x] All", "", 0, nil)
+		} else {
+			list.AddItem("[ ] All", "", 0, nil)
+		}
+		for _, opt := range ui.sourceOptions[1:] {
+			mark := "[ ]"
+			if _, ok := temp[opt]; ok {
+				mark = "[x]"
+			}
+			list.AddItem(fmt.Sprintf("%s %s", mark, opt), "", 0, nil)
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		if cur >= list.GetItemCount() {
+			cur = list.GetItemCount() - 1
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		list.SetCurrentItem(cur)
+	}
+
+	closeModal := func(apply bool) {
+		ui.pages.RemovePage("source-multi")
+		if apply {
+			ui.sourceFilters = temp
+			ui.refreshSourceDropOptions(-1)
+			ui.applyFilters()
+		}
+		ui.app.SetFocus(ui.sourceDrop)
+	}
+
+	toggle := func() {
+		idx := list.GetCurrentItem()
+		if idx <= 0 {
+			temp = map[string]struct{}{}
+			render()
+			return
+		}
+		if idx >= len(ui.sourceOptions) {
+			return
+		}
+		opt := ui.sourceOptions[idx]
+		if _, ok := temp[opt]; ok {
+			delete(temp, opt)
+		} else {
+			temp[opt] = struct{}{}
+		}
+		render()
+	}
+
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			toggle()
+			return nil
+		case event.Key() == tcell.KeyEnter:
+			closeModal(true)
+			return nil
+		case event.Key() == tcell.KeyEscape:
+			closeModal(false)
+			return nil
+		default:
+			return event
+		}
+	})
+
+	render()
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 16, 0, true).
+			AddItem(nil, 0, 1, false), 70, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("source-multi", modal, true, true)
+	ui.app.SetFocus(list)
 }
 
 func (ui *UI) setSelectedSources(values []string) {
@@ -2651,7 +2684,7 @@ func (ui *UI) applyModeFilters(mode BrowseMode) {
 	ui.typeFilter = strings.TrimSpace(state.Type)
 	ui.setFilterOptionsForMode()
 	ui.setSelectedSources(state.Sources)
-	ui.refreshSourceDropOptions()
+	ui.refreshSourceDropOptions(-1)
 	ui.nameInput.SetText(ui.nameFilter)
 	ui.setDropDownByValue(ui.crDrop, ui.crOptions, ui.crFilter)
 	ui.setDropDownByValue(ui.typeDrop, ui.typeOptions, ui.typeFilter)
