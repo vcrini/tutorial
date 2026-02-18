@@ -1,0 +1,753 @@
+package main
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/gdamore/tcell/v2"
+	"github.com/rivo/tview"
+)
+
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] cerca  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/- "
+
+type tviewUI struct {
+	app    *tview.Application
+	pages  *tview.Pages
+	status *tview.TextView
+
+	pngList *tview.List
+	encList *tview.List
+	search  *tview.InputField
+	monList *tview.List
+	detail  *tview.TextView
+
+	monstersPanel *tview.Flex
+	leftPanel     *tview.Flex
+	mainRow       *tview.Flex
+
+	focus    []tview.Primitive
+	focusIdx int
+	message  string
+
+	pngs      []PNG
+	selected  int
+	monsters  []Monster
+	encounter []EncounterEntry
+	filtered  []int
+
+	helpVisible     bool
+	helpReturnFocus tview.Primitive
+
+	fullscreenActive bool
+	fullscreenTarget string
+}
+
+func runTViewUI() error {
+	tview.Styles.PrimitiveBackgroundColor = tcell.ColorBlack
+	tview.Styles.ContrastBackgroundColor = tcell.ColorBlack
+	tview.Styles.MoreContrastBackgroundColor = tcell.ColorBlack
+	tview.Styles.BorderColor = tcell.ColorGold
+	tview.Styles.TitleColor = tcell.ColorGold
+	tview.Styles.GraphicsColor = tcell.ColorGold
+	tview.Styles.PrimaryTextColor = tcell.ColorWhite
+	tview.Styles.SecondaryTextColor = tcell.ColorLightGray
+	tview.Styles.TertiaryTextColor = tcell.ColorAqua
+	tview.Styles.InverseTextColor = tcell.ColorBlack
+	tview.Styles.ContrastSecondaryTextColor = tcell.ColorBlack
+
+	ui, err := newTViewUI()
+	if err != nil {
+		return err
+	}
+	ui.refreshAll()
+	return ui.app.SetRoot(ui.pages, true).EnableMouse(true).Run()
+}
+
+func newTViewUI() (*tviewUI, error) {
+	pngs, selectedName, err := loadPNGList(dataFile)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", dataFile, err)
+	}
+
+	monsters, err := loadMonsters(monstersFile)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", monstersFile, err)
+	}
+
+	encounter, err := loadEncounter(encounterFile, monsters)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
+	}
+
+	selected := -1
+	if selectedName != "" {
+		for i, p := range pngs {
+			if p.Name == selectedName {
+				selected = i
+				break
+			}
+		}
+	}
+	if selected < 0 && len(pngs) > 0 {
+		selected = 0
+	}
+
+	ui := &tviewUI{
+		app:       tview.NewApplication(),
+		pngs:      pngs,
+		selected:  selected,
+		monsters:  monsters,
+		encounter: encounter,
+		message:   "Pronto.",
+	}
+	ui.build()
+	return ui, nil
+}
+
+func (ui *tviewUI) build() {
+	ui.pngList = tview.NewList().ShowSecondaryText(false)
+	ui.pngList.SetBorder(true).SetTitle(" [1]-PNG ")
+	ui.pngList.SetChangedFunc(func(index int, _, _ string, _ rune) {
+		if index >= 0 && index < len(ui.pngs) {
+			ui.selected = index
+			ui.persistPNGs()
+		}
+		ui.refreshDetail()
+	})
+
+	ui.encList = tview.NewList().ShowSecondaryText(false)
+	ui.encList.SetBorder(true).SetTitle(" [2]-Encounter ")
+	ui.encList.SetChangedFunc(func(int, string, string, rune) {
+		ui.refreshDetail()
+	})
+
+	ui.search = tview.NewInputField().
+		SetLabel(" Cerca ").
+		SetFieldWidth(0).
+		SetPlaceholder("nome mostro...")
+	ui.search.SetChangedFunc(func(_ string) {
+		ui.refreshMonsters()
+		ui.refreshDetail()
+	})
+
+	ui.monList = tview.NewList().ShowSecondaryText(false)
+	ui.monList.SetChangedFunc(func(int, string, string, rune) {
+		ui.refreshDetail()
+	})
+	ui.monList.SetSelectedFunc(func(int, string, string, rune) {
+		ui.addSelectedMonsterToEncounter()
+	})
+
+	ui.monstersPanel = tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.search, 2, 0, false).
+		AddItem(ui.monList, 0, 1, true)
+	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri ")
+
+	ui.leftPanel = tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.pngList, 7, 0, true).
+		AddItem(ui.encList, 8, 0, false).
+		AddItem(ui.monstersPanel, 0, 1, false)
+
+	ui.detail = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	ui.detail.SetBorder(true).SetTitle(" Dettagli ")
+
+	ui.mainRow = tview.NewFlex().
+		SetDirection(tview.FlexColumn).
+		AddItem(ui.leftPanel, 0, 1, false).
+		AddItem(ui.detail, 0, 1, false)
+
+	ui.status = tview.NewTextView().SetDynamicColors(true).SetText(helpText)
+	ui.status.SetBackgroundColor(tcell.ColorBlack)
+
+	root := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.mainRow, 0, 1, true).
+		AddItem(ui.status, 1, 0, false)
+
+	ui.pages = tview.NewPages().AddPage("main", root, true, true)
+	ui.focus = []tview.Primitive{ui.pngList, ui.encList, ui.search, ui.monList, ui.detail}
+	ui.focusIdx = 3
+	ui.app.SetFocus(ui.monList)
+	ui.app.SetInputCapture(ui.handleGlobalKeys)
+}
+
+func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
+	focus := ui.app.GetFocus()
+	_, focusIsInput := focus.(*tview.InputField)
+
+	if ui.helpVisible {
+		if ev.Key() == tcell.KeyEscape || (ev.Key() == tcell.KeyRune && (ev.Rune() == '?' || ev.Rune() == 'q')) {
+			ui.closeHelpOverlay()
+			return nil
+		}
+		return ev
+	}
+
+	if focusIsInput {
+		switch ev.Key() {
+		case tcell.KeyEsc:
+			ui.app.SetFocus(ui.monList)
+			ui.focusIdx = 3
+			ui.refreshStatus()
+			return nil
+		}
+	}
+
+	switch ev.Key() {
+	case tcell.KeyCtrlC:
+		ui.app.Stop()
+		return nil
+	case tcell.KeyTAB:
+		ui.focusNext()
+		return nil
+	case tcell.KeyBacktab:
+		ui.focusPrev()
+		return nil
+	case tcell.KeyLeft:
+		if focus == ui.pngList {
+			ui.adjustSelectedToken(-1)
+			return nil
+		}
+	case tcell.KeyRight:
+		if focus == ui.pngList {
+			ui.adjustSelectedToken(1)
+			return nil
+		}
+	}
+
+	switch ev.Rune() {
+	case '?':
+		ui.openHelpOverlay(focus)
+		return nil
+	case 'f':
+		if !focusIsInput {
+			ui.toggleFullscreenForFocus(focus)
+			return nil
+		}
+	case 'q':
+		ui.app.Stop()
+		return nil
+	case '1':
+		ui.focusPanel(0)
+		return nil
+	case '2':
+		ui.focusPanel(1)
+		return nil
+	case '3':
+		ui.focusPanel(3)
+		return nil
+	case '/':
+		if !focusIsInput {
+			ui.focusPanel(2)
+			return nil
+		}
+	case 'c':
+		ui.openCreatePNGModal()
+		return nil
+	case 'x':
+		ui.deleteSelectedPNG()
+		return nil
+	case 'r':
+		if focus == ui.pngList {
+			ui.resetTokens()
+			return nil
+		}
+	case 'a':
+		if focus == ui.monList || focus == ui.search {
+			ui.addSelectedMonsterToEncounter()
+			return nil
+		}
+	case 'd':
+		if focus == ui.encList {
+			ui.removeSelectedEncounter()
+			return nil
+		}
+	case 'h':
+		if focus == ui.encList {
+			ui.adjustEncounterWounds(1)
+			return nil
+		}
+	case 'l':
+		if focus == ui.encList {
+			ui.adjustEncounterWounds(-1)
+			return nil
+		}
+	}
+	return ev
+}
+
+func (ui *tviewUI) focusNext() {
+	ui.focusIdx = (ui.focusIdx + 1) % len(ui.focus)
+	ui.app.SetFocus(ui.focus[ui.focusIdx])
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) focusPrev() {
+	ui.focusIdx--
+	if ui.focusIdx < 0 {
+		ui.focusIdx = len(ui.focus) - 1
+	}
+	ui.app.SetFocus(ui.focus[ui.focusIdx])
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) focusPanel(panel int) {
+	if panel < 0 || panel >= len(ui.focus) {
+		return
+	}
+	ui.focusIdx = panel
+	ui.app.SetFocus(ui.focus[panel])
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) refreshAll() {
+	ui.refreshPNGs()
+	ui.refreshMonsters()
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) refreshPNGs() {
+	current := ui.selected
+	if current < 0 && len(ui.pngs) > 0 {
+		current = 0
+	}
+	ui.pngList.Clear()
+	if len(ui.pngs) == 0 {
+		ui.pngList.AddItem("(nessun PNG)", "", 0, nil)
+		return
+	}
+	for i, p := range ui.pngs {
+		prefix := "  "
+		if i == ui.selected {
+			prefix = "* "
+		}
+		ui.pngList.AddItem(fmt.Sprintf("%s%s [token %d]", prefix, p.Name, p.Token), "", 0, nil)
+	}
+	if current >= len(ui.pngs) {
+		current = len(ui.pngs) - 1
+	}
+	if current >= 0 {
+		ui.pngList.SetCurrentItem(current)
+		ui.selected = current
+	}
+}
+
+func (ui *tviewUI) refreshMonsters() {
+	query := strings.ToLower(strings.TrimSpace(ui.search.GetText()))
+	ui.filtered = ui.filtered[:0]
+	for i, m := range ui.monsters {
+		if query == "" || strings.Contains(strings.ToLower(m.Name), query) {
+			ui.filtered = append(ui.filtered, i)
+		}
+	}
+
+	current := ui.monList.GetCurrentItem()
+	ui.monList.Clear()
+	if len(ui.filtered) == 0 {
+		ui.monList.AddItem("(nessun mostro)", "", 0, nil)
+		return
+	}
+	for _, idx := range ui.filtered {
+		m := ui.monsters[idx]
+		ui.monList.AddItem(fmt.Sprintf("%s [R%d] PF:%d", m.Name, m.Rank, m.PF), "", 0, nil)
+	}
+	if current >= len(ui.filtered) {
+		current = len(ui.filtered) - 1
+	}
+	if current < 0 {
+		current = 0
+	}
+	ui.monList.SetCurrentItem(current)
+}
+
+func (ui *tviewUI) refreshEncounter() {
+	current := ui.encList.GetCurrentItem()
+	ui.encList.Clear()
+	if len(ui.encounter) == 0 {
+		ui.encList.AddItem("(vuoto)", "", 0, nil)
+		return
+	}
+	for _, e := range ui.encounter {
+		base := e.BasePF
+		if base == 0 {
+			base = e.Monster.PF
+		}
+		remaining := base - e.Wounds
+		if remaining < 0 {
+			remaining = 0
+		}
+		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d]", e.Monster.Name, remaining, base), "", 0, nil)
+	}
+	if current >= len(ui.encounter) {
+		current = len(ui.encounter) - 1
+	}
+	if current < 0 {
+		current = 0
+	}
+	ui.encList.SetCurrentItem(current)
+}
+
+func (ui *tviewUI) refreshDetail() {
+	focus := ui.app.GetFocus()
+	if focus == ui.monList || focus == ui.search {
+		idx := ui.currentMonsterIndex()
+		if idx < 0 {
+			ui.detail.SetText("Nessun mostro selezionato.")
+			return
+		}
+		m := ui.monsters[idx]
+		var b strings.Builder
+		b.WriteString(fmt.Sprintf("[yellow]%s[-]\n", m.Name))
+		b.WriteString(fmt.Sprintf("Ruolo: %s | Rango: %d\n", m.Role, m.Rank))
+		b.WriteString(fmt.Sprintf("PF: %d | Stress: %d | Difficoltà: %d\n", m.PF, m.Stress, m.Difficulty))
+		if m.Attack.Name != "" {
+			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
+		}
+		if m.Description != "" {
+			b.WriteString("\n" + m.Description)
+		}
+		ui.detail.SetText(b.String())
+		return
+	}
+	if focus == ui.encList {
+		idx := ui.currentEncounterIndex()
+		if idx < 0 {
+			ui.detail.SetText("Encounter vuoto.")
+			return
+		}
+		e := ui.encounter[idx]
+		base := e.BasePF
+		if base == 0 {
+			base = e.Monster.PF
+		}
+		remaining := base - e.Wounds
+		if remaining < 0 {
+			remaining = 0
+		}
+		ui.detail.SetText(fmt.Sprintf("[yellow]%s[-]\nPF: %d/%d\nFerite: %d", e.Monster.Name, remaining, base, e.Wounds))
+		return
+	}
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.detail.SetText("Nessun PNG selezionato.")
+		return
+	}
+	p := ui.pngs[ui.selected]
+	ui.detail.SetText(fmt.Sprintf("[yellow]%s[-]\nToken: %d", p.Name, p.Token))
+}
+
+func (ui *tviewUI) refreshStatus() {
+	focusLabel := "PNG"
+	switch ui.app.GetFocus() {
+	case ui.encList:
+		focusLabel = "Encounter"
+	case ui.search:
+		focusLabel = "Filtro"
+	case ui.monList:
+		focusLabel = "Mostri"
+	case ui.detail:
+		focusLabel = "Dettagli"
+	}
+	msg := ui.message
+	if msg == "" {
+		msg = "Pronto."
+	}
+	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | %s  [black:gold]msg[-:-] %s", focusLabel, helpText, msg))
+}
+
+func (ui *tviewUI) currentMonsterIndex() int {
+	if len(ui.filtered) == 0 {
+		return -1
+	}
+	cur := ui.monList.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.filtered) {
+		return -1
+	}
+	return ui.filtered[cur]
+}
+
+func (ui *tviewUI) currentEncounterIndex() int {
+	if len(ui.encounter) == 0 {
+		return -1
+	}
+	cur := ui.encList.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.encounter) {
+		return -1
+	}
+	return cur
+}
+
+func (ui *tviewUI) adjustSelectedToken(delta int) {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	p := &ui.pngs[ui.selected]
+	p.Token += delta
+	if p.Token < minToken {
+		p.Token = minToken
+	}
+	if p.Token > maxToken {
+		p.Token = maxToken
+	}
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("Token di %s: %d", p.Name, p.Token)
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) openCreatePNGModal() {
+	input := tview.NewInputField().SetLabel(" Nome PNG ").SetFieldWidth(24)
+	input.SetText(uniqueRandomPNGName(ui.pngs))
+	input.SetBorder(true).SetTitle("Crea PNG")
+
+	returnFocus := ui.app.GetFocus()
+	modal := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 42, 0, true).
+			AddItem(nil, 0, 1, false), 5, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddAndSwitchToPage("create_png", modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEsc {
+			ui.pages.RemovePage("create_png")
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+		name := strings.TrimSpace(input.GetText())
+		if name == "" {
+			name = uniqueRandomPNGName(ui.pngs)
+		}
+		for _, p := range ui.pngs {
+			if strings.EqualFold(p.Name, name) {
+				ui.message = "Nome già esistente."
+				ui.refreshStatus()
+				return
+			}
+		}
+		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken})
+		ui.selected = len(ui.pngs) - 1
+		ui.persistPNGs()
+		ui.pages.RemovePage("create_png")
+		ui.focusPanel(0)
+		ui.message = fmt.Sprintf("Creato PNG %s.", name)
+		ui.refreshAll()
+	})
+}
+
+func (ui *tviewUI) deleteSelectedPNG() {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	name := ui.pngs[ui.selected].Name
+	ui.pngs = append(ui.pngs[:ui.selected], ui.pngs[ui.selected+1:]...)
+	if len(ui.pngs) == 0 {
+		ui.selected = -1
+	} else if ui.selected >= len(ui.pngs) {
+		ui.selected = len(ui.pngs) - 1
+	}
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("PNG %s eliminato.", name)
+	ui.refreshAll()
+}
+
+func (ui *tviewUI) resetTokens() {
+	for i := range ui.pngs {
+		ui.pngs[i].Token = defaultToken
+	}
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("Token PNG resettati a %d.", defaultToken)
+	ui.refreshAll()
+}
+
+func (ui *tviewUI) addSelectedMonsterToEncounter() {
+	idx := ui.currentMonsterIndex()
+	if idx < 0 {
+		ui.message = "Nessun mostro selezionato."
+		ui.refreshStatus()
+		return
+	}
+	mon := ui.monsters[idx]
+	ui.encounter = append(ui.encounter, EncounterEntry{Monster: mon, BasePF: mon.PF})
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Aggiunto %s a encounter.", mon.Name)
+	ui.refreshEncounter()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) removeSelectedEncounter() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	name := ui.encounter[idx].Monster.Name
+	ui.encounter = append(ui.encounter[:idx], ui.encounter[idx+1:]...)
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Rimosso %s da encounter.", name)
+	ui.refreshAll()
+}
+
+func (ui *tviewUI) adjustEncounterWounds(delta int) {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	e := &ui.encounter[idx]
+	e.Wounds += delta
+	if e.Wounds < 0 {
+		e.Wounds = 0
+	}
+	base := e.BasePF
+	if base == 0 {
+		base = e.Monster.PF
+	}
+	if base > 0 && e.Wounds > base {
+		e.Wounds = base
+	}
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Ferite %s: %d", e.Monster.Name, e.Wounds)
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
+	if ui.helpVisible {
+		return
+	}
+	ui.helpVisible = true
+	ui.helpReturnFocus = focus
+
+	text := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	text.SetBorder(true).SetTitle("Help")
+	text.SetText("Token Manager - scorciatoie\n\n" + helpText + "\n\nEsc/?/q per chiudere")
+
+	modal := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(text, 96, 0, true).
+			AddItem(nil, 0, 1, false), 14, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddAndSwitchToPage("help", modal, true)
+	ui.app.SetFocus(text)
+}
+
+func (ui *tviewUI) closeHelpOverlay() {
+	if !ui.helpVisible {
+		return
+	}
+	ui.helpVisible = false
+	ui.pages.RemovePage("help")
+	if ui.helpReturnFocus != nil {
+		ui.app.SetFocus(ui.helpReturnFocus)
+	}
+}
+
+func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
+	switch focus {
+	case ui.pngList:
+		return "png"
+	case ui.encList:
+		return "encounter"
+	case ui.search, ui.monList:
+		return "monsters"
+	case ui.detail:
+		return "details"
+	default:
+		return ""
+	}
+}
+
+func (ui *tviewUI) toggleFullscreenForFocus(focus tview.Primitive) {
+	target := ui.fullscreenTargetForFocus(focus)
+	if target == "" {
+		return
+	}
+
+	if ui.fullscreenActive && ui.fullscreenTarget == target {
+		ui.fullscreenActive = false
+		ui.fullscreenTarget = ""
+		ui.rebuildMainLayout()
+		ui.message = "Fullscreen off"
+		ui.refreshStatus()
+		return
+	}
+
+	ui.fullscreenActive = true
+	ui.fullscreenTarget = target
+	ui.rebuildMainLayout()
+	ui.message = "Fullscreen " + target
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) rebuildMainLayout() {
+	var content tview.Primitive = ui.mainRow
+	if ui.fullscreenActive {
+		switch ui.fullscreenTarget {
+		case "png":
+			content = ui.pngList
+		case "encounter":
+			content = ui.encList
+		case "monsters":
+			content = ui.monstersPanel
+		case "details":
+			content = ui.detail
+		}
+	}
+
+	root := tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(content, 0, 1, true).
+		AddItem(ui.status, 1, 0, false)
+
+	ui.pages.RemovePage("main")
+	ui.pages.AddPage("main", root, true, true)
+	ui.pages.SwitchToPage("main")
+}
+
+func (ui *tviewUI) persistPNGs() {
+	_ = savePNGList(dataFile, ui.pngs, selectedPNGName(ui.pngs, ui.selected))
+}
+
+func (ui *tviewUI) persistEncounter() {
+	entries := make([]struct {
+		Name   string `yaml:"name"`
+		Wounds int    `yaml:"wounds"`
+		PF     int    `yaml:"pf"`
+	}, 0, len(ui.encounter))
+	for _, e := range ui.encounter {
+		base := e.BasePF
+		if base == 0 {
+			base = e.Monster.PF
+		}
+		entries = append(entries, struct {
+			Name   string `yaml:"name"`
+			Wounds int    `yaml:"wounds"`
+			PF     int    `yaml:"pf"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base})
+	}
+	_ = saveEncounter(encounterFile, entries)
+}
