@@ -341,6 +341,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			ui.envFilter = option
 		}
 		ui.applyFilters()
+		ui.maybeReturnFocusToListFromFilter()
 	})
 	ui.envDrop.SetLabelColor(tcell.ColorGold)
 	ui.envDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
@@ -349,6 +350,11 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
+	ui.envDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.app.SetFocus(ui.list)
+		}
+	})
 
 	ui.sourceDrop = tview.NewDropDown().
 		SetLabel(" Source ")
@@ -359,6 +365,11 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
+	ui.sourceDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.app.SetFocus(ui.list)
+		}
+	})
 
 	ui.crDrop = tview.NewDropDown().
 		SetLabel(" CR ").
@@ -369,6 +380,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				ui.crFilter = option
 			}
 			ui.applyFilters()
+			ui.maybeReturnFocusToListFromFilter()
 		})
 	ui.crDrop.SetLabelColor(tcell.ColorGold)
 	ui.crDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
@@ -377,6 +389,11 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
+	ui.crDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.app.SetFocus(ui.list)
+		}
+	})
 
 	ui.typeDrop = tview.NewDropDown().
 		SetLabel(" Type ").
@@ -387,6 +404,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				ui.typeFilter = option
 			}
 			ui.applyFilters()
+			ui.maybeReturnFocusToListFromFilter()
 		})
 	ui.typeDrop.SetLabelColor(tcell.ColorGold)
 	ui.typeDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
@@ -395,6 +413,11 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
 		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
 	)
+	ui.typeDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.app.SetFocus(ui.list)
+		}
+	})
 
 	ui.list = tview.NewList()
 	ui.list.SetBorder(false)
@@ -649,6 +672,9 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case focus == ui.sourceDrop && (event.Key() == tcell.KeyEnter || (event.Key() == tcell.KeyRune && event.Rune() == ' ')):
 			ui.openSourceMultiSelectModal()
 			return nil
+		case (focus == ui.envDrop || focus == ui.crDrop || focus == ui.typeDrop) && event.Key() == tcell.KeyEnter:
+			ui.app.SetFocus(ui.list)
+			return nil
 		case event.Key() == tcell.KeyEscape &&
 			(focus == ui.list || focus == ui.nameInput || focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop):
 			ui.app.SetFocus(ui.list)
@@ -675,7 +701,7 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 			ui.app.SetFocus(ui.nameInput)
 			return nil
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'e':
-			if ui.browseMode == BrowseMonsters {
+			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems || ui.browseMode == BrowseSpells {
 				ui.app.SetFocus(ui.envDrop)
 				return nil
 			}
@@ -683,6 +709,10 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'c':
 			if ui.browseMode == BrowseMonsters {
 				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			if ui.browseMode == BrowseSpells {
+				ui.app.SetFocus(ui.typeDrop)
 				return nil
 			}
 			return event
@@ -702,19 +732,27 @@ func newUI(monsters, items, spells []Monster, envs, crs, types []string, encount
 				return nil
 			}
 			if ui.browseMode == BrowseSpells {
-				// Requested "s" for both Source and School: alternate focus on repeated presses.
-				if ui.spellShortcutAlt {
-					ui.app.SetFocus(ui.typeDrop)
-				} else {
-					ui.app.SetFocus(ui.sourceDrop)
-				}
-				ui.spellShortcutAlt = !ui.spellShortcutAlt
+				ui.app.SetFocus(ui.sourceDrop)
 				return nil
 			}
 			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'r':
 			if ui.browseMode == BrowseItems {
 				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
+		case (focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop) &&
+			event.Key() == tcell.KeyRune && event.Rune() == 'r':
+			if ui.browseMode == BrowseItems {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
+			return event
+		case (focus == ui.envDrop || focus == ui.sourceDrop || focus == ui.crDrop || focus == ui.typeDrop) &&
+			event.Key() == tcell.KeyRune && event.Rune() == 'c':
+			if ui.browseMode == BrowseSpells {
+				ui.app.SetFocus(ui.typeDrop)
 				return nil
 			}
 			return event
@@ -1015,7 +1053,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  j / k (o frecce) : naviga lista\n" +
 			"  / : cerca nella Description della voce selezionata\n" +
 			"  g : genera spells (level + quantita)\n" +
-			"  n / s / l / s : focus su Name / Source(multi) / Level / School (s alterna Source/School)\n" +
+			"  n / s / l / c : focus su Name / Source(multi) / Level / School\n" +
 			"  [ / ] : cambia panel Monsters/Items/Spells\n" +
 			"  PgUp / PgDn : scroll del pannello Description\n"
 	case ui.detailRaw:
@@ -2437,6 +2475,7 @@ func (ui *UI) setFilterOptionsForMode() {
 				seenType[s] = struct{}{}
 			}
 		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenSource)...)
 		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
 		ui.crOptions = append(ui.crOptions, keysSorted(seenCR)...)
 		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
@@ -2464,6 +2503,7 @@ func (ui *UI) setFilterOptionsForMode() {
 				seenType[s] = struct{}{}
 			}
 		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenSource)...)
 		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
 		ui.crOptions = append(ui.crOptions, sortCR(keysSorted(seenCR))...)
 		ui.typeOptions = append(ui.typeOptions, keysSorted(seenType)...)
@@ -2485,6 +2525,7 @@ func (ui *UI) setFilterOptionsForMode() {
 			ui.envFilter = option
 		}
 		ui.applyFilters()
+		ui.maybeReturnFocusToListFromFilter()
 	})
 	ui.setDropDownByValue(ui.envDrop, ui.envOptions, ui.envFilter)
 	ui.refreshSourceDropOptions(-1)
@@ -2495,6 +2536,7 @@ func (ui *UI) setFilterOptionsForMode() {
 			ui.crFilter = option
 		}
 		ui.applyFilters()
+		ui.maybeReturnFocusToListFromFilter()
 	})
 	ui.typeDrop.SetOptions(ui.typeOptions, func(option string, _ int) {
 		if option == "All" {
@@ -2503,6 +2545,7 @@ func (ui *UI) setFilterOptionsForMode() {
 			ui.typeFilter = option
 		}
 		ui.applyFilters()
+		ui.maybeReturnFocusToListFromFilter()
 	})
 	if ui.browseMode != BrowseMonsters {
 		ui.envFilter = ""
@@ -2584,6 +2627,8 @@ func (ui *UI) openSourceMultiSelectModal() {
 			ui.sourceFilters = temp
 			ui.refreshSourceDropOptions(-1)
 			ui.applyFilters()
+			ui.app.SetFocus(ui.list)
+			return
 		}
 		ui.app.SetFocus(ui.sourceDrop)
 	}
@@ -2661,6 +2706,13 @@ func (ui *UI) setDropDownByValue(drop *tview.DropDown, options []string, value s
 		}
 	}
 	drop.SetCurrentOption(0)
+}
+
+func (ui *UI) maybeReturnFocusToListFromFilter() {
+	focus := ui.app.GetFocus()
+	if focus == ui.envDrop || focus == ui.crDrop || focus == ui.typeDrop {
+		ui.app.SetFocus(ui.list)
+	}
 }
 
 func (ui *UI) saveCurrentModeFilters() {

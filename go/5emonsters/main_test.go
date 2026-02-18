@@ -264,6 +264,77 @@ func TestDeleteUndoRedoDice(t *testing.T) {
 	}
 }
 
+func TestSetFilterOptionsForItemsAndSpellsPopulateEnv(t *testing.T) {
+	monsters := []Monster{mkMonster(1, "A", 10, 5, "1d1")}
+	items := []Monster{
+		{ID: 1, Name: "Item A", Source: "DMG", CR: "common", Type: "wondrous", Environment: []string{"DMG"}},
+		{ID: 2, Name: "Item B", Source: "XGE", CR: "rare", Type: "weapon", Environment: []string{"XGE"}},
+	}
+	spells := []Monster{
+		{ID: 1, Name: "Spell A", Source: "PHB", CR: "1", Type: "evocation", Environment: []string{"PHB"}},
+		{ID: 2, Name: "Spell B", Source: "XGE", CR: "3", Type: "illusion", Environment: []string{"XGE"}},
+	}
+
+	path := filepath.Join(t.TempDir(), "encounters.yaml")
+	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
+	ui := newUI(monsters, items, spells, nil, nil, nil, path, dicePath)
+
+	ui.browseMode = BrowseItems
+	ui.setFilterOptionsForMode()
+	if len(ui.envOptions) <= 1 {
+		t.Fatalf("items env options not populated: %#v", ui.envOptions)
+	}
+	if !containsString(ui.envOptions, "DMG") || !containsString(ui.envOptions, "XGE") {
+		t.Fatalf("items env options missing expected sources: %#v", ui.envOptions)
+	}
+
+	ui.browseMode = BrowseSpells
+	ui.setFilterOptionsForMode()
+	if len(ui.envOptions) <= 1 {
+		t.Fatalf("spells env options not populated: %#v", ui.envOptions)
+	}
+	if !containsString(ui.envOptions, "PHB") || !containsString(ui.envOptions, "XGE") {
+		t.Fatalf("spells env options missing expected sources: %#v", ui.envOptions)
+	}
+}
+
+func TestEmbeddedItemsAndSpellsEnvOptionsNotOnlyAll(t *testing.T) {
+	items, _, _, _, err := loadItemsFromBytes(embeddedItemsYAML)
+	if err != nil {
+		t.Fatalf("load embedded items failed: %v", err)
+	}
+	spells, _, _, _, err := loadSpellsFromBytes(embeddedSpellsYAML)
+	if err != nil {
+		t.Fatalf("load embedded spells failed: %v", err)
+	}
+
+	monsters := []Monster{mkMonster(1, "A", 10, 5, "1d1")}
+	path := filepath.Join(t.TempDir(), "encounters.yaml")
+	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
+	ui := newUI(monsters, items, spells, nil, nil, nil, path, dicePath)
+
+	ui.browseMode = BrowseItems
+	ui.setFilterOptionsForMode()
+	if len(ui.envOptions) <= 1 {
+		t.Fatalf("embedded items env options not populated: %#v", ui.envOptions)
+	}
+
+	ui.browseMode = BrowseSpells
+	ui.setFilterOptionsForMode()
+	if len(ui.envOptions) <= 1 {
+		t.Fatalf("embedded spells env options not populated: %#v", ui.envOptions)
+	}
+}
+
+func containsString(values []string, target string) bool {
+	for _, v := range values {
+		if v == target {
+			return true
+		}
+	}
+	return false
+}
+
 func TestSortEncounterByInitiative(t *testing.T) {
 	ui := makeTestUI(t, []Monster{
 		mkMonster(1, "A", 12, 5, "1d1"),
