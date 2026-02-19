@@ -256,12 +256,18 @@
     "role": "Solitario",
     "rank": 1,
     "description": "Un essere vagamente umanoide fatto di pietra e acciaio, assemblato e animato dalla magia.",
-    "motivations_tactics": "Distruggere l’ambiente, schiacciare il",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Distruggere l’ambiente, schiacciare il bersaglio, servire il creatore, travolgere il gruppo",
+    "difficulty": 13,
+    "thresholds": "7/15",
+    "pf": 9,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Pugno",
+        "range": "Mischia",
+        "damage": "1d20 fis",
+      },
     "traits":
       [
         {
@@ -296,12 +302,18 @@
     "role": "Controparte",
     "rank": 1,
     "description": "Un personaggio ambizioso e vestito in modo ostentato.",
-    "motivations_tactics": "Complottare, ottenere favori, screditare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Complottare, ottenere favori, screditare, stringere accordi",
+    "difficulty": 12,
+    "thresholds": "4/8",
+    "pf": 3,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "-4",
+        "name": "Pugnale",
+        "range": "Mischia",
+        "damage": "1d4+2 fis",
+      },
     "traits":
       [
         {
@@ -321,12 +333,18 @@
     "role": "Solitario",
     "rank": 1,
     "description": "Una creatura color cremisi proveniente dai Cerchi Inferi, consumata dalla rabbia contro tutti i mortali.",
-    "motivations_tactics": "Agire in modo imprevedibile, circondare i",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Agire in modo imprevedibile, circondare i bersagli, godere del dolore, tormentare",
+    "difficulty": 14,
+    "thresholds": "8/15",
+    "pf": 8,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Artigli",
+        "range": "Mischia",
+        "damage": "1d8+6 fis",
+      },
     "traits":
       [
         {
@@ -407,12 +425,18 @@
     "role": "Solitario",
     "rank": 1,
     "description": "Una fiamma vivente delle dimensioni di un grande falò.",
-    "motivations_tactics": "Appiccare incendi, circondare i nemici,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Appiccare incendi, circondare i nemici, crescere in dimensioni, intimidire",
+    "difficulty": 13,
+    "thresholds": "7/15",
+    "pf": 9,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Esplosione Elementale",
+        "range": "Lontana",
+        "damage": "1d10+4 mag",
+      },
     "traits":
       [
         {
@@ -455,8 +479,9 @@
     "attack":
       {
         "bonus": "+2",
-        "damage": "Viticci: Ravvicinata",
-        "damage_type": "1d8+3 fis",
+        "name": "Viticci",
+        "range": "Ravvicinata",
+        "damage": "1d8+3 fis",
       },
     "traits":
       [
@@ -617,16 +642,22 @@
       ],
   },
   {
-    "name": "Guardiaarciere",
+    "name": "Guardia arciere",
     "role": "Tiratore",
     "rank": 1,
     "description": "Una guardia di alta statura che impugna un arco lungo e una faretra con frecce decorate nei colori locali.",
-    "motivations_tactics": "Arrestare, arrivare a fine giornata, bloccare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Arrestare, arrivare a fine giornata, bloccare, chiudere i cancelli",
+    "difficulty": 10,
+    "thresholds": "4/8",
+    "pf": 3,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Arco Lungo",
+        "range": "Lontana",
+        "damage": "1d8+3 fis",
+      },
     "traits":
       [
         {
@@ -637,16 +668,22 @@
       ],
   },
   {
-    "name": "Guardiaarmata",
+    "name": "Guardia armata",
     "role": "Avversario Base",
     "rank": 1,
     "description": "Una guardia corazzata che impugna una spada e uno scudo dipinti con i colori del luogo.",
-    "motivations_tactics": "Arrestare, arrivare alla fine della giornata,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Arrestare, arrivare alla fine della giornata, bloccare, chiudere le porte",
+    "difficulty": 12,
+    "thresholds": "5/9",
+    "pf": 5,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Spada Lunga",
+        "range": "Mischia",
+        "damage": "1d6+1 fis",
+      },
     "traits":
       [
         {
@@ -733,12 +770,18 @@
     "role": "Controparte",
     "rank": 1,
     "description": "Un aristocratico riccamente agghindato, un concentrato di arroganza.",
-    "motivations_tactics": "Abusare del suo potere, mobilitare seguaci,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Abusare del suo potere, mobilitare seguaci, raccogliere risorse",
+    "difficulty": 14,
+    "thresholds": "6/10",
+    "pf": 3,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "-3",
+        "name": "Stocco",
+        "range": "Mischia",
+        "damage": "1d6+1 fis",
+      },
     "traits":
       [
         {
@@ -762,13 +805,19 @@
     "name": "Ogre Di Caverna",
     "role": "Solitario",
     "rank": 1,
-    "description": "Unumanoidemassicciocheconsideratutteleformedivitasenzientecomecibo.",
-    "motivations_tactics": "Banchettare, calpestare, lanciare i nemici,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "description": "Un umanoide massiccio che considera tutte le forme di vita senziente come cibo.",
+    "motivations_tactics": "Banchettare, calpestare, lanciare i nemici, staccare teste a morsi, strappare arti",
+    "difficulty": 13,
+    "thresholds": "8/15",
+    "pf": 8,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Clava",
+        "range": "Prossima",
+        "damage": "1d10+2 fis",
+      },
     "traits":
       [
         {
@@ -787,7 +836,7 @@
           "text": "Marcate uno Stress per raccogliere oggetti pesanti e lanciarli contro tutti i bersagli davanti all’Ogre entro distanza Lontana. Effettuate un attacco contro questi bersagli. I bersagli colpiti subiscono 1d10+2 danni fisici. Se viene colpito più di un bersaglio, ottenete una Paura.",
         },
         {
-          "name": "FuriaBelluina",
+          "name": "Furia Belluina",
           "kind": "Reazione",
           "text": "quandol’Ogresubisce2opiùPF,puòscatenare la suafuria. Spostate l’Ogre in un punto entro distanza Ravvicinata e infliggete 2d6+3 dannifisici diretti atutti i bersagli sul suo percorso.",
         },
@@ -834,12 +883,18 @@
     "role": "Condottiero",
     "rank": 1,
     "description": "Un carismatico lupo di mare con un cappello appariscente, desideroso di razziare e saccheggiare.",
-    "motivations_tactics": "Comandare, far camminare sull’asse,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Comandare, far camminare sull’asse, razziare, saccheggiare",
+    "difficulty": 14,
+    "thresholds": "7/14",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Sciabola",
+        "range": "Mischia",
+        "damage": "1d12+2 fis",
+      },
     "traits":
       [
         {
@@ -869,16 +924,22 @@
     "role": "Bruto",
     "rank": 1,
     "description": "Un pirata muscoloso e tatuato con pugni grandi come meloni.",
-    "motivations_tactics": "Distruggere, razziare, saccheggiare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Distruggere, razziare, saccheggiare, terrorizzare",
+    "difficulty": 13,
+    "thresholds": "8/15",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Pugni Massicci",
+        "range": "Mischia",
+        "damage": "2d6 fis",
+      },
     "traits":
       [
         {
-          "name": "CappaeSpada",
+          "name": "Cappa e Spada",
           "kind": "Passiva",
           "text": "Quando il Pirata subisce 2 o meno PFa causa di un attacco in Mischia, l’attaccante deve marcare uno Stress.",
         },
