@@ -1,0 +1,9 @@
+- name: Trovatore
+  class: Bardo
+  type: Privilegio Base
+  caster_trait: Presenza
+  description: "Musico Eccezionale: Descrivete il modo in cui vi esibite per gli altri. E possibile eseguire ogni canzone una sola volta per riposo lungo."
+  effects:
+    - "Canzone Popolare: Voi e tutti gli alleati a distanza Ravvicinata recuperate un Punto Ferita."
+    - "Canto Epico: Rendete temporaneamente Vulnerabile un bersaglio a distanza Ravvicinata."
+    - "Ballata: Voi e tutti gli alleati a distanza Ravvicinata guadagnate una Speranza."

@@ -20,6 +20,7 @@ var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
 var environmentsFile = "config/ambienti.yml"
 var equipmentFile = "config/equipaggiamento.yaml"
+var cardsFile = "config/carte.yaml"
 var encounterFile = "encounter.yml"
 
 type nameLists struct {
@@ -108,6 +109,15 @@ type EquipmentItem struct {
 	Damage         string `yaml:"damage"`
 	Grip           string `yaml:"grip"`
 	Characteristic string `yaml:"characteristic"`
+}
+
+type CardItem struct {
+	Name        string   `yaml:"name"`
+	Class       string   `yaml:"class"`
+	Type        string   `yaml:"type"`
+	CasterTrait string   `yaml:"caster_trait"`
+	Description string   `yaml:"description"`
+	Effects     []string `yaml:"effects"`
 }
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
@@ -271,6 +281,19 @@ func loadEquipment(path string) ([]EquipmentItem, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+func loadCards(path string) ([]CardItem, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var cards []CardItem
+	if err := yaml.Unmarshal(data, &cards); err != nil {
+		return nil, err
+	}
+	return cards, nil
 }
 
 func uniqueRandomPNGName(existing []PNG) string {
