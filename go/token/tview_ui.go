@@ -3,24 +3,28 @@ package main
 import (
 	"fmt"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/- "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/-  [black:gold]u/g[-:-] filtro ruolo/rango  [black:gold]v[-:-] reset filtri "
 
 type tviewUI struct {
 	app    *tview.Application
 	pages  *tview.Pages
 	status *tview.TextView
 
-	pngList *tview.List
-	encList *tview.List
-	search  *tview.InputField
-	monList *tview.List
-	detail  *tview.TextView
+	pngList  *tview.List
+	encList  *tview.List
+	search   *tview.InputField
+	roleDrop *tview.DropDown
+	rankDrop *tview.DropDown
+	monList  *tview.List
+	detail   *tview.TextView
 
 	monstersPanel *tview.Flex
 	leftPanel     *tview.Flex
@@ -30,11 +34,15 @@ type tviewUI struct {
 	focusIdx int
 	message  string
 
-	pngs      []PNG
-	selected  int
-	monsters  []Monster
-	encounter []EncounterEntry
-	filtered  []int
+	pngs       []PNG
+	selected   int
+	monsters   []Monster
+	encounter  []EncounterEntry
+	filtered   []int
+	roleOpts   []string
+	rankOpts   []string
+	roleFilter string
+	rankFilter string
 
 	detailRaw   string
 	detailQuery string
@@ -132,6 +140,44 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
+	ui.roleFilter = "Tutti"
+	ui.rankFilter = "Tutti"
+	ui.roleOpts, ui.rankOpts = ui.buildMonsterFilterOptions()
+
+	ui.roleDrop = tview.NewDropDown().SetLabel(" Ruolo ")
+	ui.roleDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.roleDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.roleDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.roleDrop.SetOptions(ui.roleOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.roleFilter = text
+		ui.refreshMonsters()
+		ui.refreshDetail()
+	})
+	ui.roleDrop.SetCurrentOption(0)
+
+	ui.rankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.rankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.rankDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.rankDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.rankDrop.SetOptions(ui.rankOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.rankFilter = text
+		ui.refreshMonsters()
+		ui.refreshDetail()
+	})
+	ui.rankDrop.SetCurrentOption(0)
+
 	ui.monList = tview.NewList().ShowSecondaryText(false)
 	ui.monList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
@@ -140,8 +186,13 @@ func (ui *tviewUI) build() {
 		ui.addSelectedMonsterToEncounter()
 	})
 
+	filters := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(ui.search, 0, 2, false).
+		AddItem(ui.roleDrop, 0, 1, false).
+		AddItem(ui.rankDrop, 0, 1, false)
+
 	ui.monstersPanel = tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(ui.search, 2, 0, false).
+		AddItem(filters, 2, 0, false).
 		AddItem(ui.monList, 0, 1, true)
 	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri ")
 
@@ -165,8 +216,8 @@ func (ui *tviewUI) build() {
 		AddItem(ui.status, 1, 0, false)
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
-	ui.focus = []tview.Primitive{ui.pngList, ui.encList, ui.search, ui.monList, ui.detail}
-	ui.focusIdx = 3
+	ui.focus = []tview.Primitive{ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList, ui.detail}
+	ui.focusIdx = 5
 	ui.app.SetFocus(ui.monList)
 	ui.app.SetInputCapture(ui.handleGlobalKeys)
 }
@@ -192,7 +243,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 
 	if focusIsInput && ev.Key() == tcell.KeyEsc {
 		ui.app.SetFocus(ui.monList)
-		ui.focusIdx = 3
+		ui.focusIdx = 5
 		ui.refreshStatus()
 		return nil
 	}
@@ -218,12 +269,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -248,7 +299,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.focusPanel(1)
 		return nil
 	case '3':
-		ui.focusPanel(3)
+		ui.focusPanel(5)
 		return nil
 	case '/':
 		if !focusIsInput {
@@ -271,6 +322,15 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.addSelectedMonsterToEncounter()
 			return nil
 		}
+	case 'u':
+		ui.focusPanel(3)
+		return nil
+	case 'g':
+		ui.focusPanel(4)
+		return nil
+	case 'v':
+		ui.resetMonsterFilters()
+		return nil
 	case 'd':
 		if focus == ui.encList {
 			ui.removeSelectedEncounter()
@@ -355,9 +415,21 @@ func (ui *tviewUI) refreshMonsters() {
 	query := strings.ToLower(strings.TrimSpace(ui.search.GetText()))
 	ui.filtered = ui.filtered[:0]
 	for i, m := range ui.monsters {
-		if query == "" || strings.Contains(strings.ToLower(m.Name), query) {
-			ui.filtered = append(ui.filtered, i)
+		if query != "" && !strings.Contains(strings.ToLower(m.Name), query) {
+			continue
 		}
+		if ui.roleFilter != "" && ui.roleFilter != "Tutti" && !strings.EqualFold(strings.TrimSpace(m.Role), ui.roleFilter) {
+			continue
+		}
+		if ui.rankFilter != "" && ui.rankFilter != "Tutti" && strconv.Itoa(m.Rank) != ui.rankFilter {
+			continue
+		}
+		ui.filtered = append(ui.filtered, i)
+	}
+
+	// During initial build dropdown callbacks can fire before the list is created.
+	if ui.monList == nil {
+		return
 	}
 
 	current := ui.monList.GetCurrentItem()
@@ -408,8 +480,11 @@ func (ui *tviewUI) refreshEncounter() {
 }
 
 func (ui *tviewUI) refreshDetail() {
+	if ui.detail == nil {
+		return
+	}
 	focus := ui.app.GetFocus()
-	if focus == ui.monList || focus == ui.search {
+	if focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
 		idx := ui.currentMonsterIndex()
 		if idx < 0 {
 			ui.detailRaw = "Nessun mostro selezionato."
@@ -452,6 +527,9 @@ func (ui *tviewUI) refreshDetail() {
 }
 
 func (ui *tviewUI) renderDetail() {
+	if ui.detail == nil {
+		return
+	}
 	text := ui.detailRaw
 	if strings.TrimSpace(text) == "" {
 		text = "Nessun dettaglio."
@@ -489,6 +567,10 @@ func (ui *tviewUI) refreshStatus() {
 		focusLabel = "Encounter"
 	case ui.search:
 		focusLabel = "Filtro"
+	case ui.roleDrop:
+		focusLabel = "Ruolo"
+	case ui.rankDrop:
+		focusLabel = "Rango"
 	case ui.monList:
 		focusLabel = "Mostri"
 	case ui.detail:
@@ -510,6 +592,58 @@ func (ui *tviewUI) currentMonsterIndex() int {
 		return -1
 	}
 	return ui.filtered[cur]
+}
+
+func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
+	roleSet := map[string]struct{}{}
+	rankSet := map[int]struct{}{}
+
+	for _, m := range ui.monsters {
+		role := strings.TrimSpace(m.Role)
+		if role != "" {
+			roleSet[role] = struct{}{}
+		}
+		if m.Rank > 0 {
+			rankSet[m.Rank] = struct{}{}
+		}
+	}
+
+	roles := make([]string, 0, len(roleSet)+1)
+	roles = append(roles, "Tutti")
+	for role := range roleSet {
+		roles = append(roles, role)
+	}
+	sort.Strings(roles[1:])
+
+	ranksInt := make([]int, 0, len(rankSet))
+	for rank := range rankSet {
+		ranksInt = append(ranksInt, rank)
+	}
+	sort.Ints(ranksInt)
+
+	ranks := make([]string, 0, len(ranksInt)+1)
+	ranks = append(ranks, "Tutti")
+	for _, rank := range ranksInt {
+		ranks = append(ranks, strconv.Itoa(rank))
+	}
+
+	return roles, ranks
+}
+
+func (ui *tviewUI) resetMonsterFilters() {
+	ui.roleFilter = "Tutti"
+	ui.rankFilter = "Tutti"
+	ui.search.SetText("")
+	if ui.roleDrop != nil {
+		ui.roleDrop.SetCurrentOption(0)
+	}
+	if ui.rankDrop != nil {
+		ui.rankDrop.SetCurrentOption(0)
+	}
+	ui.refreshMonsters()
+	ui.refreshDetail()
+	ui.message = "Filtri Mostri resettati."
+	ui.refreshStatus()
 }
 
 func (ui *tviewUI) currentEncounterIndex() int {
@@ -721,7 +855,7 @@ func (ui *tviewUI) openConfirmModal(title, message string, onConfirm func()) {
 func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	input := tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(28)
 	input.SetBorder(true).SetTitle("Ricerca")
-	if focus == ui.search || focus == ui.monList {
+	if focus == ui.search || focus == ui.monList || focus == ui.roleDrop || focus == ui.rankDrop {
 		input.SetText(ui.search.GetText())
 	}
 	if focus == ui.detail {
@@ -750,10 +884,10 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 		}
 		query := strings.TrimSpace(input.GetText())
 		switch returnFocus {
-		case ui.search, ui.monList:
+		case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
-			ui.focusPanel(3)
+			ui.focusPanel(5)
 			ui.message = "Filtro mostri aggiornato."
 		case ui.encList:
 			ui.jumpToEncounter(query)
@@ -768,7 +902,7 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 		default:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
-			ui.focusPanel(3)
+			ui.focusPanel(5)
 		}
 		ui.closeModal()
 		ui.app.SetFocus(returnFocus)
@@ -943,7 +1077,7 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "png"
 	case ui.encList:
 		return "encounter"
-	case ui.search, ui.monList:
+	case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 		return "monsters"
 	case ui.detail:
 		return "details"
