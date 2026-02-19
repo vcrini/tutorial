@@ -1321,26 +1321,41 @@ func (ui *tviewUI) buildEnvironmentDetails(e Environment) string {
 }
 
 func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
+	hasValue := func(v string) bool {
+		s := strings.TrimSpace(v)
+		return s != "" && s != "—" && s != "-"
+	}
+
 	var b strings.Builder
 	b.WriteString(it.Name + "\n")
 	b.WriteString(fmt.Sprintf("Categoria: %s | Tipo: %s | Rango: %d", it.Category, it.Type, it.Rank))
-	if strings.TrimSpace(it.Levels) != "" {
+	if hasValue(it.Levels) {
 		b.WriteString(fmt.Sprintf(" | Livelli: %s", it.Levels))
 	}
 	b.WriteString("\n")
-	if strings.TrimSpace(it.Trait) != "" {
-		b.WriteString("Tratto: " + strings.TrimSpace(it.Trait) + "\n")
+
+	if strings.EqualFold(strings.TrimSpace(it.Type), "armatura") {
+		if hasValue(it.Trait) {
+			b.WriteString("Soglie base: " + strings.TrimSpace(it.Trait) + "\n")
+		}
+		if hasValue(it.Range) {
+			b.WriteString("Punteggio base: " + strings.TrimSpace(it.Range) + "\n")
+		}
+	} else {
+		if hasValue(it.Trait) {
+			b.WriteString("Tratto: " + strings.TrimSpace(it.Trait) + "\n")
+		}
+		if hasValue(it.Range) {
+			b.WriteString("Portata: " + strings.TrimSpace(it.Range) + "\n")
+		}
+		if hasValue(it.Damage) {
+			b.WriteString("Danno: " + strings.TrimSpace(it.Damage) + "\n")
+		}
+		if hasValue(it.Grip) {
+			b.WriteString("Impugnatura: " + strings.TrimSpace(it.Grip) + "\n")
+		}
 	}
-	if strings.TrimSpace(it.Range) != "" {
-		b.WriteString("Portata: " + strings.TrimSpace(it.Range) + "\n")
-	}
-	if strings.TrimSpace(it.Damage) != "" {
-		b.WriteString("Danno: " + strings.TrimSpace(it.Damage) + "\n")
-	}
-	if strings.TrimSpace(it.Grip) != "" {
-		b.WriteString("Impugnatura: " + strings.TrimSpace(it.Grip) + "\n")
-	}
-	if strings.TrimSpace(it.Characteristic) != "" && it.Characteristic != "—" {
+	if hasValue(it.Characteristic) {
 		b.WriteString("\nCaratteristica:\n" + strings.TrimSpace(it.Characteristic))
 	}
 	return strings.TrimSpace(b.String())
