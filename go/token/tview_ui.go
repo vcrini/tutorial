@@ -11,7 +11,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri nome/tipo/rango  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip.  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri nome/tipo/rango  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusPNG = iota
@@ -24,6 +24,10 @@ const (
 	focusEnvType
 	focusEnvRank
 	focusEnvList
+	focusEqSearch
+	focusEqType
+	focusEqRank
+	focusEqList
 	focusDetail
 )
 
@@ -42,10 +46,15 @@ type tviewUI struct {
 	envTypeDrop *tview.DropDown
 	envRankDrop *tview.DropDown
 	envList     *tview.List
+	eqSearch    *tview.InputField
+	eqTypeDrop  *tview.DropDown
+	eqRankDrop  *tview.DropDown
+	eqList      *tview.List
 	detail      *tview.TextView
 
 	monstersPanel     *tview.Flex
 	environmentsPanel *tview.Flex
+	equipmentPanel    *tview.Flex
 	catalogPanel      *tview.Pages
 	leftPanel         *tview.Flex
 	mainRow           *tview.Flex
@@ -58,17 +67,23 @@ type tviewUI struct {
 	selected      int
 	monsters      []Monster
 	environments  []Environment
+	equipment     []EquipmentItem
 	encounter     []EncounterEntry
 	filtered      []int
 	filteredEnv   []int
+	filteredEq    []int
 	roleOpts      []string
 	rankOpts      []string
 	envTypeOpts   []string
 	envRankOpts   []string
+	eqTypeOpts    []string
+	eqRankOpts    []string
 	roleFilter    string
 	rankFilter    string
 	envTypeFilter string
 	envRankFilter string
+	eqTypeFilter  string
+	eqRankFilter  string
 	catalogMode   string
 
 	detailRaw   string
@@ -118,6 +133,10 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", environmentsFile, err)
 	}
+	equipment, err := loadEquipment(equipmentFile)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", equipmentFile, err)
+	}
 	encounter, err := loadEncounter(encounterFile, monsters)
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
@@ -142,6 +161,7 @@ func newTViewUI() (*tviewUI, error) {
 		selected:     selected,
 		monsters:     monsters,
 		environments: environments,
+		equipment:    equipment,
 		encounter:    encounter,
 		message:      "Pronto.",
 		catalogMode:  "mostri",
@@ -289,9 +309,70 @@ func (ui *tviewUI) build() {
 		AddItem(ui.envList, 0, 1, true)
 	ui.environmentsPanel.SetBorder(true).SetTitle(" [3]-Ambienti  ([,]) ")
 
+	ui.eqSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
+	ui.eqSearch.SetChangedFunc(func(_ string) {
+		ui.refreshEquipment()
+		ui.refreshDetail()
+	})
+
+	ui.eqTypeFilter = "Tutti"
+	ui.eqRankFilter = "Tutti"
+	ui.eqTypeOpts = ui.buildEquipmentTypeOptions()
+	ui.eqRankOpts = ui.buildEquipmentRankOptions()
+
+	ui.eqTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.eqTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.eqTypeDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.eqTypeDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.eqTypeDrop.SetOptions(ui.eqTypeOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.eqTypeFilter = text
+		ui.refreshEquipment()
+		ui.refreshDetail()
+	})
+	ui.eqTypeDrop.SetCurrentOption(0)
+
+	ui.eqRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.eqRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.eqRankDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.eqRankDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.eqRankDrop.SetOptions(ui.eqRankOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.eqRankFilter = text
+		ui.refreshEquipment()
+		ui.refreshDetail()
+	})
+	ui.eqRankDrop.SetCurrentOption(0)
+
+	ui.eqList = tview.NewList().ShowSecondaryText(false)
+	ui.eqList.SetChangedFunc(func(int, string, string, rune) {
+		ui.refreshDetail()
+	})
+
+	eqFilters := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(ui.eqSearch, 0, 2, false).
+		AddItem(ui.eqTypeDrop, 0, 1, false).
+		AddItem(ui.eqRankDrop, 0, 1, false)
+
+	ui.equipmentPanel = tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(eqFilters, 2, 0, false).
+		AddItem(ui.eqList, 0, 1, true)
+	ui.equipmentPanel.SetBorder(true).SetTitle(" [3]-Equipaggiamento  ([,]) ")
+
 	ui.catalogPanel = tview.NewPages().
 		AddPage("mostri", ui.monstersPanel, true, true).
-		AddPage("ambienti", ui.environmentsPanel, true, false)
+		AddPage("ambienti", ui.environmentsPanel, true, false).
+		AddPage("equipaggiamento", ui.equipmentPanel, true, false)
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.pngList, 0, 1, true).
@@ -315,7 +396,9 @@ func (ui *tviewUI) build() {
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.focus = []tview.Primitive{
 		ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList,
-		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList, ui.detail,
+		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList,
+		ui.eqSearch, ui.eqTypeDrop, ui.eqRankDrop, ui.eqList,
+		ui.detail,
 	}
 	ui.focusIdx = focusMonList
 	ui.app.SetFocus(ui.monList)
@@ -368,12 +451,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqRankDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqRankDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -430,29 +513,37 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'u':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonSearch)
-		} else {
+		} else if ui.catalogMode == "ambienti" {
 			ui.focusPanel(focusEnvSearch)
+		} else {
+			ui.focusPanel(focusEqSearch)
 		}
 		return nil
 	case 't':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonRole)
-		} else {
+		} else if ui.catalogMode == "ambienti" {
 			ui.focusPanel(focusEnvType)
+		} else {
+			ui.focusPanel(focusEqType)
 		}
 		return nil
 	case 'g':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonRank)
-		} else {
+		} else if ui.catalogMode == "ambienti" {
 			ui.focusPanel(focusEnvRank)
+		} else {
+			ui.focusPanel(focusEqRank)
 		}
 		return nil
 	case 'v':
 		if ui.catalogMode == "mostri" {
 			ui.resetMonsterFilters()
-		} else {
+		} else if ui.catalogMode == "ambienti" {
 			ui.resetEnvironmentFilters()
+		} else {
+			ui.resetEquipmentFilters()
 		}
 		return nil
 	case 'd':
@@ -514,6 +605,18 @@ func (ui *tviewUI) focusPanel(panel int) {
 	if panel == focusMonRole && ui.catalogMode == "ambienti" {
 		panel = focusEnvType
 	}
+	if panel == focusMonRole && ui.catalogMode == "equipaggiamento" {
+		panel = focusEqType
+	}
+	if panel == focusMonSearch && ui.catalogMode == "equipaggiamento" {
+		panel = focusEqSearch
+	}
+	if panel == focusMonRank && ui.catalogMode == "equipaggiamento" {
+		panel = focusEqRank
+	}
+	if panel == focusMonList && ui.catalogMode == "equipaggiamento" {
+		panel = focusEqList
+	}
 	if panel < 0 || panel >= len(ui.focus) {
 		return
 	}
@@ -532,6 +635,8 @@ func (ui *tviewUI) isFocusVisible(idx int) bool {
 		return ui.catalogMode == "mostri"
 	case focusEnvSearch, focusEnvType, focusEnvRank, focusEnvList:
 		return ui.catalogMode == "ambienti"
+	case focusEqSearch, focusEqType, focusEqRank, focusEqList:
+		return ui.catalogMode == "equipaggiamento"
 	default:
 		return true
 	}
@@ -541,6 +646,9 @@ func (ui *tviewUI) activeCatalogListFocus() int {
 	if ui.catalogMode == "ambienti" {
 		return focusEnvList
 	}
+	if ui.catalogMode == "equipaggiamento" {
+		return focusEqList
+	}
 	return focusMonList
 }
 
@@ -548,14 +656,25 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	if delta == 0 {
 		return
 	}
-	next := "mostri"
-	if ui.catalogMode == "mostri" {
-		next = "ambienti"
+	order := []string{"mostri", "ambienti", "equipaggiamento"}
+	cur := 0
+	for i, name := range order {
+		if name == ui.catalogMode {
+			cur = i
+			break
+		}
 	}
+	nextIdx := (cur + delta) % len(order)
+	if nextIdx < 0 {
+		nextIdx += len(order)
+	}
+	next := order[nextIdx]
 	ui.catalogMode = next
 	ui.catalogPanel.SwitchToPage(next)
 	if next == "ambienti" {
 		ui.message = "Catalogo: Ambienti"
+	} else if next == "equipaggiamento" {
+		ui.message = "Catalogo: Equipaggiamento"
 	} else {
 		ui.message = "Catalogo: Mostri"
 	}
@@ -567,6 +686,7 @@ func (ui *tviewUI) refreshAll() {
 	ui.refreshPNGs()
 	ui.refreshMonsters()
 	ui.refreshEnvironments()
+	ui.refreshEquipment()
 	ui.refreshEncounter()
 	ui.refreshDetail()
 	ui.refreshStatus()
@@ -677,6 +797,44 @@ func (ui *tviewUI) refreshEnvironments() {
 	ui.envList.SetCurrentItem(current)
 }
 
+func (ui *tviewUI) refreshEquipment() {
+	query := strings.ToLower(strings.TrimSpace(ui.eqSearch.GetText()))
+	ui.filteredEq = ui.filteredEq[:0]
+	for i, it := range ui.equipment {
+		if query != "" && !strings.Contains(strings.ToLower(it.Name), query) {
+			continue
+		}
+		if ui.eqTypeFilter != "" && ui.eqTypeFilter != "Tutti" && !strings.EqualFold(strings.TrimSpace(it.Category), ui.eqTypeFilter) {
+			continue
+		}
+		if ui.eqRankFilter != "" && ui.eqRankFilter != "Tutti" && strconv.Itoa(it.Rank) != ui.eqRankFilter {
+			continue
+		}
+		ui.filteredEq = append(ui.filteredEq, i)
+	}
+
+	if ui.eqList == nil {
+		return
+	}
+	current := ui.eqList.GetCurrentItem()
+	ui.eqList.Clear()
+	if len(ui.filteredEq) == 0 {
+		ui.eqList.AddItem("(nessun equipaggiamento)", "", 0, nil)
+		return
+	}
+	for _, idx := range ui.filteredEq {
+		it := ui.equipment[idx]
+		ui.eqList.AddItem(fmt.Sprintf("%s [%s R%d]", it.Name, it.Category, it.Rank), "", 0, nil)
+	}
+	if current >= len(ui.filteredEq) {
+		current = len(ui.filteredEq) - 1
+	}
+	if current < 0 {
+		current = 0
+	}
+	ui.eqList.SetCurrentItem(current)
+}
+
 func (ui *tviewUI) refreshEncounter() {
 	current := ui.encList.GetCurrentItem()
 	ui.encList.Clear()
@@ -729,6 +887,17 @@ func (ui *tviewUI) refreshDetail() {
 			return
 		}
 		ui.detailRaw = ui.buildEnvironmentDetails(ui.environments[idx])
+		ui.renderDetail()
+		return
+	}
+	if focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqRankDrop {
+		idx := ui.currentEquipmentIndex()
+		if idx < 0 {
+			ui.detailRaw = "Nessun equipaggiamento selezionato."
+			ui.renderDetail()
+			return
+		}
+		ui.detailRaw = ui.buildEquipmentDetails(ui.equipment[idx])
 		ui.renderDetail()
 		return
 	}
@@ -818,6 +987,14 @@ func (ui *tviewUI) refreshStatus() {
 		focusLabel = "Rango Ambienti"
 	case ui.envList:
 		focusLabel = "Ambienti"
+	case ui.eqSearch:
+		focusLabel = "Nome Equip."
+	case ui.eqTypeDrop:
+		focusLabel = "Tipo Equip."
+	case ui.eqRankDrop:
+		focusLabel = "Rango Equip."
+	case ui.eqList:
+		focusLabel = "Equipaggiamento"
 	case ui.detail:
 		focusLabel = "Dettagli"
 	}
@@ -828,6 +1005,8 @@ func (ui *tviewUI) refreshStatus() {
 	catalogLabel := "Mostri"
 	if ui.catalogMode == "ambienti" {
 		catalogLabel = "Ambienti"
+	} else if ui.catalogMode == "equipaggiamento" {
+		catalogLabel = "Equipaggiamento"
 	}
 	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
 }
@@ -858,6 +1037,17 @@ func (ui *tviewUI) currentEnvironmentIndex() int {
 		return -1
 	}
 	return ui.filteredEnv[cur]
+}
+
+func (ui *tviewUI) currentEquipmentIndex() int {
+	if len(ui.filteredEq) == 0 || ui.eqList == nil {
+		return -1
+	}
+	cur := ui.eqList.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.filteredEq) {
+		return -1
+	}
+	return ui.filteredEq[cur]
 }
 
 func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
@@ -933,6 +1123,43 @@ func (ui *tviewUI) buildEnvironmentTypeOptions() []string {
 	return types
 }
 
+func (ui *tviewUI) buildEquipmentTypeOptions() []string {
+	typeSet := map[string]struct{}{}
+	for _, it := range ui.equipment {
+		k := strings.TrimSpace(it.Category)
+		if k != "" {
+			typeSet[k] = struct{}{}
+		}
+	}
+	opts := make([]string, 0, len(typeSet)+1)
+	opts = append(opts, "Tutti")
+	for k := range typeSet {
+		opts = append(opts, k)
+	}
+	sort.Strings(opts[1:])
+	return opts
+}
+
+func (ui *tviewUI) buildEquipmentRankOptions() []string {
+	set := map[int]struct{}{}
+	for _, it := range ui.equipment {
+		if it.Rank > 0 {
+			set[it.Rank] = struct{}{}
+		}
+	}
+	ints := make([]int, 0, len(set))
+	for r := range set {
+		ints = append(ints, r)
+	}
+	sort.Ints(ints)
+	opts := make([]string, 0, len(ints)+1)
+	opts = append(opts, "Tutti")
+	for _, r := range ints {
+		opts = append(opts, strconv.Itoa(r))
+	}
+	return opts
+}
+
 func (ui *tviewUI) resetMonsterFilters() {
 	ui.roleFilter = "Tutti"
 	ui.rankFilter = "Tutti"
@@ -965,6 +1192,22 @@ func (ui *tviewUI) resetEnvironmentFilters() {
 	ui.refreshStatus()
 }
 
+func (ui *tviewUI) resetEquipmentFilters() {
+	ui.eqTypeFilter = "Tutti"
+	ui.eqRankFilter = "Tutti"
+	ui.eqSearch.SetText("")
+	if ui.eqTypeDrop != nil {
+		ui.eqTypeDrop.SetCurrentOption(0)
+	}
+	if ui.eqRankDrop != nil {
+		ui.eqRankDrop.SetCurrentOption(0)
+	}
+	ui.refreshEquipment()
+	ui.refreshDetail()
+	ui.message = "Filtri Equipaggiamento resettati."
+	ui.refreshStatus()
+}
+
 func (ui *tviewUI) buildEnvironmentDetails(e Environment) string {
 	var b strings.Builder
 	b.WriteString(e.Name + "\n")
@@ -993,6 +1236,32 @@ func (ui *tviewUI) buildEnvironmentDetails(e Environment) string {
 	}
 	if strings.TrimSpace(e.Description) != "" {
 		b.WriteString("\n" + strings.TrimSpace(e.Description))
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
+	var b strings.Builder
+	b.WriteString(it.Name + "\n")
+	b.WriteString(fmt.Sprintf("Categoria: %s | Tipo: %s | Rango: %d", it.Category, it.Type, it.Rank))
+	if strings.TrimSpace(it.Levels) != "" {
+		b.WriteString(fmt.Sprintf(" | Livelli: %s", it.Levels))
+	}
+	b.WriteString("\n")
+	if strings.TrimSpace(it.Trait) != "" {
+		b.WriteString("Tratto: " + strings.TrimSpace(it.Trait) + "\n")
+	}
+	if strings.TrimSpace(it.Range) != "" {
+		b.WriteString("Portata: " + strings.TrimSpace(it.Range) + "\n")
+	}
+	if strings.TrimSpace(it.Damage) != "" {
+		b.WriteString("Danno: " + strings.TrimSpace(it.Damage) + "\n")
+	}
+	if strings.TrimSpace(it.Grip) != "" {
+		b.WriteString("Impugnatura: " + strings.TrimSpace(it.Grip) + "\n")
+	}
+	if strings.TrimSpace(it.Characteristic) != "" && it.Characteristic != "—" {
+		b.WriteString("\nCaratteristica:\n" + strings.TrimSpace(it.Characteristic))
 	}
 	return strings.TrimSpace(b.String())
 }
@@ -1209,6 +1478,12 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	if focus == ui.search || focus == ui.monList || focus == ui.roleDrop || focus == ui.rankDrop {
 		input.SetText(ui.search.GetText())
 	}
+	if focus == ui.envSearch || focus == ui.envList || focus == ui.envTypeDrop || focus == ui.envRankDrop {
+		input.SetText(ui.envSearch.GetText())
+	}
+	if focus == ui.eqSearch || focus == ui.eqList || focus == ui.eqTypeDrop || focus == ui.eqRankDrop {
+		input.SetText(ui.eqSearch.GetText())
+	}
 	if focus == ui.detail {
 		input.SetText(ui.detailQuery)
 	}
@@ -1245,6 +1520,11 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 			ui.refreshEnvironments()
 			ui.focusPanel(focusEnvList)
 			ui.message = "Filtro ambienti aggiornato."
+		case ui.eqSearch, ui.eqList, ui.eqTypeDrop, ui.eqRankDrop:
+			ui.eqSearch.SetText(query)
+			ui.refreshEquipment()
+			ui.focusPanel(focusEqList)
+			ui.message = "Filtro equipaggiamento aggiornato."
 		case ui.encList:
 			ui.jumpToEncounter(query)
 		case ui.detail:
@@ -1439,6 +1719,12 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- u / t / g: focus filtro Nome / Tipo / Rango",
 			"- v: reset filtri Ambienti (Nome/Tipo/Rango)",
 		}
+	case ui.eqSearch, ui.eqTypeDrop, ui.eqRankDrop, ui.eqList:
+		panel = "Equipaggiamento"
+		panelLines = []string{
+			"- u / t / g: focus filtro Nome / Tipo / Rango",
+			"- v: reset filtri Equipaggiamento",
+		}
 	default:
 		panelLines = []string{"- /: evidenzia testo nei dettagli"}
 	}
@@ -1453,7 +1739,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- ?: apri/chiudi help\n")
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 1 / 2 / 3: focus PNG / Encounter / Catalogo\n")
-	b.WriteString("- [ / ]: alterna Mostri / Ambienti\n")
+	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
 	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
@@ -1493,6 +1779,8 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "monsters"
 	case ui.envSearch, ui.envList, ui.envTypeDrop, ui.envRankDrop:
 		return "ambienti"
+	case ui.eqSearch, ui.eqList, ui.eqTypeDrop, ui.eqRankDrop:
+		return "equipaggiamento"
 	case ui.detail:
 		return "details"
 	default:
@@ -1532,6 +1820,8 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.monstersPanel
 		case "ambienti":
 			content = ui.environmentsPanel
+		case "equipaggiamento":
+			content = ui.equipmentPanel
 		case "details":
 			content = ui.detail
 		}
