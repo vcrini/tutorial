@@ -2,7 +2,7 @@
   {
     "name": "Branco Di Ratti",
     "role": "Orda",
-    "rank": 1,
+    "rank": 2,
     "description": "Una massa strisciante di roditori che si muovono all’unisono come un’onda famelica.",
     "motivations_tactics": "Divorare, ricoprire, sciamare",
     "difficulty": 10,
@@ -33,7 +33,7 @@
   {
     "name": "Capo Delle Guardie",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 2,
     "description": "Una guardia esperta con una mazza, un fischietto e una voce tonante.",
     "motivations_tactics": "Arrestare, cercare la gloria, chiudere i",
     "difficulty": 15,
@@ -69,7 +69,7 @@
   {
     "name": "Bandito Dei Coltelli Seghettati",
     "role": "Avversario Base",
-    "rank": 1,
+    "rank": 2,
     "description": "Un criminale astuto con un mantello che porta uno dei coltelli iconici della banda.",
     "motivations_tactics": "Fuggire, gettare fumo negli occhi, guadagnare, rubare",
     "difficulty": 12,
@@ -100,7 +100,7 @@
   {
     "name": "Cecchino Dei Coltelli Seghettati",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 2,
     "description": "Un bandito allampanato che colpisce da dietro una copertura con un arco corto.",
     "motivations_tactics": "Imboscata, nascondersi, profitto, riposizionarsi",
     "difficulty": 13,
@@ -126,7 +126,7 @@
   {
     "name": "Lacchè Dei Coltelli Seghettati",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 2,
     "description": "Un ladro con abiti semplici e piccoli stiletti, desideroso di mettersi alla prova.",
     "motivations_tactics": "Fuggire, gettarefumo negli occhi, guadagnare",
     "difficulty": 9,
@@ -642,7 +642,7 @@
       ],
   },
   {
-    "name": "Guardia arciere",
+    "name": "Guardia Arciere",
     "role": "Tiratore",
     "rank": 1,
     "description": "Una guardia di alta statura che impugna un arco lungo e una faretra con frecce decorate nei colori locali.",
@@ -668,7 +668,7 @@
       ],
   },
   {
-    "name": "Guardia armata",
+    "name": "Guardia Armata",
     "role": "Avversario Base",
     "rank": 1,
     "description": "Una guardia corazzata che impugna una spada e uno scudo dipinti con i colori del luogo.",
@@ -1115,12 +1115,18 @@
     "role": "Tiratore",
     "rank": 1,
     "description": "Uno scheletro fragile con un arco corto e frecce.",
-    "motivations_tactics": "fingersi morto, perforare bersagli distratti,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "fingersi morto, perforare bersagli distratti, rubare la pelle",
+    "difficulty": 9,
+    "thresholds": "4/7",
+    "pf": 3,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Arco Corto",
+        "range": "Lontana",
+        "damage": "1d8+1 fis",
+      },
     "traits":
       [
         {
@@ -1217,12 +1223,18 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Un combattente agile armato di giavellotti.",
-    "motivations_tactics": "Attaccare sui fianchi, cercare vantaggio,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Attaccare sui fianchi, cercare vantaggio, incalzare, schermagliare",
+    "difficulty": 12,
+    "thresholds": "5/9",
+    "pf": 3,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Giavellotto",
+        "range": "Ravvicinata",
+        "damage": "1d6+2 fis",
+      },
     "traits":
       [
         {
@@ -1242,12 +1254,18 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Un serpente trasparente con una testa massiccia che lascia una scia di frammenti di vetro ovunque vada.",
-    "motivations_tactics": "Arrampicarsi, mantenere le distanze,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Arrampicarsi, mantenere le distanze, nutrirsi, spaventare",
+    "difficulty": 14,
+    "thresholds": "6/10",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Zanne di Vetro",
+        "range": "Prossima",
+        "damage": "1d8+2 fis",
+      },
     "traits":
       [
         {
@@ -1272,12 +1290,18 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Un guerriero fatato che indossa un’armatura fatta di foglie e corteccia.",
-    "motivations_tactics": "Imboscata, nascondersi, proteggere,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Affaticare, imboscata, nascondersi, proteggere",
+    "difficulty": 11,
+    "thresholds": "6/11",
+    "pf": 4,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Falce",
+        "range": "Mischia",
+        "damage": "1d8+1 fis",
+      },
     "traits":
       [
         {
@@ -1329,7 +1353,7 @@
       ],
   },
   {
-    "name": "Zanzare Giganti",
+    "name": "Zanzare Gigante",
     "role": "Orda",
     "rank": 1,
     "description": "Decine di zanzare grandi come un pugno, che volano insieme perproteggersi.",
@@ -1400,12 +1424,18 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Un cadavere animato che si muove barcollando, spinto solo dalla fame.",
-    "motivations_tactics": "Attaccare i nemici, divorare, fame,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Attaccare i nemici, divorare, fame, straziare le carni",
+    "difficulty": 10,
+    "thresholds": "4/6",
+    "pf": 4,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Morso",
+        "range": "Mischia",
+        "damage": "1d6+1 fis",
+      },
     "traits":
       [
         {
@@ -1425,12 +1455,18 @@
     "role": "Bruto",
     "rank": 1,
     "description": "Un cadavere enorme, gonfio di putrefazione e rabbia.",
-    "motivations_tactics": "Distruggere, lanciare detriti, schiacciare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Distruggere, lanciare detriti, schiacciare, spianare",
+    "difficulty": 10,
+    "thresholds": "8/15",
+    "pf": 7,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Colpo Violento",
+        "range": "Prossima",
+        "damage": "1d12+3 fis",
+      },
     "traits":
       [
         {
@@ -1455,12 +1491,18 @@
     "role": "Solitario",
     "rank": 1,
     "description": "Un imponente ammasso di cadaveri che si muove come un unico essere, con arti larghi cometoraci umani e pugni grandi quanto un halfling adulto.",
-    "motivations_tactics": "Assorbire cadaveri, fame, schiantare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Assorbire cadaveri, fame, schiantare, terrorizzare",
+    "difficulty": 13,
+    "thresholds": "8/15",
+    "pf": 10,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Troppe Braccia",
+        "range": "Prossima",
+        "damage": "1d20 fis",
+      },
     "traits":
       [
         {
@@ -1514,14 +1556,20 @@
   {
     "name": "Anguille Elettriche",
     "role": "Orda",
-    "rank": 1,
+    "rank": 2,
     "description": "Uno sciame di anguille che si attorciglia e folgora la preda.",
-    "motivations_tactics": "Evitare i predatori più grandi, farle a pezzi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Evitare i predatori più grandi, farle a pezzi, folgorare le prede",
+    "difficulty": 14,
+    "thresholds": "10/20",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Morso Elettrico",
+        "range": "Mischia",
+        "damage": "2d6+4 fis",
+      },
     "traits":
       [
         {
@@ -1537,16 +1585,22 @@
       ],
   },
   {
-    "name": "Apprendistaassassino",
+    "name": "Apprendista Assassino",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 2,
     "description": "Un giovane apprendista desideroso di mettersi alla prova.",
-    "motivations_tactics": "Agire in modo spericolato, mostrare il",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Agire in modo spericolato, mostrare il proprio valore, uccidere",
+    "difficulty": 13,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "-1",
+        "name": "Pugnale da Lancio",
+        "range": "Ravvicinata",
+        "damage": "4 fis",
+      },
     "traits":
       [
         {
@@ -1564,14 +1618,20 @@
   {
     "name": "Maestro Assassino",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 2,
     "description": "Un killer esperto con una voce minacciosa e una lama letale.",
-    "motivations_tactics": "Imboscata, prepararsi a tutti gli scenari,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Imboscata, prepararsi a tutti gli scenari, uccidere, uscire vivo",
+    "difficulty": 15,
+    "thresholds": "12/25",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+5",
+        "name": "Pugnale Seghettato",
+        "range": "Ravvicinata",
+        "damage": "2d10+2 fis",
+      },
     "traits":
       [
         {
@@ -1599,14 +1659,20 @@
   {
     "name": "Branco Di Segugi Infernali",
     "role": "Orda",
-    "rank": 1,
+    "rank": 2,
     "description": "Cani innaturali animati dalle fiamme infernali.",
-    "motivations_tactics": "Compiacere i padroni, consumare carne,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Compiacere i padroni, consumare carne, incutere paura",
+    "difficulty": 15,
+    "thresholds": "11/23",
+    "pf": 6,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Artigli e Zanne",
+        "range": "Mischia",
+        "damage": "2d8+2 fis",
+      },
     "traits":
       [
         {
@@ -1629,7 +1695,7 @@
   {
     "name": "Cacciatore Di Mortali",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 2,
     "description": "Una figura non morta che indossa un pesante cappotto di pelle, con occhi indagatori e un atteggiamento di incurante crudeltà.",
     "motivations_tactics": "Cacciare, divorare, seguire le tracce",
     "difficulty": 16,
@@ -1670,14 +1736,20 @@
   {
     "name": "Cavaliere Del Reame",
     "role": "Condottiero",
-    "rank": 1,
-    "description": "Unsoldatodecoratoconun’armaturapesanteinsellaaunpossentedestriero.",
-    "motivations_tactics": "Cercare la gloria, Cavalcare, mostrare il",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "rank": 2,
+    "description": "Un soldato decorato con un’armatura pesante in sella a un possente destriero.",
+    "motivations_tactics": "Cercare la gloria, Cavalcare, mostrare il proprio valore",
+    "difficulty": 15,
+    "thresholds": "13/26",
+    "pf": 6,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Spada Lunga",
+        "range": "Mischia",
+        "damage": "2d10+4 fis",
+      },
     "traits":
       [
         {
@@ -1705,7 +1777,7 @@
   {
     "name": "Coscritto",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 2,
     "description": "Un civile male addestrato, arruolato a forza nella guerra.",
     "motivations_tactics": "Restare in gruppo, seguire gli ordini, sopravvivere",
     "difficulty": 12,
@@ -1736,27 +1808,51 @@
   {
     "name": "Adepto Del Culto",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 2,
     "description": "Un mago esperto che evoca l’ombra e la paura.",
-    "motivations_tactics": "Ostacolare gli avversari, ottenere favori,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
-    "traits": [],
+    "motivations_tactics": "Ostacolare gli avversari, ottenere favori, coprire conoscenze",
+    "difficulty": 14,
+    "thresholds": "9/18",
+    "pf": 4,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Bastone Ricoperto di Rune",
+        "range": "Lontana",
+        "damage": "2d4+3 mag",
+      },
+    "traits":
+      [
+        {
+          "name": "Scarica di Debolezza",
+          "kind": "Azione",
+          "text": "Spendete una Paura per effettuare un attacco base contro un bersaglio entro distanza Prossima. In caso di successo, il bersaglio marca uno Stress.",
+        },
+        {
+          "name": "Sudario Corrotto",
+          "kind": "Azione",
+          "text": "Marcate uno Stress per avvolgere un alleato entro distanza Ravvicinata in un sudario protettivo fino a quando l’Adepto non viene reso inoffensivo. Mentre è Protetto, il bersaglio ha resistenza a tutti i danni.",
+        },
+      ],
   },
   {
     "name": "Iniziato Del Culto",
     "role": "Seguace",
-    "rank": 1,
-    "description": "Uncultistadibassorangoinabitisemplici,desiderosodiottenerepotere.",
-    "motivations_tactics": "Cercare conoscenze proibite, ottenere",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "rank": 2,
+    "description": "Un cultista di basso rango in abiti semplici, desideroso di ottenere potere.",
+    "motivations_tactics": "Cercare conoscenze proibite, ottenere potere, seguire gli ordini",
+    "difficulty": 13,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Pugnale Rituale",
+        "range": "Mischia",
+        "damage": "5 fis",
+      },
     "traits":
       [
         {
@@ -1774,14 +1870,20 @@
   {
     "name": "Custode Dei Segreti",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 2,
     "description": "Un condottiero misterioso con un canale diretto con gli Dèi Caduti.",
-    "motivations_tactics": "Accumulare potere, complottare, prendere",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Accumulare potere, complottare, prendere il controllo",
+    "difficulty": 16,
+    "thresholds": "13/26",
+    "pf": 7,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Bastone Istriato",
+        "range": "Lontana",
+        "damage": "2d12 mag",
+      },
     "traits":
       [
         {
@@ -1945,12 +2047,18 @@
     "role": "Bruto",
     "rank": 1,
     "description": "Un gigante particolarmente muscoloso che brandisce un martello da guerra più grande di un umano.",
-    "motivations_tactics": "Guadagnarsi da vivere, sbattere,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Guadagnarsi da vivere, sbattere, sopraffare, testardaggine",
+    "difficulty": 15,
+    "thresholds": "14/28",
+    "pf": 7,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Martello da Guerra",
+        "range": "Prossima",
+        "damage": "2d12+3 fis",
+      },
     "traits":
       [
         {
@@ -1973,14 +2081,20 @@
   {
     "name": "Gigante Recluta",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 2,
     "description": "Un combattente gigante che indossa un’armatura presa in prestito.",
-    "motivations_tactics": "Guadagnarsi da vivere, picchiare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Guadagnarsi da vivere, picchiare, sopravvivere",
+    "difficulty": 13,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Martello da Guerra",
+        "range": "Prossima",
+        "damage": "5 fis",
+      },
     "traits":
       [
         {
@@ -1998,14 +2112,20 @@
   {
     "name": "Gigante Signore Delle Bestie",
     "role": "Condottiero",
-    "rank": 1,
-    "description": "Unguerrierovestitodipellechebrandisceunafrustaeunimmensoarco.",
-    "motivations_tactics": "Comandare, bloccare, guadagnarsi da",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "rank": 2,
+    "description": "Un guerriero vestito di pelle che brandisce una frusta e un immenso arco.",
+    "motivations_tactics": "Comandare, bloccare, guadagnarsi da vivere, manovrare, proteggere i suoi compagni animali",
+    "difficulty": 16,
+    "thresholds": "12/24",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Arco Lungo",
+        "range": "Lontana",
+        "damage": "2d8+4 fis",
+      },
     "traits":
       [
         {
@@ -2028,14 +2148,20 @@
   {
     "name": "Gorgone",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 2,
     "description": "Un umanoide squamato con testa di serpente e un arco dorato, infuriato perché la sua pace è stata disturbata.",
-    "motivations_tactics": "Cercare vendetta, colpire e scappare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Cercare vendetta, colpire e scappare, mettere alle strette, pietrificare",
+    "difficulty": 15,
+    "thresholds": "13/25",
+    "pf": 9,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Arco Corto del Sole al Tramonto",
+        "range": "Lontana",
+        "damage": "2d20+3 mag",
+      },
     "traits":
       [
         {
@@ -2068,14 +2194,20 @@
   {
     "name": "Guerra In Scatola",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 2,
     "description": "Un costrutto a forma di cubo con una runa diversa su ciascuna faccia.",
-    "motivations_tactics": "Attendere innocuo, cambiare tattica,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Attendere innocuo, cambiare tattica, travolgere i nemici",
+    "difficulty": 15,
+    "thresholds": "10/20",
+    "pf": 8,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Colpo Violento",
+        "range": "Mischia",
+        "damage": "2d6+3 fis",
+      },
     "traits":
       [
         {
@@ -2103,14 +2235,20 @@
   {
     "name": "Magnate",
     "role": "Controparte",
-    "rank": 1,
+    "rank": 2,
     "description": "Un mercante esperto con una grande impresa sotto il suo comando.",
-    "motivations_tactics": "Abusare del suo potere, mobilitare seguaci,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Abusare del suo potere, mobilitare seguaci, raccogliere risorse",
+    "difficulty": 15,
+    "thresholds": "9/19",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "-2",
+        "name": "Stocco",
+        "range": "Mischia",
+        "damage": "1d6+2 fis",
+      },
     "traits":
       [
         {
@@ -2128,14 +2266,20 @@
   {
     "name": "Mago Da Battaglia",
     "role": "Tiratore",
-    "rank": 1,
-    "description": "Un magotemprato dalla battaglia e addestrato nella magia distruttiva.",
-    "motivations_tactics": "Cercare potere, distruggere le formazioni,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "rank": 2,
+    "description": "Un mago temprato dalla battaglia e addestrato nella magia distruttiva.",
+    "motivations_tactics": "Cercare potere, distruggere le formazioni, sviluppare nuovi incantesimi",
+    "difficulty": 16,
+    "thresholds": "11/23",
+    "pf": 5,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Bastone",
+        "range": "Lontana",
+        "damage": "2d10+4 mag",
+      },
     "traits":
       [
         {
@@ -2168,14 +2312,20 @@
   {
     "name": "Minotauro Demolitore",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 2,
     "description": "Un massiccio firbolg dalla testa di toro e dal temperamento irascibile.",
     "motivations_tactics": "Consumare, incornare, inseguire",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 16,
+    "thresholds": "14/27",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Ascia da Battaglia",
+        "range": "Prossima",
+        "damage": "2d8+5 fis",
+      },
     "traits":
       [
         {
@@ -2198,14 +2348,20 @@
   {
     "name": "Scintillante Giovane",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 2,
     "description": "Un insetto delle dimensioni di un cavallo con scaglie iridescenti e ali cristalline che si muove più velocemente di quanto l’occhio possa vedere.",
-    "motivations_tactics": "Cacciare, piombare in picchiata, raccogliere",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Cacciare, piombare in picchiata, raccogliere oggetti luccicanti",
+    "difficulty": 14,
+    "thresholds": "13/26",
+    "pf": 10,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Serrata d’Ali",
+        "range": "Prossima",
+        "damage": "2d10+4 fis",
+      },
     "traits":
       [
         {
@@ -2233,14 +2389,20 @@
   {
     "name": "Soldato Scelto",
     "role": "Avversario Base",
-    "rank": 1,
+    "rank": 2,
     "description": "Uno scudiero corazzato o un popolano esperto che cerca difarsi un nome.",
-    "motivations_tactics": "Mantenere l’ordine, ottenere gloria,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Mantenere l’ordine, ottenere gloria, stringere alleanze",
+    "difficulty": 15,
+    "thresholds": "9/18",
+    "pf": 4,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Lancia",
+        "range": "Prossima",
+        "damage": "2d8+4 fis",
+      },
     "traits":
       [
         {
@@ -2258,14 +2420,20 @@
   {
     "name": "Capitano Spettrale",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 2,
     "description": "Un comandante spettrale che guida le sue truppe oltre la morte.",
-    "motivations_tactics": "Muoversi attraverso oggetti solidi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Muoversi attraverso oggetti solidi, radunare le truppe, rivivere vecchie battaglie",
+    "difficulty": 16,
+    "thresholds": "13/26",
+    "pf": 6,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Arco Lungo",
+        "range": "Lontana",
+        "damage": "2d10+3 fis",
+      },
     "traits":
       [
         {
@@ -2293,14 +2461,20 @@
   {
     "name": "Guardiano Spettrale",
     "role": "Avversario Base",
-    "rank": 1,
+    "rank": 2,
     "description": "Un combattente spettrale con lance e spade, ancorato al dovere.",
-    "motivations_tactics": "Muoversi attraverso oggetti solidi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Muoversi attraverso oggetti solidi, proteggere tesori, rivivere vecchie battaglie",
+    "difficulty": 15,
+    "thresholds": "7/15",
+    "pf": 4,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Lancia",
+        "range": "Prossima",
+        "damage": "2d8+1 fis",
+      },
     "traits":
       [
         {
@@ -2318,14 +2492,20 @@
   {
     "name": "Arciere Spettrale",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 2,
     "description": "Un combattente spettrale con un arco etereo, che continua a scoccare sui bersagli vulnerabili.",
-    "motivations_tactics": "Muoversi attraverso oggetti solidi, rivivere",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Muoversi attraverso oggetti solidi, rivivere vecchie battaglie",
+    "difficulty": 13,
+    "thresholds": "6/14",
+    "pf": 3,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Arco Lungo",
+        "range": "Lontana",
+        "damage": "2d10+2 fis",
+      },
     "traits":
       [
         {
@@ -2343,11 +2523,11 @@
   {
     "name": "Spia",
     "role": "Controparte",
-    "rank": 1,
+    "rank": 2,
     "description": "Un abile agente segreto con un talento naturale per trovarsi nel posto giusto al momento giusto al fine di carpire segreti.",
     "motivations_tactics": "Camuffarsi, fuggire, origliare",
     "difficulty": 15,
-    "thresholds": "8/17",
+    "thresholds": "7/17",
     "pf": 4,
     "stress": 3,
     "attack":
@@ -2374,14 +2554,20 @@
   {
     "name": "Squalo",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 2,
     "description": "Un grande predatore acquatico, sempre in movimento.",
-    "motivations_tactics": "Fiutare il sangue, isolare la preda, mirare ai",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Fiutare il sangue, isolare la preda, mirare ai punti deboli",
+    "difficulty": 14,
+    "thresholds": "14/28",
+    "pf": 7,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Fauci Dentate",
+        "range": "Prossima",
+        "damage": "2d12+1 fis",
+      },
     "traits":
       [
         {
@@ -2404,7 +2590,7 @@
   {
     "name": "Teschio Del Caos",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 2,
     "description": "Un teschio umanoide fluttuante animato da una magia iridescente.",
     "motivations_tactics": "Consumare magia, ridere, servire il creatore",
     "difficulty": 15,
@@ -2445,14 +2631,21 @@
   {
     "name": "Cavaliere Del Cervo",
     "role": "Avversario Base",
-    "rank": 1,
+    "rank": 3,
     "description": "Un cavaliere con un maestoso palco di corna di cervo che indossa un’armatura fatta di spine minacciose.",
     "motivations_tactics": "Eliminare gli indesiderati, isolare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "19/36",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Spada di Rovi",
+        "range": "Mischia",
+        "damage": "3d8+3 fis",
+      },
+    "experience": "Conoscenza della Foresta +3",
     "traits":
       [
         {
@@ -2475,14 +2668,21 @@
   {
     "name": "Demone Dell’Arroganza",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 3,
     "description": "Un demone di perfetta bellezza e infinita crudeltà con una lancia scintillante e abiti eleganti.",
     "motivations_tactics": "Condiscendenza, dichiarare",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 18,
+    "thresholds": "18/36",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Lancia Perfetta",
+        "range": "Prossima",
+        "damage": "3d10 fis",
+      },
+    "experience": "Manipolazione +2",
     "traits":
       [
         {
@@ -2515,14 +2715,21 @@
   {
     "name": "Demone Dell’Avarizia",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 3,
     "description": "Unamostruositàregale,incappucciata,concornacircolariornateditesori.",
     "motivations_tactics": "Alimentare l’avidità, consumare, seminare",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "15/29",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Fauci Affamate",
+        "range": "Mischia",
+        "damage": "3d6+5 mag",
+      },
+    "experience": "Manipolazione +3",
     "traits":
       [
         {
@@ -2545,14 +2752,21 @@
   {
     "name": "Demone Della Gelosia",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 3,
     "description": "Una creatura volubile dagli arti sottili e dai desideri insaziabili.",
     "motivations_tactics": "Partecipare al successo degli altri,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "17/30",
+    "pf": 6,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Assalto Psichico",
+        "range": "Lontana",
+        "damage": "3d8+3 mag",
+      },
+    "experience": "Manipolazione +3",
     "traits":
       [
         {
@@ -2580,14 +2794,21 @@
   {
     "name": "Demone Dell’Ira",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 3,
     "description": "Un demone gigantesco con pugni grandi come massi, spinto da una rabbia infinita.",
     "motivations_tactics": "Alimentare la sua rabbia, impressionare i",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "22/40",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Pugni",
+        "range": "Prossima",
+        "damage": "3d8+1 mag",
+      },
+    "experience": "Intimidire +2",
     "traits":
       [
         {
@@ -2615,14 +2836,21 @@
   {
     "name": "Drago Dei Ghiacci Giovane",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 3,
     "description": "Un drago blu ghiaccio con quattro potenti arti e ali ricoperte di cristalli di ghiaccio.",
     "motivations_tactics": "Causare valanghe, congelare, difendere ciò",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 18,
+    "thresholds": "21/41",
+    "pf": 10,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+7",
+        "name": "Morso e Artigli",
+        "range": "Ravvicinata",
+        "damage": "4d10 fis",
+      },
+    "experience": "Proteggere ciò che è mio +3",
     "traits":
       [
         {
@@ -2665,14 +2893,21 @@
   {
     "name": "Driade",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 3,
     "description": "Uno spirito della natura sotto forma di albero umanoide.",
     "motivations_tactics": "Comandare, coltivare, preservare la",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 16,
+    "thresholds": "24/38",
+    "pf": 8,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Arco Corto Intrappolante",
+        "range": "Lontana",
+        "damage": "3d10+1 fis",
+      },
+    "experience": "Conoscenza della Foresta +4",
     "traits":
       [
         {
@@ -2695,7 +2930,7 @@
   {
     "name": "Elementale Maggiore Dell’Acqua",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 3,
     "description": "Un’enorme onda vivente che si abbatte sui nemici.",
     "motivations_tactics": "Annegare, dilagare, disperdere",
     "difficulty": 17,
@@ -2729,9 +2964,9 @@
       ],
   },
   {
-    "name": "Elementale Maggiore Dellaterra",
+    "name": "Elementale Maggiore Della Terra",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 3,
     "description": "Una frana vivente di massi e polvere, grande come una casa.",
     "motivations_tactics": "Causare valanghe, colpire, travolgere",
     "difficulty": 17,
@@ -2777,7 +3012,7 @@
   {
     "name": "Tizzone Elementale",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 3,
     "description": "Un granello di fuoco elementale ardente.",
     "motivations_tactics": "Consumare, esplodere, guadagnare massa",
     "difficulty": 15,
@@ -2808,7 +3043,7 @@
   {
     "name": "Carceriere Della Cripta",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 3,
     "description": "Un costrutto meccanico squadrato e ricoperto di polvere con spesse porte metalliche oscillanti sul torso.",
     "motivations_tactics": "Intrappolare, picchiare, proteggere,trasportare",
     "difficulty": 16,
@@ -2839,7 +3074,7 @@
   {
     "name": "Sentinella Della Cripta",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 3,
     "description": "Un costrutto dorato ricoperto di polvere con arti squadrati e un’enorme mazza al posto delle mani.",
     "motivations_tactics": "Distruggereaqualsiasicosto,espellere,proteggere",
     "difficulty": 17,
@@ -2880,14 +3115,20 @@
   {
     "name": "Torretta Della Cripta",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 3,
     "description": "Una massiccia torretta vivente con armatura rinforzata e dodici gambe meccaniche azionate da pistoni.",
     "motivations_tactics": "Concentrare il fuoco, bloccare, marcare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 16,
+    "thresholds": "20/32",
+    "pf": 5,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Cannone Magnetico",
+        "range": "Lontana",
+        "damage": "3d10+3 mag",
+      },
     "traits":
       [
         {
@@ -2915,7 +3156,7 @@
   {
     "name": "Idra",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 3,
     "description": "Una bestia quadrupede ricoperta di scaglie con diverse teste dal collo allungato, ognuna con fauci dotate di zanne minacciose.",
     "motivations_tactics": "Divorare, rigenerarsi, terrorizzare",
     "difficulty": 18,
@@ -2961,14 +3202,21 @@
   {
     "name": "Monarca",
     "role": "Controparte",
-    "rank": 1,
+    "rank": 3,
     "description": "Il sovrano di una nazione, si crogiola nei privilegi conferitigli dai suoi natali ed esercita un potere senza pari nel proprio dominio.",
     "motivations_tactics": "Controllare i vassalli, distruggere i rivali,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 16,
+    "thresholds": "16/32",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Martello da Guerra",
+        "range": "Mischia",
+        "damage": "3d6+3 fis",
+      },
+    "experience": "Nobiltà +3, Storia +3",
     "traits":
       [
         {
@@ -2989,16 +3237,22 @@
       ],
   },
   {
-    "name": "Treantarbusto",
+    "name": "Treant Arbusto",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 3,
     "description": "Un piccolo alberello senziente.",
     "motivations_tactics": "Circondare, colpire, mimetizzarsi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 14,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Rami",
+        "range": "Mischia",
+        "damage": "8 fis",
+      },
     "traits":
       [
         {
@@ -3016,14 +3270,21 @@
   {
     "name": "Treant Delle Querce",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 3,
     "description": "Un robusto albero secolare animato.",
     "motivations_tactics": "Mettere radici, nascondersi in piena vista,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "22/40",
+    "pf": 7,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Ramo",
+        "range": "Prossima",
+        "damage": "3d8+2 fis",
+      },
+    "experience": "Conoscenza della Foresta +3",
     "traits":
       [
         {
@@ -3046,14 +3307,21 @@
   {
     "name": "Vampiro",
     "role": "Avversario Base",
-    "rank": 1,
+    "rank": 3,
     "description": "Un non morto intelligente con le labbra macchiate di sangue e il sorriso del predatore.",
     "motivations_tactics": "Affascinare, ingannare, intimidire, mordere,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 16,
+    "thresholds": "18/35",
+    "pf": 5,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Stocco",
+        "range": "Mischia",
+        "damage": "3d8 fis",
+      },
+    "experience": "Cacciatore Notturno +3",
     "traits":
       [
         {
@@ -3071,14 +3339,21 @@
   {
     "name": "Vampiro Dominante",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 3,
     "description": "Un affascinante non morto vestito con abiti aristocratici.",
     "motivations_tactics": "Affascinare, comandare, creare schiavi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "22/42",
+    "pf": 6,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+5",
+        "name": "Stocco",
+        "range": "Mischia",
+        "damage": "2d20+4 fis",
+      },
+    "experience": "Aristocratico +3",
     "traits":
       [
         {
@@ -3111,14 +3386,21 @@
   {
     "name": "Arci-Negromante",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 4,
     "description": "Un mago in decomposizione che indossa vesti scure e lacere.",
     "motivations_tactics": "Corrompere, decomporre, fuggire per",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 21,
+    "thresholds": "33/66",
+    "pf": 9,
+    "stress": 8,
+    "attack":
+      {
+        "bonus": "+6",
+        "name": "Esplosione Necrotica",
+        "range": "Lontana",
+        "damage": "4d12+8 mag",
+      },
+    "experience": "Conoscenza Proibita +3, Saggezza dei Secoli +3",
     "traits":
       [
         {
@@ -3151,14 +3433,21 @@
   {
     "name": "Stregone Dei Caduti",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 4,
     "description": "Un potente mago vincolato dai patti stipulati in vita.",
     "motivations_tactics": "Acquisire, dominare, scoraggiare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 19,
+    "thresholds": "26/42",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Bastone Corrotto",
+        "range": "Lontana",
+        "damage": "4d6+10 mag",
+      },
+    "experience": "Conoscenza Antica +2",
     "traits":
       [
         {
@@ -3186,14 +3475,20 @@
   {
     "name": "Truppa D’Assalto Dei Caduti",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 4,
     "description": "Un’anima maledetta legata alla volontà dei Caduti.",
     "motivations_tactics": "Dominare, ottenere sollievo, punire,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 18,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Ascia Maledetta",
+        "range": "Prossima",
+        "damage": "12 fis",
+      },
     "traits":
       [
         {
@@ -3216,14 +3511,21 @@
   {
     "name": "Predatore D’Ossidiana",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 4,
     "description": "Una creatura alata massiccia con scaglie di ossidiana e artigli incredibilmente affilati.",
     "motivations_tactics": "Bombardare in picchiata, cacciare,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 19,
+    "thresholds": "33/65",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+7",
+        "name": "Artigli di Ossidiana",
+        "range": "Ravvicinata",
+        "damage": "4d10+4 fis",
+      },
+    "experience": "Agguato dall’Alto +5",
     "traits":
       [
         {
@@ -3261,14 +3563,21 @@
   {
     "name": "Flagello Fuso",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 4,
     "description": "Infuriato dalle ferite, il drago esplode in lava fusa.",
     "motivations_tactics": "Incenerire, respingere gli invasori, ricoprire",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 20,
+    "thresholds": "30/58",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+9",
+        "name": "Artigli Ricoperti di Lava",
+        "range": "Ravvicinata",
+        "damage": "4d12+4 fis",
+      },
+    "experience": "Agguato dall’Alto +5",
     "traits":
       [
         {
@@ -3311,14 +3620,21 @@
   {
     "name": "Tiranno Della Cenere",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 4,
     "description": "Nessun nemico ha mai avuto l’insolenza di ferire così tanto il drago. Quando la lava smette di ribollire, il terreno è ridotto in cenere come i vecchi nemici del drago.",
     "motivations_tactics": "Soffocare, volare, intimidire, uccidere o",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 18,
+    "thresholds": "29/55",
+    "pf": 8,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+10",
+        "name": "Artigli e Zanne",
+        "range": "Ravvicinata",
+        "damage": "4d12+15 fis",
+      },
+    "experience": "Agguato Dall’Alto +5",
     "traits":
       [
         {
@@ -3361,7 +3677,7 @@
   {
     "name": "Kraken",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 4,
     "description": "Una bestia leggendaria del mare, più grande del galeone più grande, con tentacoli ricoperti di ventose e una bocca terrificante.",
     "motivations_tactics": "Consumare, schiacciare, affogare, uncinare",
     "difficulty": 20,
@@ -3407,14 +3723,21 @@
   {
     "name": "Oracolo Del Fato",
     "role": "Solitario",
-    "rank": 1,
+    "rank": 4,
     "description": "Un immortale imponente e un’incarnazione del Fato, condannato a vedere solo disastri e sciagure.",
     "motivations_tactics": "Cambiare l’ambiente circostante,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 20,
+    "thresholds": "38/68",
+    "pf": 11,
+    "stress": 10,
+    "attack":
+      {
+        "bonus": "+5",
+        "name": "Attacco Psichico",
+        "range": "Lontana",
+        "damage": "4d8+9 mag",
+      },
+    "experience": "Conoscenza Illimitata +4",
     "traits":
       [
         {
@@ -3452,7 +3775,7 @@
   {
     "name": "Abominio Dei Regni Esterni",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 4,
     "description": "Una caotica parodia della vita, in continuo mutamento.",
     "motivations_tactics": "Demolire, divorare, indebolire",
     "difficulty": 19,
@@ -3493,7 +3816,7 @@
   {
     "name": "Corruttore Dei Reami Esterni",
     "role": "Supporto",
-    "rank": 1,
+    "rank": 4,
     "description": "Una massa distorta e informe apparentemente composta da luce cromatica.",
     "motivations_tactics": "Confondere, distrarre, sopraffare",
     "difficulty": 19,
@@ -3524,14 +3847,20 @@
   {
     "name": "Servitore Dei Reami Esterni",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 4,
     "description": "Una forma vagamente umanoide privata della memoria e dell’identità.",
     "motivations_tactics": "Disgustare, disorientare, distruggere,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Artigli e Zanne",
+        "range": "Prossima",
+        "damage": "11 fis",
+      },
     "traits":
       [
         {
@@ -3549,14 +3878,20 @@
   {
     "name": "Arciere Santificato",
     "role": "Tiratore",
-    "rank": 1,
+    "rank": 4,
     "description": "Soldati spirituali con archi santificati.",
     "motivations_tactics": "Fuoco concentrato, obbedienza, raffica,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 19,
+    "thresholds": "25/45",
+    "pf": 3,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+4",
+        "name": "Arco Lungo Santificato",
+        "range": "Lontana",
+        "damage": "4d8+8 fis",
+      },
     "traits":
       [
         {
@@ -3574,14 +3909,21 @@
   {
     "name": "Campione Consacrato",
     "role": "Condottiero",
-    "rank": 1,
+    "rank": 4,
     "description": "Un campione divino, capo di un sacro esercito di guerrieri che impongono la volontà della divinità.",
     "motivations_tactics": "Castigare, far rispettare il dogma,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 20,
+    "thresholds": "37/70",
+    "pf": 7,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+8",
+        "name": "Spada Sacra",
+        "range": "Prossima",
+        "damage": "4d10+10 fis",
+      },
+    "experience": "Conoscenza Divina +3",
     "traits":
       [
         {
@@ -3614,14 +3956,20 @@
   {
     "name": "Soldato Santificato",
     "role": "Seguace",
-    "rank": 1,
+    "rank": 4,
     "description": "Anime dei fedeli, equipaggiate con armi divine.",
     "motivations_tactics": "Circondare, obbedire, punire, superare in",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 18,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Spada e Scudo",
+        "range": "Mischia",
+        "damage": "10 fis",
+      },
     "traits":
       [
         {
@@ -3644,14 +3992,20 @@
   {
     "name": "Legione Di Zombi",
     "role": "Orda",
-    "rank": 1,
+    "rank": 4,
     "description": "Un grande branco di non morti, ancora potenti nonostante la loro carne in decomposizione.",
     "motivations_tactics": "Circondare, consumare cervelli, fare a",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "difficulty": 17,
+    "thresholds": "25/45",
+    "pf": 8,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Tentacoli",
+        "range": "Prossima",
+        "damage": "4d6+10 fis",
+      },
     "traits":
       [
         {
@@ -3679,7 +4033,7 @@
   {
     "name": "Zombi Perfezionato",
     "role": "Bruto",
-    "rank": 1,
+    "rank": 4,
     "description": "Uno zombi imponente e muscoloso con forza e abilità magiche.",
     "motivations_tactics": "Consumare, mutilare, perseguitare,terrorizzare",
     "difficulty": 20,
@@ -3714,6 +4068,387 @@
           "name": "Abile Opportunista",
           "kind": "Reazione",
           "text": "Quando un altro avversario infligge danno a un bersaglio entro distanza Prossima dallo Zombi, potete spendere una Paura per aggiungere il danno dell’attacco base dello Zombi al tiro di danno. 245 Capitolo 4: Avversari di Rango 4",
+        },
+      ],
+  },
+  {
+    "name": "Spettro Di Pietra",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un cacciatore in agguato, simile a un puma che si aggira furtivamente, con un corpo rigido di ardesia.",
+    "motivations_tactics": "Difendere il territorio, isolare la preda, pedinare",
+    "difficulty": 13,
+    "thresholds": "11/22",
+    "pf": 6,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Morso e Artigli",
+        "range": "Mischia",
+        "damage": "2d8+6 fis",
+      },
+    "experience": "Percezione a Contatto della Roccia +3",
+    "traits":
+      [
+        {
+          "name": "Passapietra",
+          "kind": "Passiva",
+          "text": "Lo Spettro Di Pietra può muoversi attraverso la pietra e la terra con la stessa facilità con cui attraversa l’aria. Quando si trova all’interno della pietra o della terra, è Nascosto e immune a tutti i danni.",
+        },
+        {
+          "name": "Imboscata tra le Rocce",
+          "kind": "Azione",
+          "text": "Mentre lo Spettro è Nascosto, marcate uno Stress per farlo balzare a distanza di Mischia con un bersaglio entro distanza Prossima. Il bersaglio deve superare un Tiro Reazione di Agilità o Istinto (15) o subire 2d8 danni fisici e diventare temporaneamente Trattenuto.",
+        },
+        {
+          "name": "Ruggito di Valanga",
+          "kind": "Azione",
+          "text": "Spendete una Paura per rugire mentre vi trovate all’interno di una caverna e causare un crollo. Tutti i bersagli entro distanza Ravvicinata devono superare un Tiro Reazione di Agilità (14) o subire 2d10 danni fisici. Le macerie possono essere rimosse con un Conto alla Rovescia di Progresso (8).",
+        },
+        {
+          "name": "Slancio",
+          "kind": "Reazione",
+          "text": "Quando lo Spettro colpisce un PG, ottenete Paura.",
+        },
+      ],
+  },
+  {
+    "name": "Ladro Mascherato",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un ladro di alto calibro dalle mani acrobatiche e un talento per la teatralità.",
+    "motivations_tactics": "Evadere, nascondersi, rubare, trarre profitto",
+    "difficulty": 14,
+    "thresholds": "8/17",
+    "pf": 4,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Spada a Doppia Lama",
+        "range": "Mischia",
+        "damage": "2d8+3 fis",
+      },
+    "experience": "Acrobazia +3",
+    "traits":
+      [
+        {
+          "name": "Manolesta",
+          "kind": "Azione",
+          "text": "Effettuate un attacco contro un bersaglio entro distanza di Mischia. In caso di successo, infliggete 1d8+2 danni fisici e il Ladro ruba un oggetto o una condizione al bersaglio.",
+        },
+        {
+          "name": "Piano di Fuga",
+          "kind": "Azione",
+          "text": "Marcate uno Stress per attivare una trappola piazzata dal Ladro in un punto qualsiasi del campo di battaglia. Tutti i bersagli entro distanza Prossima dalla trappola devono superare un Tiro Reazione di Agilità (13) o vengono sollevati da terra e sospesi a testa in giù. I bersagli sono Trattenuti e Vulnerabili finché non si liberano, ponendo fine a entrambe le condizioni, con un Tiro Astuzia o Forza (13).",
+        },
+      ],
+  },
+  {
+    "name": "Sirena",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un essere per metà pesce con scaglie luccicanti e una voce irresistibile.",
+    "motivations_tactics": "Attirare le prede, divorare, sottometterle con il canto",
+    "difficulty": 14,
+    "thresholds": "9/18",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Mascella Disarticolata",
+        "range": "Mischia",
+        "damage": "2d6+3 fis",
+      },
+    "experience": "Repertorio di Canti +3",
+    "traits":
+      [
+        {
+          "name": "Ascoltatore Assiduo",
+          "kind": "Passiva",
+          "text": "Se la Sirena effettua un attacco base contro un bersaglio Incantato dal suo canto, l’attacco infligge 2d10+1 danni invece dei danni base.",
+        },
+        {
+          "name": "Canto Incantevole",
+          "kind": "Azione",
+          "text": "Spendete una Paura per cantare una canzone che influisce su tutti i bersagli entro distanza Ravvicinata. I bersagli devono superare un Tiro Reazione di Istinto con svantaggio finché non marcano 2 Stress. Altre Sirene a distanza Ravvicinata dal bersaglio possono marcare uno Stress per aggiungere bonus +1 alla Difficoltà del Tiro Reazione. Mentre è Incantato, un bersaglio non può agire ed è Vulnerabile.",
+        },
+      ],
+  },
+  {
+    "name": "Zanna Del Culto",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un assassino professionista diventato cultista.",
+    "motivations_tactics": "Catturare avversari, isolare le prede, salire di grado",
+    "difficulty": 15,
+    "thresholds": "9/17",
+    "pf": 4,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Lungo Coltello",
+        "range": "Mischia",
+        "damage": "2d8+4 fis",
+      },
+    "traits":
+      [
+        {
+          "name": "Abbraccio dell’Ombra",
+          "kind": "Passiva",
+          "text": "La Zanna può arrampicarsi e camminare su superfici verticali. Marcate uno Stress per muovervi da un’ombra all’altra entro distanza Lontana.",
+        },
+        {
+          "name": "Eliminare la Retroguardia",
+          "kind": "Azione",
+          "text": "Marcate uno Stress per costringere un bersaglio entro distanza di Mischia a effettuare un Tiro Reazione di Istinto. In caso di fallimento, il bersaglio marca 2 Stress e viene teletrasportato con la Zanna in un’ombra entro distanza Lontana, rendendolo temporaneamente Vulnerabile. In caso di successo, il bersaglio deve marcare uno Stress.",
+        },
+      ],
+  },
+  {
+    "name": "Aquila Gigante",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un gigantesco uccello rapace con artigli insanguinati.",
+    "motivations_tactics": "Cacciare prede, colpire con decisione, rimanere mobile",
+    "difficulty": 14,
+    "thresholds": "8/19",
+    "pf": 4,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Artigli e Becco",
+        "range": "Prossima",
+        "damage": "2d6+3 fis",
+      },
+    "traits":
+      [
+        {
+          "name": "Volare",
+          "kind": "Passiva",
+          "text": "Mentre vola, l’Aquila ottiene bonus +3 alla sua Difficoltà.",
+        },
+        {
+          "name": "Picchiata Letale",
+          "kind": "Azione",
+          "text": "Marcate uno Stress per attaccare un bersaglio entro distanza Lontana. In caso di successo, infliggete 2d10+2 danni fisici e abbattete il bersaglio, rendendolo Vulnerabile fino alla sua prossima azione.",
+        },
+        {
+          "name": "Decollo",
+          "kind": "Azione",
+          "text": "Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, infliggete 2d4+3 danni fisici e il bersaglio deve superare un Tiro Reazione di Agilità o essere temporaneamente Trattenuto dagli artigli massicci dell’Aquila. Se il bersaglio è Trattenuto, l’Aquila si solleva immediatamente in aria e vola fino a distanza Remota sopra il campo di battaglia tenendolo stretto.",
+        },
+        {
+          "name": "Caduta Letale",
+          "kind": "Azione",
+          "text": "Mentre vola, l’Aquila può lasciare cadere un bersaglio Trattenuto che sta tenendo. Una volta lasciato cadere, il bersaglio non è più Trattenuto, ma precipita. Se la sua caduta non viene impedita durante l’azione successiva del PG, il bersaglio subisce 2d20 danni fisici quando atterra.",
+        },
+      ],
+  },
+  {
+    "name": "Assassino Avvelenatore",
+    "role": "Sicario",
+    "rank": 2,
+    "description": "Un fuggente astuto esperto sia nei veleni che nelle imboscate.",
+    "motivations_tactics": "Avvelenare cibo e acqua, farsi pagare, prevenire, uccidere",
+    "difficulty": 14,
+    "thresholds": "8/16",
+    "pf": 4,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Pugnale da Lancio Avvelenato",
+        "range": "Ravvicinata",
+        "damage": "2d8+1 fis",
+      },
+    "experience": "Effrazione +2",
+    "traits":
+      [
+        {
+          "name": "Veleno di Macinadenti",
+          "kind": "Passiva",
+          "text": "I bersagli che subiscono PF dagli attacchi dell’Assassino sono Vulnerabili finché non recuperano un PF.",
+        },
+        {
+          "name": "Dal Nulla",
+          "kind": "Passiva",
+          "text": "L’Assassino ha vantaggio negli attacchi se è Nascosto.",
+        },
+        {
+          "name": "Affumicare",
+          "kind": "Azione",
+          "text": "Lanciate una bomba fumogena che satura l’aria entro distanza Ravvicinata di fumo, stordendo tutti i bersagli in quest’area. I bersagli Storditi hanno svantaggio al prossimo tiro azione, poi la condizione viene rimossa.",
+        },
+      ],
+  },
+  {
+    "name": "Demone Della Disperazione",
+    "role": "Sicario",
+    "rank": 3,
+    "description": "Una creatura demoniaca avvolta da un mantello con arti allungati, da cui trasudano ombre.",
+    "motivations_tactics": "Diffondere una paura contagiosa, minare la determinazione, rimanere nell’ombra",
+    "difficulty": 17,
+    "thresholds": "18/35",
+    "pf": 6,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Dardo Miasmatico",
+        "range": "Lontana",
+        "damage": "3d6+1 mag",
+      },
+    "experience": "Manipolazione +3",
+    "traits":
+      [
+        {
+          "name": "Abissi della Disperazione",
+          "kind": "Passiva",
+          "text": "Il Demone infligge il doppio dei danni ai PG con Speranza pari a 0.",
+        },
+        {
+          "name": "Tiro Amici! Deluderemo",
+          "kind": "Reazione",
+          "text": "Quando un PG fallisce un tiro con Paura, potete marcare uno Stress per fargli perdere una Speranza a tutti gli altri PG entro distanza Ravvicinata.",
+        },
+      ],
+  },
+  {
+    "name": "Melma Verde Gigante",
+    "role": "Sicario",
+    "rank": 3,
+    "description": "Un cumulo verde traslucido di acido, più alto del maggior parte degli umani.",
+    "motivations_tactics": "Avvicinarsi furtivamente, circondare, mimetizzarsi, moltiplicarsi",
+    "difficulty": 15,
+    "thresholds": "15/30",
+    "pf": 7,
+    "stress": 4,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Appendice Viscida",
+        "range": "Mischia",
+        "damage": "3d8+1 mag",
+      },
+    "experience": "Mimetizzazione +3",
+    "traits":
+      [
+        {
+          "name": "Lento",
+          "kind": "Passiva",
+          "text": "Quando la Melma diventa protagonista, prima prepara il blocco statistico e agisce alla successiva attivazione da protagonista.",
+        },
+      ],
+  },
+  {
+    "name": "Pipistrello Gigante",
+    "role": "Sicario",
+    "rank": 3,
+    "description": "Un animale domestico dalle ali larghe, infinitamente fedele al suo padrone vampiro.",
+    "motivations_tactics": "Bombardamento in picchiata, nascondersi, proteggere il condottiero",
+    "difficulty": 14,
+    "thresholds": "16/30",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Zanne e Artigli",
+        "range": "Mischia",
+        "damage": "2d6+7 fis",
+      },
+    "experience": "Sanguinario +3",
+    "traits":
+      [
+        {
+          "name": "Volo",
+          "kind": "Passiva",
+          "text": "Mentre vola, il Pipistrello ottiene bonus +3 alla sua Difficoltà.",
+        },
+      ],
+  },
+  {
+    "name": "Scintillante Adulto",
+    "role": "Solitario",
+    "rank": 3,
+    "description": "Un insetto alato grande come una casa, con scaglie iridescenti e ali opalescenti.",
+    "motivations_tactics": "Cacciare, nidificare, piombare in picchiata, raccogliere oggetti luccicanti",
+    "difficulty": 17,
+    "thresholds": "20/35",
+    "pf": 12,
+    "stress": 6,
+    "attack":
+      {
+        "bonus": "+3",
+        "name": "Sferzata d’Ali",
+        "range": "Prossima",
+        "damage": "3d20 fis",
+      },
+    "traits":
+      [
+        {
+          "name": "Inesorabile (4)",
+          "kind": "Passiva",
+          "text": "Lo Scintillante può diventare protagonista fino a quattro volte per turno del GM.",
+        },
+      ],
+  },
+  {
+    "name": "Signore Della Guerra Dei Caduti: Distruttore Di Reami",
+    "role": "Solitario",
+    "rank": 4,
+    "description": "Un Dio Caduto, avvolto dalla rabbia e dal risentimento.",
+    "motivations_tactics": "Colpire con dominio, punire, spezzare i deboli",
+    "difficulty": 20,
+    "thresholds": "36/66",
+    "pf": 8,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+7",
+        "name": "Frusta Spinata",
+        "range": "Ravvicinata",
+        "damage": "4d8+7 fis",
+      },
+    "experience": "Conquista +3, Storia +2, Intimidire +3",
+    "traits":
+      [
+        {
+          "name": "Inesorabile (2)",
+          "kind": "Passiva",
+          "text": "Il Distruttore può diventare protagonista fino a due volte per turno del GM.",
+        },
+      ],
+  },
+  {
+    "name": "Signore Della Guerra Dei Caduti: Campione Imbattuto",
+    "role": "Solitario",
+    "rank": 4,
+    "description": "Ciò che solo i più temuti possono temere.",
+    "motivations_tactics": "Assicurarsi la vittoria a qualsiasi costo, infliggere terrore",
+    "difficulty": 18,
+    "thresholds": "35/58",
+    "pf": 11,
+    "stress": 5,
+    "attack":
+      {
+        "bonus": "+8",
+        "name": "Spada Spezza-Cuori",
+        "range": "Prossima",
+        "damage": "4d12+13 fis",
+      },
+    "experience": "Conquista +3, Intimidire +3, Storia +2",
+    "traits":
+      [
+        {
+          "name": "Inesorabile (3)",
+          "kind": "Passiva",
+          "text": "Il Campione può diventare protagonista fino a tre volte per turno del GM.",
         },
       ],
   },
