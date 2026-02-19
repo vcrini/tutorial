@@ -536,6 +536,8 @@ func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string
 	}
 	if m.Attack.Name != "" {
 		bonus := strings.TrimSpace(m.Attack.Bonus)
+		bonus = strings.ReplaceAll(bonus, "−", "-")
+		bonus = strings.ReplaceAll(bonus, "–", "-")
 		if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
 			bonus = "+" + bonus
 		}
