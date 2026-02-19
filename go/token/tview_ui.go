@@ -247,7 +247,7 @@ func (ui *tviewUI) build() {
 	ui.monstersPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(filters, 2, 0, false).
 		AddItem(ui.monList, 0, 1, true)
-	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri  ([,]) ")
+	ui.monstersPanel.SetBorder(true)
 
 	ui.envSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
 	ui.envSearch.SetChangedFunc(func(_ string) {
@@ -307,7 +307,7 @@ func (ui *tviewUI) build() {
 	ui.environmentsPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(envFilters, 2, 0, false).
 		AddItem(ui.envList, 0, 1, true)
-	ui.environmentsPanel.SetBorder(true).SetTitle(" [3]-Ambienti  ([,]) ")
+	ui.environmentsPanel.SetBorder(true)
 
 	ui.eqSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
 	ui.eqSearch.SetChangedFunc(func(_ string) {
@@ -367,12 +367,13 @@ func (ui *tviewUI) build() {
 	ui.equipmentPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(eqFilters, 2, 0, false).
 		AddItem(ui.eqList, 0, 1, true)
-	ui.equipmentPanel.SetBorder(true).SetTitle(" [3]-Equipaggiamento  ([,]) ")
+	ui.equipmentPanel.SetBorder(true)
 
 	ui.catalogPanel = tview.NewPages().
 		AddPage("mostri", ui.monstersPanel, true, true).
 		AddPage("ambienti", ui.environmentsPanel, true, false).
 		AddPage("equipaggiamento", ui.equipmentPanel, true, false)
+	ui.refreshCatalogTitles()
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.pngList, 0, 1, true).
@@ -652,6 +653,34 @@ func (ui *tviewUI) activeCatalogListFocus() int {
 	return focusMonList
 }
 
+func (ui *tviewUI) catalogLabel(mode string) string {
+	switch mode {
+	case "ambienti":
+		return "Ambienti"
+	case "equipaggiamento":
+		return "Equipaggiamento"
+	default:
+		return "Mostri"
+	}
+}
+
+func (ui *tviewUI) refreshCatalogTitles() {
+	order := []string{"mostri", "ambienti", "equipaggiamento"}
+	for i, mode := range order {
+		prev := order[(i-1+len(order))%len(order)]
+		next := order[(i+1)%len(order)]
+		title := fmt.Sprintf(" [3] %s | '[' %s | ']' %s ", ui.catalogLabel(mode), ui.catalogLabel(prev), ui.catalogLabel(next))
+		switch mode {
+		case "mostri":
+			ui.monstersPanel.SetTitle(title)
+		case "ambienti":
+			ui.environmentsPanel.SetTitle(title)
+		case "equipaggiamento":
+			ui.equipmentPanel.SetTitle(title)
+		}
+	}
+}
+
 func (ui *tviewUI) switchCatalog(delta int) {
 	if delta == 0 {
 		return
@@ -671,6 +700,7 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	next := order[nextIdx]
 	ui.catalogMode = next
 	ui.catalogPanel.SwitchToPage(next)
+	ui.refreshCatalogTitles()
 	if next == "ambienti" {
 		ui.message = "Catalogo: Ambienti"
 	} else if next == "equipaggiamento" {
