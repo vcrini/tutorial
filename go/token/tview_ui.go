@@ -196,6 +196,11 @@ func (ui *tviewUI) build() {
 		ui.refreshMonsters()
 		ui.refreshDetail()
 	})
+	ui.search.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.focusActiveCatalogList()
+		}
+	})
 
 	ui.roleFilter = "Tutti"
 	ui.rankFilter = "Tutti"
@@ -215,6 +220,7 @@ func (ui *tviewUI) build() {
 		ui.roleFilter = text
 		ui.refreshMonsters()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.roleDrop.SetCurrentOption(0)
 
@@ -232,6 +238,7 @@ func (ui *tviewUI) build() {
 		ui.rankFilter = text
 		ui.refreshMonsters()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.rankDrop.SetCurrentOption(0)
 
@@ -258,6 +265,11 @@ func (ui *tviewUI) build() {
 		ui.refreshEnvironments()
 		ui.refreshDetail()
 	})
+	ui.envSearch.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.focusActiveCatalogList()
+		}
+	})
 
 	ui.envRankFilter = "Tutti"
 	ui.envTypeFilter = "Tutti"
@@ -278,6 +290,7 @@ func (ui *tviewUI) build() {
 		ui.envTypeFilter = text
 		ui.refreshEnvironments()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.envTypeDrop.SetCurrentOption(0)
 
@@ -295,6 +308,7 @@ func (ui *tviewUI) build() {
 		ui.envRankFilter = text
 		ui.refreshEnvironments()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.envRankDrop.SetCurrentOption(0)
 
@@ -318,6 +332,11 @@ func (ui *tviewUI) build() {
 		ui.refreshEquipment()
 		ui.refreshDetail()
 	})
+	ui.eqSearch.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.focusActiveCatalogList()
+		}
+	})
 
 	ui.eqTypeFilter = "Tutti"
 	ui.eqItemTypeFilter = "Tutti"
@@ -340,6 +359,7 @@ func (ui *tviewUI) build() {
 		ui.eqTypeFilter = text
 		ui.refreshEquipment()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.eqTypeDrop.SetCurrentOption(0)
 
@@ -357,6 +377,7 @@ func (ui *tviewUI) build() {
 		ui.eqItemTypeFilter = text
 		ui.refreshEquipment()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.eqItemTypeDrop.SetCurrentOption(0)
 
@@ -374,6 +395,7 @@ func (ui *tviewUI) build() {
 		ui.eqRankFilter = text
 		ui.refreshEquipment()
 		ui.refreshDetail()
+		ui.focusActiveCatalogList()
 	})
 	ui.eqRankDrop.SetCurrentOption(0)
 
@@ -675,6 +697,13 @@ func (ui *tviewUI) activeCatalogListFocus() int {
 		return focusEqList
 	}
 	return focusMonList
+}
+
+func (ui *tviewUI) focusActiveCatalogList() {
+	if len(ui.focus) == 0 {
+		return
+	}
+	ui.focusPanel(ui.activeCatalogListFocus())
 }
 
 func (ui *tviewUI) catalogLabel(mode string) string {
