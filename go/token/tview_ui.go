@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] cerca  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/- "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/- "
 
 type tviewUI struct {
 	app    *tview.Application
@@ -35,8 +36,14 @@ type tviewUI struct {
 	encounter []EncounterEntry
 	filtered  []int
 
+	detailRaw   string
+	detailQuery string
+
 	helpVisible     bool
 	helpReturnFocus tview.Primitive
+
+	modalVisible bool
+	modalName    string
 
 	fullscreenActive bool
 	fullscreenTarget string
@@ -68,12 +75,10 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", dataFile, err)
 	}
-
 	monsters, err := loadMonsters(monstersFile)
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", monstersFile, err)
 	}
-
 	encounter, err := loadEncounter(encounterFile, monsters)
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
@@ -121,10 +126,7 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
-	ui.search = tview.NewInputField().
-		SetLabel(" Cerca ").
-		SetFieldWidth(0).
-		SetPlaceholder("nome mostro...")
+	ui.search = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
 	ui.search.SetChangedFunc(func(_ string) {
 		ui.refreshMonsters()
 		ui.refreshDetail()
@@ -138,14 +140,12 @@ func (ui *tviewUI) build() {
 		ui.addSelectedMonsterToEncounter()
 	})
 
-	ui.monstersPanel = tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	ui.monstersPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.search, 2, 0, false).
 		AddItem(ui.monList, 0, 1, true)
 	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri ")
 
-	ui.leftPanel = tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.pngList, 7, 0, true).
 		AddItem(ui.encList, 8, 0, false).
 		AddItem(ui.monstersPanel, 0, 1, false)
@@ -153,16 +153,14 @@ func (ui *tviewUI) build() {
 	ui.detail = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
 	ui.detail.SetBorder(true).SetTitle(" Dettagli ")
 
-	ui.mainRow = tview.NewFlex().
-		SetDirection(tview.FlexColumn).
+	ui.mainRow = tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(ui.leftPanel, 0, 1, false).
 		AddItem(ui.detail, 0, 1, false)
 
 	ui.status = tview.NewTextView().SetDynamicColors(true).SetText(helpText)
 	ui.status.SetBackgroundColor(tcell.ColorBlack)
 
-	root := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	root := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.mainRow, 0, 1, true).
 		AddItem(ui.status, 1, 0, false)
 
@@ -184,15 +182,19 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		return ev
 	}
-
-	if focusIsInput {
-		switch ev.Key() {
-		case tcell.KeyEsc:
-			ui.app.SetFocus(ui.monList)
-			ui.focusIdx = 3
-			ui.refreshStatus()
+	if ui.modalVisible {
+		if ev.Key() == tcell.KeyEscape {
+			ui.closeModal()
 			return nil
 		}
+		return ev
+	}
+
+	if focusIsInput && ev.Key() == tcell.KeyEsc {
+		ui.app.SetFocus(ui.monList)
+		ui.focusIdx = 3
+		ui.refreshStatus()
+		return nil
 	}
 
 	switch ev.Key() {
@@ -213,6 +215,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyRight:
 		if focus == ui.pngList {
 			ui.adjustSelectedToken(1)
+			return nil
+		}
+	case tcell.KeyPgUp:
+		if focus == ui.detail || focus == ui.monList || focus == ui.search {
+			ui.scrollDetailByPage(-1)
+			return nil
+		}
+	case tcell.KeyPgDn:
+		if focus == ui.detail || focus == ui.monList || focus == ui.search {
+			ui.scrollDetailByPage(1)
 			return nil
 		}
 	}
@@ -240,18 +252,18 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return nil
 	case '/':
 		if !focusIsInput {
-			ui.focusPanel(2)
+			ui.openRawSearch(focus)
 			return nil
 		}
 	case 'c':
 		ui.openCreatePNGModal()
 		return nil
 	case 'x':
-		ui.deleteSelectedPNG()
+		ui.openDeletePNGConfirm()
 		return nil
 	case 'r':
 		if focus == ui.pngList {
-			ui.resetTokens()
+			ui.openResetTokensConfirm()
 			return nil
 		}
 	case 'a':
@@ -374,7 +386,7 @@ func (ui *tviewUI) refreshEncounter() {
 		ui.encList.AddItem("(vuoto)", "", 0, nil)
 		return
 	}
-	for _, e := range ui.encounter {
+	for i, e := range ui.encounter {
 		base := e.BasePF
 		if base == 0 {
 			base = e.Monster.PF
@@ -383,7 +395,8 @@ func (ui *tviewUI) refreshEncounter() {
 		if remaining < 0 {
 			remaining = 0
 		}
-		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d]", e.Monster.Name, remaining, base), "", 0, nil)
+		label := ui.encounterLabelAt(i)
+		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d]", label, remaining, base), "", 0, nil)
 	}
 	if current >= len(ui.encounter) {
 		current = len(ui.encounter) - 1
@@ -399,27 +412,19 @@ func (ui *tviewUI) refreshDetail() {
 	if focus == ui.monList || focus == ui.search {
 		idx := ui.currentMonsterIndex()
 		if idx < 0 {
-			ui.detail.SetText("Nessun mostro selezionato.")
+			ui.detailRaw = "Nessun mostro selezionato."
+			ui.renderDetail()
 			return
 		}
-		m := ui.monsters[idx]
-		var b strings.Builder
-		b.WriteString(fmt.Sprintf("[yellow]%s[-]\n", m.Name))
-		b.WriteString(fmt.Sprintf("Ruolo: %s | Rango: %d\n", m.Role, m.Rank))
-		b.WriteString(fmt.Sprintf("PF: %d | Stress: %d | Difficoltà: %d\n", m.PF, m.Stress, m.Difficulty))
-		if m.Attack.Name != "" {
-			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
-		}
-		if m.Description != "" {
-			b.WriteString("\n" + m.Description)
-		}
-		ui.detail.SetText(b.String())
+		ui.detailRaw = ui.buildMonsterDetails(ui.monsters[idx], ui.monsters[idx].Name, "")
+		ui.renderDetail()
 		return
 	}
 	if focus == ui.encList {
 		idx := ui.currentEncounterIndex()
 		if idx < 0 {
-			ui.detail.SetText("Encounter vuoto.")
+			ui.detailRaw = "Encounter vuoto."
+			ui.renderDetail()
 			return
 		}
 		e := ui.encounter[idx]
@@ -431,15 +436,50 @@ func (ui *tviewUI) refreshDetail() {
 		if remaining < 0 {
 			remaining = 0
 		}
-		ui.detail.SetText(fmt.Sprintf("[yellow]%s[-]\nPF: %d/%d\nFerite: %d", e.Monster.Name, remaining, base, e.Wounds))
+		extra := fmt.Sprintf("PF correnti: %d/%d | Ferite: %d", remaining, base, e.Wounds)
+		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
+		ui.renderDetail()
 		return
 	}
 	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
-		ui.detail.SetText("Nessun PNG selezionato.")
+		ui.detailRaw = "Nessun PNG selezionato."
+		ui.renderDetail()
 		return
 	}
 	p := ui.pngs[ui.selected]
-	ui.detail.SetText(fmt.Sprintf("[yellow]%s[-]\nToken: %d", p.Name, p.Token))
+	ui.detailRaw = fmt.Sprintf("%s\nToken: %d", p.Name, p.Token)
+	ui.renderDetail()
+}
+
+func (ui *tviewUI) renderDetail() {
+	text := ui.detailRaw
+	if strings.TrimSpace(text) == "" {
+		text = "Nessun dettaglio."
+	}
+	out := tview.Escape(text)
+	lines := strings.Split(out, "\n")
+	if len(lines) > 0 {
+		lines[0] = "[yellow]" + lines[0] + "[-]"
+		out = strings.Join(lines, "\n")
+	}
+	if strings.TrimSpace(ui.detailQuery) != "" {
+		out = highlightMatches(out, ui.detailQuery)
+	}
+	ui.detail.SetText(out)
+}
+
+func highlightMatches(text, query string) string {
+	q := strings.TrimSpace(query)
+	if q == "" {
+		return text
+	}
+	re, err := regexp.Compile("(?i)" + regexp.QuoteMeta(q))
+	if err != nil {
+		return text
+	}
+	return re.ReplaceAllStringFunc(text, func(m string) string {
+		return "[black:gold]" + m + "[-:-]"
+	})
 }
 
 func (ui *tviewUI) refreshStatus() {
@@ -458,7 +498,7 @@ func (ui *tviewUI) refreshStatus() {
 	if msg == "" {
 		msg = "Pronto."
 	}
-	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | %s  [black:gold]msg[-:-] %s", focusLabel, helpText, msg))
+	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, helpText, msg))
 }
 
 func (ui *tviewUI) currentMonsterIndex() int {
@@ -481,6 +521,67 @@ func (ui *tviewUI) currentEncounterIndex() int {
 		return -1
 	}
 	return cur
+}
+
+func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string) string {
+	var b strings.Builder
+	b.WriteString(title + "\n")
+	b.WriteString(fmt.Sprintf("Ruolo: %s | Rango: %d\n", m.Role, m.Rank))
+	if extraLine != "" {
+		b.WriteString(extraLine + "\n")
+	}
+	b.WriteString(fmt.Sprintf("PF: %d | Stress: %d | Difficoltà: %d\n", m.PF, m.Stress, m.Difficulty))
+	if th := formatThresholds(m.Thresholds); th != "" {
+		b.WriteString("Soglie: " + th + "\n")
+	}
+	if m.Attack.Name != "" {
+		b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
+	}
+	if strings.TrimSpace(m.MotivationsTactics) != "" {
+		b.WriteString("\nMotivazioni/Tattiche:\n" + strings.TrimSpace(m.MotivationsTactics) + "\n")
+	}
+	if len(m.Traits) > 0 {
+		b.WriteString("\nTratti:\n")
+		for _, t := range m.Traits {
+			line := "- " + t.Name
+			if strings.TrimSpace(t.Kind) != "" {
+				line += " (" + t.Kind + ")"
+			}
+			if strings.TrimSpace(t.Text) != "" {
+				line += ": " + strings.TrimSpace(t.Text)
+			}
+			b.WriteString(line + "\n")
+		}
+	}
+	if strings.TrimSpace(m.Description) != "" {
+		b.WriteString("\n" + strings.TrimSpace(m.Description))
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func formatThresholds(t Thresholds) string {
+	if len(t.Values) > 0 {
+		var parts []string
+		for _, v := range t.Values {
+			parts = append(parts, fmt.Sprintf("%d", v))
+		}
+		return strings.Join(parts, "/")
+	}
+	return strings.TrimSpace(t.Text)
+}
+
+func (ui *tviewUI) encounterLabelAt(idx int) string {
+	if idx < 0 || idx >= len(ui.encounter) {
+		return ""
+	}
+	name := ui.encounter[idx].Monster.Name
+	seen := 0
+	for i := 0; i <= idx; i++ {
+		if ui.encounter[i].Monster.Name == name {
+			seen++
+		}
+	}
+	return fmt.Sprintf("%s #%d", name, seen)
 }
 
 func (ui *tviewUI) adjustSelectedToken(delta int) {
@@ -508,10 +609,9 @@ func (ui *tviewUI) openCreatePNGModal() {
 	input := tview.NewInputField().SetLabel(" Nome PNG ").SetFieldWidth(24)
 	input.SetText(uniqueRandomPNGName(ui.pngs))
 	input.SetBorder(true).SetTitle("Crea PNG")
-
 	returnFocus := ui.app.GetFocus()
-	modal := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(nil, 0, 1, false).
@@ -519,12 +619,14 @@ func (ui *tviewUI) openCreatePNGModal() {
 			AddItem(nil, 0, 1, false), 5, 0, true).
 		AddItem(nil, 0, 1, false)
 
-	ui.pages.AddAndSwitchToPage("create_png", modal, true)
+	ui.modalVisible = true
+	ui.modalName = "create_png"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
 	ui.app.SetFocus(input)
 
 	input.SetDoneFunc(func(key tcell.Key) {
 		if key == tcell.KeyEsc {
-			ui.pages.RemovePage("create_png")
+			ui.closeModal()
 			ui.app.SetFocus(returnFocus)
 			return
 		}
@@ -542,11 +644,160 @@ func (ui *tviewUI) openCreatePNGModal() {
 		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
-		ui.pages.RemovePage("create_png")
+		ui.closeModal()
 		ui.focusPanel(0)
 		ui.message = fmt.Sprintf("Creato PNG %s.", name)
 		ui.refreshAll()
 	})
+}
+
+func (ui *tviewUI) openDeletePNGConfirm() {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	name := ui.pngs[ui.selected].Name
+	ui.openConfirmModal("Conferma", fmt.Sprintf("Eliminare PNG '%s'?", name), func() {
+		ui.deleteSelectedPNG()
+	})
+}
+
+func (ui *tviewUI) openResetTokensConfirm() {
+	if len(ui.pngs) == 0 {
+		ui.message = "Nessun PNG disponibile."
+		ui.refreshStatus()
+		return
+	}
+	ui.openConfirmModal("Conferma", "Resettare tutti i token PNG?", func() {
+		ui.resetTokens()
+	})
+}
+
+func (ui *tviewUI) openConfirmModal(title, message string, onConfirm func()) {
+	returnFocus := ui.app.GetFocus()
+	text := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	text.SetBorder(true).SetTitle(title)
+	text.SetText(message + "\n\n[yellow]Invio/y[-] conferma  [yellow]Esc/n[-] annulla")
+	text.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
+		if ev.Key() == tcell.KeyEnter || (ev.Key() == tcell.KeyRune && (ev.Rune() == 'y' || ev.Rune() == 'Y')) {
+			ui.closeModal()
+			onConfirm()
+			return nil
+		}
+		if ev.Key() == tcell.KeyEscape || (ev.Key() == tcell.KeyRune && (ev.Rune() == 'n' || ev.Rune() == 'N')) {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			ui.refreshStatus()
+			return nil
+		}
+		return ev
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(text, 56, 0, true).
+			AddItem(nil, 0, 1, false), 8, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "confirm"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(text)
+}
+
+func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
+	input := tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(28)
+	input.SetBorder(true).SetTitle("Ricerca")
+	if focus == ui.search || focus == ui.monList {
+		input.SetText(ui.search.GetText())
+	}
+	if focus == ui.detail {
+		input.SetText(ui.detailQuery)
+	}
+
+	returnFocus := focus
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 48, 0, true).
+			AddItem(nil, 0, 1, false), 5, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "raw_search"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+		query := strings.TrimSpace(input.GetText())
+		switch returnFocus {
+		case ui.search, ui.monList:
+			ui.search.SetText(query)
+			ui.refreshMonsters()
+			ui.focusPanel(3)
+			ui.message = "Filtro mostri aggiornato."
+		case ui.encList:
+			ui.jumpToEncounter(query)
+		case ui.detail:
+			ui.detailQuery = query
+			ui.renderDetail()
+			if query == "" {
+				ui.message = "Highlight dettagli rimosso."
+			} else {
+				ui.message = fmt.Sprintf("Highlight dettagli: %s", query)
+			}
+		default:
+			ui.search.SetText(query)
+			ui.refreshMonsters()
+			ui.focusPanel(3)
+		}
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+}
+
+func (ui *tviewUI) jumpToEncounter(query string) {
+	if strings.TrimSpace(query) == "" {
+		ui.message = "Ricerca encounter vuota."
+		return
+	}
+	q := strings.ToLower(query)
+	for i, e := range ui.encounter {
+		if strings.Contains(strings.ToLower(e.Monster.Name), q) {
+			ui.encList.SetCurrentItem(i)
+			ui.message = fmt.Sprintf("Trovato in encounter: %s", e.Monster.Name)
+			ui.refreshDetail()
+			return
+		}
+	}
+	ui.message = fmt.Sprintf("Nessun match encounter per '%s'.", query)
+}
+
+func (ui *tviewUI) scrollDetailByPage(direction int) {
+	row, col := ui.detail.GetScrollOffset()
+	_, _, _, h := ui.detail.GetInnerRect()
+	if h <= 0 {
+		h = 24
+	}
+	step := h / 2
+	if step < 1 {
+		step = 1
+	}
+	row += direction * step
+	if row < 0 {
+		row = 0
+	}
+	ui.detail.ScrollTo(row, col)
 }
 
 func (ui *tviewUI) deleteSelectedPNG() {
@@ -642,8 +893,7 @@ func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 	text.SetBorder(true).SetTitle("Help")
 	text.SetText("Token Manager - scorciatoie\n\n" + helpText + "\n\nEsc/?/q per chiudere")
 
-	modal := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(nil, 0, 1, false).
@@ -666,6 +916,17 @@ func (ui *tviewUI) closeHelpOverlay() {
 	}
 }
 
+func (ui *tviewUI) closeModal() {
+	if !ui.modalVisible {
+		return
+	}
+	if ui.modalName != "" {
+		ui.pages.RemovePage(ui.modalName)
+	}
+	ui.modalVisible = false
+	ui.modalName = ""
+}
+
 func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 	switch focus {
 	case ui.pngList:
@@ -686,7 +947,6 @@ func (ui *tviewUI) toggleFullscreenForFocus(focus tview.Primitive) {
 	if target == "" {
 		return
 	}
-
 	if ui.fullscreenActive && ui.fullscreenTarget == target {
 		ui.fullscreenActive = false
 		ui.fullscreenTarget = ""
@@ -695,7 +955,6 @@ func (ui *tviewUI) toggleFullscreenForFocus(focus tview.Primitive) {
 		ui.refreshStatus()
 		return
 	}
-
 	ui.fullscreenActive = true
 	ui.fullscreenTarget = target
 	ui.rebuildMainLayout()
@@ -717,12 +976,9 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.detail
 		}
 	}
-
-	root := tview.NewFlex().
-		SetDirection(tview.FlexRow).
+	root := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(content, 0, 1, true).
 		AddItem(ui.status, 1, 0, false)
-
 	ui.pages.RemovePage("main")
 	ui.pages.AddPage("main", root, true, true)
 	ui.pages.SwitchToPage("main")
