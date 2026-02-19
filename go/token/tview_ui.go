@@ -1370,7 +1370,7 @@ func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
 		if hasValue(it.Range) {
 			b.WriteString("Punteggio base: " + strings.TrimSpace(it.Range) + "\n")
 		}
-	} else if strings.EqualFold(strings.TrimSpace(it.Type), "bottino") {
+	} else if strings.EqualFold(strings.TrimSpace(it.Type), "bottino") || strings.EqualFold(strings.TrimSpace(it.Type), "scorte") {
 		if hasValue(it.Trait) {
 			b.WriteString("Tiro: " + strings.TrimSpace(it.Trait) + "\n")
 		}
