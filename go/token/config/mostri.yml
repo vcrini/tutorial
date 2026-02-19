@@ -71,13 +71,31 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Un criminale astuto con un mantello che porta uno dei coltelli iconici della banda.",
-    "motivations_tactics": "Fuggire, gettare fumo negli occhi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
-    "traits": [],
+    "motivations_tactics": "Fuggire, gettare fumo negli occhi, guadagnare, rubare",
+    "difficulty": 12,
+    "thresholds": "8/14",
+    "pf": 5,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+1",
+        "name": "Pugnale",
+        "range": "Mischia",
+        "damage": "1d8+1 fis",
+      },
+    "traits":
+      [
+        {
+          "name": "Arrampicatore",
+          "kind": "Passiva",
+          "text": "Il bandito si arrampica con la stessa facilità con cui corre.",
+        },
+        {
+          "name": "Dall’Alto",
+          "kind": "Passiva",
+          "text": "Quando il Bandito riesce in un attacco base dall’alto su un bersaglio, infligge 1d10+1 danni fisici invece dei suoi danni normali.",
+        },
+      ],
   },
   {
     "name": "Cecchino Dei Coltelli Seghettati",

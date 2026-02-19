@@ -146,8 +146,8 @@ func (ui *tviewUI) build() {
 	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri ")
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(ui.pngList, 7, 0, true).
-		AddItem(ui.encList, 8, 0, false).
+		AddItem(ui.pngList, 0, 1, true).
+		AddItem(ui.encList, 0, 1, false).
 		AddItem(ui.monstersPanel, 0, 1, false)
 
 	ui.detail = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
@@ -535,7 +535,15 @@ func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string
 		b.WriteString("Soglie: " + th + "\n")
 	}
 	if m.Attack.Name != "" {
-		b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
+		bonus := strings.TrimSpace(m.Attack.Bonus)
+		if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
+			bonus = "+" + bonus
+		}
+		if bonus != "" {
+			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType, bonus))
+		} else {
+			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
+		}
 	}
 	if strings.TrimSpace(m.MotivationsTactics) != "" {
 		b.WriteString("\nMotivazioni/Tattiche:\n" + strings.TrimSpace(m.MotivationsTactics) + "\n")
