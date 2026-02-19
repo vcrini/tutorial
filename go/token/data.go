@@ -18,6 +18,7 @@ const (
 var dataFile = "pngs.yml"
 var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
+var environmentsFile = "config/ambienti.yml"
 var encounterFile = "encounter.yml"
 
 type nameLists struct {
@@ -78,6 +79,21 @@ type Monster struct {
 		Kind string `yaml:"kind"`
 		Text string `yaml:"text"`
 	} `yaml:"traits"`
+}
+
+type Environment struct {
+	Name                 string `yaml:"name"`
+	Kind                 string `yaml:"kind"`
+	Rank                 int    `yaml:"rank"`
+	Description          string `yaml:"description"`
+	Impeti               string `yaml:"impeti"`
+	Difficulty           string `yaml:"difficulty"`
+	PotentialAdversaries string `yaml:"potential_adversaries"`
+	Characteristics      []struct {
+		Name string `yaml:"name"`
+		Kind string `yaml:"kind"`
+		Text string `yaml:"text"`
+	} `yaml:"characteristics"`
 }
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
@@ -215,6 +231,19 @@ func loadMonsters(path string) ([]Monster, error) {
 		return nil, err
 	}
 	return monsters, nil
+}
+
+func loadEnvironments(path string) ([]Environment, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var environments []Environment
+	if err := yaml.Unmarshal(data, &environments); err != nil {
+		return nil, err
+	}
+	return environments, nil
 }
 
 func uniqueRandomPNGName(existing []PNG) string {

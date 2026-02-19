@@ -1,0 +1,110 @@
+[
+  {
+    "name": "Bosco Abbandonato",
+    "kind": "Esplorazione",
+    "rank": 1,
+    "description": "Un antico bosco druidico abbandonato e reclamato dalla natura.",
+    "impeti": "Attirare i curiosi, ricordare il passato",
+    "difficulty": "11",
+    "potential_adversaries": "Bestie (Lupo Terribile, Orso, Serpente di Vetro), Guardiani, Treant Arbusto, Soldato Silvano",
+    "characteristics":
+      [
+        {
+          "name": "Campo di Battaglia Invasa dalla Vegetazione",
+          "kind": "Passiva",
+          "text": "Vecchie tracce di scontri e rovi invadono il terreno. Con Paura il GM può introdurre informazioni, ostacoli o dettagli aggiuntivi utili alla scena.",
+        },
+        {
+          "name": "Vittici Urlanti",
+          "kind": "Azione",
+          "text": "Scegliete un punto del bosco: tutti i bersagli entro distanza Prossima devono superare un tiro reazione di Agilità o Istinto (13) o essere Trattenuti dalle viti finché non si liberano.",
+        },
+        {
+          "name": "Non Siete i Benvenuti Qui",
+          "kind": "Azione",
+          "text": "Una Giovane Driade può apparire insieme a Soldati Silvani entro distanza Prossima per affrontare gli intrusi.",
+        },
+        {
+          "name": "Profanatore",
+          "kind": "Azione",
+          "text": "Evocate un Elementale Minore del Caos attirato dagli echi di violenza e discordia; appare a distanza Lontana e diventa immediatamente protagonista.",
+        },
+      ],
+  },
+  {
+    "name": "Imboscata!",
+    "kind": "Evento",
+    "rank": 1,
+    "description": "Un’imboscata sorprende il gruppo ignaro.",
+    "impeti": "Sopraffare, disperdere, circondare",
+    "difficulty": "Speciale (vedete \"Forza Relativa\")",
+    "potential_adversaries": "Qualsiasi",
+    "characteristics":
+      [
+        {
+          "name": "Forza Relativa",
+          "kind": "Passiva",
+          "text": "La difficoltà di questo ambiente è pari alla difficoltà più alta del gruppo avversario preparato.",
+        },
+        {
+          "name": "Sorpresa!",
+          "kind": "Azione",
+          "text": "Gli avversari si rivelano: ottenete 2 Paure e uno degli avversari diventa immediatamente protagonista.",
+        },
+      ],
+  },
+  {
+    "name": "Agguato",
+    "kind": "Evento",
+    "rank": 1,
+    "description": "I PG preparano un agguato per cogliere di sorpresa gli avversari ignari.",
+    "impeti": "Fuggire, raggrupparsi, proteggere i più vulnerabili",
+    "difficulty": "Speciale (vedete \"Forza Relativa\")",
+    "potential_adversaries": "Qualsiasi",
+    "characteristics":
+      [
+        {
+          "name": "Forza Relativa",
+          "kind": "Passiva",
+          "text": "La difficoltà di questo ambiente è pari alla difficoltà più alta del gruppo avversario preparato.",
+        },
+        {
+          "name": "Da Dove Arrivano?",
+          "kind": "Reazione",
+          "text": "Quando un PG inizia l’imboscata contro avversari ignari, perdete 2 Paure e il primo tiro attacco contro un PG ha vantaggio.",
+        },
+      ],
+  },
+  {
+    "name": "Mercato Affollato",
+    "kind": "Contesto Sociale",
+    "rank": 1,
+    "description": "Il cuore economico dell’insediamento, con artigiani locali, mercanti ambulanti e acquirenti di ogni tipo.",
+    "impeti": "Comprare a poco e vendere a tanto, tentare con merci provenienti da vicino e da lontano",
+    "difficulty": "10",
+    "potential_adversaries": "Guardie (Capo delle Guardie, Guardia Armata), Ladro Mascherato, Mercante",
+    "characteristics":
+      [
+        {
+          "name": "Inclinare la Bilancia",
+          "kind": "Passiva",
+          "text": "I PG possono ottenere vantaggio a un tiro Presenza offrendo una manciata d’oro come parte dell’interazione.",
+        },
+        {
+          "name": "Ritrovamento Inatteso",
+          "kind": "Azione",
+          "text": "Svelate al PG che uno dei mercanti ha qualcosa che cerca: un oggetto raro, informazioni, una mappa del tesoro incompleta o una chiave magica.",
+        },
+        {
+          "name": "Dita Appiccicose",
+          "kind": "Azione",
+          "text": "Un ladro cerca di rubare qualcosa a un PG. Il PG deve superare un tiro Istinto per notarlo in tempo o perdere un oggetto a scelta del GM.",
+        },
+        {
+          "name": "La Folla si Chiude",
+          "kind": "Reazione",
+          "text": "Quando uno dei PG si separa dal gruppo, la folla si sposta e lo isola.",
+        },
+      ],
+  },
+]

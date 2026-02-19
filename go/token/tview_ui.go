@@ -11,38 +11,65 @@ import (
 	"github.com/rivo/tview"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]c[-:-] crea PNG  [black:gold]x[-:-] elimina PNG  [black:gold]r[-:-] reset token  [black:gold]a[-:-] add mostro  [black:gold]d[-:-] del encounter  [black:gold]←/→[-:-] token PNG  [black:gold]h/l[-:-] ferite +/-  [black:gold]u/g[-:-] filtro ruolo/rango  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri nome/tipo/rango  [black:gold]v[-:-] reset filtri "
+
+const (
+	focusPNG = iota
+	focusEncounter
+	focusMonSearch
+	focusMonRole
+	focusMonRank
+	focusMonList
+	focusEnvSearch
+	focusEnvType
+	focusEnvRank
+	focusEnvList
+	focusDetail
+)
 
 type tviewUI struct {
 	app    *tview.Application
 	pages  *tview.Pages
 	status *tview.TextView
 
-	pngList  *tview.List
-	encList  *tview.List
-	search   *tview.InputField
-	roleDrop *tview.DropDown
-	rankDrop *tview.DropDown
-	monList  *tview.List
-	detail   *tview.TextView
+	pngList     *tview.List
+	encList     *tview.List
+	search      *tview.InputField
+	roleDrop    *tview.DropDown
+	rankDrop    *tview.DropDown
+	monList     *tview.List
+	envSearch   *tview.InputField
+	envTypeDrop *tview.DropDown
+	envRankDrop *tview.DropDown
+	envList     *tview.List
+	detail      *tview.TextView
 
-	monstersPanel *tview.Flex
-	leftPanel     *tview.Flex
-	mainRow       *tview.Flex
+	monstersPanel     *tview.Flex
+	environmentsPanel *tview.Flex
+	catalogPanel      *tview.Pages
+	leftPanel         *tview.Flex
+	mainRow           *tview.Flex
 
 	focus    []tview.Primitive
 	focusIdx int
 	message  string
 
-	pngs       []PNG
-	selected   int
-	monsters   []Monster
-	encounter  []EncounterEntry
-	filtered   []int
-	roleOpts   []string
-	rankOpts   []string
-	roleFilter string
-	rankFilter string
+	pngs          []PNG
+	selected      int
+	monsters      []Monster
+	environments  []Environment
+	encounter     []EncounterEntry
+	filtered      []int
+	filteredEnv   []int
+	roleOpts      []string
+	rankOpts      []string
+	envTypeOpts   []string
+	envRankOpts   []string
+	roleFilter    string
+	rankFilter    string
+	envTypeFilter string
+	envRankFilter string
+	catalogMode   string
 
 	detailRaw   string
 	detailQuery string
@@ -87,6 +114,10 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", monstersFile, err)
 	}
+	environments, err := loadEnvironments(environmentsFile)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", environmentsFile, err)
+	}
 	encounter, err := loadEncounter(encounterFile, monsters)
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
@@ -106,12 +137,14 @@ func newTViewUI() (*tviewUI, error) {
 	}
 
 	ui := &tviewUI{
-		app:       tview.NewApplication(),
-		pngs:      pngs,
-		selected:  selected,
-		monsters:  monsters,
-		encounter: encounter,
-		message:   "Pronto.",
+		app:          tview.NewApplication(),
+		pngs:         pngs,
+		selected:     selected,
+		monsters:     monsters,
+		environments: environments,
+		encounter:    encounter,
+		message:      "Pronto.",
+		catalogMode:  "mostri",
 	}
 	ui.build()
 	return ui, nil
@@ -194,12 +227,76 @@ func (ui *tviewUI) build() {
 	ui.monstersPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(filters, 2, 0, false).
 		AddItem(ui.monList, 0, 1, true)
-	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri ")
+	ui.monstersPanel.SetBorder(true).SetTitle(" [3]-Mostri  ([,]) ")
+
+	ui.envSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
+	ui.envSearch.SetChangedFunc(func(_ string) {
+		ui.refreshEnvironments()
+		ui.refreshDetail()
+	})
+
+	ui.envRankFilter = "Tutti"
+	ui.envTypeFilter = "Tutti"
+	ui.envTypeOpts = ui.buildEnvironmentTypeOptions()
+	ui.envRankOpts = ui.buildEnvironmentRankOptions()
+
+	ui.envTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.envTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.envTypeDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.envTypeDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.envTypeDrop.SetOptions(ui.envTypeOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.envTypeFilter = text
+		ui.refreshEnvironments()
+		ui.refreshDetail()
+	})
+	ui.envTypeDrop.SetCurrentOption(0)
+
+	ui.envRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.envRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.envRankDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.envRankDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.envRankDrop.SetOptions(ui.envRankOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.envRankFilter = text
+		ui.refreshEnvironments()
+		ui.refreshDetail()
+	})
+	ui.envRankDrop.SetCurrentOption(0)
+
+	ui.envList = tview.NewList().ShowSecondaryText(false)
+	ui.envList.SetChangedFunc(func(int, string, string, rune) {
+		ui.refreshDetail()
+	})
+
+	envFilters := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(ui.envSearch, 0, 2, false).
+		AddItem(ui.envTypeDrop, 0, 1, false).
+		AddItem(ui.envRankDrop, 0, 1, false)
+
+	ui.environmentsPanel = tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(envFilters, 2, 0, false).
+		AddItem(ui.envList, 0, 1, true)
+	ui.environmentsPanel.SetBorder(true).SetTitle(" [3]-Ambienti  ([,]) ")
+
+	ui.catalogPanel = tview.NewPages().
+		AddPage("mostri", ui.monstersPanel, true, true).
+		AddPage("ambienti", ui.environmentsPanel, true, false)
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(ui.pngList, 0, 1, true).
 		AddItem(ui.encList, 0, 1, false).
-		AddItem(ui.monstersPanel, 0, 1, false)
+		AddItem(ui.catalogPanel, 0, 1, false)
 
 	ui.detail = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
 	ui.detail.SetBorder(true).SetTitle(" Dettagli ")
@@ -216,8 +313,11 @@ func (ui *tviewUI) build() {
 		AddItem(ui.status, 1, 0, false)
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
-	ui.focus = []tview.Primitive{ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList, ui.detail}
-	ui.focusIdx = 5
+	ui.focus = []tview.Primitive{
+		ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList,
+		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList, ui.detail,
+	}
+	ui.focusIdx = focusMonList
 	ui.app.SetFocus(ui.monList)
 	ui.app.SetInputCapture(ui.handleGlobalKeys)
 }
@@ -242,8 +342,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	}
 
 	if focusIsInput && ev.Key() == tcell.KeyEsc {
-		ui.app.SetFocus(ui.monList)
-		ui.focusIdx = 5
+		ui.focusPanel(ui.activeCatalogListFocus())
 		ui.refreshStatus()
 		return nil
 	}
@@ -269,12 +368,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
+		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -299,7 +398,13 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.focusPanel(1)
 		return nil
 	case '3':
-		ui.focusPanel(5)
+		ui.focusPanel(ui.activeCatalogListFocus())
+		return nil
+	case '[':
+		ui.switchCatalog(-1)
+		return nil
+	case ']':
+		ui.switchCatalog(1)
 		return nil
 	case '/':
 		if !focusIsInput {
@@ -318,18 +423,37 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'a':
-		if focus == ui.monList || focus == ui.search {
+		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop) {
 			ui.addSelectedMonsterToEncounter()
 			return nil
 		}
 	case 'u':
-		ui.focusPanel(3)
+		if ui.catalogMode == "mostri" {
+			ui.focusPanel(focusMonSearch)
+		} else {
+			ui.focusPanel(focusEnvSearch)
+		}
+		return nil
+	case 't':
+		if ui.catalogMode == "mostri" {
+			ui.focusPanel(focusMonRole)
+		} else {
+			ui.focusPanel(focusEnvType)
+		}
 		return nil
 	case 'g':
-		ui.focusPanel(4)
+		if ui.catalogMode == "mostri" {
+			ui.focusPanel(focusMonRank)
+		} else {
+			ui.focusPanel(focusEnvRank)
+		}
 		return nil
 	case 'v':
-		ui.resetMonsterFilters()
+		if ui.catalogMode == "mostri" {
+			ui.resetMonsterFilters()
+		} else {
+			ui.resetEnvironmentFilters()
+		}
 		return nil
 	case 'd':
 		if focus == ui.encList {
@@ -351,24 +475,49 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 }
 
 func (ui *tviewUI) focusNext() {
-	ui.focusIdx = (ui.focusIdx + 1) % len(ui.focus)
-	ui.app.SetFocus(ui.focus[ui.focusIdx])
+	for i := 0; i < len(ui.focus); i++ {
+		ui.focusIdx = (ui.focusIdx + 1) % len(ui.focus)
+		if ui.isFocusVisible(ui.focusIdx) {
+			ui.app.SetFocus(ui.focus[ui.focusIdx])
+			break
+		}
+	}
 	ui.refreshDetail()
 	ui.refreshStatus()
 }
 
 func (ui *tviewUI) focusPrev() {
-	ui.focusIdx--
-	if ui.focusIdx < 0 {
-		ui.focusIdx = len(ui.focus) - 1
+	for i := 0; i < len(ui.focus); i++ {
+		ui.focusIdx--
+		if ui.focusIdx < 0 {
+			ui.focusIdx = len(ui.focus) - 1
+		}
+		if ui.isFocusVisible(ui.focusIdx) {
+			ui.app.SetFocus(ui.focus[ui.focusIdx])
+			break
+		}
 	}
-	ui.app.SetFocus(ui.focus[ui.focusIdx])
 	ui.refreshDetail()
 	ui.refreshStatus()
 }
 
 func (ui *tviewUI) focusPanel(panel int) {
+	if panel == focusMonList && ui.catalogMode == "ambienti" {
+		panel = focusEnvList
+	}
+	if panel == focusMonSearch && ui.catalogMode == "ambienti" {
+		panel = focusEnvSearch
+	}
+	if panel == focusMonRank && ui.catalogMode == "ambienti" {
+		panel = focusEnvRank
+	}
+	if panel == focusMonRole && ui.catalogMode == "ambienti" {
+		panel = focusEnvType
+	}
 	if panel < 0 || panel >= len(ui.focus) {
+		return
+	}
+	if !ui.isFocusVisible(panel) {
 		return
 	}
 	ui.focusIdx = panel
@@ -377,9 +526,47 @@ func (ui *tviewUI) focusPanel(panel int) {
 	ui.refreshStatus()
 }
 
+func (ui *tviewUI) isFocusVisible(idx int) bool {
+	switch idx {
+	case focusMonSearch, focusMonRole, focusMonRank, focusMonList:
+		return ui.catalogMode == "mostri"
+	case focusEnvSearch, focusEnvType, focusEnvRank, focusEnvList:
+		return ui.catalogMode == "ambienti"
+	default:
+		return true
+	}
+}
+
+func (ui *tviewUI) activeCatalogListFocus() int {
+	if ui.catalogMode == "ambienti" {
+		return focusEnvList
+	}
+	return focusMonList
+}
+
+func (ui *tviewUI) switchCatalog(delta int) {
+	if delta == 0 {
+		return
+	}
+	next := "mostri"
+	if ui.catalogMode == "mostri" {
+		next = "ambienti"
+	}
+	ui.catalogMode = next
+	ui.catalogPanel.SwitchToPage(next)
+	if next == "ambienti" {
+		ui.message = "Catalogo: Ambienti"
+	} else {
+		ui.message = "Catalogo: Mostri"
+	}
+	ui.focusPanel(ui.activeCatalogListFocus())
+	ui.refreshStatus()
+}
+
 func (ui *tviewUI) refreshAll() {
 	ui.refreshPNGs()
 	ui.refreshMonsters()
+	ui.refreshEnvironments()
 	ui.refreshEncounter()
 	ui.refreshDetail()
 	ui.refreshStatus()
@@ -451,6 +638,45 @@ func (ui *tviewUI) refreshMonsters() {
 	ui.monList.SetCurrentItem(current)
 }
 
+func (ui *tviewUI) refreshEnvironments() {
+	query := strings.ToLower(strings.TrimSpace(ui.envSearch.GetText()))
+	ui.filteredEnv = ui.filteredEnv[:0]
+	for i, e := range ui.environments {
+		if query != "" && !strings.Contains(strings.ToLower(e.Name), query) {
+			continue
+		}
+		if ui.envTypeFilter != "" && ui.envTypeFilter != "Tutti" && !strings.EqualFold(strings.TrimSpace(e.Kind), ui.envTypeFilter) {
+			continue
+		}
+		if ui.envRankFilter != "" && ui.envRankFilter != "Tutti" && strconv.Itoa(e.Rank) != ui.envRankFilter {
+			continue
+		}
+		ui.filteredEnv = append(ui.filteredEnv, i)
+	}
+
+	if ui.envList == nil {
+		return
+	}
+
+	current := ui.envList.GetCurrentItem()
+	ui.envList.Clear()
+	if len(ui.filteredEnv) == 0 {
+		ui.envList.AddItem("(nessun ambiente)", "", 0, nil)
+		return
+	}
+	for _, idx := range ui.filteredEnv {
+		e := ui.environments[idx]
+		ui.envList.AddItem(fmt.Sprintf("%s [%s R%d]", e.Name, e.Kind, e.Rank), "", 0, nil)
+	}
+	if current >= len(ui.filteredEnv) {
+		current = len(ui.filteredEnv) - 1
+	}
+	if current < 0 {
+		current = 0
+	}
+	ui.envList.SetCurrentItem(current)
+}
+
 func (ui *tviewUI) refreshEncounter() {
 	current := ui.encList.GetCurrentItem()
 	ui.encList.Clear()
@@ -492,6 +718,17 @@ func (ui *tviewUI) refreshDetail() {
 			return
 		}
 		ui.detailRaw = ui.buildMonsterDetails(ui.monsters[idx], ui.monsters[idx].Name, "")
+		ui.renderDetail()
+		return
+	}
+	if focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
+		idx := ui.currentEnvironmentIndex()
+		if idx < 0 {
+			ui.detailRaw = "Nessun ambiente selezionato."
+			ui.renderDetail()
+			return
+		}
+		ui.detailRaw = ui.buildEnvironmentDetails(ui.environments[idx])
 		ui.renderDetail()
 		return
 	}
@@ -566,13 +803,21 @@ func (ui *tviewUI) refreshStatus() {
 	case ui.encList:
 		focusLabel = "Encounter"
 	case ui.search:
-		focusLabel = "Filtro"
+		focusLabel = "Nome Mostri"
 	case ui.roleDrop:
-		focusLabel = "Ruolo"
+		focusLabel = "Ruolo Mostri"
 	case ui.rankDrop:
-		focusLabel = "Rango"
+		focusLabel = "Rango Mostri"
 	case ui.monList:
 		focusLabel = "Mostri"
+	case ui.envSearch:
+		focusLabel = "Nome Ambienti"
+	case ui.envTypeDrop:
+		focusLabel = "Tipo Ambienti"
+	case ui.envRankDrop:
+		focusLabel = "Rango Ambienti"
+	case ui.envList:
+		focusLabel = "Ambienti"
 	case ui.detail:
 		focusLabel = "Dettagli"
 	}
@@ -580,11 +825,18 @@ func (ui *tviewUI) refreshStatus() {
 	if msg == "" {
 		msg = "Pronto."
 	}
-	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, helpText, msg))
+	catalogLabel := "Mostri"
+	if ui.catalogMode == "ambienti" {
+		catalogLabel = "Ambienti"
+	}
+	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
 }
 
 func (ui *tviewUI) currentMonsterIndex() int {
 	if len(ui.filtered) == 0 {
+		return -1
+	}
+	if ui.monList == nil {
 		return -1
 	}
 	cur := ui.monList.GetCurrentItem()
@@ -592,6 +844,20 @@ func (ui *tviewUI) currentMonsterIndex() int {
 		return -1
 	}
 	return ui.filtered[cur]
+}
+
+func (ui *tviewUI) currentEnvironmentIndex() int {
+	if len(ui.filteredEnv) == 0 {
+		return -1
+	}
+	if ui.envList == nil {
+		return -1
+	}
+	cur := ui.envList.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.filteredEnv) {
+		return -1
+	}
+	return ui.filteredEnv[cur]
 }
 
 func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
@@ -630,6 +896,43 @@ func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
 	return roles, ranks
 }
 
+func (ui *tviewUI) buildEnvironmentRankOptions() []string {
+	rankSet := map[int]struct{}{}
+	for _, e := range ui.environments {
+		if e.Rank > 0 {
+			rankSet[e.Rank] = struct{}{}
+		}
+	}
+	ranksInt := make([]int, 0, len(rankSet))
+	for rank := range rankSet {
+		ranksInt = append(ranksInt, rank)
+	}
+	sort.Ints(ranksInt)
+	ranks := make([]string, 0, len(ranksInt)+1)
+	ranks = append(ranks, "Tutti")
+	for _, rank := range ranksInt {
+		ranks = append(ranks, strconv.Itoa(rank))
+	}
+	return ranks
+}
+
+func (ui *tviewUI) buildEnvironmentTypeOptions() []string {
+	typeSet := map[string]struct{}{}
+	for _, e := range ui.environments {
+		kind := strings.TrimSpace(e.Kind)
+		if kind != "" {
+			typeSet[kind] = struct{}{}
+		}
+	}
+	types := make([]string, 0, len(typeSet)+1)
+	types = append(types, "Tutti")
+	for kind := range typeSet {
+		types = append(types, kind)
+	}
+	sort.Strings(types[1:])
+	return types
+}
+
 func (ui *tviewUI) resetMonsterFilters() {
 	ui.roleFilter = "Tutti"
 	ui.rankFilter = "Tutti"
@@ -644,6 +947,54 @@ func (ui *tviewUI) resetMonsterFilters() {
 	ui.refreshDetail()
 	ui.message = "Filtri Mostri resettati."
 	ui.refreshStatus()
+}
+
+func (ui *tviewUI) resetEnvironmentFilters() {
+	ui.envTypeFilter = "Tutti"
+	ui.envRankFilter = "Tutti"
+	ui.envSearch.SetText("")
+	if ui.envTypeDrop != nil {
+		ui.envTypeDrop.SetCurrentOption(0)
+	}
+	if ui.envRankDrop != nil {
+		ui.envRankDrop.SetCurrentOption(0)
+	}
+	ui.refreshEnvironments()
+	ui.refreshDetail()
+	ui.message = "Filtri Ambienti resettati."
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) buildEnvironmentDetails(e Environment) string {
+	var b strings.Builder
+	b.WriteString(e.Name + "\n")
+	b.WriteString(fmt.Sprintf("Tipo: %s | Rango: %d\n", e.Kind, e.Rank))
+	if strings.TrimSpace(e.Difficulty) != "" {
+		b.WriteString("Difficoltà: " + strings.TrimSpace(e.Difficulty) + "\n")
+	}
+	if strings.TrimSpace(e.Impeti) != "" {
+		b.WriteString("Impeti: " + strings.TrimSpace(e.Impeti) + "\n")
+	}
+	if strings.TrimSpace(e.PotentialAdversaries) != "" {
+		b.WriteString("Potenziali Avversari: " + strings.TrimSpace(e.PotentialAdversaries) + "\n")
+	}
+	if len(e.Characteristics) > 0 {
+		b.WriteString("\nCaratteristiche:\n")
+		for _, c := range e.Characteristics {
+			line := "- " + c.Name
+			if strings.TrimSpace(c.Kind) != "" {
+				line += " (" + c.Kind + ")"
+			}
+			if strings.TrimSpace(c.Text) != "" {
+				line += ": " + strings.TrimSpace(c.Text)
+			}
+			b.WriteString(line + "\n")
+		}
+	}
+	if strings.TrimSpace(e.Description) != "" {
+		b.WriteString("\n" + strings.TrimSpace(e.Description))
+	}
+	return strings.TrimSpace(b.String())
 }
 
 func (ui *tviewUI) currentEncounterIndex() int {
@@ -887,8 +1238,13 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 		case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
-			ui.focusPanel(5)
+			ui.focusPanel(focusMonList)
 			ui.message = "Filtro mostri aggiornato."
+		case ui.envSearch, ui.envList, ui.envTypeDrop, ui.envRankDrop:
+			ui.envSearch.SetText(query)
+			ui.refreshEnvironments()
+			ui.focusPanel(focusEnvList)
+			ui.message = "Filtro ambienti aggiornato."
 		case ui.encList:
 			ui.jumpToEncounter(query)
 		case ui.detail:
@@ -902,7 +1258,7 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 		default:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
-			ui.focusPanel(5)
+			ui.focusPanel(focusMonList)
 		}
 		ui.closeModal()
 		ui.app.SetFocus(returnFocus)
@@ -1035,18 +1391,74 @@ func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 
 	text := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
 	text.SetBorder(true).SetTitle("Help")
-	text.SetText("Token Manager - scorciatoie\n\n" + helpText + "\n\nEsc/?/q per chiudere")
+	text.SetText(ui.buildHelpContent(focus))
 
 	modal := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(nil, 0, 1, false).
-			AddItem(text, 96, 0, true).
-			AddItem(nil, 0, 1, false), 14, 0, true).
+			AddItem(text, 0, 1, true).
+			AddItem(nil, 0, 1, false), 0, 1, true).
 		AddItem(nil, 0, 1, false)
 
 	ui.pages.AddAndSwitchToPage("help", modal, true)
 	ui.app.SetFocus(text)
+}
+
+func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
+	var b strings.Builder
+	b.WriteString("Token Manager - scorciatoie\n\n")
+
+	panel := "Dettagli"
+	var panelLines []string
+	switch focus {
+	case ui.pngList:
+		panel = "PNG"
+		panelLines = []string{
+			"- c: crea PNG",
+			"- x: elimina PNG selezionato",
+			"- r: reset token di tutti i PNG",
+			"- ← / →: diminuisci/aumenta token selezionato",
+		}
+	case ui.encList:
+		panel = "Encounter"
+		panelLines = []string{
+			"- d: rimuovi mostro selezionato",
+			"- h / l: ferite +1 / -1 sul selezionato",
+		}
+	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
+		panel = "Mostri"
+		panelLines = []string{
+			"- a: aggiungi mostro selezionato a Encounter",
+			"- u / t / g: focus filtro Nome / Ruolo / Rango",
+			"- v: reset filtri Mostri",
+		}
+	case ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList:
+		panel = "Ambienti"
+		panelLines = []string{
+			"- u / t / g: focus filtro Nome / Tipo / Rango",
+			"- v: reset filtri Ambienti (Nome/Tipo/Rango)",
+		}
+	default:
+		panelLines = []string{"- /: evidenzia testo nei dettagli"}
+	}
+
+	b.WriteString("[yellow]" + panel + "[-]\n")
+	for _, line := range panelLines {
+		b.WriteString(line + "\n")
+	}
+
+	b.WriteString("\n[yellow]Globali[-]\n")
+	b.WriteString("- q: esci\n")
+	b.WriteString("- ?: apri/chiudi help\n")
+	b.WriteString("- tab / shift+tab: cambia focus\n")
+	b.WriteString("- 1 / 2 / 3: focus PNG / Encounter / Catalogo\n")
+	b.WriteString("- [ / ]: alterna Mostri / Ambienti\n")
+	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
+	b.WriteString("- f: fullscreen pannello corrente\n")
+	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
+	b.WriteString("\nEsc/?/q per chiudere")
+	return b.String()
 }
 
 func (ui *tviewUI) closeHelpOverlay() {
@@ -1079,6 +1491,8 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "encounter"
 	case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 		return "monsters"
+	case ui.envSearch, ui.envList, ui.envTypeDrop, ui.envRankDrop:
+		return "ambienti"
 	case ui.detail:
 		return "details"
 	default:
@@ -1116,6 +1530,8 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.encList
 		case "monsters":
 			content = ui.monstersPanel
+		case "ambienti":
+			content = ui.environmentsPanel
 		case "details":
 			content = ui.detail
 		}
