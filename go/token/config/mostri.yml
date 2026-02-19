@@ -1053,12 +1053,18 @@
     "role": "Seguace",
     "rank": 1,
     "description": "Un mucchio di ossa crepitanti.",
-    "motivations_tactics": "Cadere a pezzi, fingersi morta, rubare la",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Cadere a pezzi, fingersi morta, rubare la pelle, sopraffare",
+    "difficulty": 8,
+    "thresholds": "Nessuna",
+    "pf": 1,
+    "stress": 1,
+    "attack":
+      {
+        "bonus": "-1",
+        "name": "Artigli D’Ossa",
+        "range": "Mischia",
+        "damage": "1 fis",
+      },
     "traits":
       [
         {
@@ -1078,12 +1084,18 @@
     "role": "Avversario Base",
     "rank": 1,
     "description": "Uno scheletro ricoperto di terra armato con una lama arrugginita.",
-    "motivations_tactics": "Attaccare in gruppo, fingersi morto, rubare",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Attaccare in gruppo, fingersi morto, rubare la pelle",
+    "difficulty": 10,
+    "thresholds": "4/8",
+    "pf": 3,
+    "stress": 2,
+    "attack":
+      {
+        "bonus": "+0",
+        "name": "Spada",
+        "range": "Mischia",
+        "damage": "1d6+2 fis",
+      },
     "traits":
       [
         {
