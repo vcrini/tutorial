@@ -21,6 +21,7 @@ var monstersFile = "config/mostri.yml"
 var environmentsFile = "config/ambienti.yml"
 var equipmentFile = "config/equipaggiamento.yaml"
 var cardsFile = "config/carte.yaml"
+var classesFile = "config/classi.yaml"
 var encounterFile = "encounter.yml"
 
 type nameLists struct {
@@ -118,6 +119,25 @@ type CardItem struct {
 	CasterTrait string   `yaml:"caster_trait"`
 	Description string   `yaml:"description"`
 	Effects     []string `yaml:"effects"`
+}
+
+type ClassItem struct {
+	Name            string   `yaml:"name"`
+	Subclass        string   `yaml:"subclass"`
+	Rank            int      `yaml:"rank"`
+	Domains         string   `yaml:"domains"`
+	Evasion         int      `yaml:"evasion"`
+	HP              int      `yaml:"hp"`
+	ClassItem       string   `yaml:"class_item"`
+	HopePrivilege   string   `yaml:"hope_privilege"`
+	ClassPrivileges []string `yaml:"class_privileges"`
+	Description     string   `yaml:"description"`
+	CasterTrait     string   `yaml:"caster_trait"`
+	BasePrivileges  []string `yaml:"base_privileges"`
+	Specialization  string   `yaml:"specialization"`
+	Mastery         string   `yaml:"mastery"`
+	BackgroundQs    []string `yaml:"background_questions"`
+	Bonds           []string `yaml:"bonds"`
 }
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
@@ -294,6 +314,19 @@ func loadCards(path string) ([]CardItem, error) {
 		return nil, err
 	}
 	return cards, nil
+}
+
+func loadClasses(path string) ([]ClassItem, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var classes []ClassItem
+	if err := yaml.Unmarshal(data, &classes); err != nil {
+		return nil, err
+	}
+	return classes, nil
 }
 
 func uniqueRandomPNGName(existing []PNG) string {

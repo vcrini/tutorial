@@ -1,0 +1,44 @@
+- name: Bardo
+  subclass: Oratore
+  rank: 1
+  domains: "Grazia e Codice"
+  evasion: 10
+  hp: 5
+  class_item: "Un romanzo sentimentale o una lettera mai aperta"
+  hope_privilege: "Sceneggiata: Spendete 3 Speranze per Distrarre temporaneamente un bersaglio a distanza Ravvicinata, infliggendogli penalita -2 alla Difficolta."
+  class_privileges:
+    - "Chiamata a Raccolta: Una volta per sessione, descrivete come radunate il gruppo; poi, date a voi stessi e a ciascuno dei vostri alleati un Dado A Raccolta. Al livello 1, il Dado A Raccolta e un d6. Un PG puo spendere il suo Dado A Raccolta per tirarlo, aggiungendo il risultato al suo tiro azione, al tiro reazione, al tiro di danno oppure cancellando un numero di Stress pari al risultato. Alla fine di ogni sessione, cancellate tutti i Dadi A Raccolta non spesi."
+    - "Al 5 livello, il Dado A Raccolta aumenta a un d8."
+  description: "I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette. Sia che si esibiscano per un pubblico o che si rivolgano a un singolo interlocutore, i bardi danno il meglio nelle situazioni sociali. I membri di questa professione si leggono e si addestrano in scuole o gilde, ma possono anche essere soggetti all'egocentrismo. Sebbene siano la classe piu adatta a riunire le persone, un bardo di cattivo umore puo altrettanto facilmente distruggere una festa."
+  caster_trait: "Presenza"
+  base_privileges:
+    - "Discorso Ispiratore: Una volta per riposo lungo, potete pronunciare un discorso accorato e ispiratore. Tutti gli alleati entro distanza Lontana rimuovono 2 Stress."
+    - "Cuore di Poeta: Dopo aver effettuato un tiro azione per impressionare, persuadere o offendere qualcuno, potete spendere una Speranza per aggiungere un d4 al tiro."
+  specialization: "Eloquente: Le vostre parole toccanti aumentano il morale. Una volta per sessione, quando interagite un alleato, potete scegliere una delle seguenti opzioni: Permettere di trovare un oggetto o uno strumento comune di cui ha bisogno; Aiutare un alleato senza spendere Speranza; Assegnare una mossa aggiuntiva in un interludio durante il prossimo riposo."
+  mastery: "Poesia Epica: Il Dado A Raccolta aumenta a d10. Inoltre, quando aiutate un alleato, potete narrare il momento come se steste scrivendo la storia del suo eroismo in un libro di memorie. Quando lo fate, tirate un d10 come dado vantaggio."
+
+- name: Bardo
+  subclass: Trovatore
+  rank: 1
+  domains: "Grazia e Codice"
+  evasion: 10
+  hp: 5
+  class_item: "Un romanzo sentimentale o una lettera mai aperta"
+  hope_privilege: "Sceneggiata: Spendete 3 Speranze per Distrarre temporaneamente un bersaglio a distanza Ravvicinata, infliggendogli penalita -2 alla Difficolta."
+  class_privileges:
+    - "Chiamata a Raccolta: Una volta per sessione, descrivete come radunate il gruppo; poi, date a voi stessi e a ciascuno dei vostri alleati un Dado A Raccolta. Al livello 1, il Dado A Raccolta e un d6. Un PG puo spendere il suo Dado A Raccolta per tirarlo, aggiungendo il risultato al suo tiro azione, al tiro reazione, al tiro di danno oppure cancellando un numero di Stress pari al risultato. Alla fine di ogni sessione, cancellate tutti i Dadi A Raccolta non spesi."
+    - "Al 5 livello, il Dado A Raccolta aumenta a un d8."
+  description: "I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette."
+  caster_trait: "Presenza"
+  base_privileges:
+    - "Musico Eccezionale: Descrivete il modo in cui vi esibite per gli altri. E possibile eseguire ogni canzone una sola volta per riposo lungo: Canzone Popolare: Voi e tutti gli alleati a distanza Ravvicinata recuperate un Punto Ferita; Canto Epico: Rendete temporaneamente Vulnerabile un bersaglio a distanza Ravvicinata; Ballata: Voi e tutti gli alleati a distanza Ravvicinata guadagnate una Speranza."
+  specialization: "Maestro: Le vostre canzoni accendono il coraggio di chi le ascolta. Quando assegnate un Dado A Raccolta a un alleato, questi puo guadagnare una Speranza o rimuovere uno Stress."
+  mastery: "Virtuoso: Siete tra i piu grandi musicisti mai vissuti e la vostra abilita e illimitata. Potete eseguire ogni canzone del privilegio Musico Eccezionale due volte invece di una sola per riposo lungo."
+  background_questions:
+    - "Chi nella vostra comunita vi ha insegnato ad avere tanta fiducia in voi stessi?"
+    - "Siete stati innamorati una volta. Chi avete amato e come vi ha ferito?"
+    - "Avete sempre ammirato un altro bardo. Chi e e perche lo idolatrate?"
+  bonds:
+    - "Cosa ti ha fatto capire che saremmo diventati cosi buoni amici?"
+    - "Cosa faccio che ti infastidisce?"
+    - "Perche mi afferri la mano di notte?"
