@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/gdamore/tcell/v2 v2.13.8
 	github.com/rivo/tview v0.42.0
-	github.com/vcrini/diceroll v0.1.0
+	github.com/vcrini/diceroll v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
