@@ -1,0 +1,440 @@
+[
+  {
+    "name": "Bosco Abbandonato",
+    "kind": "Esplorazione",
+    "rank": 1,
+    "description": "Un antico bosco druidico abbandonato e reclamato dalla natura.",
+    "impeti": "Attirare i curiosi, ricordare il passato",
+    "difficulty": "11",
+    "potential_adversaries": "Bestie (Lupo Terribile, Orso, Serpente di Vetro), Guardiani, Treant Arbusto, Soldato Silvano",
+    "characteristics":
+      [
+        {
+          "name": "Campo di Battaglia Invasa dalla Vegetazione",
+          "kind": "Passiva",
+          "text": "Vecchie tracce di scontri e rovi invadono il terreno. Con Paura il GM può introdurre informazioni, ostacoli o dettagli aggiuntivi utili alla scena.",
+        },
+        {
+          "name": "Vittici Urlanti",
+          "kind": "Azione",
+          "text": "Scegliete un punto del bosco: tutti i bersagli entro distanza Prossima devono superare un tiro reazione di Agilità o Istinto (13) o essere Trattenuti dalle viti finché non si liberano.",
+        },
+        {
+          "name": "Non Siete i Benvenuti Qui",
+          "kind": "Azione",
+          "text": "Una Giovane Driade può apparire insieme a Soldati Silvani entro distanza Prossima per affrontare gli intrusi.",
+        },
+        {
+          "name": "Profanatore",
+          "kind": "Azione",
+          "text": "Evocate un Elementale Minore del Caos attirato dagli echi di violenza e discordia; appare a distanza Lontana e diventa immediatamente protagonista.",
+        },
+      ],
+  },
+  {
+    "name": "Imboscata!",
+    "kind": "Evento",
+    "rank": 1,
+    "description": "Un’imboscata sorprende il gruppo ignaro.",
+    "impeti": "Sopraffare, disperdere, circondare",
+    "difficulty": "Speciale (vedete \"Forza Relativa\")",
+    "potential_adversaries": "Qualsiasi",
+    "characteristics":
+      [
+        {
+          "name": "Forza Relativa",
+          "kind": "Passiva",
+          "text": "La difficoltà di questo ambiente è pari alla difficoltà più alta del gruppo avversario preparato.",
+        },
+        {
+          "name": "Sorpresa!",
+          "kind": "Azione",
+          "text": "Gli avversari si rivelano: ottenete 2 Paure e uno degli avversari diventa immediatamente protagonista.",
+        },
+      ],
+  },
+  {
+    "name": "Agguato",
+    "kind": "Evento",
+    "rank": 1,
+    "description": "I PG preparano un agguato per cogliere di sorpresa gli avversari ignari.",
+    "impeti": "Fuggire, raggrupparsi, proteggere i più vulnerabili",
+    "difficulty": "Speciale (vedete \"Forza Relativa\")",
+    "potential_adversaries": "Qualsiasi",
+    "characteristics":
+      [
+        {
+          "name": "Forza Relativa",
+          "kind": "Passiva",
+          "text": "La difficoltà di questo ambiente è pari alla difficoltà più alta del gruppo avversario preparato.",
+        },
+        {
+          "name": "Da Dove Arrivano?",
+          "kind": "Reazione",
+          "text": "Quando un PG inizia l’imboscata contro avversari ignari, perdete 2 Paure e il primo tiro attacco contro un PG ha vantaggio.",
+        },
+      ],
+  },
+  {
+    "name": "Mercato Affollato",
+    "kind": "Contesto Sociale",
+    "rank": 1,
+    "description": "Il cuore economico dell’insediamento, con artigiani locali, mercanti ambulanti e acquirenti di ogni tipo.",
+    "impeti": "Comprare a poco e vendere a tanto, tentare con merci provenienti da vicino e da lontano",
+    "difficulty": "10",
+    "potential_adversaries": "Guardie (Capo delle Guardie, Guardia Armata), Ladro Mascherato, Mercante",
+    "characteristics":
+      [
+        {
+          "name": "Inclinare la Bilancia",
+          "kind": "Passiva",
+          "text": "I PG possono ottenere vantaggio a un tiro Presenza offrendo una manciata d’oro come parte dell’interazione.",
+        },
+        {
+          "name": "Ritrovamento Inatteso",
+          "kind": "Azione",
+          "text": "Svelate al PG che uno dei mercanti ha qualcosa che cerca: un oggetto raro, informazioni, una mappa del tesoro incompleta o una chiave magica.",
+        },
+        {
+          "name": "Dita Appiccicose",
+          "kind": "Azione",
+          "text": "Un ladro cerca di rubare qualcosa a un PG. Il PG deve superare un tiro Istinto per notarlo in tempo o perdere un oggetto a scelta del GM.",
+        },
+        {
+          "name": "La Folla si Chiude",
+          "kind": "Reazione",
+          "text": "Quando uno dei PG si separa dal gruppo, la folla si sposta e lo isola.",
+        },
+      ],
+  },
+  {
+    "name": "Scalare la Parete",
+    "kind": "Attraversamento",
+    "rank": 1,
+    "description": "Una ripida parete di roccia da rendere rischiosa la scalata.",
+    "impeti": "Attirare le persone con la promessa di ciò che si trova in cima, far precipitare gli incauti verso morte certa",
+    "difficulty": "12",
+    "potential_adversaries": "Costrutti, Difensore dalle Radici Profonde, Scorpione Gigante, Serpente di Vetro",
+    "characteristics":
+      [
+        {
+          "name": "La Scalata",
+          "kind": "Passiva",
+          "text": "Scalare la parete usa un conto alla rovescia di Progresso (12). I risultati del tiro azione modificano i progressi e i fallimenti causano avanzamento nel conto alla rovescia della Caduta.",
+        },
+        {
+          "name": "Caduta",
+          "kind": "Azione",
+          "text": "Spendete una Paura per far perdere l’appiglio a un PG. Se precipita, subisce 1d12 danni fisici; una caduta completa può infliggere 3d12.",
+        },
+      ],
+  },
+  {
+    "name": "Taverna Locale",
+    "kind": "Contesto Sociale",
+    "rank": 1,
+    "description": "Una taverna vivace che funge da centro sociale per la città.",
+    "impeti": "Alimentare la comunità, fornire opportunità agli avventurieri",
+    "difficulty": "10",
+    "potential_adversaries": "Guardie, Mercanti, Schermagliatore",
+    "characteristics":
+      [
+        {
+          "name": "Che si Dice in Giro?",
+          "kind": "Passiva",
+          "text": "Un PG può chiedere all’oste di raccogliere voci con un tiro Presenza e ottenere dettagli utili, piste o problemi emergenti.",
+        },
+        {
+          "name": "Rissa in Taverna",
+          "kind": "Azione",
+          "text": "Spendete una Paura per far scoppiare una rissa nella taverna. I PG coinvolti rischiano danni fisici e conseguenze sociali.",
+        },
+      ],
+  },
+  {
+    "name": "Avamposto",
+    "kind": "Contesto Sociale",
+    "rank": 1,
+    "description": "Una piccola città alla periferia di una nazione o regione, vicino a un dungeon o altre destinazioni avventurose.",
+    "impeti": "Approfittare di una flebile speranza, spingere i disperati oltre ogni triste fato",
+    "difficulty": "12",
+    "potential_adversaries": "Banditi dei Coltelli Seghettati, Ombra, Picchiatore, Stregone, Ladro Mascherato, Mercante",
+    "characteristics":
+      [
+        {
+          "name": "Le Voci Girano",
+          "kind": "Passiva",
+          "text": "I pettegolezzi sono la valuta locale: i PG possono raccogliere informazioni su eventi e pericoli con un tiro Presenza.",
+        },
+        {
+          "name": "Posto Sbagliato, Momento Sbagliato",
+          "kind": "Reazione",
+          "text": "Spingete i PG in guai locali: assalti, truffe o estorsioni che fanno emergere PNG ostili e nuove piste.",
+        },
+      ],
+  },
+  {
+    "name": "Fiume Impetuoso",
+    "kind": "Attraversamento",
+    "rank": 1,
+    "description": "Un fiume impetuoso senza ponti, abbastanza profondo da spazzare via la maggior parte delle persone.",
+    "impeti": "Dividere il territorio, impedire la traversata, trascinare via chi non è pronto",
+    "difficulty": "10",
+    "potential_adversaries": "Bestie, Banditi dei Coltelli Seghettati, Ombra, Picchiatore, Stregone",
+    "characteristics":
+      [
+        {
+          "name": "Traversata Pericolosa",
+          "kind": "Passiva",
+          "text": "Attraversare il fiume richiede un conto alla rovescia di Progresso (4). I fallimenti attivano la corrente e possono separare il gruppo.",
+        },
+        {
+          "name": "Risacca",
+          "kind": "Azione",
+          "text": "Spendete una Paura per trascinare un PG nella corrente. Se non supera un tiro Reazione di Agilità, viene spostato e marca Stress.",
+        },
+      ],
+  },
+  {
+    "name": "Rituale del Culto",
+    "kind": "Evento",
+    "rank": 2,
+    "description": "Un culto dei Caduti si raduna attorno al sigillo degli dèi sconfitti e a un falò di luce viola.",
+    "impeti": "Profanare la terra, unire il Regno dei Mortali con i Cerchi Inferi",
+    "difficulty": "14",
+    "potential_adversaries": "Culto dei Caduti (Adepto, Custode dei Segreti, Iniziato), Zanna del Culto",
+    "characteristics":
+      [
+        {
+          "name": "Terreno Sconsacrato",
+          "kind": "Passiva",
+          "text": "I cultisti hanno consacrato il luogo. L’area è profanata e può influenzare le azioni magiche e rituali dei PG.",
+        },
+        {
+          "name": "Completare la Cerimonia",
+          "kind": "Reazione",
+          "text": "Se i cultisti ottengono vantaggio tattico, il rituale avanza e può evocare un Demone Minore o effetti equivalenti.",
+        },
+      ],
+  },
+  {
+    "name": "Tempio Santificato",
+    "kind": "Contesto Sociale",
+    "rank": 2,
+    "description": "Un tempio affollato e ben tenuto che offre cure e ospita regolarmente funzioni religiose.",
+    "impeti": "Collegare il regno dei mortali con i Cieli Superni, fornire aiuto e soccorso ai fedeli",
+    "difficulty": "13",
+    "potential_adversaries": "Guardie (Capo delle Guardie, Guardia Arciere, Guardia Armata)",
+    "characteristics":
+      [
+        {
+          "name": "Un Luogo di Guarigione",
+          "kind": "Passiva",
+          "text": "Nel tempio recuperare e curare è più facile: i PNG e i PG possono ottenere risorse, benedizioni o supporto religioso.",
+        },
+        {
+          "name": "Censura Divina",
+          "kind": "Reazione",
+          "text": "Quando un PG agisce in modo sacrilego, potete invocare autorità religiosa o campioni consacrati a difesa del tempio.",
+        },
+      ],
+  },
+  {
+    "name": "Città Infestata",
+    "kind": "Esplorazione",
+    "rank": 2,
+    "description": "Una città abbandonata popolata da spiriti inquieti di epoche passate.",
+    "impeti": "Ricordare catastrofi, sviare, terrorizzare",
+    "difficulty": "14",
+    "potential_adversaries": "Fantasmi, avversari spettrali",
+    "characteristics":
+      [
+        {
+          "name": "Conoscenza Sepolta",
+          "kind": "Passiva",
+          "text": "Le rovine custodiscono informazioni preziose. Con un tiro adatto i PG possono ottenere dettagli storici e indizi utili.",
+        },
+        {
+          "name": "L’Apocalisse che Fu",
+          "kind": "Azione",
+          "text": "Spendete una Paura per far riaffiorare frammenti del disastro passato: crolli, incendi o fenomeni spettrali colpiscono l’area.",
+        },
+      ],
+  },
+  {
+    "name": "Passo Montano",
+    "kind": "Attraversamento",
+    "rank": 2,
+    "description": "Cime rocciose che perforano le nuvole, con un sentiero tortuoso e ghiacciato.",
+    "impeti": "Infliggere un duro colpo alle provviste e alla resistenza, rallentare il viaggio, svelare minacce",
+    "difficulty": "15",
+    "potential_adversaries": "Bestie, Cacciatore di Mortali, Minotauro Demolitore, Teschio del Caos",
+    "characteristics":
+      [
+        {
+          "name": "Sigilli Incisi",
+          "kind": "Passiva",
+          "text": "Antichi sigilli e incisioni raccontano i pericoli del passo. I PG possono interpretarli per evitare imboscate o maledizioni.",
+        },
+        {
+          "name": "Nido del Rapace",
+          "kind": "Reazione",
+          "text": "Quando i PG entrano in territorio di caccia, una creatura predatrice individua una preda e attacca da posizione favorevole.",
+        },
+      ],
+  },
+  {
+    "name": "Cuore Bruciante dei Boschi",
+    "kind": "Esplorazione",
+    "rank": 3,
+    "description": "Un’antica area boschiva arsa da fiamme innaturali e fumo tossico.",
+    "impeti": "Battere un ritmo inquietante che tutti devono seguire, corrompere il bosco",
+    "difficulty": "16",
+    "potential_adversaries": "Bestie, Elementali, Difensori del Bosco",
+    "characteristics":
+      [
+        {
+          "name": "Fumo di Magia del Caos",
+          "kind": "Passiva",
+          "text": "Quando un PG effettua un tiro Incantesimo, deve tirare due dadi Paura e usare il risultato peggiore.",
+        },
+        {
+          "name": "Cenere Soffocante",
+          "kind": "Reazione",
+          "text": "Conto alla Rovescia (6): quando si innesca, i bersagli vicini subiscono danni e condizioni dovute al fumo e alla cenere ardente.",
+        },
+      ],
+  },
+  {
+    "name": "Assedio al Castello",
+    "kind": "Evento",
+    "rank": 3,
+    "description": "Un assedio in corso con una forza d’attacco che combatte per superare le difese di un castello fortificato.",
+    "impeti": "Creare tensione, prosciugare la volontà dei difensori, sfondare le mura",
+    "difficulty": "17",
+    "potential_adversaries": "Mercenari, Schermagliatori, Guardie, Nobiltà, Soldati Scelti",
+    "characteristics":
+      [
+        {
+          "name": "Armi d’Assedio (Cambio di Ambiente)",
+          "kind": "Azione",
+          "text": "Con un conto alla rovescia, l’artiglieria apre brecce e trasforma il campo di battaglia, favorendo gli assalitori.",
+        },
+        {
+          "name": "Danno Collaterale",
+          "kind": "Reazione",
+          "text": "Quando un avversario ottiene un successo critico, potete spendere una Paura per colpire ulteriori bersagli nell’area.",
+        },
+      ],
+  },
+  {
+    "name": "Battaglia Campale",
+    "kind": "Evento",
+    "rank": 3,
+    "description": "Un intenso scontro tra due schiere di combattenti armati.",
+    "impeti": "Conquista e pressione, creare varchi, seminare caos",
+    "difficulty": "17",
+    "potential_adversaries": "Mercenari, Maestri d’Armi, Nobiltà, Costrutti, Soldati Scelti",
+    "characteristics":
+      [
+        {
+          "name": "Alia Delma",
+          "kind": "Passiva",
+          "text": "Attraversare un campo di battaglia durante una battaglia è estremamente pericoloso e limita i movimenti sicuri.",
+        },
+        {
+          "name": "Rinforzi",
+          "kind": "Azione",
+          "text": "Fate comparire nuovi seguaci in base al numero di PG; entrano in scena e diventano immediatamente protagonisti.",
+        },
+      ],
+  },
+  {
+    "name": "Regno del Caos",
+    "kind": "Attraversamento",
+    "rank": 4,
+    "description": "Uno spazio di realtà instabile in cui le leggi del mondo non sono affidabili.",
+    "impeti": "Annientare le certezze, consumare potere, sfidare la logica",
+    "difficulty": "20",
+    "potential_adversaries": "Mostri dei Regni Esterni (Abominio, Corruttore, Servitore)",
+    "characteristics":
+      [
+        {
+          "name": "Architetture Impossibili",
+          "kind": "Passiva",
+          "text": "L’orientamento del luogo cambia continuamente. I movimenti e le distanze possono alterarsi in modo innaturale.",
+        },
+        {
+          "name": "Predatori dei Regni Esterni",
+          "kind": "Azione",
+          "text": "Spendete una Paura per evocare creature dei Regni Esterni in posizioni vantaggiose.",
+        },
+      ],
+  },
+  {
+    "name": "Usurpazione Divina",
+    "kind": "Evento",
+    "rank": 4,
+    "description": "Un massiccio rituale progettato per sfondare le porte dei Cieli Superni e spodestare gli dèi Nuovi.",
+    "impeti": "Intimidire, mettere a tacere il dissenso, raccogliere potere",
+    "difficulty": "20",
+    "potential_adversaries": "Arci-Negromante, Cacciatore di Mortali, Truppa d’Assalto dei Caduti, Zombi Perfezionato",
+    "characteristics":
+      [
+        {
+          "name": "Ultimi Ritocchi",
+          "kind": "Passiva",
+          "text": "Quando l’ambiente diventa protagonista per la prima volta, scegliete 3 caratteristiche rituali e attivate un conto alla rovescia a lungo termine (8).",
+        },
+        {
+          "name": "L’Inizio della Fine",
+          "kind": "Reazione",
+          "text": "Quando il conto alla rovescia si innesca, l’Usurpatore diventa protagonista e riduce un tratto divino a sua scelta.",
+        },
+      ],
+  },
+  {
+    "name": "Corte Imperiale",
+    "kind": "Contesto Sociale",
+    "rank": 4,
+    "description": "Il maestoso palazzo reale di un potente impero, riccamente arredato con tesori rubati.",
+    "impeti": "Giustificare e perpetuare il dominio imperiale, sedurre e influenzare con il potere",
+    "difficulty": "20",
+    "potential_adversaries": "Cavaliere del Reame, Dignitario, Guardia Armata, Monarca, Spia",
+    "characteristics":
+      [
+        {
+          "name": "Tutto è Stato Portato Qui",
+          "kind": "Passiva",
+          "text": "In corte ogni gesto ha peso politico; i primi tiri sociali possono risultare più difficili finché i PG non guadagnano appoggi.",
+        },
+        {
+          "name": "Occhi Ovunque",
+          "kind": "Reazione",
+          "text": "Con un risultato con Paura, intercettazioni e testimoni rivelano piani dei PG; il gruppo rischia di essere scoperto.",
+        },
+      ],
+  },
+  {
+    "name": "Ossario del Negromante",
+    "kind": "Esplorazione",
+    "rank": 4,
+    "description": "Una cripta polverosa con una biblioteca, corridoi tortuosi e sarcofagi in abbondanza.",
+    "impeti": "Confondere gli intrusi, distorcere segreti, infestare i morti",
+    "difficulty": "19",
+    "potential_adversaries": "Esercito dell’Arci-Negromante (Legione di Zombi, Zombi Perfezionato)",
+    "characteristics":
+      [
+        {
+          "name": "Non è Luogo per i Viventi",
+          "kind": "Passiva",
+          "text": "Ogni privilegio o azione che consente ai PG di recuperare PF richiede la spesa di Speranza.",
+        },
+        {
+          "name": "Continua ad Arrivare!",
+          "kind": "Azione",
+          "text": "Spendete una Paura per evocare non-morti nelle vicinanze, che entrano subito in scena.",
+        },
+      ],
+  },
+]
