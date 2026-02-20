@@ -1,4 +1,4 @@
-module 5emonsters
+module lazy5e
 
 go 1.24.0
 
