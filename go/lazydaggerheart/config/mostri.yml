@@ -2,7 +2,7 @@
   {
     "name": "Branco Di Ratti",
     "role": "Orda",
-    "rank": 2,
+    "rank": 1,
     "description": "Una massa strisciante di roditori che si muovono all’unisono come un’onda famelica.",
     "motivations_tactics": "Divorare, ricoprire, sciamare",
     "difficulty": 10,
@@ -33,7 +33,7 @@
   {
     "name": "Capo Delle Guardie",
     "role": "Condottiero",
-    "rank": 2,
+    "rank": 1,
     "description": "Una guardia esperta con una mazza, un fischietto e una voce tonante.",
     "motivations_tactics": "Arrestare, cercare la gloria, chiudere i",
     "difficulty": 15,
@@ -69,7 +69,7 @@
   {
     "name": "Bandito Dei Coltelli Seghettati",
     "role": "Avversario Base",
-    "rank": 2,
+    "rank": 1,
     "description": "Un criminale astuto con un mantello che porta uno dei coltelli iconici della banda.",
     "motivations_tactics": "Fuggire, gettare fumo negli occhi, guadagnare, rubare",
     "difficulty": 12,
@@ -100,7 +100,7 @@
   {
     "name": "Cecchino Dei Coltelli Seghettati",
     "role": "Tiratore",
-    "rank": 2,
+    "rank": 1,
     "description": "Un bandito allampanato che colpisce da dietro una copertura con un arco corto.",
     "motivations_tactics": "Imboscata, nascondersi, profitto, riposizionarsi",
     "difficulty": 13,
@@ -126,7 +126,7 @@
   {
     "name": "Lacchè Dei Coltelli Seghettati",
     "role": "Seguace",
-    "rank": 2,
+    "rank": 1,
     "description": "Un ladro con abiti semplici e piccoli stiletti, desideroso di mettersi alla prova.",
     "motivations_tactics": "Fuggire, gettarefumo negli occhi, guadagnare",
     "difficulty": 9,
@@ -159,12 +159,18 @@
     "role": "Condottiero",
     "rank": 1,
     "description": "Un bandito esperto con indosso pellicce di qualità, voceforte e occhi astuti.",
-    "motivations_tactics": "Bullizzare, comandare, portare rinforzi,",
-    "difficulty": null,
-    "thresholds": null,
-    "pf": null,
-    "stress": null,
-    "attack": {},
+    "motivations_tactics": "Bullizzare, comandare, portare rinforzi, profitto",
+    "difficulty": 13,
+    "thresholds": "7/14",
+    "pf": 6,
+    "stress": 3,
+    "attack":
+      {
+        "bonus": "+2",
+        "name": "Giavellotto",
+        "range": "Ravvicinata",
+        "damage": "1d8+3 fis",
+      },
     "traits":
       [
         {
@@ -185,7 +191,7 @@
         {
           "name": "Slancio",
           "kind": "Reazione",
-          "text": "Quando il Luogotenente colpisce un PG, ottenete Paura. 213 Capitolo 4: Avversari di Rango 1",
+          "text": "Quando il Luogotenente colpisce un PG, ottenete Paura.",
         },
       ],
   },
