@@ -130,3 +130,268 @@
     - "Cosa mi hai confidato che mi fa correre ogni volta dei rischi per te?"
     - "Quale animale ti ho detto che mi ricordi?"
     - "Quale soprannome affettuoso mi hai dato?"
+
+- name: Fuorilegge
+  subclass: Ladro
+  rank: 1
+  domains: "Mezzanotte e Grazia"
+  evasion: 12
+  hp: 6
+  class_item: "Un set di strumenti di contraffazione o un rampino"
+  hope_privilege: "Schivata del Fuorilegge: Spendete 3 Speranze per ottenere bonus +2 all'Evasione fino al successivo attacco riuscito contro di voi (o fino al prossimo riposo)."
+  class_privileges:
+    - "Ammantati: ogni volta che sarete Nascosti, siete invece Ammantati. Oltre ai benefici della condizione di Nascosto, quando siete Ammantati rimanete invisibili se siete fermi quando un avversario si sposta dove normalmente vi vedrebbe. Quando vi spostate entro linea di vista di un avversario o effettuate un attacco, non siete piu Ammantati."
+    - "Attacco Furtivo: quando colpite mentre siete Ammantati o mentre un alleato si trova a distanza di Mischia dal bersaglio, aggiungete al tiro per i danni un numero di d6 pari al vostro rango."
+  description: "I fuorilegge sono furfanti, spesso sia nell'atteggiamento che nello stile di vita. Conosciuti in genere come bugiardi e criminali, i migliori di questa classe si muovono nel mondo in modo anonimo, senza lasciare tracce."
+  caster_trait: "Astuzia"
+  base_privileges:
+    - "Legami: quando arrivate in una citta o in un altro luogo importante, descrivete una persona che avete gia conosciuto e che vive li. Datele un nome, annotate chi che modo pensate che possa esservi utile e scegliete un fatto dalla seguente lista: mi deve un favore ma sara difficile trovarla; chiedera qualcosa in cambio; e sempre in gran difficolta; una volta stavamo insieme, e una lunga storia; non ci siamo lasciati in buoni rapporti."
+  specialization: "Amici Ovunque: una volta per sessione, e possibile chiamare brevemente in aiuto un contatto dalla dubbia fama. Scegliete uno dei seguenti benefici e descrivete cosa lo spinga ad aiutarvi in questo momento: vi fornisce una manciata d'oro, uno strumento unico o un oggetto normale che la situazione richiede; al prossimo tiro azione, il suo aiuto concede bonus +3 al risultato del Dado Speranza o Paura; la prossima volta che infliggete un danno, attacchera a distanza lo stesso bersaglio da una posizione nascosta, aggiungendo 2d8 al vostro tiro per i danni."
+  mastery: "Supporto Fidato: potete utilizzare il privilegio Amici Ovunque tre volte per sessione. Le seguenti opzioni si aggiungono ai benefici che potete scegliere quando utilizzate questo privilegio: quando subite i punti ferita, puo accorrere per proteggervi, riducendo di 1 il Punto Ferita subito; quando effettuate un tiro Presenza in una conversazione, vi sostiene e potete tirare un d20 come Dado Speranza."
+
+- name: Fuorilegge
+  subclass: Ombra Notturna
+  rank: 1
+  domains: "Mezzanotte e Grazia"
+  evasion: 12
+  hp: 6
+  class_item: "Un set di strumenti di contraffazione o un rampino"
+  hope_privilege: "Schivata del Fuorilegge: Spendete 3 Speranze per ottenere bonus +2 all'Evasione fino al successivo attacco riuscito contro di voi."
+  class_privileges:
+    - "Ammantati"
+    - "Attacco Furtivo"
+  description: "Fuorilegge che manipola le ombre e colpisce dove nessuno guarda."
+  caster_trait: "Astuzia"
+  base_privileges:
+    - "Passo d'Ombra: teletrasportatevi in un'ombra in linea di vista marcando uno Stress e riapparite entro Lontana, restando Ammantati."
+  specialization: "Nube di Tenebra: su Tiro Incantesimo riuscito create una nube oscura che blocca la vista e rende Ammantati in base al punto d'ombra. Adrenalina: quando siete Vulnerabili aggiungete il livello ai tiri danni."
+  mastery: "Ombra Sfuggente: bonus +1 permanente all'Evasione, Passo d'Ombra fino a Remota. Suonerie: marcate Stress per diventare Ammantati in qualsiasi momento."
+  background_questions:
+    - "Cosa hai fatto per essere esiliato dalla tua comunita?"
+    - "Avevi una vita diversa, ma hai cercato di lasciartela alle spalle. Chi del tuo passato ti sta ancora inseguendo?"
+    - "A chi hai detto addio con piu dispiacere?"
+  bonds:
+    - "Cosa ti ho convinto a fare di recente che ci ha messo nei guai?"
+    - "Cosa ho scoperto del tuo passato che tengo nascosto agli altri?"
+    - "Chi conosce il mio passato e come ha influenzato i tuoi sentimenti nei miei confronti?"
+
+- name: Guardiano
+  subclass: Valoroso
+  rank: 1
+  domains: "Valore e Lame"
+  evasion: 9
+  hp: 7
+  class_item: "Un dono del tuo mentore o una chiave misteriosa"
+  hope_privilege: "Baluardo in Prima Linea: Spendete 3 Speranze per cancellare 2 Caselle Armatura."
+  class_privileges:
+    - "Inarrestabile: una volta per riposo lungo, potete diventare Inarrestabili. Guadagnate un Dado Inarrestabile: al 1 livello e d4, poi sale di dado ai livelli 4 e 5. Quando lo diventate riducete la gravita dei danni fisici di una soglia. Finche siete Inarrestabili: riducete la gravita dei danni fisici di una soglia aggiuntiva; aggiungete il valore attuale del Dado Inarrestabile ai tiri per i danni; non potete essere Trattenuti o Vulnerabili."
+  description: "Il titolo di guardiano comprende professionisti marziali riconosciuti per forza d'animo e resilienza sul campo di battaglia."
+  caster_trait: "Forza"
+  base_privileges:
+    - "Saldo: bonus +1 permanente alle soglie di danno."
+    - "Volonta di Ferro: quando subite danni fisici, potete marcare un'ulteriore Casella Armatura per ridurne la gravita."
+  specialization: "Implacabile: guadagnate bonus +2 permanente alle soglie di danno. Compagni d'Arme: quando un alleato entro distanza Ravvicinata subisce danni, potete marcare una Casella Armatura per ridurre la gravita di una soglia."
+  mastery: "Imperturbabile: guadagnate bonus +3 permanente alle soglie di danno. Protettore Fedele: quando un alleato entro distanza Ravvicinata ha 2 o meno Punti Ferita sta per subire un danno, potete marcare uno Stress per correre al suo fianco e subire il danno al suo posto."
+
+- name: Guardiano
+  subclass: Vendicatore
+  rank: 1
+  domains: "Valore e Lame"
+  evasion: 9
+  hp: 7
+  class_item: "Un dono del tuo mentore o una chiave misteriosa"
+  hope_privilege: "Baluardo in Prima Linea"
+  class_privileges:
+    - "Inarrestabile"
+  description: "Guardiano che trasforma la difesa in punizione per chi ferisce gli alleati."
+  caster_trait: "Forza"
+  base_privileges:
+    - "A Suo Agio: guadagnate uno Stress aggiuntivo."
+    - "Vendetta: quando un avversario vi attacca in Mischia potete marcare 2 Stress per costringerlo a subire un Punto Ferita."
+  specialization: "Rappresaglia: su avversario che danneggia un alleato vicino, bonus +1 Competenza al successivo attacco riuscito contro di lui."
+  mastery: "Nemesi: spendete 2 Speranze per Dare Priorita a un avversario e scambiare dadi Speranza/Paura contro quel bersaglio."
+
+- name: Guerriero
+  subclass: Chiamata del Coraggio
+  rank: 1
+  domains: "Lame e Ossa"
+  evasion: 11
+  hp: 6
+  class_item: "Il disegno di un amante o una pietra per affilare"
+  hope_privilege: "Nessuna Tregua: Spendete 3 Speranze per ottenere bonus +1 ai tiri attacco fino al prossimo riposo."
+  class_privileges:
+    - "Attacco di Opportunita: se un avversario entro distanza di Mischia tenta di uscirne, effettuate un tiro di reazione con un tratto a vostra scelta contro la sua Difficolta. Scegliete un effetto in caso di successo: non puo spostarsi da dove si trova; subisce un danno pari al danno della vostra arma primaria; vi muovete con loro."
+    - "Addestrato al Combattimento: ignorate l'Impugnatura quando equipaggiate le vostre armi. Quando infliggete danno fisico, ottenete un bonus al tiro per i danni pari al vostro livello."
+  description: "Diventare un guerriero richiede anni e disciplina: i guerrieri padroneggiano il combattimento piu di chiunque altro."
+  caster_trait: "Forza"
+  base_privileges:
+    - "Coraggio: quando fallite un tiro con Paura, guadagnate una Speranza."
+    - "Riti di Battaglia: prima di un'azione pericolosa, narrate i preparativi per rimuovere Stress e guadagnare Speranza."
+  specialization: "Raccogliere la Sfida: se avete 6 o meno Punti Ferita, potete tirare un d20 come Dado Speranza."
+  mastery: "Commilitoni: il vostro saldo coraggio e un punto fermo nel caos della battaglia per i vostri alleati. Potete effettuare un Tiro Combinato una volta in piu per sessione. Inoltre, quando un alleato inizia un Tiro Combinato con voi, deve spendere solo 2 Speranze per farlo."
+
+- name: Guerriero
+  subclass: Chiamata dello Sterminatore
+  rank: 1
+  domains: "Lame e Ossa"
+  evasion: 11
+  hp: 6
+  class_item: "Il disegno di un amante o una pietra per affilare"
+  hope_privilege: "Nessuna Tregua"
+  class_privileges:
+    - "Attacco di Opportunita"
+    - "Addestrato al Combattimento"
+  description: "Guerriero specializzato nel finire rapidamente i bersagli piu duri."
+  caster_trait: "Forza"
+  base_privileges:
+    - "Sterminatore: ottenete una riserva di dadi chiamata Dadi dello Sterminatore. Quando effettuate un tiro con Speranza, potete mettere un d6 su questa carta invece di guadagnare una Speranza, aggiungendo il dado alla riserva. Potete conservare un numero massimo di dadi pari alla vostra Competenza. Quando effettuate un tiro attacco o di danno, potete spendere un numero qualsiasi di dadi dello Sterminatore, tirandoli e aggiungendo il risultato al tiro. Alla fine di ogni sessione, rimuovete i Dadi dello Sterminatore non spesi e guadagnate una Speranza per ogni dado cancellato."
+  specialization: "Specialista delle Armi: potete maneggiare piu armi con totale maestria. Quando avete successo in un attacco, potete spendere una Speranza per aggiungere uno dei dadi danno della vostra arma secondaria al tiro di danno. Inoltre, una volta per riposo lungo, quando tirate i Dadi dello Sterminatore, potete ripetere l'esito di qualsiasi 1."
+  mastery: "Addestramento Marziale: siete un guerriero che ispira tutti coloro che viaggiano con voi. Il vostro gruppo ha accesso a una mossa Assedio mentre viaggiate durante il riposo. Per usare questa mossa durante un riposo, descrivete come istruite e vi allenate con il gruppo. Voi e un alleato che sceglie questa mossa ottenete un d6 di Dado dello Sterminatore. Un PG con un Dado dello Sterminatore puo spenderlo per tirare il dado e aggiungerne il risultato a un tiro attacco o di danno."
+  background_questions:
+    - "Chi della vostra comunita non siete riusciti a proteggere e perche pensate ancora a loro?"
+    - "Siete stati incaricati di proteggere qualcosa di importante e di consegnarlo in un luogo pericoloso. Che cos'e e dove dovete portarlo?"
+    - "Considerate un aspetto di voi stessi come una debolezza. Di cosa si tratta e come vi ha influenzato?"
+  bonds:
+    - "Come ti ho salvato la vita la prima volta?"
+    - "Quale piccolo regalo mi hai fatto e hai notato che lo porto sempre con me?"
+    - "Quale bugia mi hai raccontato su di te, a cui ho assolutamente creduto?"
+
+- name: Mago
+  subclass: Scuola della Conoscenza
+  rank: 1
+  domains: "Codice e Splendore"
+  evasion: 11
+  hp: 5
+  class_item: "Un libro da tradurre o un innocuo animale trovato"
+  hope_privilege: "Non Questa Volta: spendete 3 Speranze per costringere un avversario fino a distanza Lontana a ripetere un tiro attacco o di danno."
+  class_privileges:
+    - "Prestidigitazione: piccoli effetti magici innocui."
+    - "Segni Misteriosi: scegliete un numero 1-12; quando esce su Dado Dualita guadagnate Speranza o rimuovete Stress."
+  description: "I maghi acquisiscono e affinano un immenso potere magico con studio, pratica e disciplina."
+  caster_trait: "Conoscenza"
+  base_privileges:
+    - "Preparato: prendete una carta dominio aggiuntiva di livello 0 o inferiore da un dominio disponibile."
+    - "Iniziato: spendete uno Stress invece di Speranza per usare un'Esperienza; se lo fate, raddoppiate il modificatore Esperienza."
+  specialization: "Esperto: prendete una carta dominio aggiuntiva del vostro livello o di livello inferiore da un dominio a cui avete accesso. Memoria Perfetta: una volta per riposo, quando richiamate una carta dominio nella vostra riserva, potete ridurre di 1 il suo Costo di Richiamo."
+  mastery: "Brillante: prendete una carta dominio aggiuntiva del vostro livello o di livello inferiore da un dominio a cui avete accesso. Padronanza Affinata: quando utilizzate un'Esperienza, tirate un d6; con 5 o superiore, potete utilizzarla senza spendere Speranza."
+
+- name: Mago
+  subclass: Scuola della Guerra
+  rank: 1
+  domains: "Codice e Splendore"
+  evasion: 11
+  hp: 5
+  class_item: "Un libro da tradurre o un innocuo animale trovato"
+  hope_privilege: "Non Questa Volta"
+  class_privileges:
+    - "Prestidigitazione"
+    - "Segni Misteriosi"
+  description: "Mago che converte studio arcano in potenza bellica sul campo."
+  caster_trait: "Conoscenza"
+  base_privileges:
+    - "Magia da Battaglia: guadagnate una Casella Armatura."
+    - "Affronta la Tua Paura: quando avete successo con Paura in un tiro, ottenete 1d10 danni magici aggiuntivi."
+  specialization: "Evoca Scudo: potete evocare una barriera protettiva di magia. Finche avete almeno 2 Speranze, aggiungete la vostra Competenza alla vostra Evasione. Alimentato dalla Paura: il danno magico addizionale della caratteristica Affronta la Tua Paura aumenta a 2d10."
+  mastery: "Prosperare nel Caos: quando un attacco va a segno, potete marcare uno Stress dopo aver tirato i danni per costringere il bersaglio a subire un Punto Ferita aggiuntivo. Non Conoscerei la Paura: il danno magico addizionale della caratteristica Affronta la Tua Paura aumenta a 3d10."
+  background_questions:
+    - "Per quali responsabilita la comunita contava su di voi?"
+    - "In che modo li avete delusi?"
+    - "Avete trascorso la vita alla ricerca di un libro o di un oggetto di grande significato. Di cosa si tratta e perche e cosi importante?"
+    - "Avete un potente rivale. Chi e e perche siete cosi determinati a sconfiggerlo?"
+  bonds:
+    - "Quale favore ti ho chiesto senza essere sicuro di poterlo restituire?"
+    - "Quale strano hobby o strano interesse condividiamo?"
+    - "Quale segreto hai affidato solo a me?"
+
+- name: Ranger
+  subclass: Apripista
+  rank: 1
+  domains: "Ossa e Saggezza"
+  evasion: 12
+  hp: 6
+  class_item: "Un trofeo della prima uccisione o una bussola apparentemente rotta"
+  hope_privilege: "Trivella Blado: quando riuscite a portare a segno un attacco con un'arma, spendete 3 Speranze per usare lo stesso tiro contro altri due avversari alla stessa distanza dell'attacco riuscito."
+  class_privileges:
+    - "Focus del Ranger: spendete una Speranza e indicate un bersaglio. Se l'attacco ha successo, infliggete i normali danni dell'attacco e rendete il bersaglio il vostro Focus finche questo privilegio non termina."
+    - "Quando infliggete danno al Focus, potete ottenere effetti addizionali (Speranza, Stress al bersaglio e modifiche ai Dadi Dualita) secondo la regola completa."
+  description: "Cacciatore e inseguitore legato ai territori selvaggi, abile nel colpire con precisione."
+  caster_trait: "Agilita"
+  base_privileges:
+    - "Predatore Spietato: marcate Stress per bonus +1 Competenza danni; su danno Grave il bersaglio marca uno Stress."
+    - "La Via Prosegue: vantaggio nel trovare percorsi brevi verso luoghi gia visitati o legati a oggetti."
+  specialization: "Predatore Furtivo: quando il vostro Focus compie un attacco contro di voi, ottenete bonus +2 alla vostra Evasione contro quell'attacco."
+  mastery: "Predatore Dominante: prima di effettuare un tiro attacco contro il vostro Focus, potete spendere una Speranza. Se l'attacco ha successo, rimuovete una Paura dalla riserva di Paura del GM."
+
+- name: Ranger
+  subclass: Feriale
+  rank: 1
+  domains: "Ossa e Saggezza"
+  evasion: 12
+  hp: 6
+  class_item: "Un trofeo della prima uccisione o una bussola apparentemente rotta"
+  hope_privilege: "Trivella Blado: quando riuscite a portare a segno un attacco con un'arma, spendete 3 Speranze per usare lo stesso tiro contro altri due avversari alla stessa distanza."
+  class_privileges:
+    - "Focus del Ranger"
+    - "Compagno Animale: scegliete la scheda del Compagno del Ranger, date un nome al compagno, assegnate Evasione (meta del vostro livello, minimo 1), scegliete Esperienze e registrate attacco e danno."
+    - "In gioco, il compagno agisce quando tirate con il tratto da Incantatore per ordinargli di agire. In caso di successo con Speranza, la vostra prossima azione si basa sul suo risultato."
+  description: "Ranger che crea un legame profondo con un alleato animale e combatte in coppia."
+  caster_trait: "Agilita"
+  base_privileges:
+    - "Compagno: avete un compagno animale (a discrezione del GM) che vi affianca in scena e cresce con voi ai passaggi di livello."
+  specialization: "Addestramento Intensivo: scegliete un'ulteriore opzione di aumento di livello per il vostro compagno. Uniti nella Battaglia: quando un avversario vi attacca mentre si trova in Mischia con il vostro compagno, ottenete bonus +2 alla vostra Evasione contro quell'attacco."
+  mastery: "Addestramento Avanzato: scegliete due opzioni di aumento di livello per il compagno. Amico Fedele: una volta per riposo lungo, quando il danno di un attacco marcherebbe l'ultimo Stress del vostro compagno oppure subireste il vostro ultimo Punto Ferita, se siete entro Prossima potete accorrere al fianco dell'altro e scegliere chi marca Stress/subisce danno."
+  background_questions:
+    - "Una terribile creatura ha ferito la vostra comunita e avete giurato di darle la caccia. Che creatura e e quali tracce o segni particolari lascia dietro di se?"
+    - "La prima creatura che avete abbattuto ha quasi ucciso anche voi. Che cosa e stato e quale parte di voi non e piu stata la stessa dopo quell'evento?"
+    - "Avete viaggiato in molte terre pericolose, ma qual e il posto in cui vi rifiutate di andare?"
+  bonds:
+    - "Quale competizione amichevole c'e fra noi?"
+    - "Perche ti comporti in modo diverso quando siamo soli rispetto a quando ci sono altri?"
+    - "Quale macchia mi hai chiesto di tenere d'occhio e perche sei preoccupato?"
+
+- name: Stregone
+  subclass: Potere Elementale
+  rank: 1
+  domains: "Arcano e Mezzanotte"
+  evasion: 10
+  hp: 6
+  class_item: "Un globo sussurrante o un cimelio di famiglia"
+  hope_privilege: "Magia Volatile: spendete 3 Speranze per rilanciare qualunque dado di danno in un attacco che infligge danni magici."
+  class_privileges:
+    - "Percezione Arcana: potete percepire la presenza di persone che possiedono il dono della magia e di oggetti magici entro distanza Ravvicinata."
+    - "Illusione Minore: effettuate un Tiro Incantesimo (10). Se l'esito e positivo, create un'illusione visiva minore entro distanza Ravvicinata."
+    - "Incanalare il Potere Grezzo: una volta per riposo lungo, potete spostare una carta dominio dalla propria Dotazione alla riserva e scegliere uno dei due effetti: guadagnare Speranza pari al livello della carta, oppure potenziare un incantesimo che infligge danni ottenendo un bonus al tiro di danno pari al doppio del livello della carta."
+  description: "Gli stregoni non studiano la magia sui tomi: la incarnano. Il loro potere e innato, instabile e travolgente."
+  caster_trait: "Istinto"
+  base_privileges:
+    - "Elementalista: scegliete uno dei seguenti elementi alla creazione del personaggio: aria, terra, fuoco, fulmine, acqua. Potete plasmare questo elemento generando effetti innocui. Inoltre, spendendo una Speranza e descrivendo come il controllo su questo elemento favorisce un tiro azione che state per effettuare, ottenete bonus +2 al tiro azione o bonus +3 al tiro per i danni."
+  specialization: "Scudo della Natura: potete invocare il vostro elemento per proteggervi dai danni. Quando un attacco contro di voi ha successo, potete marcare uno Stress e descrivere come questo elemento interviene. Quando lo fate, tirate un d6 e aggiungete il risultato alla vostra Evasione contro l'attacco."
+  mastery: "Trascendenza: una volta per riposo lungo, potete trasformarvi in una manifestazione fisica del vostro elemento. Quando lo fate, descrivete la vostra trasformazione e ottenete a vostra scelta due benefici fino al riposo successivo: bonus +4 alla soglia di danno Grave, bonus +1 a un tratto del personaggio a scelta, bonus +1 alla Competenza, bonus +2 all'Evasione."
+
+- name: Stregone
+  subclass: Potere Primordiale
+  rank: 1
+  domains: "Arcano e Mezzanotte"
+  evasion: 10
+  hp: 6
+  class_item: "Un globo sussurrante o un cimelio di famiglia"
+  hope_privilege: "Magia Volatile"
+  class_privileges:
+    - "Percezione Arcana"
+    - "Illusione Minore"
+    - "Incanalare il Potere Grezzo"
+  description: "Stregone che piega la magia grezza a uno stile piu strategico, alimentando gli alleati e trasformando se stesso."
+  caster_trait: "Istinto"
+  base_privileges:
+    - "Manipolare la Magia: dopo aver lanciato un incantesimo o inflitto danni magici, potete marcare Stress per attivare uno tra estendere portata, bonus +2 tiro azione, raddoppiare dado danno a scelta, colpire altro bersaglio in portata."
+    - "Aiuto Incantato: potenziate la magia altrui; una volta per riposo lungo dopo aiuto riuscito potete cambiare risultati dei dadi Dualita."
+  specialization: "Aiuto Incantato: potete potenziare la magia altrui grazie alla vostra essenza. Quando Aiutate un Alleato con un Tiro Incantesimo, potete tirare un d8 come dado vantaggio. Una volta per riposo lungo, dopo che un alleato ha effettuato un Tiro Incantesimo con il vostro aiuto, potete scambiare i risultati dei suoi Dadi Dualita."
+  mastery: "Infusione Arcana: potete raccogliere energia magica per potenziare le vostre capacita. Quando subite un danno magico, diventate Infusi. In alternava, potete spendere 2 Speranze per diventare Infusi. Quando effettuate con successo un attacco che infligge danni magici mentre siete Infusi, potete rilasciare tale condizione per ottenere bonus +10 al tiro di danno o bonus +3 alla Difficolta del tiro reazione che il bersaglio deve superare per contrastare l'incantesimo. La condizione termina al prossimo riposo lungo."
+  background_questions:
+    - "Cosa avete fatto che ha reso le persone della vostra comunita diffidenti nei vostri confronti?"
+    - "Quale mentore vi ha insegnato a controllare la vostra magia indomita e perche non e piu in grado di guidarvi?"
+    - "Avete una paura profonda che nascondete a tutti. Di cosa si tratta e perche vi spaventa?"
+  bonds:
+    - "Perche ti fidi cosi tanto di me?"
+    - "Cosa ho fatto che ti rende cauto verso di me?"
+    - "Perche teniamo segreto il nostro passato comune?"
