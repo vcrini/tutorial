@@ -7,3 +7,1591 @@
     - "Canzone Popolare: Voi e tutti gli alleati a distanza Ravvicinata recuperate un Punto Ferita."
     - "Canto Epico: Rendete temporaneamente Vulnerabile un bersaglio a distanza Ravvicinata."
     - "Ballata: Voi e tutti gli alleati a distanza Ravvicinata guadagnate una Speranza."
+
+- name: Trovatore
+  class: Bardo
+  type: Specializzazione
+  caster_trait: Presenza
+  description: "Maestro: le vostre canzoni accendono il coraggio di chi le ascolta. Quando assegnate un Dado a Raccolta a un alleato, può guadagnare una Speranza o rimuovere uno Stress."
+  effects: []
+
+- name: Trovatore
+  class: Bardo
+  type: Maestria
+  caster_trait: Presenza
+  description: "Virtuoso: siete tra i più grandi musicisti mai vissuti. Potete eseguire ogni canzone del privilegio Musico Eccezionale due volte invece di una per riposo lungo."
+  effects: []
+
+- name: Oratore
+  class: Bardo
+  type: Privilegio Base
+  caster_trait: Presenza
+  description: "Discorso Ispiratore: una volta per riposo lungo, tutti gli alleati entro distanza Lontana rimuovono 2 Stress. Cuore di Poeta: dopo un tiro per impressionare/persuadere/offendere, potete spendere una Speranza per aggiungere 1d4."
+  effects: []
+
+- name: Oratore
+  class: Bardo
+  type: Specializzazione
+  caster_trait: Presenza
+  description: "Eloquente: una volta per sessione, quando incoraggiate un alleato, potete trovare un oggetto/strumento comune, aiutare senza spendere Speranza o assegnare una mossa aggiuntiva nel prossimo interludio."
+  effects: []
+
+- name: Oratore
+  class: Bardo
+  type: Maestria
+  caster_trait: Presenza
+  description: "Poesia Epica: il Dado a Raccolta aumenta a d10. Inoltre quando Aiutate un Alleato e narrate il suo momento eroico, tirate un d10 come dado vantaggio."
+  effects: []
+
+- name: Custode degli Elementi
+  class: Druido
+  type: Privilegio Base
+  caster_trait: Istinto
+  description: "Incarnazione Elementale: marcate uno Stress per Incanalare Fuoco/Terra/Acqua/Aria fino a danno Grave o prossimo riposo, ottenendo effetti specifici per elemento."
+  effects: []
+
+- name: Custode degli Elementi
+  class: Druido
+  type: Specializzazione
+  caster_trait: Istinto
+  description: "Aura Elementale: una volta per riposo, mentre Incanalate, potete emanare un'aura che colpisce i bersagli entro Ravvicinata con effetti legati all'elemento."
+  effects: []
+
+- name: Custode degli Elementi
+  class: Druido
+  type: Maestria
+  caster_trait: Istinto
+  description: "Dominio Elementale: mentre Incanalate ottenete bonus permanenti legati all'elemento (Fuoco/Terra/Acqua/Aria), inclusi potenziamenti a danni, riduzione ferite, vulnerabilità e volo."
+  effects: []
+
+- name: Custode del Rinnovamento
+  class: Druido
+  type: Privilegio Base
+  caster_trait: Istinto
+  description: "Illuminazione della Natura: create uno spazio di serenità entro Ravvicinata per rimuovere Stress; Rigenerazione: toccate una creatura e spendete 3 Speranze, recupera 1d4 PF."
+  effects: []
+
+- name: Custode del Rinnovamento
+  class: Druido
+  type: Specializzazione
+  caster_trait: Istinto
+  description: "Onda Rigenerante: Rigenerazione può bersagliare entro Prossima. Protezione del Guardiano: una volta per riposo lungo spendete 2 Speranze per curare 2 PF a 1d4 alleati entro Ravvicinata."
+  effects: []
+
+- name: Custode del Rinnovamento
+  class: Druido
+  type: Maestria
+  caster_trait: Istinto
+  description: "Difensore: in Forma Bestiale, quando un alleato entro Ravvicinata subisce 2+ PF, potete marcare uno Stress per ridurre di 1 i PF subiti."
+  effects: []
+
+- name: Feriale
+  class: Ranger
+  type: Privilegio Base
+  caster_trait: Agilità
+  description: "Compagno: avete un compagno animale (scheda Compagno del Ranger) che cresce con voi quando salite di livello."
+  effects: []
+
+- name: Feriale
+  class: Ranger
+  type: Specializzazione
+  caster_trait: Agilità
+  description: "Addestramento Intensivo: scegliete un'ulteriore opzione di aumento livello per il compagno. Uniti nella Battaglia: bonus +2 Evasione contro attacchi mentre un avversario è in Mischia col compagno."
+  effects: []
+
+- name: Feriale
+  class: Ranger
+  type: Maestria
+  caster_trait: Agilità
+  description: "Addestramento Avanzato: scegliete due opzioni aggiuntive per il compagno. Amico Fedele: una volta per riposo lungo, voi o il compagno potete accorrere e assorbire ultimo Stress/PF dell'altro."
+  effects: []
+
+- name: Apripista
+  class: Ranger
+  type: Privilegio Base
+  caster_trait: Agilità
+  description: "TRATTO DA INCANTATORE: AGILITÀ Predatore Spietato: Quando effettuate un tiro per i danni, potete marcare uno Stress per ottenere bonus +1 alla Competenza. Inoltre, quando infliggete un danno Grave a un avversario, quest’ultimo deve marcare uno Stress. La Via Prosegue: Quando viaggiate verso un luogo già visitato o portate con voi un oggetto che è già stato in quel luogo, potete individuare il percorso più breve e diretto verso tale destinazione."
+  effects: []
+
+- name: Apripista
+  class: Ranger
+  type: Specializzazione
+  caster_trait: Agilità
+  description: "Predatore Furtivo: Quando il vostro Focus compie un attacco contro di voi, ottenete bonus +2 alla vostra Evasione contro tale attacco."
+  effects: []
+
+- name: Apripista
+  class: Ranger
+  type: Maestria
+  caster_trait: Agilità
+  description: "Predatore Dominante: Prima di effettuare un tiro attacco contro il vostro Focus, potete spendere una Speranza. Se l’attacco ha successo, rimuovete una Paura dalla riserva di Paura del GM."
+  effects: []
+
+- name: Valoroso
+  class: Guardiano
+  type: Privilegio Base
+  caster_trait: ""
+  description: "Saldo: bonus permanente +1 alle soglie di danno. Volontà di Ferro: quando subite danni fisici, potete marcare un'ulteriore Casella Armatura per ridurne la gravità."
+  effects: []
+
+- name: Valoroso
+  class: Guardiano
+  type: Specializzazione
+  caster_trait: ""
+  description: "Implacabile: bonus permanente +2 alle soglie di danno. Compagni d'Arme: quando un alleato entro Ravvicinata subisce danni, potete marcare una Casella Armatura per ridurne la gravità di una soglia."
+  effects: []
+
+- name: Valoroso
+  class: Guardiano
+  type: Maestria
+  caster_trait: ""
+  description: "Imperturbabile: bonus permanente +3 alle soglie di danno. Protettore Fedele: quando un alleato entro Ravvicinata con 2 o meno PF sta per subire danno, potete marcare uno Stress e subire il danno al suo posto."
+  effects: []
+
+- name: Vendicatore
+  class: Guardiano
+  type: Privilegio Base
+  caster_trait: ""
+  description: "A Suo Agio: guadagnate uno Stress aggiuntivo. Vendetta: quando un avversario in Mischia vi attacca, potete marcare 2 Stress per fargli subire 1 PF."
+  effects: []
+
+- name: Vendicatore
+  class: Guardiano
+  type: Specializzazione
+  caster_trait: ""
+  description: "Rappresaglia: quando un avversario danneggia un alleato entro Mischia, ottenete bonus +1 Competenza per il successivo attacco riuscito contro quell'avversario."
+  effects: []
+
+- name: Vendicatore
+  class: Guardiano
+  type: Maestria
+  caster_trait: ""
+  description: "Nemesi: spendete 2 Speranze per dare Priorità a un avversario fino al prossimo riposo; contro quel bersaglio potete scambiare i risultati dei dadi Speranza/Paura."
+  effects: []
+
+- name: Ombra Notturna
+  class: Fuorilegge
+  type: Privilegio Base
+  caster_trait: Astuzia
+  description: "TRATTO DA INCANTATORE: ASTUZIA Passo d’Ombra: Potete spostarvi da un’ombra a un’altra. Quando vi spostate in un’area di oscurità o nell’ombra proiettata da un’altra creatura o da un oggetto, potete marcare uno Stress per scomparire dal luogo in cui vi trovate e riapparire all’interno di un’altra ombra entro distanza Lontana. Quando riapparite, siete Ammantati."
+  effects: []
+
+- name: Ombra Notturna
+  class: Fuorilegge
+  type: Specializzazione
+  caster_trait: Astuzia
+  description: "Nube di Tenebra: Effettuate un Tiro Incantesimo (15). Se riuscite, create una nube oscura temporanea che copre ogni cosa fino a distanza Ravvicinata. Chiunque si trovi all’interno di questa nube non può vedere al di fuori di essa, e chiunque si trovi al di fuori di essa non può vedere al suo interno. Siete considerati Ammantati da qualsiasi avversario per il quale la nube blocca la linea di vista. Adrenalina: Quando siete Vulnerabili, aggiungete il vostro livello ai tiri dei danni."
+  effects: []
+
+- name: Ombra Notturna
+  class: Fuorilegge
+  type: Maestria
+  caster_trait: Astuzia
+  description: "Ombra Sfuggente: Guadagnate bonus +1 permanente all’Evasione. Potete usare il vostro privilegio “Passo d’Ombra” per muovervi fino a distanza Remota. Svanire: Marcate uno Stress per diventare Ammantati in qualsiasi momento. Quando vi Ammantate con questo privilegio, eliminate automaticamente la condizione di Trattenuto, se presente. Rimanete Ammantati in questo modo finché non tirate con Paura o fino al prossimo riposo."
+  effects: []
+
+- name: Ladro
+  class: Fuorilegge
+  type: Privilegio Base
+  caster_trait: Astuzia
+  description: "TRATTO DA INCANTATORE: ASTUZIA Legami: Quando arrivate in una città o in un altro luogo importante, descrivete una persona che avete già conosciuto e che vive qui. Datele un nome, annotate in che modo pensate che possa esservi utile e scegliete un fatto dalla seguente lista: • Mi deve un favore, ma sarà difficile trovarla. • Chiederà qualcosa in cambio. • È sempre in gran difficoltà. • Una volta stavamo insieme. È una lunga storia. • Non ci siamo lasciati in buoni rapporti."
+  effects: []
+
+- name: Ladro
+  class: Fuorilegge
+  type: Specializzazione
+  caster_trait: Astuzia
+  description: "Amici Ovunque: Una volta per sessione, è possibile chiamare brevemente in aiuto un contatto dalla dubbia fama. Scegliete uno dei seguenti benefici e descrivete cosa lo spinga ad aiutarvi in questo momento: • Vi fornisce 1 manciata d’oro, uno strumento unico o un oggetto normale che la situazione richiede. • Al prossimo tiro azione, il suo aiuto concede bonus +3 al risultato del Dado Speranza o Paura. • La prossima volta che infliggete un danno, attaccherà a distanza lo stesso bersaglio da una posizione nascosta, aggiungendo 2d8 al vostro tiro per i danni."
+  effects: []
+
+- name: Ladro
+  class: Fuorilegge
+  type: Maestria
+  caster_trait: Astuzia
+  description: "Supporto Fidato: Potete utilizzare il privilegio “Amici Ovunque” tre volte per sessione. Le seguenti opzioni si aggiungono all’elenco dei benefici che potete scegliere quando utilizzate questo privilegio: • Quando subite 1 o più Punti Ferita, può accorrere per proteggervi, riducendo di 1 i Punti Ferita subiti. • Quando effettuate un Tiro Presenza in una conversazione, vi sostiene. Potete tirare un d20 come Dado Speranza."
+  effects: []
+
+- name: Potere Elementale
+  class: Stregone
+  type: Privilegio Base
+  caster_trait: Istinto
+  description: "TRATTO DA INCANTATORE: ISTINTO Elementalista: Scegliete uno dei seguenti elementi alla creazione del personaggio: ARIA · ACQUA · FULMINE · FUOCO · TERRA Potete plasmare questo elemento generando effetti innocui. Inoltre, spendendo una Speranza e descrivendo in che modo il controllo su questo elemento favorisce un tiro azione che state per effettuare, ottenete bonus +2 al tiro azione o bonus +3 al tiro per i danni."
+  effects: []
+
+- name: Potere Elementale
+  class: Stregone
+  type: Specializzazione
+  caster_trait: Istinto
+  description: "Scudo della Natura: Potete invocare il vostro elemento per proteggervi dai danni. Quando un tiro attacco contro di voi ha successo, potete marcare uno Stress e descrivere come usate il vostro elemento per difendervi. Quando lo fate, tirate un d6 e aggiungete il risultato alla vostra Evasione contro l’attacco."
+  effects: []
+
+- name: Potere Elementale
+  class: Stregone
+  type: Maestria
+  caster_trait: Istinto
+  description: "Trascendenza: Una volta per riposo lungo, potete trasformarvi in una manifestazione fisica del vostro elemento. Quando lo fate, descrivete la vostra trasformazione e ottenete a vostra scelta due dei seguenti benefici, fino al riposo successivo: • Bonus +4 alla soglia di danno Grave • Bonus +1 a un tratto del personaggio a scelta • Bonus +1 alla Competenza • Bonus +2 all’Evasione"
+  effects: []
+
+- name: Potere Primordiale
+  class: Stregone
+  type: Privilegio Base
+  caster_trait: Istinto
+  description: "TRATTO DA INCANTATORE: ISTINTO Manipolare la Magia: Il vostro potere primordiale vi permette di modificare l’essenza stessa della magia. Dopo aver lanciato un incantesimo o aver effettuato un attacco con un’arma che infligge danni magici, potete marcare uno Stress per attivare un effetto a scelta tra i seguenti: • Estendere la portata dell’incantesimo o dell’attacco di una categoria • Ottenere bonus +2 al risultato del tiro azione • Raddoppiare un dado danno a scelta • Colpire un altro bersaglio entro portata"
+  effects: []
+
+- name: Potere Primordiale
+  class: Stregone
+  type: Specializzazione
+  caster_trait: Istinto
+  description: "Aiuto Incantato: Potete potenziare la magia altrui grazie alla vostra essenza. Quando Aiutate un Alleato con un Tiro Incantesimo, potete tirare un d8 come dado vantaggio. Una volta per riposo lungo, dopo che un alleato ha effettuato un Tiro Incantesimo con il vostro aiuto, potete scambiare i risultati dei suoi Dadi Dualità."
+  effects: []
+
+- name: Potere Primordiale
+  class: Stregone
+  type: Maestria
+  caster_trait: Istinto
+  description: "Infusione Arcana: Potete raccogliere energia magica per potenziare le vostre capacità. Quando subite un danno magico, diventate Infusi. In alternativa, potete spendere 2 Speranze per diventare Infusi. Quando effettuate con successo un attacco che infligge danni magici mentre siete Infusi, potete rilasciare tale condizione per ottenere bonus +10 al tiro di danno o bonus +3 alla Difficoltà del tiro reazione che il bersaglio deve superare per contrastare l’incantesimo. La condizione di Infusione si interrompe al prossimo riposo lungo."
+  effects: []
+
+- name: Emissario Divino
+  class: Consacrato
+  type: Privilegio Base
+  caster_trait: Forza
+  description: "TRATTO DA INCANTATORE: FORZA Arma Animata: Quando impugnate un’arma con portata Mischia o Prossima, questa può volare dalla vostra mano per attaccare un avversario entro distanza Ravvicinata e poi tornare nelle vostre mani. Potete marcare uno Stress per colpire un altro avversario entro portata con lo stesso tiro attacco. Tocco Ristoratore: Una volta per riposo lungo, toccando una creatura potete curare 2 Punti Ferita o rimuovere 2 Stress."
+  effects: []
+
+- name: Emissario Divino
+  class: Consacrato
+  type: Specializzazione
+  caster_trait: Forza
+  description: "Devoto: Quando tirate i Dadi Preghiera, potete tirare un dado aggiuntivo e scartare il risultato più basso. Inoltre, potete usare il privilegio “Tocco Ristoratore” due volte invece di una per riposo lungo."
+  effects: []
+
+- name: Emissario Divino
+  class: Consacrato
+  type: Maestria
+  caster_trait: Forza
+  description: "Risonanza Celestiale: Quando tirate i danni per la vostra “Arma Animata”, se i risultati dei dadi coincidono, raddoppiate il valore di ogni dado corrispondente. Ad esempio, se ottenete due 5, questi contano come due 10."
+  effects: []
+
+- name: Sentinella Alata
+  class: Consacrato
+  type: Privilegio Base
+  caster_trait: Forza
+  description: "TRATTO DA INCANTATORE: FORZA Ali di Luce: Potete volare. Quando siete in volo, potete: • Marcare uno Stress per afferrare e trasportare un’altra creatura consenziente della vostra taglia o più piccola. • Spendere una Speranza per infliggere 1d8 danni extra in un attacco riuscito."
+  effects: []
+
+- name: Sentinella Alata
+  class: Consacrato
+  type: Specializzazione
+  caster_trait: Forza
+  description: "Volto Celeste: Il vostro volto soprannaturale incute timore e paura. Quando siete in volo, avete vantaggio sui Tiri Presenza. Quando avete successo con Speranza in un Tiro Presenza, potete rimuovere una Paura dalla riserva di Paura del GM invece di guadagnare Speranza."
+  effects: []
+
+- name: Sentinella Alata
+  class: Consacrato
+  type: Maestria
+  caster_trait: Forza
+  description: "Ascendente: Guadagnate bonus +4 permanente alla soglia dei danni Gravi. Potere degli Dèi: Quando siete in volo grazie al privilegio “Ali di Luce”, infliggete 1d12 danni extra invece di 1d8."
+  effects: []
+
+- name: Chiamata del Coraggio
+  class: Guerriero
+  type: Privilegio Base
+  caster_trait: ""
+  description: "Coraggio: Quando fallite un tiro con Paura, guadagnate una Speranza. Riti di Battaglia: Una volta per riposo lungo, prima di tentare qualcosa di incredibilmente pericoloso o di affrontare un nemico che vi supera chiaramente, descrivete il rituale che eseguite o i preparativi che fate. Quando lo fate, rimuovete 2 Stress e guadagnate 2 Speranze."
+  effects: []
+
+- name: Chiamata del Coraggio
+  class: Guerriero
+  type: Specializzazione
+  caster_trait: ""
+  description: "Raccogliere la Sfida: Siete vigili di fronte al pericolo crescente. Quando avete 2 o meno Punti Ferita, potete tirare un d20 come Dado Speranza."
+  effects: []
+
+- name: Chiamata del Coraggio
+  class: Guerriero
+  type: Maestria
+  caster_trait: ""
+  description: "Commilitoni: Il vostro saldo coraggio è un punto fermo nel caos della battaglia per i vostri alleati. Potete effettuare un Tiro Combinato una volta in più per sessione. Inoltre, quando un alleato inizia un Tiro Combinato con voi, deve spendere solo 2 Speranze per farlo."
+  effects: []
+
+- name: Chiamata dello Sterminatore
+  class: Guerriero
+  type: Privilegio Base
+  caster_trait: ""
+  description: "Sterminatore: Ottenete una riserva di dadi chiamata Dadi dello Sterminatore. Quando effettuate un tiro con Speranza, potete mettere un d6 su questa carta invece di guadagnare una Speranza, aggiungendo il dado alla riserva. Potete conservare un numero massimo di Dadi dello Sterminatore pari alla vostra Competenza. Quando effettuate un tiro attacco o di danno, potete spendere un numero qualsiasi di Dadi dello Sterminatore, tirandoli e aggiungendo il loro risultato al tiro. Alla fine di ogni sessione, rimuovete i Dadi dello Sterminatore non spesi da questa carta e guadagnate una Speranza per ogni dado cancellato."
+  effects: []
+
+- name: Chiamata dello Sterminatore
+  class: Guerriero
+  type: Specializzazione
+  caster_trait: ""
+  description: "Specialista delle Armi: Potete maneggiare più armi con letale maestria. Quando avete successo in un attacco, potete spendere una Speranza per aggiungere uno dei dadi di danno della vostra arma secondaria al tiro di dado. Inoltre, una volta per riposo lungo, quando tirate i Dadi dello Sterminatore, potete ripetere l’esito di qualsiasi 1."
+  effects: []
+
+- name: Chiamata dello Sterminatore
+  class: Guerriero
+  type: Maestria
+  caster_trait: ""
+  description: "Addestramento Marziale: Siete un guerriero che ispira tutti coloro che viaggiano con voi. Il vostro gruppo ha accesso alla mossa Addestramento Marziale durante il riposo. Per usare questa mossa durante un riposo, descrivete come istruite e vi allenate con il gruppo. Voi e ogni alleato che sceglie questa mossa di interludio guadagnate un d6 di Dado dello Sterminatore. Un PG con un Dado dello Sterminatore può spenderlo per tirare il dado e aggiungere il risultato a un tiro attacco o di danno a sua scelta."
+  effects: []
+
+- name: Scuola della Conoscenza
+  class: Mago
+  type: Privilegio Base
+  caster_trait: Conoscenza
+  description: "TRATTO DA INCANTATORE: CONOSCENZA Preparato: Prendete una carta dominio aggiuntiva del vostro livello o di livello inferiore da un dominio a cui avete accesso. Iniziato: Quando Utilizzate un’Esperienza, potete marcare uno Stress invece di spendere Speranza. Se lo fate, raddoppiate il modificatore dell’Esperienza per quel tiro."
+  effects: []
+
+- name: Scuola della Conoscenza
+  class: Mago
+  type: Specializzazione
+  caster_trait: Conoscenza
+  description: "Esperto: Prendete una carta dominio aggiuntiva del vostro livello o di livello inferiore da un dominio a cui avete accesso. Memoria Perfetta: Una volta per riposo, quando richiamate una carta dominio nella vostra riserva, potete ridurre di 1 il suo Costo di Richiamo."
+  effects: []
+
+- name: Scuola della Conoscenza
+  class: Mago
+  type: Maestria
+  caster_trait: Conoscenza
+  description: "Brillante: Prendete una carta dominio aggiuntiva del vostro livello o di livello inferiore da un dominio a cui avete accesso. Padronanza Affinata: Quando Utilizzate un’Esperienza, tirate un d6. Con un risultato di 5 o superiore, potete utilizzarla senza spendere Speranza."
+  effects: []
+
+- name: Scuola della Guerra
+  class: Mago
+  type: Privilegio Base
+  caster_trait: Conoscenza
+  description: "TRATTO DA INCANTATORE: CONOSCENZA Magia da Battaglia: Avete concentrato i vostri sforzi per diventare una forza incontrastabile sul campo di battaglia. Guadagnate una casella aggiuntiva di Punti Ferita. Affronta la Tua Paura: Quando avete successo con Paura in un tiro di attacco, infliggete 1d10 danni magici addizionali."
+  effects: []
+
+- name: Scuola della Guerra
+  class: Mago
+  type: Specializzazione
+  caster_trait: Conoscenza
+  description: "Evoca Scudo: Potete evocare una barriera protettiva di magia. Finché avete almeno 2 Speranze, aggiungete la vostra Competenza alla vostra Evasione. Alimentato dalla Paura: Il danno magico addizionale della caratteristica “Affronta la Tua Paura” aumenta a 2d10."
+  effects: []
+
+- name: Scuola della Guerra
+  class: Mago
+  type: Maestria
+  caster_trait: Conoscenza
+  description: "Prosperare nel Caos: Quando un attacco va a segno, potete marcare uno Stress dopo aver tirato i danni per costringere il bersaglio a subire un Punto Ferita aggiuntivo. Non Conoscerai la Paura: Il danno magico extra della caratteristica “Affronta la Tua Paura” aumenta a 3d10."
+  effects: []
+
+- name: Clank
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Scaglie: Le scaglie fungono da protezione naturale. Quando subite danni Gravi, potete marcare uno Stress per subire 1 Punto Ferita in meno. Scopo Preciso: Decidete chi vi ha creato e per quale scopo. Alla creazione del personaggio, scegliete una delle vostre Esperienze che meglio si allinea con tale finalità e guadagnate bonus +1 permanente a essa. Soffio Elementale: Scegliete un elemento per il vostro Soffio..."
+  effects: []
+- name: Drakona
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Scaglie: Le scaglie fungono da protezione naturale. Quando subite danni Gravi, potete marcare uno Stress per subire 1 Punto Ferita in meno. Scopo Preciso: Decidete chi vi ha creato e per quale scopo. Alla creazione del personaggio, scegliete una delle vostre Esperienze che meglio si allinea con tale finalità e guadagnate bonus +1 permanente a essa. Soffio Elementale: Scegliete un elemento per il vostro Soffio..."
+  effects: []
+- name: Nani
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Pelle Dura: Quando subite un danno Minore, potete marcare 2 Stress invece di subire un Punto Ferita. Resistenza Aumentata: Spendete 3 Speranze per dimezzare i danni fisici in arrivo."
+  effects: []
+- name: Elfi
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Portafortuna: Una volta per sessione, dopo che voi o un alleato consenziente entro distanza Ravvicinata effettuate un tiro azione, potete spendere 3 Speranze per rilanciare i Dadi Dualità. Reazione Istintiva: Marcate uno Stress per ottenere vantaggio in un tiro reazione. Dormiveglia: Durante un riposo, potete cadere in trance per scegliere una mossa di interludio aggiuntiva."
+  effects: []
+- name: Fatati
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Portafortuna: Una volta per sessione, dopo che voi o un alleato consenziente entro distanza Ravvicinata effettuate un tiro azione, potete spendere 3 Speranze per rilanciare i Dadi Dualità. Reazione Istintiva: Marcate uno Stress per ottenere vantaggio in un tiro reazione. Dormiveglia: Durante un riposo, potete cadere in trance per scegliere una mossa di interludio aggiuntiva."
+  effects: []
+- name: Fauni
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Portafortuna: Una volta per sessione, dopo che voi o un alleato consenziente entro distanza Ravvicinata effettuate un tiro azione, potete spendere 3 Speranze per rilanciare i Dadi Dualità. Reazione Istintiva: Marcate uno Stress per ottenere vantaggio in un tiro reazione. Dormiveglia: Durante un riposo, potete cadere in trance per scegliere una mossa di interludio aggiuntiva."
+  effects: []
+- name: Firbolg
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Carica: Quando riuscite in un Tiro Agilità per spostarvi da distanza Lontana o Remota a distanza di Mischia con uno o più bersagli, potete marcare uno Stress per infliggere 1d12 danni fisici a tutti i bersagli entro distanza di Mischia. Irremovibile: Quando dovreste marcare uno Stress, tirate un d6. Con un risultato di 6, non dovete marcarlo."
+  effects: []
+- name: Fungril
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Cerchio dei Fungril: Effettuate un Tiro Istinto (12) per utilizzare la vostra struttura micellare per comunicare con altri fungril. In caso di successo, potete comunicare a qualsiasi distanza. Connessione con i Morti: Toccando un cadavere morto di recente, potete marcare uno Stress per estrarre dal cadavere un ricordo legato a un’emozione o sensazione specifica a vostra scelta."
+  effects: []
+- name: Galapa
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Guscio: Guadagnate un bonus alle soglie di danno pari alla vostra Competenza. Rinchiudersi: Marcate uno Stress per ritrarvi nel vostro guscio. Quando siete nel guscio, guadagnate resistenza ai danni fisici, ma avete svantaggio ai tiri azione e non potete muovervi."
+  effects: []
+- name: Giganti
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Resistenza: Guadagnate una casella aggiuntiva nei Punti Ferita alla creazione del personaggio. Raggiungere: Potete considerare qualsiasi arma, abilità, incantesimo o altra caratteristica che abbia una portata di Mischia come se avesse invece una portata Prossima. GOBLIN Piè Fermo: Ignorate qualsiasi svantaggio sui Tiri Agilità. Senso del Pericolo: Una volta per riposo, marcate uno Stress per costringere un..."
+  effects: []
+- name: Goblin
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Resistenza: Guadagnate una casella aggiuntiva nei Punti Ferita alla creazione del personaggio. Raggiungere: Potete considerare qualsiasi arma, abilità, incantesimo o altra caratteristica che abbia una portata di Mischia come se avesse invece una portata Prossima. GOBLIN Piè Fermo: Ignorate qualsiasi svantaggio sui Tiri Agilità. Senso del Pericolo: Una volta per riposo, marcate uno Stress per costringere un..."
+  effects: []
+- name: Halfling
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Cerchie Infere. Senzapaura: Quando tirate con Paura, potete marcare 2 Stress per trasformarlo in un tiro con Speranza. Volto Spaventoso: Avete vantaggio ai tiri per intimidire le creature ostili. Quadrifoglio: All’inizio di ogni sessione, tutti i membri del gruppo di cui fate parte (voi compresi) ottengono una Speranza. Bussola Interna: Quando ottenete un 1 sul Dado Speranza, potete rilanciarlo."
+  effects: []
+- name: Umani
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Vigore: Guadagnate una casella Stress aggiuntiva alla creazione del personaggio. Versatilità: Quando fallite un tiro che utilizza una delle vostre Esperienze, potete marcare uno Stress per ripetere il tiro. ORIGINE O R I Gper INE Gli orchi sono umanoidi facilmente riconoscibili i loro tratti spigolosi e per le zanne simili a quelle di un cinghiale che sporgono dalla mascella inferiore. Robusto: Quando vi resta 1..."
+  effects: []
+- name: Infernis
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Cerchie Infere. Senzapaura: Quando tirate con Paura, potete marcare 2 Stress per trasformarlo in un tiro con Speranza. Volto Spaventoso: Avete vantaggio ai tiri per intimidire le creature ostili. Quadrifoglio: All’inizio di ogni sessione, tutti i membri del gruppo di cui fate parte (voi compresi) ottengono una Speranza. Bussola Interna: Quando ottenete un 1 sul Dado Speranza, potete rilanciarlo."
+  effects: []
+- name: Katari
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Anfibio: Potete respirare e muovervi naturalmente sott’acqua. Lingualunga: Potete usare la lingua lunga per afferrare oggetti entro una distanza Ravvicinata. Marcate uno Stress per usare la lingua come un’arma Ravvicinata basata su Astuzia che infligge d12 danni fisici applicando la vostra Competenza."
+  effects: []
+- name: Orchi
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Vigore: Guadagnate una casella Stress aggiuntiva alla creazione del personaggio. Versatilità: Quando fallite un tiro che utilizza una delle vostre Esperienze, potete marcare uno Stress per ripetere il tiro. ORIGINE O R I Gper INE Gli orchi sono umanoidi facilmente riconoscibili i loro tratti spigolosi e per le zanne simili a quelle di un cinghiale che sporgono dalla mascella inferiore. Robusto: Quando vi resta 1..."
+  effects: []
+- name: Ribbet
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Anfibio: Potete respirare e muovervi naturalmente sott’acqua. Lingualunga: Potete usare la lingua lunga per afferrare oggetti entro una distanza Ravvicinata. Marcate uno Stress per usare la lingua come un’arma Ravvicinata basata su Astuzia che infligge d12 danni fisici applicando la vostra Competenza."
+  effects: []
+- name: Simiah
+  class: Origine
+  type: Origine
+  caster_trait: ""
+  description: "Scalatore Naturale: Avete vantaggio sui Tiri Agilità che riguardano l’equilibrio e l’arrampicata. Scioltezza: Guadagnate bonus +1 permanente all’Evasione alla creazione del personaggio."
+  effects: []
+
+- name: Privilegiata
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "TERA PRIVILEGIATA ERUDITA Privilegio: Avete vantaggio nei tiri per interagire con la nobiltà, contrattare un prezzo o sfruttare la vostra reputazione per ottenere ciò che volete. Acculturato: Avete vantaggio ai tiri che riguardano la storia, la cultura o l’orientamento politico di un individuo o di una regione. Far parte di una comunità privilegiata significa essere abituati a una vita di eleganza, opulenza e..."
+  effects: []
+- name: Erudita
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "TERA PRIVILEGIATA ERUDITA Privilegio: Avete vantaggio nei tiri per interagire con la nobiltà, contrattare un prezzo o sfruttare la vostra reputazione per ottenere ciò che volete. Acculturato: Avete vantaggio ai tiri che riguardano la storia, la cultura o l’orientamento politico di un individuo o di una regione. Far parte di una comunità privilegiata significa essere abituati a una vita di eleganza, opulenza e..."
+  effects: []
+- name: Austera
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "TERA PRIVILEGIATA ERUDITA Privilegio: Avete vantaggio nei tiri per interagire con la nobiltà, contrattare un prezzo o sfruttare la vostra reputazione per ottenere ciò che volete. Acculturato: Avete vantaggio ai tiri che riguardano la storia, la cultura o l’orientamento politico di un individuo o di una regione. Far parte di una comunità privilegiata significa essere abituati a una vita di eleganza, opulenza e..."
+  effects: []
+- name: Montanara
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "Costanza: Avete vantaggio ai tiri per attraversare scogliere e sporgenze pericolose, orientarvi in ambienti difficili e sfruttare le vostre conoscenze di sopravvivenza."
+  effects: []
+- name: Marittima
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "ARITTIMA BASSIFONDI Sentire la Marea: Potete percepire il flusso e il riflusso della vita. Quando tirate con Paura, posizionate un gettone sulla carta comunità. Potete posizionare un numero massimo di gettoni pari al vostro livello. Prima di effettuare un tiro azione, potete spendere un numero qualsiasi di questi gettoni per ottenere bonus +1 al tiro per ogni gettone speso. Alla fine di ogni sessione, rimuovete..."
+  effects: []
+- name: Bassifondi
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "ARITTIMA BASSIFONDI Sentire la Marea: Potete percepire il flusso e il riflusso della vita. Quando tirate con Paura, posizionate un gettone sulla carta comunità. Potete posizionare un numero massimo di gettoni pari al vostro livello. Prima di effettuare un tiro azione, potete spendere un numero qualsiasi di questi gettoni per ottenere bonus +1 al tiro per ogni gettone speso. Alla fine di ogni sessione, rimuovete..."
+  effects: []
+- name: Sotterranea
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "ERRANEA NOMADE Vivere nel Crepuscolo: Quando vi trovate in un’area in penombra o nell’oscurità, avete vantaggio ai tiri per nascondersi, indagare o percepire i dettagli. Sacca da Viaggio: Aggiungete una Sacca da Viaggio al vostro inventario. Una volta per sessione, potete spendere una Speranza per rovistare nella sacca in cerca di un oggetto comune utile per la situazione. Discutete con il GM per scoprire quale..."
+  effects: []
+- name: Nomade
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "ERRANEA NOMADE Vivere nel Crepuscolo: Quando vi trovate in un’area in penombra o nell’oscurità, avete vantaggio ai tiri per nascondersi, indagare o percepire i dettagli. Sacca da Viaggio: Aggiungete una Sacca da Viaggio al vostro inventario. Una volta per sessione, potete spendere una Speranza per rovistare nella sacca in cerca di un oggetto comune utile per la situazione. Discutete con il GM per scoprire quale..."
+  effects: []
+- name: Forestale
+  class: Comunità
+  type: Comunità
+  caster_trait: ""
+  description: "Piè Leggero: Il vostro movimento è naturalmente silenzioso. Avete vantaggio ai tiri per muovervi senza essere uditi."
+  effects: []
+
+- name: Tomo di Ava
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Spinta Magica: Effettuate un Tiro Incantesimo contro un bersaglio entro distanza di Mischia. In caso di successo, il bersaglio viene respinto fino a distanza Lontana e subisce d10+2 danni magici pari alla vostra Competenza. Armatura di Tava: Spendete una Speranza per conferire a un bersaglio che potete toccare bonus +1 al suo Punteggio di Armatura fino al suo prossimo riposo o fino a quando non lanciate nuovamente Armatura di Tava. Spunzone di Ghiaccio: Effettuate un Tiro Incantesimo (12) per evocare una grande punta di ghiaccio entro distanza Lontana. Se la usate come arma, effettuate invece il Tiro Incantesimo contro la Difficoltà del bersaglio. In caso di successo, infliggete d6 danni fisici applicando la vostra Competenza."
+  effects: []
+- name: Tomo di Illiat
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Torpore: Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Prossima. In caso di successo, il bersaglio è Addormentato fino a quando non subisce danni o il GM spende una Paura nel suo turno per rimuovere questa condizione. Salva Arcana: Una volta per riposo, spendete un numero qualsiasi di Speranze e lanciate proiettili magici che colpiscono un bersaglio entro distanza Ravvicinata. Tirate un numero di d6 pari alle Speranze spese e infliggete il totale come danni magici al bersaglio. Telepatia: Spendete una Speranza per aprire una linea di comunicazione mentale con un bersaglio che potete vedere. Questo legame dura fino al vostro prossimo riposo o fino a quando non lanciate nuovamente Telepatia."
+  effects: []
+- name: Tomo di Tyfar
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Fiamma Selvaggia: Effettuate un Tiro Incantesimo contro un massimo di tre avversari entro distanza di Mischia. I bersagli contro cui avete successo subiscono 2d6 danni magici e devono marcare uno Stress mentre fiamme eruttano dalla vostra mano. Mano Magica: Evocate una mano magica delle stesse dimensioni e forza della vostra che potete comandare entro una distanza Lontana. Foschia Misteriosa: Effettuate un Tiro Incantesimo (13) per evocare temporaneamente una fitta nebbia entro distanza Prossima. La nebbia occulta quest’area e tutto ciò che contiene."
+  effects: []
+- name: Tomo di Sitil
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Grimorio Camuffamento: Modificate magicamente il vostro aspetto e i vostri vestiti per evitare di essere riconosciuti. Gemellare: Spendete 2 Speranze per lanciare questo incantesimo su voi stesso o su un alleato entro distanza Ravvicinata. La prossima volta che il bersaglio effettua un attacco, può colpire un bersaglio aggiuntivo entro la portata contro cui il suo tiro attacco avrebbe avuto successo. Potete mantenere attivo questo incantesimo su una sola creatura alla volta. Illusione: Effettuate un Tiro Incantesimo (14). In caso di successo, create un’illusione visiva non più grande di voi entro distanza Ravvicinata che dura finché la osservate. Solo chi la osserva entro distanza di Mischia può capirne la natura illusoria."
+  effects: []
+- name: Tomo di Viagras
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Camuffamento: modificate magicamente il vostro aspetto e i vostri vestiti per non essere riconosciuti. Gemellare: spendete 2 Speranze per lanciare l'effetto su voi o un alleato entro Ravvicinata. Illusione: effettuate un Tiro Incantesimo (14) e create un'illusione visiva entro Ravvicinata."
+  effects: []
+- name: Tomo di Korvax
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Levitazione: Effettuate un Tiro Incantesimo per sollevare temporaneamente in aria un bersaglio che potete vedere e spostarlo entro distanza Ravvicinata dalla sua posizione di partenza. Smentire: Spendete una Speranza per costringere un bersaglio entro distanza di Mischia a effettuare un Tiro Reazione (15). In caso di fallimento, questi dimentica l’ultimo minuto della vostra conversazione. Cerchio Runico: Marcate uno Stress per creare un cerchio magico temporaneo sul terreno dove vi trovate. Tutti gli avversari che si trovano o entrano a distanza di Mischia subiscono 2d12+4 danni magici e vengono respinti indietro a distanza Prossima."
+  effects: []
+- name: Tomo di Homet
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Oltrepasso: Effettuate un Tiro Incantesimo (13). Una volta per riposo, in caso di successo, voi e tutte le creature che vi toccano potete oltrepassare un muro o una porta entro distanza Ravvicinata. L’effetto termina quando tutti si trovano dall’altra parte. Portale Dimensionale: Effettuate un Tiro Incantesimo (14). Una volta per ogni riposo lungo, se il tiro ha esito positivo, aprite un portale verso un luogo in un’altra dimensione o piano dell’esistenza in cui siete già stati. Il portale rimane aperto fino al vostro prossimo riposo."
+  effects: []
+- name: Tomo di Vyla
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Tuffo nella Memoria: effettuate un Tiro Incantesimo contro un bersaglio entro Lontana per porre una domanda al GM su un suo ricordo pertinente. Lucidità Condivisa: una volta per riposo lungo, spendete una Speranza per legare due creature consenzienti che possono scegliere chi marca Stress."
+  effects: []
+- name: Tomo di Ronin
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Trasformazione: Effettuate un Tiro Incantesimo (15). In caso di successo, vi trasformate in un oggetto inanimato non più grande del doppio della vostra taglia normale. Potete rimanere in questa forma finché non subite danni. Spossatezza Eterna: Una volta per riposo lungo, effettuate un Tiro Incantesimo contro un bersaglio entro distanza Ravvicinata. In caso di successo, il bersaglio diventa permanentemente Vulnerabile. Non può liberarsi di questa condizione in alcun modo."
+  effects: []
+- name: Tomo di Yarrow
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Inceppatempo: Effettuate un Tiro Incantesimo (18). In caso di successo, il tempo rallenta temporaneamente fino a fermarsi per tutti quelli che si trovano entro distanza Lontana tranne voi. Riprende il suo normale scorrere la prossima volta che effettuate un tiro azione che ha come bersaglio un’altra creatura. Immunità alla Magia: Spendete 5 Speranze per diventare immune ai danni da magia fino al prossimo riposo."
+  effects: []
+- name: Tomo di Grynn
+  class: Mago
+  type: Grimorio
+  caster_trait: Conoscenza
+  description: "Deflessione Arcana: Una volta per ogni riposo lungo, spendete una Speranza per annullare il danno di un attacco che ha come bersaglio voi o un alleato entro distanza Prossima. Cronolucchetto: Scegliete un oggetto entro distanza Lontana. L’oggetto si ferma nel tempo e nello spazio esattamente dove si trova fino al vostro prossimo riposo. Se una creatura cerca di spostarlo, effettuate un Tiro Incantesimo contro di essa per impedirglielo. Muro di Fiamme: Effettuate un Tiro Incantesimo (15). In caso di successo, create un muro di fiamme magiche tra due punti entro distanza Lontana. Tutte le creature nel suo percorso devono scegliere da che parte stare e qualsiasi cosa oltrepassi il muro subisce 4d10+3 danni magici."
+  effects: []
+
+- name: Sigillo Runico
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "incantesimo Incantesimo Incantesimo SIGILLO RUNICO SCATENARE IL CAOS CAMMINARE SUI MURI Possedete un oggetto personale molto importante che può essere infuso di magia protettrice e utilizzato come protezione da voi o da un alleato. Descrivete cos’è e perché è importante. Il possessore della protezione può spendere una Speranza per ridurre i danni subiti di 1d8. Se il risultato del dado è 8, il potere dell’amuleto..."
+  effects: []
+- name: Scatenare il Caos
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "All’inizio di una sessione, mettete su questa carta un numero di gettoni pari al vostro tratto da Incantatore. Effettuate un Tiro Incantesimo contro un bersaglio fino a distanza Lontana e spendete un numero qualsiasi di gettoni per incanalare energia grezza e scagliarla contro di esso. In caso di successo, tirate un numero di d10 pari ai gettoni spesi e infliggete quel danno magico al bersaglio. Marcate uno Stress per rifornire questa carta di gettoni (fino al limite del vostro tratto da Incantatore). Alla fine di ogni sessione, rimuovete i gettoni non spesi."
+  effects: []
+- name: Camminare sui Muri
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Spendete una Speranza per consentire a una creatura che potete toccare di arrampicarsi su muri e soffitti con la stessa facilità con cui cammina sul terreno. Questo effetto dura fino alla fine della scena o finché non lanciate nuovamente Camminare sui Muri."
+  effects: []
+- name: Tocco delle Braci
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza di Mischia. In caso di successo, il bersaglio viene immediatamente avvolto dalle fiamme, subisce 1d20+3 danni magici ed è temporaneamente Incendiato. Quando una creatura agisce mentre è Incendiata, subisce 2d6 danni magici aggiuntivi se è ancora Incendiata alla fine della sua azione."
+  effects: []
+- name: Occhio Fluttuante
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Spendete una Speranza per creare una sfera fluttuante che potete muovere ovunque entro distanza Remota. Mentre questo incantesimo è attivo, potete vedere attraverso la sfera come se foste nella sua posizione. Potete passare liberamente dall’usare i vostri sensi al vedere attraverso la sfera. Se la sfera subisce danni o esce dalla portata, l’incantesimo termina."
+  effects: []
+- name: Cronomagia
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "CONTROMAGIA Potete interrompere un effetto magico in atto effettuando un tiro reazione usando il vostro tratto da Incantatore. In caso di successo, l’effetto si interrompe, qualsiasi conseguenza viene evitata e questa carta viene messa nella riserva."
+  effects: []
+- name: Volare
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (15). In caso di successo, mettete su questa carta un numero di gettoni pari al valore di Agilità (minimo 1). Quando effettuate un tiro azione in volo, rimuovete un gettone da questa carta. Dopo che l’azione che consuma l’ultimo gettone è stata risolta, scendete a terra direttamente sotto di voi."
+  effects: []
+- name: Intermittenza
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (12). In caso di successo, spendete una Speranza per teletrasportarvi in un altro punto visibile entro distanza Lontana. Se altri vogliono seguirvi e si trovano entro distanza Prossima, spendete una Speranza aggiuntiva per ciascuna creatura per portarla con voi."
+  effects: []
+- name: Deflagrazione Protettrice
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro tutti i bersagli entro distanza di Mischia. I bersagli contro cui avete successo vengono respinti a distanza Lontana e subiscono d8+3 danni magici usando il vostro tratto da Incantatore."
+  effects: []
+- name: Fiumi a Catena
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Incantesimo FULMINE A CATENA Marcate 2 Stress per effettuare un Tiro Incantesimo, scatenando un fulmine su tutti i bersagli entro distanza Ravvicinata. I bersagli contro cui avete successo devono effettuare un tiro reazione con Difficoltà pari al risultato del vostro Tiro Incantesimo. I bersagli che falliscono subiscono 2d8+4 danni magici. Anche quegli avversari che non siano già stati bersagliati dal Fulmine a..."
+  effects: []
+- name: Premonizione
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Potete incanalare l’energia arcana per avere visioni del futuro. Una volta per riposo lungo, immediatamente dopo che il GM ha comunicato le conseguenze di un tiro che avete effettuato, potete annullare la mossa e le conseguenze relative come se non fossero mai avvenute e compiere invece un’altra mossa."
+  effects: []
+- name: Passabrecce
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Incantesimo FULMINE A CATENA Marcate 2 Stress per effettuare un Tiro Incantesimo, scatenando un fulmine su tutti i bersagli entro distanza Ravvicinata. I bersagli contro cui avete successo devono effettuare un tiro reazione con Difficoltà pari al risultato del vostro Tiro Incantesimo. I bersagli che falliscono subiscono 2d8+4 danni magici. Anche quegli avversari che non siano già stati bersagliati dal Fulmine a..."
+  effects: []
+- name: Telecinesi
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Lontana. In caso di successo, potete sollevarlo e spostarlo ovunque entro una distanza Lontana dalla sua posizione originale. Potete scagliare il bersaglio così sollevato come un proiettile effettuando un nuovo Tiro Incantesimo contro un secondo bersaglio a cui state mirando. In caso di successo, infliggete d12+4 danni fisici al secondo bersaglio usando la vostra Competenza. L’incantesimo poi termina."
+  effects: []
+- name: Esplosione Ammantante
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Quando effettuate con successo un Tiro Incantesimo per lanciare un incantesimo diverso, potete spendere una Speranza per diventare Ammantati. Mentre siete Ammantati, rimanete invisibili se restate fermi fino a quando un avversario si sposta dove normalmente vi vedrebbe. Quando vi muovete nella linea di vista di un avversario o effettuate un attacco, non siete più Ammantati."
+  effects: []
+- name: Riflessione Arcana
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Quando subite danni magici, potete spendere un numero qualsiasi di Speranze per tirare altrettanti d6. Se uno qualsiasi ottiene un 6, l’attacco viene riflesso contro il lanciatore, infliggendo invece i danni a lui."
+  effects: []
+- name: Aura di Confusione
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (14). In caso di successo, una volta per ogni riposo lungo, create uno strato di illusione sul vostro corpo che rende difficile capire esattamente dove vi troviate. Marcate un numero qualsiasi di Stress per creare altrettanti strati aggiuntivi. Quando un avversario vi attacca, tirate un numero di d6 pari al numero di strati attualmente attivi. Se uno qualsiasi ottiene un risultato pari o superiore a 5, uno strato dell’aura viene distrutto e l’attacco fallisce. Se tutti i risultati sono pari o inferiori a 4, subite il danno e l’incantesimo termina."
+  effects: []
+- name: Terremoto
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (16). Una volta per riposo, in caso di successo, tutti i bersagli entro distanza Remota che non siano in volo devono effettuare un Tiro Reazione (18). I bersagli che falliscono subiscono 3d10+8 danni fisici e sono temporaneamente Vulnerabili. I bersagli che hanno successo subiscono metà dei danni. Inoltre, quando superate il Tiro Incantesimo, tutto il terreno entro distanza Remota diventa difficile da attraversare e le strutture in tale area potrebbero subire danni o crollare."
+  effects: []
+- name: Proiezione Sensoriale
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Una volta per riposo, effettuate un Tiro D Incantesimo (15). In caso di successo, avete e una visione che vi permette di vedere e sentire c chiaramente qualsiasi luogo in cui siete stati in r precedenza, come se vi trovaste lì in quel momento. t Potete muovervi liberamente in questa visione e non siete vincolati dalla fisica o dagli impedimenti di un corpo fisico. Questo incantesimo non può essere rilevato con mezzi mondani o magici. L’incantesimo ha fine quando subite danni o lanciate un altro incantesimo."
+  effects: []
+- name: Piegare la Realtà
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "opo che voi o un alleato consenziente avete E ffettuato un tiro, potete spendere 5 Speranze per a ambiare il risultato numerico di quel tiro con un q isultato a scelta. Il risultato deve essere compreso e ra quelli ottenibili in base al tipo di dado lanciato. s S"
+  effects: []
+- name: Frattura Celeste
+  class: Stregone
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "ffettuate un Tiro Incantesimo contro tutti gli vversari a distanza Lontana. Marcate un numero ualsiasi di Stress per far piovere frammenti di nergia arcana dall’alto. I bersagli contro cui avete uccesso subiscono 1d20+2 danni magici per ogni tress marcato."
+  effects: []
+
+- name: Evocare Muraglia
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Effettuate un Tiro Incantesimo (15). Una volta per riposo, in caso di successo, spendete una Speranza per creare una parete magica temporanea tra due punti entro distanza Lontana. Può essere alta fino a 15 metri e disporsi con qualsiasi angolazione. Le creature o gli oggetti che si trovano sul suo percorso vengono spostati su un lato a vostra scelta. La parete rimane in piedi fino a quando non effettuate un riposo o lanciate nuovamente Evocare Muraglia."
+  effects: []
+- name: Teletrasporto
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Una volta per ogni riposo lungo, potete teletrasportare istantaneamente voi stessi e un numero qualsiasi di bersagli consenzienti entro distanza Ravvicinata in un luogo in cui siete già stati. Scegliete una delle seguenti opzioni, quindi effettuate un Tiro Incantesimo (16): • Se conoscete molto bene il luogo, ottenete bonus +3. • Se avete visitato spesso il luogo, ottenete bonus +1. • Se avete visitato il luogo raramente, non ottenete alcun modificatore. • Se ci siete stati solo una volta, ottenete penalità −2. Se l’operazione ha esito positivo, apparirete nel punto che intendevate raggiungere. In caso contrario apparirete fuori rotta, a una distanza proporzionata all’entità del fallimento."
+  effects: []
+- name: Esilio
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Ravvicinata. In caso di successo, tirate un numero di d20 pari al vostro tratto da Incantatore. Il bersaglio deve effettuare un tiro reazione contro una Difficoltà pari al vostro risultato più alto. In caso di successo, il bersaglio marca uno Stress ma non viene esiliato. In caso di fallimento, una volta per riposo, viene invece esiliato da questo regno. Quando i PG tirano con Paura, la Difficoltà ottiene penalità −1 e il bersaglio effettua un secondo tiro reazione. In caso di successo, riesce a tornare dall’esilio."
+  effects: []
+- name: Onda Disgregatrice
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Effettuate un Tiro Incantesimo (18). In caso di successo, una volta per ogni riposo lungo, il GM vi dice quali avversari entro distanza Lontana hanno una Difficoltà pari o inferiore a 18. Per ciascuno di quelli che desiderate colpire con l’incantesimo, marcate uno Stress. Essi vengono uccisi e non possono tornare in vita in alcun modo."
+  effects: []
+- name: Unione Trascendente
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Una volta per riposo lungo, spendete 5 Speranze per legare con questo incantesimo due o più creature consenzienti. Fino al vostro prossimo riposo, quando una creatura legata da questa unione marcherebbe Stress o subirebbe Punti Ferita, le altre creature così legate possono scegliere chi subisce il danno."
+  effects: []
+- name: Sigillo del Castigo
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Contrassegnate un avversario entro distanza Ravvicinata con un sigillo del castigo. Il GM ottiene Paura. Quando l’avversario contrassegnato infligge danno a voi o ai vostri alleati, mettete un d8 su questa carta. Potete porre su questa carta un numero massimo di d8 pari al vostro livello. Quando attaccate con successo l’avversario contrassegnato, tirate i dadi su questa carta e aggiungete il totale al vostro tiro di danno, poi rimuovete i dadi. Questo effetto termina quando l’avversario contrassegnato viene sconfitto o quando lanciate nuovamente Sigillo del Castigo."
+  effects: []
+- name: Padronanza del Codice
+  class: Mago
+  type: Abilità
+  caster_trait: Conoscenza
+  description: "Quando 4 o più carte dominio nella vostra dotazione provengono dal dominio del Codice, ottenete i seguenti benefici: • Potete marcare uno Stress per aggiungere la vostra Competenza a un Tiro Incantesimo. • Una volta per riposo, sostituite questa carta con una qualsiasi della vostra riserva senza pagare il suo Costo di Richiamo."
+  effects: []
+- name: Rifugio Sicuro
+  class: Mago
+  type: Incantesimo
+  caster_trait: Conoscenza
+  description: "Quando avete qualche minuto di calma per concentrarvi, potete spendere 2 Speranze per evocare il vostro Rifugio Sicuro, una grande dimora interdimensionale dove voi e i vostri alleati potete rifugiarvi. Quando lo fate, una porta magica appare entro distanza Ravvicinata. Solo le creature di vostra scelta possono varcarla. Una volta dentro, potete rendere invisibile l’ingresso. Voi e chiunque altro all’interno potete sempre uscirne. Una volta usciti, la porta deve essere evocata nuovamente. Quando riposate nel vostro Rifugio Sicuro, potete scegliere una mossa aggiuntiva durante l’interludio."
+  effects: []
+
+- name: Astuto Ingannatore
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Spendete una Speranza per ottenere vantaggio su un tiro per ingannare o raggirare qualcuno con una menzogna."
+  effects: []
+- name: Fascinazione
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Ravvicinata. In caso di successo, il bersaglio diventa temporaneamente Affascinato. Mentre è Affascinato, l’attenzione del bersaglio è fissa su di voi, restringendo il suo campo visivo e ignorando altri suoni tranne la vostra voce. Una volta per riposo, in caso di successo, potete marcare uno Stress per costringere il bersaglio Affascinato a marcare uno Stress a sua volta."
+  effects: []
+- name: Parole Ispiratrici
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Le vostre parole sono intrise di potere. Dopo un riposo lungo, mettete su questa carta un numero di gettoni pari alla vostra Presenza. Quando parlate con un alleato, potete spendere un gettone da questa carta per dargli uno dei seguenti benefici: • L’alleato rimuove uno Stress. • L’alleato recupera un Punto Ferita. • L’alleato ottiene una Speranza. Quando completate un riposo lungo, rimuovete i gettoni non spesi."
+  effects: []
+- name: Nessuna Menzogna
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Prossima. In caso di successo, il bersaglio non può mentirvi mentre rimane entro distanza Ravvicinata, ma non è obbligato a parlare. Se gli ponete una domanda e lui rifiuta di rispondere, deve marcare uno Stress e l’effetto termina. Il bersaglio in genere non è consapevole che questo incantesimo sia stato lanciato su di lui finché non lo inducete a dire la verità."
+  effects: []
+- name: Piantagrane
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Quando schernite o provocate un bersaglio entro distanza Lontana, effettuate un Tiro Presenza contro di lui. Una volta per riposo, se il tiro ha esito positivo, tirate un numero di d4 pari alla vostra Competenza. Il bersaglio deve marcare Stress pari al risultato più alto ottenuto."
+  effects: []
+- name: Scintillio Ipnotico
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Effettuate un Tiro Incantesimo contro tutti gli avversari davanti a voi entro distanza Ravvicinata. Una volta per riposo, in caso di successo, create un’illusione di colori e luci lampeggianti che Stordisce temporaneamente i bersagli contro cui avete successo e li costringe a marcare uno Stress. Mentre sono Storditi, non possono usare reazioni e non possono compiere altre azioni finché non rimuovono questa condizione."
+  effects: []
+- name: Invisibilità
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Effettuate un Tiro Incantesimo (10). In caso di successo, marcate uno Stress e scegliete voi stesso o un alleato entro distanza di Mischia che diventerà Invisibile. Una creatura Invisibile non può essere vista se non con mezzi magici e i tiri attacco contro di essa sono effettuati con svantaggio. Mettete su questa carta un numero di gettoni pari al vostro tratto da Incantatore. Quando la creatura Invisibile effettua un’azione, spendete un gettone da questa carta. Dopo che l’azione che consuma l’ultimo gettone è stata risolta, l’effetto termina. Potete usare Invisibilità su una sola creatura alla volta."
+  effects: []
+- name: Parole di Conforto
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Durante un riposo breve, quando vi prendete del tempo per confortare un altro personaggio mentre usate la mossa di interludio Curare Ferite su di lui, curate un Punto Ferita aggiuntivo. Quando lo fate, anche voi recuperate 2 Punti Ferita."
+  effects: []
+- name: Attraverso i Tuoi Occhi
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Scegliete un bersaglio entro distanza Remota. Potete vedere attraverso i suoi occhi e sentire attraverso le sue orecchie. Potete passare liberamente dall’uso dei vostri sensi a quelli del bersaglio fino a quando non lanciate un altro incantesimo o fino al prossimo riposo."
+  effects: []
+- name: Lettura della Mente
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Potete sbirciare nella mente altrui. Spendete una Speranza per leggere i pensieri vaghi e superficiali di un bersaglio entro distanza Lontana. Effettuate un Tiro Incantesimo contro il bersaglio per scavare più a fondo e trovare pensieri più nascosti. Con un tiro Paura, il bersaglio potrebbe, a discrezione del GM, rendersi conto che state leggendo la sua mente."
+  effects: []
+- name: Voce della Discordia
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Sussurrate parole di discordia a un avversario entro distanza di Mischia ed effettuate un Tiro Incantesimo (13). In caso di successo, il bersaglio deve marcare uno Stress e attaccare un altro avversario invece che voi o i vostri alleati. Una volta terminato l’attacco, il bersaglio si rende conto di ciò che è successo. La prossima volta che lanciate Voce della Discordia su di lui, subite penalità –5 al Tiro Incantesimo."
+  effects: []
+- name: Insuperabile
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Quando subite 1 o più Punti Ferita da un attacco, potete marcare uno Stress per collocare un numero di gettoni pari al numero di Punti Ferita subiti su questa carta. Al vostro prossimo attacco riuscito, ottenete bonus +5 al tiro di danno per ogni gettone su questa carta, poi rimuovete tutti i gettoni."
+  effects: []
+- name: Condividere l'Onere
+  class: Bardo
+  type: Incantesimo
+  caster_trait: Presenza
+  description: "Una volta per riposo, assorbite lo Stress di una creatura consenziente entro distanza di Mischia. Il bersaglio descrive quali conoscenze intime o emozioni trapelino telepaticamente dalla sua mente in questo momento tra voi. Trasferite su di voi un numero qualsiasi di Stress che ha perduto, quindi ottenete una Speranza per ogni Stress trasferito."
+  effects: []
+- name: Carisma Infinito
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Dopo aver effettuato un tiro azione per persuadere, mentire o ottenere favori, potete spendere una Speranza per ripetere il tiro del Dado Speranza o Paura."
+  effects: []
+- name: Padronanza della Grazia
+  class: Bardo
+  type: Abilità
+  caster_trait: Presenza
+  description: "Abilità Padronanza della GRAZIA Una volta per riposo, assorbite lo Stress di una creatura consenziente entro distanza di Mischia. Il bersaglio descrive quali conoscenze intime o emozioni trapelino telepaticamente dalla sua mente in questo momento tra voi. Trasferite su di voi un numero qualsiasi di Stress che ha perduto, quindi ottenete una Speranza per ogni Stress trasferito. Dopo aver effettuato un tiro azione per..."
+  effects: []
+
+- name: Rapidità di Mano
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "Avete vantaggio sui tiri azione per scassinare serrature non magiche, disinnescare trappole non magiche o rubare oggetti da un bersaglio (sia con furtività che con la forza)."
+  effects: []
+- name: Pioggia di Lame
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Spendete una Speranza per effettuare un Tiro Incantesimo ed evocare coltelli da lancio che colpiscono tutti i bersagli entro distanza Prossima. I bersagli contro cui avete successo subiscono d8+2 danni magici applicando la Competenza. Se un bersaglio colpito è Vulnerabile, subisce 1d8 danni aggiuntivi."
+  effects: []
+- name: Travestimento Perfetto
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Quando avete qualche minuto per prepararvi, potete marcare uno Stress per assumere le sembianze di qualsiasi umanoide che riuscite a immaginare chiaramente. Mentre siete travestiti, avete vantaggio sui Tiri Presenza per evitare di essere scoperti. Mettete su questa scheda un numero di gettoni pari al vostro tratto da Incantatore. Quando compiete un’azione mentre siete travestiti, spendete un gettone da questa scheda. Dopo che l’azione che consuma l’ultimo gettone è stata risolta, il travestimento svanisce."
+  effects: []
+- name: Spirito di Mezzanotte
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Spendete una Speranza per evocare uno spirito di dimensioni umanoidi che può muoversi o trasportare oggetti fino al prossimo riposo. Potete anche ordinargli di attaccare un avversario. Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Remota. In caso di successo, lo spirito si sposta a distanza di Mischia con quel bersaglio. Tirate un numero di d6 pari al vostro tratto da Incantatore e infliggete lo stesso numero di danni magici al bersaglio. Lo spirito poi si dissipa. Potete controllare solo uno spirito alla volta."
+  effects: []
+- name: Legacci dell'Ombra
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Effettuate un Tiro Incantesimo contro tutti gli avversari entro distanza Prossima. I bersagli contro cui avete successo sono temporaneamente Trattenuti dalla loro stessa ombra."
+  effects: []
+- name: Strangolare
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "Quando vi posizionate dietro una creatura delle vostre dimensioni, potete marcare uno Stress per afferrarle la gola, rendendola temporaneamente Vulnerabile. Quando una creatura attacca un bersaglio Vulnerabile in questo modo, infligge 2d6 danni aggiuntivi."
+  effects: []
+- name: Velo Notturno
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Effettuate un Tiro Incantesimo (13). In caso di successo, create una cortina temporanea di oscurità tra due punti entro distanza Lontana. Solo voi potete vedere attraverso questa oscurità. Siete considerati Nascosti agli avversari dall’altra parte del velo e avete vantaggio sugli attacchi che effettuate attraverso l’oscurità. Il velo rimane fino a quando non lanciate un altro incantesimo."
+  effects: []
+- name: Perizia Furtiva
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "Quando tirate con Paura mentre tentate di muovervi inosservati in un’area pericolosa, potete marcare uno Stress per tirare invece con Speranza. Se anche un alleato entro distanza Ravvicinata si sta muovendo furtivamente e ottiene un tiro con Paura, potete marcare uno Stress per cambiare il suo risultato in un tiro con Speranza."
+  effects: []
+- name: Punto Debole
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Prossima. In caso di successo, spendete una Speranza per evocare un glifo oscuro sul suo corpo che espone i suoi punti deboli, riducendo temporaneamente la Difficoltà del bersaglio di un valore pari alla vostra Conoscenza (minimo 1)."
+  effects: []
+- name: Silenzio
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Ravvicinata. In caso di successo, spendete una Speranza per evocare una magia soppressiva attorno al bersaglio che avvolge tutto ciò che si trova a distanza Prossima da esso e lo segue mentre si muove. Il bersaglio e tutto ciò che si trova nell’area è Silenziato fino a quando il GM non spende un Paura nel proprio turno per rimuovere questa condizione, voi lanciate nuovamente Silenzio o subite un danno Maggiore. Mentre è Silenziato, il bersaglio non può fare rumore né lanciare incantesimi."
+  effects: []
+- name: Ritirata Fantasma
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Spendete una Speranza per lanciare Ritirata Fantasma nel punto in cui vi trovate. Spendete un’altra Speranza in qualsiasi momento prima del prossimo riposo per scomparire da dove vi trovate e riapparire nel punto scelto quando avete attivato Ritirata Fantasma. Poi l’incantesimo termina."
+  effects: []
+- name: Oscuri Disegni
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Oscuri Bisbigli: potete parlare nella mente di una persona con cui avete contatto fisico. Marcando uno Stress, effettuate un Tiro Incantesimo contro di essa e, in caso di successo, ponete al GM domande su dove si trova, cosa sta facendo, cosa teme o cosa ama di più."
+  effects: []
+- name: Travestimento di Massa
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Quando avete qualche minuto di silenzio per concentrarvi, potete marcare uno Stress per cambiare l’aspetto di tutte le creature consenzienti entro distanza Ravvicinata. Le loro nuove forme devono condividere una struttura corporea e dimensioni generali e possono essere sia qualcuno o qualcosa che avete già visto prima o essere completamente inventate. Una creatura travestita ha vantaggio sui Tiri Presenza per evitare di essere scoperta. Attivate un Conto alla rovescia (8). Il tempo scorre come conseguenza delle valutazioni del GM. Raggiunto lo 0, il travestimento svanisce."
+  effects: []
+- name: Padronanza della Mezzanotte
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "Quando 4 o più carte dominio nella vostra dotazione appartengono al dominio della Mezzanotte, ottenete i seguenti benefici: • Una volta per riposo, quando avete 0 Speranza e il GM otterrebbe Paura, potete invece ottenere Speranza. • Quando effettuate un attacco con successo, potete marcare uno Stress per aggiungere il risultato del Dado Paura al tiro di danno."
+  effects: []
+- name: Schivata Evanescente
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Quando un attacco contro di voi che infliggerebbe danno fisico fallisce, potete spendere una Speranza per sparire nell’ombra, diventando Nascosti e teletrasportandovi in un punto entro distanza Ravvicinata dall’attaccante. Rimanete Nascosti fino alla vostra prossima azione."
+  effects: []
+- name: Caccia Notturna
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "La vostra abilità cresce con il buio. Mentre siete in penombra o nell’oscurità, ottenete bonus +1 all’Evasione ed effettuate tiri attacco con vantaggio."
+  effects: []
+- name: Carica Magica
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Quando subite danni magici, mettete gettoni pari al numero di Punti Ferita subiti su questa carta, fino a un massimo pari al vostro tratto da Incantatore. Quando colpite un bersaglio, potete spendere un numero qualsiasi di gettoni per aggiungere un d6 al tiro di danno per ogni gettone speso."
+  effects: []
+- name: Terrore Notturno
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Una volta per riposo lungo, un qualsiasi numero di bersagli a vostra scelta entro distanza Prossima vi percepirà come un essere orrendo e demoniaco. I bersagli devono superare un Tiro Reazione (16) o essere temporaneamente Terrorizzati. Mentre sono Terrorizzati, sono Vulnerabili. Sottraete al GM un valore di Paura pari al numero di bersagli Terrorizzati (fino al valore di Paura nella riserva del GM). Lanciate un numero di d6 pari alla Paura rubata e infliggete il danno totale a ciascun bersaglio Terrorizzato. Scartate la Paura rubata."
+  effects: []
+- name: Rintocco del Crepuscolo
+  class: Fuorilegge
+  type: Abilità
+  caster_trait: Astuzia
+  description: "Scegliete un bersaglio entro distanza Lontana. Quando superate un tiro azione contro di esso che non causa danno, mettete un gettone su questa carta. Quando infliggete danno a questo bersaglio, spendete un numero qualsiasi di gettoni per aggiungere un d12 al tiro di danno per ogni gettone speso. Potete attivare il Rintocco del Crepuscolo su una sola creatura alla volta. Quando scegliete un nuovo bersaglio o riposate, rimuovete tutti i gettoni non spesi."
+  effects: []
+- name: Eclissi
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Effettuate un Tiro Incantesimo (16). In caso di successo, una volta per ogni riposo lungo, immergete nell’oscurità un’intera area entro distanza Lontana in cui solo voi e i vostri alleati possono vedere. I Tiri Attacco hanno svantaggio quando prendono di mira voi o un alleato all’interno dell’area oscurata. Inoltre, quando voi o un alleato effettuate un tiro con Speranza contro un avversario all’interno dell’area oscurata, il bersaglio deve marcare uno Stress. Questo incantesimo dura fino a quando il GM non spende un Paura nel proprio turno per annullarlo o subite un danno Grave."
+  effects: []
+- name: Spettro nel Buio
+  class: Fuorilegge
+  type: Incantesimo
+  caster_trait: Astuzia
+  description: "Marcate uno Stress per diventare Spettrali fino a quando non effettuate un tiro azione contro un’altra creatura. Mentre siete Spettrali, siete immuni ai danni fisici, potete fluttuare e oltrepassare oggetti solidi. Le altre creature possono comunque vedervi mentre siete in questa forma."
+  effects: []
+
+- name: Combattente Versatile
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Potete usare per un arma equipaggiata un tratto del personaggio diverso da quello normalmente indicato. Quando infliggete danno, potete marcare uno Stress per ottenere il risultato massimo in uno dei dadi di danno invece di tirarlo."
+  effects: []
+- name: Focus Letale
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per riposo, potete puntare un bersaglio a scelta. Fino a quando non attaccate un’altra creatura, sconfiggete il bersaglio indicato o la battaglia termina, ottenete bonus +1 alla Competenza."
+  effects: []
+- name: Armatura Rinforzata
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Mentre indossate un’armatura, ottenete bonus +2 alla soglia di danno."
+  effects: []
+- name: Rinforzo
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando subite danno Grave, potete marcare uno Q Stress per ridurne la gravità di una soglia. g"
+  effects: []
+- name: Non è Abbastanza
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "uando tirate i dadi di danno, potete ritirare tutti E li 1 e i 2. d u t g c"
+  effects: []
+- name: Turbine
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "ffettuate un attacco contro un bersaglio entro istanza Prossima. In caso di successo, spendete na Speranza per attaccare con lo stesso risultato utti gli altri bersagli entro distanza Prossima. Tutti li avversari aggiuntivi contro cui avete successo on questa abilità subiscono metà dei danni."
+  effects: []
+- name: Cameratismo
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per ogni riposo lungo, quando vi M complimentate con qualcuno o discutete di ciò in cui a eccelle, entrambi potete ottenere 3 Speranze."
+  effects: []
+- name: Spericolato
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "arcate uno Stress per ottenere vantaggio su un U ttacco. d e d"
+  effects: []
+- name: Mischiare le Carte
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "na volta per riposo, quando una creatura entro istanza di Mischia sta per infliggervi danno, potete vitare l’attacco e muovervi in sicurezza oltre la istanza di Mischia del nemico."
+  effects: []
+- name: Vantaggio del Campione
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando ottenete un successo critico con un attacco, potete spendere fino a 3 Speranze e scegliere una delle seguenti opzioni per ogni Speranza spesa: • Guarire un Punto Ferita. • Riparare una Casella Armatura. • Il bersaglio subisce un Punto Ferita aggiuntivo. Non è possibile selezionare la stessa opzione più di una volta."
+  effects: []
+- name: Vitalità
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando selezionate questa carta, ottenete permanentemente due dei seguenti vantaggi: • Una casella Stress • Una casella Punti Ferita • Bonus +2 alla soglia di danno Quindi mettete questa carta nella riserva in modo permanente."
+  effects: []
+- name: Temprato alla Battaglia
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Speranza spesa: Non è possibile selezionare la stessa opzione più di una volta. VITALITÀ TEMPRATO DALLA BATTAGLIA Quando selezionate questa carta, ottenete permanentemente due dei seguenti vantaggi: Una volta per riposo lungo, quando dovreste effettuare una Mossa Finale, potete spendere una Speranza per recuperare un Punto Ferita. Quindi mettete questa carta nella riserva in modo permanente."
+  effects: []
+- name: Infuriarsi
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Prima di effettuare un attacco, potete marcare uno Stress per ottenere un bonus al tiro di danno pari al doppio della Forza. Potete Infuriarvi due volte per attacco."
+  effects: []
+- name: Padronanza della Lama
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando 4 o più carte dominio nella vostra dotazione appartengono al dominio delle Lame, ottenete i seguenti benefici: • Bonus +2 ai tiri attacco • Bonus +4 alla soglia di danno Grave"
+  effects: []
+- name: Colpo di Striscio
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando fallite un attacco, potete marcare uno Stress per infliggere danni con l’arma applicando metà della vostra Competenza."
+  effects: []
+- name: Grido di Battaglia
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per ogni riposo lungo, mentre caricate verso il pericolo, potete lanciare un grido che ispira gli alleati. Tutti gli alleati che possono sentirlo rimuovono uno Stress e ottengono una Speranza. Inoltre, gli alleati ottengono vantaggio sui tiri attacco finché voi o un alleato non fallite un tiro con Paura."
+  effects: []
+- name: Frenesia
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per riposo lungo, potete entrare in uno stato di Frenesia finché non ci sono più avversari in vista. Mentre siete in Frenesia, non potete marcare le Caselle Armatura e ottenete bonus +10 ai tiri di danno e bonus +8 alla vostra soglia di danno Grave."
+  effects: []
+- name: Sangue e Gloria
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando ottenete un successo critico con un attacco con un’arma, ottenete una Speranza aggiuntiva o rimuovete uno Stress aggiuntivo. Inoltre, quando infliggete danni sufficienti a sconfiggere un nemico, ottenete una Speranza o rimuovete uno Stress."
+  effects: []
+- name: Fendente del Mietitore
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per ogni riposo lungo, spendete una Speranza per effettuare un tiro attacco. Il GM vi dice contro quali bersagli entro la portata dell’attacco avreste successo. Scegliete uno di questi bersagli e costringetelo a subire 5 Punti Ferita."
+  effects: []
+- name: Mastino della Guerra
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando effettuate un attacco con successo contro un avversario, potete marcare 4 Stress per costringere il bersaglio a subire un numero di Punti Ferita pari al numero di Punti Ferita che avete attualmente subito invece di tirare per i danni."
+  effects: []
+- name: Massacro
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando effettuate con successo un attacco con la vostra arma, non infliggete mai danni inferiori alla soglia di danno Maggiore del bersaglio (il bersaglio subisce sempre un minimo di 2 Punti Ferita). Inoltre, quando una creatura nel raggio d’azione della vostra arma infligge danno a un alleato con un attacco che non vi bersaglia, potete marcare uno Stress per costringerla a effettuare un Tiro Reazione (15). In caso di fallimento, il bersaglio subisce un Punto Ferita."
+  effects: []
+- name: A Petto Nudo
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando scegliete di non indossare un’armatura, avete un Punteggio di Armatura base pari a 3 + la vostra Forza e utilizzate i seguenti valori come soglie di danno base: • Rango 1: 9/19 • Rango 2: 11/24 • Rango 3: 13/31 • Rango 4: 15/38"
+  effects: []
+- name: Spinta Energica
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Effettuate un attacco con la vostra arma primaria contro un bersaglio entro distanza di Mischia. In caso di successo, infliggete danno e respingete il bersaglio fino a distanza Ravvicinata. In caso di successo con Speranza, aggiungete un d6 al tiro di danno. Inoltre, potete spendere una Speranza per rendere il bersaglio temporaneamente Vulnerabile."
+  effects: []
+- name: Sono il Tuo Scudo
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando un alleato a distanza Prossima sta per subire danni, potete marcare uno Stress per frapporvi e diventare il bersaglio dell’attacco. Quando subite danni da questo attacco, potete marcare un numero qualsiasi di Caselle Armatura."
+  effects: []
+- name: Armaiolo
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Mentre indossate un’armatura, ottenete bonus +1 al Punteggio di Armatura. Durante un riposo, quando scegliete di riparare la vostra armatura con una mossa di interludio, anche i vostri alleati riparano una Casella Armatura."
+  effects: []
+- name: Colpo Trascinante
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per riposo, quando ottenete successo critico in un attacco, voi e tutti gli alleati che possono vedervi o sentirvi possono curare un Punto Ferita o rimuovere 1d4 Stress."
+  effects: []
+- name: Ineluttabile
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando fallite un tiro azione, il vostro prossimo tiro azione ha vantaggio."
+  effects: []
+- name: In Piedi
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Ottenete un bonus alla soglia di danno Grave pari alla vostra Competenza. Quando subite 1 o più Punti Ferita da un attacco, recuperate uno Stress."
+  effects: []
+- name: Solo un Graffio
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando subite danno, potete marcare uno Stress per ridurre la gravità di una soglia. Quando lo fate, tirate un d6. Con un risultato pari o inferiore a 3, mettete questa carta nella riserva."
+  effects: []
+- name: Padronanza del Valore
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Abilità Abilità Abilità IN PIEDI! SOLO UN GRAFFIO Padronanza DEL VALORE Ottenete un bonus alla soglia di danno Grave pari alla vostra Competenza. Quando subite 1 o più Punti Ferita da un attacco, recuperate uno Stress. Quando subite danno, potete marcare uno Stress per ridurre la gravità di una soglia. Quando lo fate, tirate un d6. Con un risultato pari o inferiore a 3, mettete questa carta nella riserva."
+  effects: []
+- name: A Tutta Forza
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Una volta per riposo lungo, marcate 3 Stress per spingere il vostro corpo al limite. Ottenete bonus +2 a tutti i tratti del vostro personaggio fino al prossimo riposo."
+  effects: []
+- name: Schianto Tellurico
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Spendete 2 Speranze per colpire il terreno dove vi trovate ed effettuate un Tiro Forza contro tutti i bersagli entro distanza Prossima. I bersagli contro cui avete successo vengono respinti a distanza Lontana e devono effettuare un Tiro Reazione (17). I bersagli che falliscono subiscono 4d10+8 danni. I bersagli che hanno successo subiscono metà dei danni."
+  effects: []
+- name: Serrare i Ranghi
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Descrivete la posizione difensiva che assumete e spendete una Speranza. Se un avversario si muove entro distanza Prossima, viene attirato a distanza di Mischia e Trattenuto. Questa condizione dura fino a quando non vi muovete o fallite un tiro con Paura, oppure se il GM spende 2 punti Paura nel suo turno per annullarla."
+  effects: []
+- name: Guidarli con l'Esempio
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando infliggete danno a un avversario, potete marcare uno Stress e descrivere come incoraggiate i vostri alleati. Il prossimo PG ad attaccare quell’avversario può rimuovere uno Stress o ottenere una Speranza."
+  effects: []
+- name: Indistruttibile
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando subite il vostro ultimo Punto Ferita, invece di effettuare la mossa finale potete tirare un d6 e curare un numero di Punti Ferita pari al risultato. Quindi mettete questa carta nella riserva."
+  effects: []
+- name: Corazza Inviolabile
+  class: Guardiano
+  type: Abilità
+  caster_trait: ""
+  description: "Quando dovreste marcare una Casella Armatura, tirate un numero di d6 pari alla vostra Competenza. Se un dado qualsiasi ottiene un 6, riducete la gravità del danno di una soglia senza marcare una Casella Armatura."
+  effects: []
+
+- name: Ferocia
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando infliggete 1 o più Punti Ferita a un avversario, potete spendere 2 Speranze per aumentare la vostra Evasione di un numero pari ai Punti Ferita che gli avete inflitto. Questo bonus dura fino al termine del prossimo attacco contro di voi."
+  effects: []
+- name: Approccio Strategico
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Dopo un riposo lungo, mettete su questa carta un numero di gettoni pari alla vostra Conoscenza (minimo 1). La prima volta che vi muovete a distanza Ravvicinata da un avversario ed effettuate un attacco contro di lui, potete spendere un gettone per scegliere una delle seguenti opzioni: • Effettuate l’attacco con vantaggio. • Rimuovete uno Stress di un alleato entro distanza di Mischia dall’avversario. • Aggiungete un d8 al vostro tiro di danno. Quando completate un riposo lungo, rimuovete tutti i gettoni non utilizzati."
+  effects: []
+- name: Risolutezza
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando marcate una Casella Armatura per ridurre il danno in arrivo, potete marcare uno Stress per marcare una Casella Armatura aggiuntiva."
+  effects: []
+- name: Tattiche
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando Aiutate un Alleato, questi può spendere una Speranza per aggiungere una delle vostre Esperienze al suo tiro insieme al vostro dado vantaggio. Quando effettuate un Tiro Combinato, potete tirare un d20 come Dado Speranza."
+  effects: []
+- name: Lanciami!
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Marcate uno Stress per farvi lanciare da un alleato consenziente fino a distanza Ravvicinata ed eseguire un attacco aereo contro un bersaglio entro una distanza Lontana. Avete vantaggio all’attacco, aggiungete un d10 al tiro di danno e terminate la vostra mossa a distanza di Mischia dal bersaglio."
+  effects: []
+- name: Ritorcere
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando un attacco contro di voi effettuato da una distanza superiore alla distanza di Mischia fallisce, tirate un numero di d6 pari alla vostra Competenza. Se uno qualsiasi dei d6 ottiene un 6, potete marcare uno Stress per ridirigere l’attacco verso un avversario che si trova entro distanza Prossima da voi."
+  effects: []
+- name: Manovre Evasive
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Una volta per riposo, marcate uno Stress per correre ovunque entro la distanza Lontana senza effettuare un Tiro Agilità. Se terminate questo movimento entro la distanza di Mischia di un avversario ed effettuate immediatamente un attacco nei suoi confronti, ottenete bonus +1 al tiro attacco."
+  effects: []
+- name: In Arrivo
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando siete bersaglio di un attacco effettuato da oltre la distanza di Mischia, potete marcare uno Stress per tirare un d4 e ottenere un bonus all’Evasione pari al risultato."
+  effects: []
+- name: Intoccabile
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Ottenete un bonus alla vostra Evasione pari alla metà della vostra Agilità."
+  effects: []
+- name: Conosci il Tuo Nemico
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando osservate una creatura, potete effettuare un Tiro Istinto contro di essa. In caso di successo, spendete una Speranza e ponete al GM una domanda tra le seguenti opzioni: • I suoi Punti Ferita e Stress rimanenti. • La sua Difficoltà e le sue soglie di danno. • Le sue tattiche e suoi dadi di danno base. • I suoi privilegi ed Esperienze. Inoltre, in caso di successo, potete marcare uno Stress per rimuovere una Paura dalla riserva di Paura del GM."
+  effects: []
+- name: Mossa Distintiva
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Assegnate un nome e descrivete la vostra mossa di combattimento distintiva. Una volta per riposo, quando eseguite questa mossa distintiva come parte di un’azione, potete tirare un d20 come Dado Speranza. In caso di successo, rimuovete uno Stress."
+  effects: []
+- name: Botta e Risposta
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando un attacco contro di voi effettuato entro distanza di Mischia fallisce, potete marcare uno Stress e cogliere l’opportunità per infliggere il danno di una delle armi che impugnate all’attaccante."
+  effects: []
+- name: Recupero
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Durante un riposo breve, potete scegliere invece una mossa di interludio di riposo lungo. Potete spendere una Speranza per consentire a un alleato di fare lo stesso."
+  effects: []
+- name: Padronanza delle Ossa
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando 4 o più carte dominio nella vostra dotazione appartengono al dominio delle Ossa, ottenete i seguenti benefici: • Bonus +1 all’Agilità • Una volta per riposo, potete spendere 3 Speranze per far fallire un attacco che vi avrebbe colpito."
+  effects: []
+- name: Precisione Crudele
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando effettuate con successo un attacco con un’arma, ottenete un bonus al tiro di danno pari al vostro bonus di Astuzia o Agilità."
+  effects: []
+- name: Fendente Frantumatore
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando effettuate un attacco con successo, potete marcare uno Stress per fare in modo che il prossimo attacco con successo contro lo stesso bersaglio infligga 2d12 danni aggiuntivi."
+  effects: []
+- name: Adunata
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Effettuate un Tiro Agilità contro tutti i bersagli entro distanza Ravvicinata. Spendete una Speranza per spostare i bersagli contro cui avete successo, e tutti gli alleati disposti a farlo entro distanza Ravvicinata, in un altro punto entro distanza Ravvicinata."
+  effects: []
+- name: Al Limite
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando vi rimangono 2 o meno Punti Ferita, non subite danni Minori."
+  effects: []
+- name: Colpo Frammentante
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Spendete una Speranza e attaccate tutti gli avversari nel raggio d’azione della vostra arma. Una volta per ogni riposo lungo, se ottenete un successo contro uno qualsiasi dei bersagli, sommate il danno inflitto, quindi ridistribuitelo a piacere tra i bersagli contro cui avete avuto successo. Quando infliggete danno a un bersaglio, tirate un dado di danno aggiuntivo e sommatelo al danno inflitto a quel bersaglio."
+  effects: []
+- name: Corsa di Morte
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Spendete 3 Speranze per correre in linea retta attraverso il campo di battaglia fino a un punto entro distanza Lontana, attaccando tutti gli avversari entro portata della vostra arma lungo il percorso. Scegliete l’ordine in cui infliggete danno ai bersagli che avete colpito. Per il primo, tirate il danno dell’arma con bonus +1 alla vostra Competenza. Quindi rimuovete un dado dal tiro di danno e infliggete il danno rimanente al bersaglio successivo. Continuate a rimuovere un dado per ogni bersaglio colpito fino a quando non avete più dadi di danno o avversari. Non potete colpire lo stesso avversario più di una volta per attacco."
+  effects: []
+- name: Passo Lesto
+  class: Ranger
+  type: Abilità
+  caster_trait: Agilità
+  description: "Quando un attacco contro di voi fallisce, rimuovete uno Stress. Se non potete rimuovere uno Stress, ottenete invece una Speranza."
+  effects: []
+
+- name: Segugio Infallibile
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Quando seguite le tracce di una creatura specifica o di un gruppo di creature basandovi sui segni del loro passaggio, potete spendere qualsiasi numero di Speranze e porre al GM altrettante domande dalla lista seguente. • In che direzione sono andati? • Quanto tempo fa hanno oltrepassato questo luogo? • Cosa stavano facendo in questo luogo? • Quanti erano? Quando incontrate creature che avete seguito in questo modo, ottenete bonus +1 all’Evasione contro di loro."
+  effects: []
+- name: Lingua della Natura
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Potete parlare la lingua del mondo naturale. Quando volete parlare con le piante e gli animali intorno a voi, effettuate un Tiro Istinto (12). In caso di successo, vi daranno le informazioni che conoscono. Con un tiro Paura, la loro conoscenza potrebbe essere limitata o avere un costo. Inoltre, prima di effettuare un Tiro Incantesimo mentre vi trovate in un ambiente naturale, potete spendere una Speranza per ottenere bonus +2 al tiro."
+  effects: []
+- name: Rovi Maligni
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Lontana. In caso di successo, radici e rampicanti si estendono dal terreno, infliggendo 1d8+1 danni fisici e Trattenendo temporaneamente il bersaglio. Inoltre, in caso di successo, potete spendere una Speranza per Trattenere temporaneamente un altro avversario entro distanza Prossima dal primo bersaglio."
+  effects: []
+- name: Evoca Sciame
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Scarabei Corazzati di Tekaira: Marcate uno Stress per evocare scarabei corazzati che vi circondano. Quando subite il prossimo danno, riducetene la gravità di una soglia. Potete spendere una Speranza per mantenere evocati gli scarabei dopo aver subito il danno. Lucciole Fiammanti: Effettuate un Tiro Incantesimo contro tutti gli avversari entro distanza Ravvicinata. Spendete una Speranza per infliggere 2d8+3 danni magici ai bersagli contro cui avete avuto successo."
+  effects: []
+- name: Famiglio della Natura
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Incantesimo FAMIGLIO DELLA NATURA Spendete una Speranza per evocare un piccolo spirito della natura o una creatura della foresta fino al prossimo riposo, fino a quando non lanciate nuovamente Famiglio della Natura o il famiglio viene bersagliato da un attacco. Se spendete una Speranza aggiuntiva, potete evocare un famiglio volante. Potete comunicare con esso, effettuare un Tiro Incantesimo per assegnargli semplici..."
+  effects: []
+- name: Dardo Corrosivo
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Lontana. In caso di successo, infliggete d6+4 danni magici applicando la vostra Competenza. Inoltre, marcate 2 o più Stress per renderlo permanentemente Ustionato. Un bersaglio Ustionato subisce penalità –1 alla sua Difficoltà per ogni 2 Stress che avete speso. Questa condizione è cumulabile."
+  effects: []
+- name: Stelo Torreggiante
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Una volta per riposo, potete evocare uno stelo spesso e contorto entro distanza Ravvicinata che può essere facilmente scalato. La sua altezza può raggiungere una distanza Lontana. Marcate uno Stress per usare questo incantesimo come un attacco. Effettuate un Tiro Incantesimo contro un avversario o un gruppo di avversari entro distanza Ravvicinata. Lo stelo solleva in aria i bersagli contro cui avete successo per poi farli cadere, infliggendo d8 danni fisici applicando la vostra Competenza."
+  effects: []
+- name: Stretta Letale
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Ravvicinata e scegliete una delle seguenti opzioni: • Attirate il bersaglio a distanza di Mischia o vi avvicinate a lui a distanza di Mischia. • Soffocate il bersaglio e lo costringete a marcare 2 Stress. • Tutti gli avversari tra voi e il bersaglio devono superare un Tiro Reazione (13) o essere colpiti dai rampicanti, subendo 3d6+2 danni fisici. In caso di successo, dalle vostre mani si estendono dei rampicanti che causano l’effetto scelto e Trattengono temporaneamente il bersaglio."
+  effects: []
+- name: Prato del Risanamento
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Una volta per riposo lungo, potete evocare un campo di piante curative intorno a voi. Ovunque entro distanza Ravvicinata la natura esplode di vita, permettendo a voi e a tutti gli alleati nell’area di recuperare un Punto Ferita. Spendete 2 Speranze per aumentare il recupero a 2 Punti Ferita."
+  effects: []
+- name: Pelle di Spine
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Una volta per riposo, spendete una Speranza per far germogliare spine su tutto il vostro corpo. Mettete su questa carta un numero di gettoni pari al vostro tratto da Incantatore. Quando subite danni, potete spendere un numero qualsiasi di gettoni per tirare lo stesso numero di d6. Sommate i risultati e diminuite i danni subiti del totale. Se siete entro distanza di Mischia dall’attaccante, infliggete il totale come danni all’attaccante. Quando riposate, rimuovete tutti i gettoni non spesi."
+  effects: []
+- name: Fortezza della Selva
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (13). In caso di successo, spendete 2 Speranze per far crescere una barricata naturale a forma di cupola che può riparare voi e un alleato. All’interno della cupola, una creatura non può essere bersagliata da attacchi né può attaccare. Gli attacchi contro la cupola hanno automaticamente successo. La cupola ha le seguenti soglie di danno e puoi subire fino a 3 Punti Ferita prima di cedere. Mettete dei gettoni su questa carta per rappresentare i Punti Ferita subiti. danno minore 15 danno maggiore 30 danno grave Marcate 1 PF Marcate 2 PF Marcate 3 PF"
+  effects: []
+- name: Evoca Destrieri
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Spendete un numero qualsiasi di Speranze per evocare altrettanti destrieri magici (come cavalli, cammelli o elefanti) che voi e i vostri alleati potete cavalcare fino al vostro prossimo riposo lungo o fino a quando i destrieri subiscono danni. I destrieri raddoppiano la vostra velocità di movimento su terra e, quando siete in pericolo, vi consentono di muovervi entro distanza Lontana senza dover tirare. Le creature che cavalcano un destriero subiscono penalità –2 ai tiri attacco e bonus +2 ai tiri di danno."
+  effects: []
+- name: Foraggiare
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Come mossa aggiuntiva durante l’interludio, potete tirare un d6 per vedere cosa riuscite a trovare. Collaborate con il GM per descriverlo e aggiungerlo all’inventario come scorta. Il vostro personaggio può trasportare fino a cinque scorte di questo tipo alla volta. Esito Consumabile Effetto 1 Un cibo unico Rimuovete 2 Stress 2 Una bella reliquia Ottenete 2 Speranze 3 Una runa arcana +2 al Tiro Incantesimo 4 Una fiala curativa Curate 2 Punti Ferita Un portafortuna Ripetete 5 qualsiasi tiro di dado 6 Scegliete una delle opzioni sopra."
+  effects: []
+- name: Padronanza della Saggezza
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Abilità FORAGGIARE Come mossa aggiuntiva durante l’interludio, potete tirare un d6 per vedere cosa riuscite a trovare. Collaborate con il GM per descriverlo e aggiungerlo all’inventario come scorta. Il vostro personaggio può trasportare fino a cinque scorte di questo tipo alla volta. Esito Consumabile Un cibo unico Una bella reliquia Una runa arcana Una fiala curativa Effetto Rimuovete 2 Stress Ottenete 2 Speranze..."
+  effects: []
+- name: Impeto Selvaggio
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Una volta per riposo lungo, marcate uno Stress per incanalare il mondo naturale che vi circonda e potenziarvi. Descrivete come cambia il vostro aspetto, quindi mettete un d6 su questa scheda con il valore 1 rivolto verso l’alto. Mentre il Dado Impeto Selvaggio è attivo, aggiungete il suo valore a ogni tiro azione che effettuate. Dopo aver aggiunto il suo valore a un tiro, aumentate il valore del Dado Impeto Selvaggio di uno. Quando il valore del dado supera 6 o riposate, questa forma svanisce e dovete marcare uno Stress aggiuntivo."
+  effects: []
+- name: Spiriti della Foresta
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (13). In caso di successo, spendete un numero qualsiasi di Speranze per creare un numero uguale di piccoli spiriti della foresta che appaiono in punti a vostra scelta entro distanza Lontana, fornendo i seguenti benefici: • I vostri alleati ottengono bonus +3 ai tiri attacco contro avversari entro distanza di Mischia da uno spirito. • Un alleato che marca una Casella Armatura mentre si trova entro distanza di Mischia da uno spirito può marcare una Casella Armatura aggiuntiva. Uno spirito svanisce dopo aver concesso un beneficio o subito danni."
+  effects: []
+- name: Barriera di Rinnovamento
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (15). Una volta per riposo, in caso di successo, create una barriera di energia protettrice attorno a voi fino a distanza Prossima. Voi e tutti gli alleati all’interno della barriera quando l’incantesimo viene lanciato recuperate 1d4 Punti Ferita. Mentre la barriera è attiva, voi e tutti gli alleati al suo interno avete resistenza ai danni fisici provenienti dall’esterno. Quando vi muovete, la barriera vi segue."
+  effects: []
+- name: Santuario della Natura
+  class: Druido
+  type: Abilità
+  caster_trait: Istinto
+  description: "Dopo un riposo lungo, mettete su questa carta un numero di gettoni pari al numero di carte del dominio della Saggezza nella vostra dotazione e nella vostra riserva. Quando dovreste effettuare un Tiro Incantesimo, potete spendere un numero qualsiasi di gettoni dopo il tiro per ottenere bonus +1 per ogni gettone speso. Quando ottenete un successo critico su un Tiro Incantesimo per un incantesimo del dominio della Saggezza, ottenete un gettone. Quando completate un riposo lungo, rimuovete tutti i gettoni non spesi."
+  effects: []
+- name: Dominio Vegetale
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Effettuate un Tiro Incantesimo (18). In caso di successo, una volta per ogni riposo lungo, rimodellate la vegetazione circostante entro distanza Lontana. Ad esempio, potete far crescere alberi all’istante, liberare un sentiero da fitti rampicanti o creare un muro di radici."
+  effects: []
+- name: Forza della Natura
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Marcate uno Stress per trasformarvi in un gigantesco spirito della natura, ottenendo i seguenti benefici: • Quando riuscite in un tiro attacco o Incantesimo, ottenete bonus +10 al tiro di danno. • Quando infliggete abbastanza danni da sconfiggere una creatura entro distanza Ravvicinata, la assorbite e riparate una Casella Armatura. • Non potete essere Trattenuti. Prima di effettuare un tiro azione, dovete spendere una Speranza. Se non potete, tornate alla vostra normale forma."
+  effects: []
+- name: Tempesta
+  class: Druido
+  type: Incantesimo
+  caster_trait: Istinto
+  description: "Scegliete un tipo di precipitazione tra le seguenti ed effettuate un Tiro Incantesimo contro tutti i bersagli entro distanza Lontana. I bersagli contro cui avete successo ne subiscono gli effetti finché il GM non spende un Paura nel proprio turno per terminare questo incantesimo. • Tormenta di Neve: Infliggete 2d20+8 danni magici e i bersagli sono temporaneamente Vulnerabili. • Uragano: Infliggete 3d10+10 danni magici e scegliete una direzione in cui soffia il vento. I bersagli non possono muoversi controvento. • Tempesta di Sabbia: Infliggete 5d6+9 danni magici. Gli attacchi effettuati oltre distanza di Mischia hanno svantaggio."
+  effects: []
+
+- name: Voce della Ragione
+  class: Consacrato
+  type: Abilità
+  caster_trait: Forza
+  description: "Parlate con potere e autorità senza pari. Avete vantaggio sui tiri azione per placare situazioni violente o convincere qualcuno a seguire il vostro esempio. Inoltre, trovate nuova forza nei momenti di difficoltà. Quando tutte le vostre caselle Stress sono marcate, ottenete bonus +1 alla Competenza per i tiri di danno."
+  effects: []
+- name: Divinazione
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Una volta per riposo lungo, spendete 3 Speranze per entrare in contatto con forze ultraterrene e porre una domanda a cui sia possibile rispondere con “sì” o “no” su un evento, una persona, un luogo o una situazione nel prossimo futuro. Per un istante, il presente svanisce e scorgete la risposta davanti a voi."
+  effects: []
+- name: SalvaGuardia
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Spendete 3 Speranze e scegliete un alleato entro distanza Ravvicinata. Questi viene contrassegnato con un sigillo protettivo luminoso. Quando l’alleato dovrebbe compiere una mossa finale, cura invece un Punto Ferita. Questo effetto termina quando evita al bersaglio una mossa finale, quando lanciate Salvaguardia su un altro bersaglio o quando completate un riposo lungo."
+  effects: []
+- name: Dardo Tracciante
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo contro un bersaglio entro distanza Lontana. In caso di successo, spendete una Speranza per lanciare un raggio di luce scintillante verso il bersaglio, infliggendo d8+2 danni magici applicando la vostra Competenza. Il bersaglio diventa temporaneamente Vulnerabile e brilla intensamente fino a quando questa condizione non viene rimossa."
+  effects: []
+- name: Tocco Risanatore
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Ponete le mani su una creatura incanalando magia curativa per chiudere le sue ferite. Quando avete qualche minuto per concentrarvi, potete spendere 2 Speranze per curare un Punto Ferita o rimuovere uno Stress al bersaglio della magia. Una volta per riposo lungo, quando impiegate questo tempo per imparare qualcosa di nuovo sul bersaglio o rivelare qualcosa di voi, potete invece curare 2 Punti Ferita o rimuovere 2 Stress."
+  effects: []
+- name: Rassicurare
+  class: Consacrato
+  type: Abilità
+  caster_trait: Forza
+  description: "Una volta per riposo, dopo che un alleato ha tentato un tiro azione ma prima che le conseguenze abbiano effetto, potete offrire assistenza o parole di incoraggiamento. Quando lo fate, il vostro alleato può ripetere il tiro di dado."
+  effects: []
+- name: Ultime Parole
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Potete infondere una stilla di vita in un cadavere per parlare con esso. Effettuate un Tiro Incantesimo (13). In caso di successo con Speranza, il cadavere risponde fino a tre domande. In caso di successo con Paura, il cadavere risponde a una domanda. Il cadavere risponde in modo veritiero, ma non può fornire informazioni che non conosceva in vita. In caso di fallimento, o una volta che il cadavere ha finito di rispondere, il corpo si trasforma in polvere."
+  effects: []
+- name: Mani Guaritrici
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo (13) e scegliete come bersaglio un’altra creatura entro distanza di Mischia. In caso di successo, marcate uno Stress per curare 2 Punti Ferita o rimuovere 2 Stress dal bersaglio. In caso di fallimento, marcate uno Stress per curare un Punto Ferita o rimuovere uno Stress dal bersaglio. Non potete curare nuovamente lo stesso bersaglio fino al vostro prossimo riposo lungo."
+  effects: []
+- name: Rinvigorire
+  class: Consacrato
+  type: Abilità
+  caster_trait: Forza
+  description: "Una volta per riposo, quando riuscite in un attacco contro un avversario, potete rimuovere 3 Stress o curare un Punto Ferita. In caso di successo con Speranza, rimuovete anche 3 Stress o curate un Punto Ferita a un alleato entro distanza Ravvicinata."
+  effects: []
+- name: Plasmare
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Spendete una Speranza per plasmare una quantità di materiale naturale che state toccando (come pietra, ghiaccio o legno) in base alle vostre esigenze. L’area e la massa influenzata non può essere più grande di voi. Ad esempio, potete forgiare uno strumento rudimentale o creare una porta. Potete influenzare solo il materiale che si trova entro distanza Ravvicinata dal punto che state toccando."
+  effects: []
+- name: Castigo
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Una volta per riposo, spendete 3 Speranze per invocare un tremendo castigo. Quando attaccate con successo con un’arma, raddoppiate il risultato del vostro tiro di danno. Questo attacco infligge danni magici indipendentemente dal tipo di danno dell’arma."
+  effects: []
+- name: Ristorare
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Dopo un riposo lungo, mettete su questa carta un numero di gettoni pari al vostro tratto da Incantatore. Toccate una creatura e spendete un numero qualsiasi di gettoni per curare 2 Punti Ferita o rimuovere 2 Stress per ogni gettone speso. Potete anche spendere un gettone da questa carta quando toccate una creatura per rimuovere la condizione Vulnerabile o curare un disturbo fisico o magico (il GM potrebbe richiedere gettoni aggiuntivi a seconda della gravità del disturbo). Quando completate un riposo lungo, eliminate tutti i gettoni non spesi."
+  effects: []
+- name: Aura di Protezione
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo (16). Una volta per ogni riposo lungo, se il tiro ha esito positivo, scegliete un punto entro distanza Lontana e create un’aura di protezione visibile per tutti gli alleati entro distanza Prossima da quel punto. Quando lo fate, mettete un d6 su questa carta con il valore 1 rivolto verso l’alto. Quando un alleato in questa zona subisce danni, li riduce del valore del dado. Aumentate quindi il valore del dado di uno. Quando il valore del dado supera 6, questo effetto termina."
+  effects: []
+- name: Colpo Risanante
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Quando infliggete danno a un avversario, potete spendere 2 Speranze per curare un Punto Ferita a un alleato entro distanza Ravvicinata."
+  effects: []
+- name: Padronanza dello Splendore
+  class: Consacrato
+  type: Abilità
+  caster_trait: Forza
+  description: "Abilità Padronanza dello SPLENDORE Quando 4 o più carte dominio nella vostra dotazione appartengono al dominio dello Splendore, ottenete i seguenti benefici: • Bonus +3 alla soglia di danno Grave. • Una volta per ogni riposo lungo, quando subite danni che richiedono la perdita di un certo numero di Punti Ferita, potete scegliere di marcare lo stesso numero di Stress o spendere lo stesso numero di Speranza."
+  effects: []
+- name: Scudo Magico
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Marcate uno Stress per lanciare un’aura protettrice su un bersaglio entro distanza Prossima. Quando il bersaglio marca una Casella Armatura, riducete la gravità dell’attacco di una soglia aggiuntiva. Se l’effetto dell’incantesimo fa sì che una creatura in procinto di subire danno non subisca invece nessun Punto Ferita, l’effetto termina. Potete mantenere lo Scudo Magico su una sola creatura alla volta."
+  effects: []
+- name: Bagliore Solare
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo per scagliare potenti raggi di luce solare ustionante contro tutti gli avversari davanti a voi entro distanza Lontana. In caso di successo, spendete un numero qualsiasi di Speranze e costringete tutti i bersagli contro cui avete avuto successo a effettuare un Tiro Reazione (14). I bersagli che superano il tiro subiscono 3d20+3 danni magici. I bersagli che falliscono subiscono 4d20+5 danni magici e sono temporaneamente Storditi. Mentre sono Storditi, non possono usare reazioni né compiere altre azioni finché non superano questa condizione."
+  effects: []
+- name: Aura Sovraccaricante
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Incantesimo PREMONIZIONE Incantesimo AURA DI CONFUSIONE Effettuate un Tiro Incantesimo (14). In caso di successo, una volta per ogni riposo lungo, create uno strato di illusione sul vostro corpo che rende difficile capire esattamente dove vi troviate. Marcate un numero qualsiasi di Stress per creare altrettanti strati aggiuntivi. Quando un avversario vi attacca, tirate un numero di d6 pari al numero di strati..."
+  effects: []
+- name: Bagliore di Salvezza
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo (16). In caso di successo, marcate un numero qualsiasi di Stress per avere effetto sugli alleati disposti in linea entro distanza Lontana. Potete curare Punti Ferita ai bersagli pari al numero di Stress marcati, dividendo l’ammontare tra i bersagli come preferite."
+  effects: []
+- name: Ravvivare
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Quando voi o un alleato entro distanza Ravvicinata avete usato un privilegio che ha un limite di esaurimento (come una volta per riposo o una volta per sessione), potete spendere qualsiasi numero di Speranze e tirare altrettanti d6. Se almeno un dado ottiene un 6, il privilegio può essere usato di nuovo."
+  effects: []
+- name: Resurrezione
+  class: Consacrato
+  type: Incantesimo
+  caster_trait: Forza
+  description: "Effettuate un Tiro Incantesimo (20). In caso di successo, riportate in vita una creatura morta da non più di 100 anni. Quindi tirate un d6. Se ottenete un risultato pari o inferiore a 5, spostate questa carta nella vostra riserva permanentemente. In caso di fallimento, non potrete lanciare Resurrezione per una settimana."
+  effects: []

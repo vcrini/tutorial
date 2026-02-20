@@ -1069,7 +1069,12 @@ func (ui *tviewUI) refreshCards() {
 	}
 	for _, idx := range ui.filteredCards {
 		c := ui.cards[idx]
-		ui.cardList.AddItem(fmt.Sprintf("%s [%s - %s]", c.Name, c.Class, c.Type), "", 0, nil)
+		head := cardDescriptionHead(c.Description)
+		label := fmt.Sprintf("%s [%s - %s]", c.Name, c.Class, c.Type)
+		if head != "" {
+			label = fmt.Sprintf("%s | %s", head, label)
+		}
+		ui.cardList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.filteredCards) {
 		current = len(ui.filteredCards) - 1
@@ -1078,6 +1083,17 @@ func (ui *tviewUI) refreshCards() {
 		current = 0
 	}
 	ui.cardList.SetCurrentItem(current)
+}
+
+func cardDescriptionHead(desc string) string {
+	s := strings.TrimSpace(desc)
+	if s == "" || strings.EqualFold(s, "Da screenshot.") {
+		return ""
+	}
+	if i := strings.Index(s, ":"); i > 0 {
+		return strings.TrimSpace(s[:i])
+	}
+	return s
 }
 
 func (ui *tviewUI) refreshEncounter() {
