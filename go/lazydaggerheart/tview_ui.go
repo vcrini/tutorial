@@ -778,6 +778,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.adjustEncounterWounds(-1)
 			return nil
 		}
+	case 'j':
+		if focus == ui.encList {
+			ui.adjustEncounterStress(-1)
+			return nil
+		}
+	case 'k':
+		if focus == ui.encList {
+			ui.adjustEncounterStress(1)
+			return nil
+		}
 	}
 	return ev
 }
@@ -1181,12 +1191,23 @@ func (ui *tviewUI) refreshEncounter() {
 		if base == 0 {
 			base = e.Monster.PF
 		}
+		baseStress := e.BaseStress
+		if baseStress == 0 {
+			baseStress = e.Monster.Stress
+		}
+		currentStress := e.Stress
+		if currentStress < 0 {
+			currentStress = 0
+		}
+		if baseStress > 0 && currentStress > baseStress {
+			currentStress = baseStress
+		}
 		remaining := base - e.Wounds
 		if remaining < 0 {
 			remaining = 0
 		}
 		label := ui.encounterLabelAt(i)
-		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d]", label, remaining, base), "", 0, nil)
+		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d | ST %d/%d]", label, remaining, base, currentStress, baseStress), "", 0, nil)
 	}
 	if current >= len(ui.encounter) {
 		current = len(ui.encounter) - 1
@@ -1271,7 +1292,18 @@ func (ui *tviewUI) refreshDetail() {
 		if remaining < 0 {
 			remaining = 0
 		}
-		extra := fmt.Sprintf("PF correnti: %d/%d | Ferite: %d", remaining, base, e.Wounds)
+		baseStress := e.BaseStress
+		if baseStress == 0 {
+			baseStress = e.Monster.Stress
+		}
+		currentStress := e.Stress
+		if currentStress < 0 {
+			currentStress = 0
+		}
+		if baseStress > 0 && currentStress > baseStress {
+			currentStress = baseStress
+		}
+		extra := fmt.Sprintf("PF correnti: %d/%d | Ferite: %d | Stress: %d/%d", remaining, base, e.Wounds, currentStress, baseStress)
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
 		ui.renderDetail()
 		return
@@ -2160,7 +2192,12 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 		return
 	}
 	mon := ui.monsters[idx]
-	ui.encounter = append(ui.encounter, EncounterEntry{Monster: mon, BasePF: mon.PF})
+	ui.encounter = append(ui.encounter, EncounterEntry{
+		Monster:    mon,
+		BasePF:     mon.PF,
+		Stress:     mon.Stress,
+		BaseStress: mon.Stress,
+	})
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Aggiunto %s a encounter.", mon.Name)
 	ui.refreshEncounter()
@@ -2202,6 +2239,60 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	}
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Ferite %s: %d", e.Monster.Name, e.Wounds)
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) adjustEncounterStress(delta int) {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	e := &ui.encounter[idx]
+	baseStress := e.BaseStress
+	if baseStress == 0 {
+		baseStress = e.Monster.Stress
+	}
+	if e.Stress < 0 {
+		e.Stress = 0
+	}
+	if baseStress > 0 && e.Stress > baseStress {
+		e.Stress = baseStress
+	}
+
+	basePF := e.BasePF
+	if basePF == 0 {
+		basePF = e.Monster.PF
+	}
+
+	if delta > 0 {
+		e.Stress += delta
+		if baseStress > 0 && e.Stress > baseStress {
+			e.Stress = baseStress
+		}
+	} else if delta < 0 {
+		steps := -delta
+		for i := 0; i < steps; i++ {
+			if e.Stress > 0 {
+				e.Stress--
+			} else {
+				e.Wounds++
+			}
+		}
+	}
+
+	if e.Wounds < 0 {
+		e.Wounds = 0
+	}
+	if basePF > 0 && e.Wounds > basePF {
+		e.Wounds = basePF
+	}
+
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Stress %s: %d/%d", e.Monster.Name, e.Stress, baseStress)
 	ui.refreshEncounter()
 	ui.refreshDetail()
 	ui.refreshStatus()
@@ -2259,6 +2350,8 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- d: rimuovi mostro selezionato",
 			"- h / l: ferite +1 / -1 sul selezionato",
+			"- j / k: stress -1 / +1 sul selezionato",
+			"- j con stress 0: riduce PF (ferite +1)",
 		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
 		panel = "Mostri"
@@ -2420,20 +2513,35 @@ func (ui *tviewUI) persistPNGs() {
 
 func (ui *tviewUI) persistEncounter() {
 	entries := make([]struct {
-		Name   string `yaml:"name"`
-		Wounds int    `yaml:"wounds"`
-		PF     int    `yaml:"pf"`
+		Name       string `yaml:"name"`
+		Wounds     int    `yaml:"wounds"`
+		PF         int    `yaml:"pf"`
+		Stress     int    `yaml:"stress,omitempty"`
+		BaseStress int    `yaml:"base_stress,omitempty"`
 	}, 0, len(ui.encounter))
 	for _, e := range ui.encounter {
 		base := e.BasePF
 		if base == 0 {
 			base = e.Monster.PF
 		}
+		baseStress := e.BaseStress
+		if baseStress == 0 {
+			baseStress = e.Monster.Stress
+		}
+		currentStress := e.Stress
+		if currentStress < 0 {
+			currentStress = 0
+		}
+		if baseStress > 0 && currentStress > baseStress {
+			currentStress = baseStress
+		}
 		entries = append(entries, struct {
-			Name   string `yaml:"name"`
-			Wounds int    `yaml:"wounds"`
-			PF     int    `yaml:"pf"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base})
+			Name       string `yaml:"name"`
+			Wounds     int    `yaml:"wounds"`
+			PF         int    `yaml:"pf"`
+			Stress     int    `yaml:"stress,omitempty"`
+			BaseStress int    `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, Stress: currentStress, BaseStress: baseStress})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }

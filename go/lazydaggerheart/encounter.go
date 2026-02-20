@@ -7,21 +7,30 @@ import (
 )
 
 type EncounterEntry struct {
-	Monster Monster
-	Wounds  int
-	BasePF  int
+	Monster    Monster
+	Wounds     int
+	BasePF     int
+	Stress     int
+	BaseStress int
 }
 
 type encounterPersist struct {
 	Entries []struct {
-		Name   string `yaml:"name"`
-		Wounds int    `yaml:"wounds"`
-		PF     int    `yaml:"pf"`
+		Name       string `yaml:"name"`
+		Wounds     int    `yaml:"wounds"`
+		PF         int    `yaml:"pf"`
+		Stress     int    `yaml:"stress,omitempty"`
+		BaseStress int    `yaml:"base_stress,omitempty"`
 	} `yaml:"entries"`
 }
 
 func (m *model) addMonsterToEncounter(mon Monster) {
-	m.encounter = append(m.encounter, EncounterEntry{Monster: mon, BasePF: mon.PF})
+	m.encounter = append(m.encounter, EncounterEntry{
+		Monster:    mon,
+		BasePF:     mon.PF,
+		Stress:     mon.Stress,
+		BaseStress: mon.Stress,
+	})
 	m.persistEncounter()
 }
 
@@ -41,20 +50,35 @@ func (m *model) removeEncounterAt(idx int) {
 
 func (m *model) persistEncounter() {
 	var entries []struct {
-		Name   string `yaml:"name"`
-		Wounds int    `yaml:"wounds"`
-		PF     int    `yaml:"pf"`
+		Name       string `yaml:"name"`
+		Wounds     int    `yaml:"wounds"`
+		PF         int    `yaml:"pf"`
+		Stress     int    `yaml:"stress,omitempty"`
+		BaseStress int    `yaml:"base_stress,omitempty"`
 	}
 	for _, e := range m.encounter {
 		basePF := e.BasePF
 		if basePF == 0 {
 			basePF = e.Monster.PF
 		}
+		baseStress := e.BaseStress
+		if baseStress == 0 {
+			baseStress = e.Monster.Stress
+		}
+		currentStress := e.Stress
+		if currentStress < 0 {
+			currentStress = 0
+		}
+		if baseStress > 0 && currentStress > baseStress {
+			currentStress = baseStress
+		}
 		entries = append(entries, struct {
-			Name   string `yaml:"name"`
-			Wounds int    `yaml:"wounds"`
-			PF     int    `yaml:"pf"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF})
+			Name       string `yaml:"name"`
+			Wounds     int    `yaml:"wounds"`
+			PF         int    `yaml:"pf"`
+			Stress     int    `yaml:"stress,omitempty"`
+			BaseStress int    `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF, Stress: currentStress, BaseStress: baseStress})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }
@@ -76,19 +100,30 @@ func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 	var entries []EncounterEntry
 	for _, e := range rawEntries {
 		name := e.Name
+		stress := e.Stress
+		baseStress := e.BaseStress
 		if mon, ok := byName[name]; ok {
-			entries = append(entries, EncounterEntry{Monster: mon, Wounds: e.Wounds, BasePF: e.PF})
+			if baseStress == 0 {
+				baseStress = mon.Stress
+			}
+			if stress == 0 && baseStress > 0 && e.BaseStress == 0 {
+				// Backward compatibility for old files without stress fields.
+				stress = baseStress
+			}
+			entries = append(entries, EncounterEntry{Monster: mon, Wounds: e.Wounds, BasePF: e.PF, Stress: stress, BaseStress: baseStress})
 		} else {
-			entries = append(entries, EncounterEntry{Monster: Monster{Name: name, PF: e.PF}, Wounds: e.Wounds, BasePF: e.PF})
+			entries = append(entries, EncounterEntry{Monster: Monster{Name: name, PF: e.PF, Stress: baseStress}, Wounds: e.Wounds, BasePF: e.PF, Stress: stress, BaseStress: baseStress})
 		}
 	}
 	return entries, nil
 }
 
 func saveEncounter(path string, entries []struct {
-	Name   string `yaml:"name"`
-	Wounds int    `yaml:"wounds"`
-	PF     int    `yaml:"pf"`
+	Name       string `yaml:"name"`
+	Wounds     int    `yaml:"wounds"`
+	PF         int    `yaml:"pf"`
+	Stress     int    `yaml:"stress,omitempty"`
+	BaseStress int    `yaml:"base_stress,omitempty"`
 }) error {
 	payload := encounterPersist{Entries: entries}
 	data, err := yaml.Marshal(payload)
@@ -99,17 +134,21 @@ func saveEncounter(path string, entries []struct {
 }
 
 func readEncounter(path string) ([]struct {
-	Name   string `yaml:"name"`
-	Wounds int    `yaml:"wounds"`
-	PF     int    `yaml:"pf"`
+	Name       string `yaml:"name"`
+	Wounds     int    `yaml:"wounds"`
+	PF         int    `yaml:"pf"`
+	Stress     int    `yaml:"stress,omitempty"`
+	BaseStress int    `yaml:"base_stress,omitempty"`
 }, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []struct {
-				Name   string `yaml:"name"`
-				Wounds int    `yaml:"wounds"`
-				PF     int    `yaml:"pf"`
+				Name       string `yaml:"name"`
+				Wounds     int    `yaml:"wounds"`
+				PF         int    `yaml:"pf"`
+				Stress     int    `yaml:"stress,omitempty"`
+				BaseStress int    `yaml:"base_stress,omitempty"`
 			}{}, nil
 		}
 		return nil, err
@@ -120,9 +159,11 @@ func readEncounter(path string) ([]struct {
 	}
 	if payload.Entries == nil {
 		return []struct {
-			Name   string `yaml:"name"`
-			Wounds int    `yaml:"wounds"`
-			PF     int    `yaml:"pf"`
+			Name       string `yaml:"name"`
+			Wounds     int    `yaml:"wounds"`
+			PF         int    `yaml:"pf"`
+			Stress     int    `yaml:"stress,omitempty"`
+			BaseStress int    `yaml:"base_stress,omitempty"`
 		}{}, nil
 	}
 	return payload.Entries, nil
