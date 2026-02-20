@@ -12,7 +12,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte  [black:gold]a[-:-] roll dadi  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -35,6 +35,7 @@ const (
 	focusCardClass
 	focusCardType
 	focusCardList
+	focusTreasure
 	focusDetail
 )
 
@@ -71,7 +72,9 @@ type tviewUI struct {
 	cardClassDrop  *tview.DropDown
 	cardTypeDrop   *tview.DropDown
 	cardList       *tview.List
+	detailBottom   *tview.Pages
 	detail         *tview.TextView
+	detailTreasure *tview.TextView
 
 	monstersPanel     *tview.Flex
 	environmentsPanel *tview.Flex
@@ -118,6 +121,7 @@ type tviewUI struct {
 
 	detailRaw   string
 	detailQuery string
+	treasureRaw string
 
 	helpVisible     bool
 	helpReturnFocus tview.Primitive
@@ -127,6 +131,7 @@ type tviewUI struct {
 
 	fullscreenActive bool
 	fullscreenTarget string
+	activeBottomPane string
 }
 
 func runTViewUI() error {
@@ -190,16 +195,17 @@ func newTViewUI() (*tviewUI, error) {
 	}
 
 	ui := &tviewUI{
-		app:          tview.NewApplication(),
-		pngs:         pngs,
-		selected:     selected,
-		monsters:     monsters,
-		environments: environments,
-		equipment:    equipment,
-		cards:        cards,
-		encounter:    encounter,
-		message:      "Pronto.",
-		catalogMode:  "mostri",
+		app:              tview.NewApplication(),
+		pngs:             pngs,
+		selected:         selected,
+		monsters:         monsters,
+		environments:     environments,
+		equipment:        equipment,
+		cards:            cards,
+		encounter:        encounter,
+		message:          "Pronto.",
+		catalogMode:      "mostri",
+		activeBottomPane: "details",
 	}
 	ui.build()
 	return ui, nil
@@ -538,9 +544,18 @@ func (ui *tviewUI) build() {
 	ui.detail = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
 	ui.detail.SetBorder(true).SetTitle(" Dettagli ")
 
+	ui.detailTreasure = tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	ui.detailTreasure.SetBorder(true).SetTitle(" Treasure ")
+	ui.treasureRaw = "Nessun treasure generato."
+	ui.renderTreasure()
+
+	ui.detailBottom = tview.NewPages().
+		AddPage("details", ui.detail, true, true).
+		AddPage("treasure", ui.detailTreasure, true, false)
+
 	ui.mainRow = tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(ui.leftPanel, 0, 1, false).
-		AddItem(ui.detail, 0, 1, false)
+		AddItem(ui.detailBottom, 0, 1, false)
 
 	ui.status = tview.NewTextView().SetDynamicColors(true).SetText(helpText)
 	ui.status.SetBackgroundColor(tcell.ColorBlack)
@@ -556,6 +571,7 @@ func (ui *tviewUI) build() {
 		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList,
 		ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList,
 		ui.cardSearch, ui.cardClassDrop, ui.cardTypeDrop, ui.cardList,
+		ui.detailTreasure,
 		ui.detail,
 	}
 	ui.focusIdx = focusMonList
@@ -615,12 +631,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -690,6 +706,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openDiceReRollInput()
 			return nil
 		}
+	case 'b':
+		if ui.catalogMode == "equipaggiamento" && (focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.detail || focus == ui.detailTreasure) {
+			ui.openEquipmentTreasureInput()
+			return nil
+		}
 	case 'u':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonSearch)
@@ -741,6 +762,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if focus == ui.encList {
 			ui.removeSelectedEncounter()
+			return nil
+		}
+		if ui.catalogMode == "equipaggiamento" && (focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.detail || focus == ui.detailTreasure) {
+			ui.toggleDetailsTreasureFocus()
 			return nil
 		}
 	case 'h':
@@ -1177,6 +1202,10 @@ func (ui *tviewUI) refreshDetail() {
 		return
 	}
 	focus := ui.app.GetFocus()
+	if focus == ui.detailTreasure {
+		ui.renderTreasure()
+		return
+	}
 	if focus == ui.dice {
 		ui.detailRaw = ui.buildDiceDetail()
 		ui.renderDetail()
@@ -1332,6 +1361,8 @@ func (ui *tviewUI) refreshStatus() {
 		focusLabel = "Tipo Carte"
 	case ui.cardList:
 		focusLabel = "Carte"
+	case ui.detailTreasure:
+		focusLabel = "Treasure"
 	case ui.detail:
 		focusLabel = "Dettagli"
 	}
@@ -1960,6 +1991,9 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	if focus == ui.detail {
 		input.SetText(ui.detailQuery)
 	}
+	if focus == ui.detailTreasure {
+		input.SetText(ui.detailQuery)
+	}
 
 	returnFocus := focus
 	modal := tview.NewFlex().SetDirection(tview.FlexRow).
@@ -2016,6 +2050,14 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 			} else {
 				ui.message = fmt.Sprintf("Highlight dettagli: %s", query)
 			}
+		case ui.detailTreasure:
+			ui.detailQuery = query
+			ui.renderTreasure()
+			if query == "" {
+				ui.message = "Highlight treasure rimosso."
+			} else {
+				ui.message = fmt.Sprintf("Highlight treasure: %s", query)
+			}
 		default:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
@@ -2063,8 +2105,12 @@ func (ui *tviewUI) jumpToDiceResult(query string) {
 }
 
 func (ui *tviewUI) scrollDetailByPage(direction int) {
-	row, col := ui.detail.GetScrollOffset()
-	_, _, _, h := ui.detail.GetInnerRect()
+	target := ui.detail
+	if ui.app.GetFocus() == ui.detailTreasure {
+		target = ui.detailTreasure
+	}
+	row, col := target.GetScrollOffset()
+	_, _, _, h := target.GetInnerRect()
 	if h <= 0 {
 		h = 24
 	}
@@ -2076,7 +2122,7 @@ func (ui *tviewUI) scrollDetailByPage(direction int) {
 	if row < 0 {
 		row = 0
 	}
-	ui.detail.ScrollTo(row, col)
+	target.ScrollTo(row, col)
 }
 
 func (ui *tviewUI) deleteSelectedPNG() {
@@ -2232,6 +2278,14 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- u / t / g: focus filtro Nome / Tipo / Rango (TAB per Categoria)",
 			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Rango)",
+			"- b: genera bottino (Treasure) da categoria + dadi",
+			"- d: switch Dettagli <-> Treasure",
+		}
+	case ui.detailTreasure:
+		panel = "Treasure"
+		panelLines = []string{
+			"- d: switch Treasure <-> Dettagli",
+			"- /: evidenzia testo nel treasure corrente",
 		}
 	case ui.cardSearch, ui.cardClassDrop, ui.cardTypeDrop, ui.cardList:
 		panel = "Carte"
@@ -2299,6 +2353,8 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "equipaggiamento"
 	case ui.cardSearch, ui.cardList, ui.cardClassDrop, ui.cardTypeDrop:
 		return "carte"
+	case ui.detailTreasure:
+		return "treasure"
 	case ui.detail:
 		return "details"
 	default:
@@ -2344,6 +2400,8 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.equipmentPanel
 		case "carte":
 			content = ui.cardsPanel
+		case "treasure":
+			content = ui.detailTreasure
 		case "details":
 			content = ui.detail
 		}
@@ -2378,6 +2436,217 @@ func (ui *tviewUI) persistEncounter() {
 		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base})
 	}
 	_ = saveEncounter(encounterFile, entries)
+}
+
+func (ui *tviewUI) toggleDetailsTreasureFocus() {
+	if ui.activeBottomPane == "treasure" {
+		ui.activeBottomPane = "details"
+		ui.detailBottom.SwitchToPage("details")
+		ui.app.SetFocus(ui.detail)
+		ui.message = "Focus: Dettagli"
+		ui.refreshStatus()
+		return
+	}
+	ui.activeBottomPane = "treasure"
+	ui.detailBottom.SwitchToPage("treasure")
+	ui.app.SetFocus(ui.detailTreasure)
+	ui.message = "Focus: Treasure"
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) renderTreasure() {
+	text := ui.treasureRaw
+	if strings.TrimSpace(text) == "" {
+		text = "Nessun treasure generato."
+	}
+	out := tview.Escape(text)
+	lines := strings.Split(out, "\n")
+	if len(lines) > 0 {
+		lines[0] = "[yellow]" + lines[0] + "[-]"
+		out = strings.Join(lines, "\n")
+	}
+	if strings.TrimSpace(ui.detailQuery) != "" {
+		out = highlightMatches(out, ui.detailQuery)
+	}
+	ui.detailTreasure.SetText(out)
+}
+
+func (ui *tviewUI) openEquipmentTreasureInput() {
+	categories := []string{"Comune", "Non Comune", "Raro", "Leggendario"}
+	diceByCategory := map[string][]string{
+		"Comune":      {"1d12", "2d12"},
+		"Non Comune":  {"2d12", "3d12"},
+		"Raro":        {"3d12", "4d12"},
+		"Leggendario": {"4d12", "5d12"},
+	}
+	selectedCategory := categories[0]
+	selectedDice := diceByCategory[selectedCategory][0]
+	ready := false
+	suppressDiceAdvance := false
+
+	form := tview.NewForm()
+	var categoryDrop *tview.DropDown
+	var diceDrop *tview.DropDown
+	advanceToGenerate := func() {
+		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
+	}
+	form.SetBorder(true).SetTitle("Genera Treasure da Bottino").SetTitleAlign(tview.AlignLeft)
+	form.AddDropDown("Categoria", categories, 0, func(option string, _ int) {
+		if option == "" {
+			return
+		}
+		selectedCategory = option
+		selectedDice = diceByCategory[selectedCategory][0]
+		if diceDrop == nil {
+			return
+		}
+		diceDrop.SetOptions(diceByCategory[selectedCategory], func(text string, _ int) {
+			if text != "" {
+				selectedDice = text
+			}
+			if ready && !suppressDiceAdvance {
+				advanceToGenerate()
+			}
+		})
+		diceDrop.SetListStyles(
+			tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+			tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+		)
+		suppressDiceAdvance = true
+		diceDrop.SetCurrentOption(0)
+		suppressDiceAdvance = false
+		if ready {
+			form.SetFocus(1)
+		}
+	})
+	form.AddDropDown("Dadi", diceByCategory[selectedCategory], 0, func(option string, _ int) {
+		if option != "" {
+			selectedDice = option
+		}
+		if ready && !suppressDiceAdvance {
+			advanceToGenerate()
+		}
+	})
+	if item := form.GetFormItem(0); item != nil {
+		if dd, ok := item.(*tview.DropDown); ok {
+			categoryDrop = dd
+			categoryDrop.SetFinishedFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					form.SetFocus(1)
+				case tcell.KeyBacktab:
+					form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Annulla"))
+				}
+			})
+		}
+	}
+	if item := form.GetFormItem(1); item != nil {
+		if dd, ok := item.(*tview.DropDown); ok {
+			diceDrop = dd
+			diceDrop.SetFinishedFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
+				case tcell.KeyBacktab:
+					form.SetFocus(0)
+				}
+			})
+		}
+	}
+	applyDropStyle := func(dd *tview.DropDown) {
+		if dd == nil {
+			return
+		}
+		dd.SetFieldBackgroundColor(tcell.ColorBlack)
+		dd.SetFieldTextColor(tcell.ColorWhite)
+		dd.SetListStyles(
+			tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+			tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+		)
+	}
+	applyDropStyle(categoryDrop)
+	applyDropStyle(diceDrop)
+
+	returnFocus := ui.app.GetFocus()
+	form.AddButton("Genera", func() {
+		total, breakdown, err := rollDiceExpression(selectedDice)
+		if err != nil {
+			ui.message = "Errore tiro treasure: " + err.Error()
+			ui.refreshStatus()
+			return
+		}
+		matches := ui.matchBottinoByTiro(total)
+		ui.renderEquipmentTreasure(selectedCategory, selectedDice, total, breakdown, matches)
+		ui.closeModal()
+		ui.activeBottomPane = "treasure"
+		ui.detailBottom.SwitchToPage("treasure")
+		ui.app.SetFocus(ui.detailTreasure)
+		ui.message = fmt.Sprintf("Treasure generato: %s %s = %02d", selectedCategory, selectedDice, total)
+		ui.refreshStatus()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 72, 0, true).
+			AddItem(nil, 0, 1, false), 13, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "equip_treasure"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form)
+	ready = true
+}
+
+func (ui *tviewUI) matchBottinoByTiro(total int) []EquipmentItem {
+	var matches []EquipmentItem
+	for _, it := range ui.equipment {
+		if !strings.EqualFold(strings.TrimSpace(it.Type), "bottino") {
+			continue
+		}
+		n, err := strconv.Atoi(strings.TrimSpace(it.Trait))
+		if err != nil {
+			continue
+		}
+		if n == total {
+			matches = append(matches, it)
+		}
+	}
+	return matches
+}
+
+func (ui *tviewUI) renderEquipmentTreasure(category, dice string, total int, breakdown string, matches []EquipmentItem) {
+	var b strings.Builder
+	b.WriteString("Treasure Equipaggiamento\n")
+	b.WriteString(fmt.Sprintf("Categoria: %s\n", category))
+	b.WriteString(fmt.Sprintf("Tiro: %s => %s\n", dice, breakdown))
+	b.WriteString(fmt.Sprintf("Valore Tiro: %02d\n", total))
+	b.WriteString("\nRisultati:\n")
+	if len(matches) == 0 {
+		b.WriteString("- Nessun bottino con Tiro corrispondente.\n")
+	} else {
+		for _, it := range matches {
+			b.WriteString(fmt.Sprintf("- %s (Tiro %02d)\n", it.Name, total))
+			if strings.TrimSpace(it.Characteristic) != "" && strings.TrimSpace(it.Characteristic) != "—" && strings.TrimSpace(it.Characteristic) != "-" {
+				b.WriteString("  " + strings.TrimSpace(it.Characteristic) + "\n")
+			}
+		}
+	}
+	ui.treasureRaw = strings.TrimSpace(b.String())
+	ui.renderTreasure()
+	ui.detailTreasure.ScrollToBeginning()
 }
 
 func (ui *tviewUI) buildDiceDetail() string {
