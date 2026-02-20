@@ -1,6 +1,6 @@
 module github.com/vcrini/lazydaggerheart
 
-go 1.25.6
+go 1.26.0
 
 require (
 	github.com/charmbracelet/bubbles v0.21.0
@@ -9,6 +9,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.10.1
 	github.com/gdamore/tcell/v2 v2.13.0
 	github.com/rivo/tview v0.42.0
+	github.com/vcrini/diceroll v0.2.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 

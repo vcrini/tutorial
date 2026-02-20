@@ -9,12 +9,14 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte  [black:gold]a[-:-] roll dadi  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
-	focusPNG = iota
+	focusDice = iota
+	focusPNG
 	focusEncounter
 	focusMonSearch
 	focusMonRole
@@ -36,10 +38,19 @@ const (
 	focusDetail
 )
 
+type DiceResult struct {
+	Expression string `yaml:"expression"`
+	Output     string `yaml:"output"`
+}
+
 type tviewUI struct {
 	app    *tview.Application
 	pages  *tview.Pages
 	status *tview.TextView
+
+	dice           *tview.List
+	diceLog        []DiceResult
+	diceRenderLock bool
 
 	pngList        *tview.List
 	encList        *tview.List
@@ -195,6 +206,15 @@ func newTViewUI() (*tviewUI, error) {
 }
 
 func (ui *tviewUI) build() {
+	ui.dice = tview.NewList().ShowSecondaryText(false)
+	ui.dice.SetBorder(true).SetTitle(" [0]-Dadi ")
+	ui.dice.SetChangedFunc(func(int, string, string, rune) {
+		if ui.diceRenderLock {
+			return
+		}
+		ui.refreshDetail()
+	})
+
 	ui.pngList = tview.NewList().ShowSecondaryText(false)
 	ui.pngList.SetBorder(true).SetTitle(" [1]-PNG ")
 	ui.pngList.SetChangedFunc(func(index int, _, _ string, _ rune) {
@@ -510,6 +530,7 @@ func (ui *tviewUI) build() {
 	ui.refreshCatalogTitles()
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(ui.dice, 7, 0, false).
 		AddItem(ui.pngList, 0, 1, true).
 		AddItem(ui.encList, 0, 1, false).
 		AddItem(ui.catalogPanel, 0, 1, false)
@@ -530,6 +551,7 @@ func (ui *tviewUI) build() {
 
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.focus = []tview.Primitive{
+		ui.dice,
 		ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList,
 		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList,
 		ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList,
@@ -539,6 +561,7 @@ func (ui *tviewUI) build() {
 	ui.focusIdx = focusMonList
 	ui.app.SetFocus(ui.monList)
 	ui.app.SetInputCapture(ui.handleGlobalKeys)
+	ui.renderDiceList()
 }
 
 func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
@@ -570,6 +593,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyCtrlC:
 		ui.app.Stop()
 		return nil
+	case tcell.KeyEnter:
+		if focus == ui.dice {
+			ui.rerollSelectedDiceResult()
+			return nil
+		}
 	case tcell.KeyTAB:
 		ui.focusNext()
 		return nil
@@ -587,12 +615,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
+		if focus == ui.detail || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
+		if focus == ui.detail || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -611,13 +639,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.app.Stop()
 		return nil
 	case '1':
-		ui.focusPanel(0)
+		ui.focusPanel(focusPNG)
 		return nil
 	case '2':
-		ui.focusPanel(1)
+		ui.focusPanel(focusEncounter)
 		return nil
 	case '3':
 		ui.focusPanel(ui.activeCatalogListFocus())
+		return nil
+	case '0':
+		ui.focusPanel(focusDice)
 		return nil
 	case '[':
 		ui.switchCatalog(-1)
@@ -631,6 +662,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'c':
+		if focus == ui.dice {
+			ui.clearDiceResults()
+			return nil
+		}
 		ui.openCreatePNGModal()
 		return nil
 	case 'x':
@@ -642,8 +677,17 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'a':
+		if focus == ui.dice {
+			ui.openDiceRollInput()
+			return nil
+		}
 		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop) {
 			ui.addSelectedMonsterToEncounter()
+			return nil
+		}
+	case 'e':
+		if focus == ui.dice {
+			ui.openDiceReRollInput()
 			return nil
 		}
 	case 'u':
@@ -691,6 +735,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		return nil
 	case 'd':
+		if focus == ui.dice {
+			ui.deleteSelectedDiceResult()
+			return nil
+		}
 		if focus == ui.encList {
 			ui.removeSelectedEncounter()
 			return nil
@@ -1129,6 +1177,11 @@ func (ui *tviewUI) refreshDetail() {
 		return
 	}
 	focus := ui.app.GetFocus()
+	if focus == ui.dice {
+		ui.detailRaw = ui.buildDiceDetail()
+		ui.renderDetail()
+		return
+	}
 	if focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop {
 		idx := ui.currentMonsterIndex()
 		if idx < 0 {
@@ -1241,6 +1294,8 @@ func highlightMatches(text, query string) string {
 func (ui *tviewUI) refreshStatus() {
 	focusLabel := "PNG"
 	switch ui.app.GetFocus() {
+	case ui.dice:
+		focusLabel = "Dadi"
 	case ui.encList:
 		focusLabel = "Encounter"
 	case ui.search:
@@ -1882,6 +1937,14 @@ func (ui *tviewUI) openConfirmModal(title, message string, onConfirm func()) {
 func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	input := tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(28)
 	input.SetBorder(true).SetTitle("Ricerca")
+	if focus == ui.dice {
+		if len(ui.diceLog) > 0 {
+			cur := ui.dice.GetCurrentItem()
+			if cur >= 0 && cur < len(ui.diceLog) {
+				input.SetText(ui.diceLog[cur].Expression)
+			}
+		}
+	}
 	if focus == ui.search || focus == ui.monList || focus == ui.roleDrop || focus == ui.rankDrop {
 		input.SetText(ui.search.GetText())
 	}
@@ -1920,6 +1983,9 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 		}
 		query := strings.TrimSpace(input.GetText())
 		switch returnFocus {
+		case ui.dice:
+			ui.jumpToDiceResult(query)
+			ui.focusPanel(focusDice)
 		case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 			ui.search.SetText(query)
 			ui.refreshMonsters()
@@ -1976,6 +2042,24 @@ func (ui *tviewUI) jumpToEncounter(query string) {
 		}
 	}
 	ui.message = fmt.Sprintf("Nessun match encounter per '%s'.", query)
+}
+
+func (ui *tviewUI) jumpToDiceResult(query string) {
+	if strings.TrimSpace(query) == "" {
+		ui.message = "Ricerca dadi vuota."
+		return
+	}
+	q := strings.ToLower(query)
+	for i, e := range ui.diceLog {
+		line := strings.ToLower(e.Expression + " " + e.Output)
+		if strings.Contains(line, q) {
+			ui.dice.SetCurrentItem(i)
+			ui.message = fmt.Sprintf("Trovato in dadi: #%d", i+1)
+			ui.refreshDetail()
+			return
+		}
+	}
+	ui.message = fmt.Sprintf("Nessun match dadi per '%s'.", query)
 }
 
 func (ui *tviewUI) scrollDetailByPage(direction int) {
@@ -2107,6 +2191,15 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	panel := "Dettagli"
 	var panelLines []string
 	switch focus {
+	case ui.dice:
+		panel = "Dadi"
+		panelLines = []string{
+			"- a: nuovo tiro (anche multiplo, es. 1d20+3 x2)",
+			"- Invio: rilancia il tiro selezionato",
+			"- e: modifica + rilancia il tiro selezionato",
+			"- d: elimina il tiro selezionato",
+			"- c: svuota storico tiri",
+		}
 	case ui.pngList:
 		panel = "PNG"
 		panelLines = []string{
@@ -2159,7 +2252,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- q: esci\n")
 	b.WriteString("- ?: apri/chiudi help\n")
 	b.WriteString("- tab / shift+tab: cambia focus\n")
-	b.WriteString("- 1 / 2 / 3: focus PNG / Encounter / Catalogo\n")
+	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
 	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
@@ -2192,6 +2285,8 @@ func (ui *tviewUI) closeModal() {
 
 func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 	switch focus {
+	case ui.dice:
+		return "dadi"
 	case ui.pngList:
 		return "png"
 	case ui.encList:
@@ -2235,6 +2330,8 @@ func (ui *tviewUI) rebuildMainLayout() {
 	var content tview.Primitive = ui.mainRow
 	if ui.fullscreenActive {
 		switch ui.fullscreenTarget {
+		case "dadi":
+			content = ui.dice
 		case "png":
 			content = ui.pngList
 		case "encounter":
@@ -2281,4 +2378,255 @@ func (ui *tviewUI) persistEncounter() {
 		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base})
 	}
 	_ = saveEncounter(encounterFile, entries)
+}
+
+func (ui *tviewUI) buildDiceDetail() string {
+	var b strings.Builder
+	b.WriteString("Dadi\n")
+	if len(ui.diceLog) == 0 {
+		b.WriteString("Nessun tiro registrato.\n\n")
+		b.WriteString("Shortcut:\n")
+		b.WriteString("- a: nuovo tiro\n")
+		b.WriteString("- Invio: rilancia selezionato\n")
+		b.WriteString("- e: modifica + rilancia\n")
+		b.WriteString("- d: elimina selezionato\n")
+		b.WriteString("- c: svuota storico\n")
+		return strings.TrimSpace(b.String())
+	}
+
+	cur := ui.dice.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.diceLog) {
+		cur = len(ui.diceLog) - 1
+	}
+	entry := ui.diceLog[cur]
+	b.WriteString(fmt.Sprintf("Tiro #%d\n", cur+1))
+	b.WriteString("Espressione: " + entry.Expression + "\n")
+	b.WriteString("Risultato: " + entry.Output + "\n")
+	b.WriteString(fmt.Sprintf("\nTotale tiri: %d", len(ui.diceLog)))
+	return strings.TrimSpace(b.String())
+}
+
+func (ui *tviewUI) openDiceRollInput() {
+	input := tview.NewInputField().SetLabel(" Tiro ").SetFieldWidth(36)
+	input.SetBorder(true).SetTitle("Dadi (es. 2d6+3, 1d20+5>15, d6,d8, 1d20+4 x3)")
+	returnFocus := ui.app.GetFocus()
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 72, 0, true).
+			AddItem(nil, 0, 1, false), 5, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "dice_roll"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+		raw := strings.TrimSpace(input.GetText())
+		if raw == "" {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+
+		exprs, err := expandDiceRollInput(raw)
+		if err != nil {
+			ui.message = "Errore dadi: " + err.Error()
+			ui.refreshStatus()
+			return
+		}
+		for _, expr := range exprs {
+			_, breakdown, rollErr := rollDiceExpression(expr)
+			if rollErr != nil {
+				ui.message = "Errore dadi: " + rollErr.Error()
+				ui.refreshStatus()
+				continue
+			}
+			ui.appendDiceLog(DiceResult{Expression: expr, Output: breakdown})
+		}
+		ui.closeModal()
+		ui.focusPanel(focusDice)
+		ui.message = fmt.Sprintf("Registrati %d tiri.", len(exprs))
+		ui.refreshDetail()
+		ui.refreshStatus()
+	})
+}
+
+func (ui *tviewUI) openDiceReRollInput() {
+	if len(ui.diceLog) == 0 {
+		ui.openDiceRollInput()
+		return
+	}
+
+	cur := ui.dice.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.diceLog) {
+		cur = len(ui.diceLog) - 1
+	}
+
+	input := tview.NewInputField().SetLabel(" Tiro ").SetFieldWidth(36)
+	input.SetBorder(true).SetTitle("Modifica + Rilancia")
+	input.SetText(ui.diceLog[cur].Expression)
+	returnFocus := ui.app.GetFocus()
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 64, 0, true).
+			AddItem(nil, 0, 1, false), 5, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "dice_reroll"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+		expr := strings.TrimSpace(input.GetText())
+		if expr == "" {
+			return
+		}
+		_, breakdown, err := rollDiceExpression(expr)
+		if err != nil {
+			ui.message = "Errore dadi: " + err.Error()
+			ui.refreshStatus()
+			return
+		}
+		ui.diceLog[cur] = DiceResult{Expression: expr, Output: breakdown}
+		ui.renderDiceList()
+		ui.dice.SetCurrentItem(cur)
+		ui.closeModal()
+		ui.focusPanel(focusDice)
+		ui.message = "Tiro aggiornato."
+		ui.refreshDetail()
+		ui.refreshStatus()
+	})
+}
+
+func (ui *tviewUI) rerollSelectedDiceResult() {
+	if len(ui.diceLog) == 0 {
+		ui.message = "Nessun tiro da rilanciare."
+		ui.refreshStatus()
+		return
+	}
+	cur := ui.dice.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.diceLog) {
+		cur = len(ui.diceLog) - 1
+	}
+	expr := strings.TrimSpace(ui.diceLog[cur].Expression)
+	if expr == "" {
+		ui.message = "Espressione tiro vuota."
+		ui.refreshStatus()
+		return
+	}
+	_, breakdown, err := rollDiceExpression(expr)
+	if err != nil {
+		ui.message = "Errore dadi: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	ui.diceLog[cur] = DiceResult{Expression: expr, Output: breakdown}
+	ui.renderDiceList()
+	ui.dice.SetCurrentItem(cur)
+	ui.message = "Tiro rilanciato."
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) appendDiceLog(entry DiceResult) {
+	ui.diceLog = append(ui.diceLog, entry)
+	if len(ui.diceLog) > 200 {
+		ui.diceLog = ui.diceLog[len(ui.diceLog)-200:]
+	}
+	ui.renderDiceList()
+	if len(ui.diceLog) > 0 {
+		ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
+	}
+}
+
+func (ui *tviewUI) renderDiceList() {
+	ui.diceRenderLock = true
+	defer func() { ui.diceRenderLock = false }()
+
+	cur := 0
+	if ui.dice != nil {
+		cur = ui.dice.GetCurrentItem()
+		ui.dice.Clear()
+	}
+
+	if len(ui.diceLog) == 0 {
+		ui.dice.AddItem("(nessun tiro) premi 'a' per lanciare", "", 0, nil)
+		ui.dice.SetCurrentItem(0)
+		return
+	}
+
+	for i, row := range ui.diceLog {
+		ui.dice.AddItem(fmt.Sprintf("%d) %s => %s", i+1, row.Expression, row.Output), "", 0, nil)
+	}
+	if cur >= len(ui.diceLog) {
+		cur = len(ui.diceLog) - 1
+	}
+	if cur < 0 {
+		cur = 0
+	}
+	ui.dice.SetCurrentItem(cur)
+}
+
+func (ui *tviewUI) deleteSelectedDiceResult() {
+	if len(ui.diceLog) == 0 {
+		ui.message = "Nessun tiro da eliminare."
+		ui.refreshStatus()
+		return
+	}
+	cur := ui.dice.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.diceLog) {
+		cur = len(ui.diceLog) - 1
+	}
+	ui.diceLog = append(ui.diceLog[:cur], ui.diceLog[cur+1:]...)
+	ui.renderDiceList()
+	if len(ui.diceLog) == 0 {
+		ui.message = "Storico dadi svuotato."
+	} else {
+		if cur >= len(ui.diceLog) {
+			cur = len(ui.diceLog) - 1
+		}
+		ui.dice.SetCurrentItem(cur)
+		ui.message = "Tiro eliminato."
+	}
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) clearDiceResults() {
+	if len(ui.diceLog) == 0 {
+		ui.message = "Storico dadi già vuoto."
+		ui.refreshStatus()
+		return
+	}
+	ui.diceLog = nil
+	ui.renderDiceList()
+	ui.message = "Storico dadi svuotato."
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func expandDiceRollInput(input string) ([]string, error) {
+	return diceroll.ExpandRollInput(input)
+}
+
+func rollDiceExpression(expr string) (int, string, error) {
+	return diceroll.RollExpression(expr)
 }

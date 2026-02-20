@@ -1,19 +1,15 @@
 #!/bin/sh
-## this will retrieve all of the .go files that have been 
-## changed since the last commit
-STAGED_GO_FILES=$(git diff --cached --name-only -- '*.go')
+# Format only staged Go files that still exist in working tree.
+STAGED_GO_FILES=$(git diff --cached --name-only --diff-filter=ACMR -- '*.go')
 
-## we can check to see if this is empty
-if [[ $STAGED_GO_FILES == "" ]]; then
+if [ -z "$STAGED_GO_FILES" ]; then
     echo "No Go Files to Update"
-## otherwise we can do stuff with these changed go files
-else
-    for file in $STAGED_GO_FILES; do
-        ## format our file
-        gofmt -w $file
-        ## add any potential changes from our formatting to the 
-        ## commit
-        git add $file
-    done
+    exit 0
 fi
 
+for file in $STAGED_GO_FILES; do
+    if [ -f "$file" ]; then
+        gofmt -w "$file"
+        git add "$file"
+    fi
+done
