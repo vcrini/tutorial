@@ -707,5 +707,32 @@
   {"name":"Specchio di Calendula","category":"Scorte",
     "type":"scorte","rank":0,"levels":"—","trait":"59","range":"—","damage":"—","grip":"—","characteristic":"Quando subite danno potete spendere una Speranza per annullarlo, poi lo specchio si frantuma."},
   {"name":"Lacrima di Stelle","category":"Scorte",
-    "type":"scorte","rank":0,"levels":"—","trait":"60","range":"—","damage":"—","grip":"—","characteristic":"Scaglia una granata di comete che infligge 8d20 danni fisici a tutti i bersagli entro distanza Remota."}
+    "type":"scorte","rank":0,"levels":"—","trait":"60","range":"—","damage":"—","grip":"—","characteristic":"Scaglia una granata di comete che infligge 8d20 danni fisici a tutti i bersagli entro distanza Remota."},
+
+  {"name":"Sedia a Rotelle Telaio Leggero","category":"Armi Fisiche",
+    "type":"primaria","rank":1,"levels":"1","trait":"Agilità","range":"Mischia","damage":"d8 fis","grip":"A una mano","characteristic":"Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un'altra creatura entro portata."},
+  {"name":"Sedia a Rotelle Perfezionata Telaio Leggero","category":"Armi Fisiche",
+    "type":"primaria","rank":2,"levels":"2-4","trait":"Agilità","range":"Mischia","damage":"d8+3 fis","grip":"A una mano","characteristic":"Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un'altra creatura entro portata."},
+  {"name":"Sedia a Rotelle Superiore Telaio Leggero","category":"Armi Fisiche",
+    "type":"primaria","rank":3,"levels":"5-7","trait":"Agilità","range":"Mischia","damage":"d8+6 fis","grip":"A una mano","characteristic":"Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un'altra creatura entro portata."},
+  {"name":"Sedia a Rotelle Leggendaria Telaio Leggero","category":"Armi Fisiche",
+    "type":"primaria","rank":4,"levels":"8-10","trait":"Agilità","range":"Mischia","damage":"d8+9 fis","grip":"A una mano","characteristic":"Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un'altra creatura entro portata."},
+
+  {"name":"Sedia a Rotelle Telaio Pesante","category":"Armi Fisiche",
+    "type":"primaria","rank":1,"levels":"1","trait":"Forza","range":"Mischia","damage":"d12+3 fis","grip":"A due mani","characteristic":"Pesante: -1 all'Evasione"},
+  {"name":"Sedia a Rotelle Perfezionata Telaio Pesante","category":"Armi Fisiche",
+    "type":"primaria","rank":2,"levels":"2-4","trait":"Forza","range":"Mischia","damage":"d12+6 fis","grip":"A due mani","characteristic":"Pesante: -1 all'Evasione"},
+  {"name":"Sedia a Rotelle Superiore Telaio Pesante","category":"Armi Fisiche",
+    "type":"primaria","rank":3,"levels":"5-7","trait":"Forza","range":"Mischia","damage":"d12+9 fis","grip":"A due mani","characteristic":"Pesante: -1 all'Evasione"},
+  {"name":"Sedia a Rotelle Leggendaria Telaio Pesante","category":"Armi Fisiche",
+    "type":"primaria","rank":4,"levels":"8-10","trait":"Forza","range":"Mischia","damage":"d12+12 fis","grip":"A due mani","characteristic":"Pesante: -1 all'Evasione"},
+
+  {"name":"Sedia a Rotelle Telaio Incantato","category":"Armi Magiche",
+    "type":"primaria","rank":1,"levels":"1","trait":"Tratto da Incantatore","range":"Lontana","damage":"d6 mag","grip":"A una mano","characteristic":"Affidabile: +1 al tiro attacco"},
+  {"name":"Sedia a Rotelle Perfezionata Telaio Incantato","category":"Armi Magiche",
+    "type":"primaria","rank":2,"levels":"2-4","trait":"Tratto da Incantatore","range":"Lontana","damage":"d6+3 mag","grip":"A una mano","characteristic":"Affidabile: +1 al tiro attacco"},
+  {"name":"Sedia a Rotelle Superiore Telaio Incantato","category":"Armi Magiche",
+    "type":"primaria","rank":3,"levels":"5-7","trait":"Tratto da Incantatore","range":"Lontana","damage":"d6+6 mag","grip":"A una mano","characteristic":"Affidabile: +1 al tiro attacco"},
+  {"name":"Sedia a Rotelle Leggendaria Telaio Incantato","category":"Armi Magiche",
+    "type":"primaria","rank":4,"levels":"8-10","trait":"Tratto da Incantatore","range":"Lontana","damage":"d6+9 mag","grip":"A una mano","characteristic":"Affidabile: +1 al tiro attacco"}
 ]
