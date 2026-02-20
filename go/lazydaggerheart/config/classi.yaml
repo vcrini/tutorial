@@ -42,3 +42,91 @@
     - "Cosa ti ha fatto capire che saremmo diventati cosi buoni amici?"
     - "Cosa faccio che ti infastidisce?"
     - "Perche mi afferri la mano di notte?"
+
+- name: Consacrato
+  subclass: Emissario Divino
+  rank: 1
+  domains: "Splendore e Valore"
+  evasion: 9
+  hp: 7
+  class_item: "Alcune offerte votive o un simbolo sacro del proprio dio"
+  hope_privilege: "Proteggere la Vita: Spendete 3 Speranze per annullare la perdita di un Punto Ferita di un alleato entro distanza Ravvicinata."
+  class_privileges:
+    - "Dadi Preghiera: All'inizio di ogni sessione, tirate un numero di d4 pari al tratto da Incantatore della vostra sottoclasse e metteteli sulla scheda del personaggio nell'apposito spazio. Questi sono i vostri Dadi Preghiera. Potete spendere un numero qualsiasi di Dadi Preghiera per aiutare voi stessi o un alleato entro distanza Lontana. Il valore di un dado speso puo essere utilizzato per ridurre i danni in arrivo, per aggiungere il risultato a un tiro dopo che e stato effettuato o per guadagnare Speranza pari al risultato. Alla fine di ogni sessione, rimuovete tutti i Dadi Preghiera non spesi."
+  description: "I consacrati sono combattenti e guaritori divini, dotati di uno scopo sacro. Nei regni esistono molte divinita, che fungono da patrono per diversi ordini di consacrati. La loro etica si allinea tradizionalmente con il dominio o gli obiettivi di tale dio, come la difesa dei deboli, la vendetta, la protezione di una terra o di un artefatto o la difesa di una particolare fede. Alcuni consacrati si alleano con un esercito o un regno, con grande soddisfazione dei loro governanti, ma altri crociati combattono in opposizione alle follie del dominio del Regno Mortale. E meglio essere alleati di un consacrato che suoi avversari, poiche sono nemici terrificanti per coloro che si oppongono al loro credo."
+  caster_trait: "Forza"
+  base_privileges:
+    - "Arma Animata: Quando impugnate un'arma con portata Mischia o Prossima, questa puo volare dalla vostra mano per attaccare un avversario entro distanza Ravvicinata e poi tornare nelle vostre mani. Potete marcare uno Stress per colpire un altro avversario entro portata con lo stesso tiro attacco."
+    - "Tocco Ristoratore: Una volta per riposo lungo, toccando una creatura potete curare 2 Punti Ferita o rimuovere 2 Stress."
+  specialization: "Devoto: Quando tirate i Dadi Preghiera, potete tirare un dado aggiuntivo e scartare il risultato piu basso. Inoltre, potete usare il privilegio Tocco Ristoratore due volte invece di una per riposo lungo."
+  mastery: "Risonanza Celestiale: Quando tirate i danni per la vostra Arma Animata, se i risultati dei dadi coincidono, raddoppiate il valore di ogni dado corrispondente."
+
+- name: Consacrato
+  subclass: Sentinella Alata
+  rank: 1
+  domains: "Splendore e Valore"
+  evasion: 9
+  hp: 7
+  class_item: "Alcune offerte votive o un simbolo sacro del proprio dio"
+  hope_privilege: "Proteggere la Vita: Spendete 3 Speranze per annullare la perdita di un Punto Ferita di un alleato entro distanza Ravvicinata."
+  class_privileges:
+    - "Dadi Preghiera: All'inizio di ogni sessione, tirate un numero di d4 pari al tratto da Incantatore della vostra sottoclasse e metteteli sulla scheda del personaggio nell'apposito spazio. Questi sono i vostri Dadi Preghiera. Potete spendere un numero qualsiasi di Dadi Preghiera per aiutare voi stessi o un alleato entro distanza Lontana. Il valore di un dado speso puo essere utilizzato per ridurre i danni in arrivo, per aggiungere il risultato a un tiro dopo che e stato effettuato o per guadagnare Speranza pari al risultato. Alla fine di ogni sessione, rimuovete tutti i Dadi Preghiera non spesi."
+  description: "I consacrati sono combattenti e guaritori divini, dotati di uno scopo sacro. Nei regni esistono molte divinita, che fungono da patrono per diversi ordini di consacrati."
+  caster_trait: "Forza"
+  base_privileges:
+    - "Ali di Luce: Potete volare. Quando siete in volo, potete: marcare uno Stress per afferrare e trasportare un'altra creatura senziente della vostra taglia o piu piccola; spendere una Speranza per infliggere 1d8 danni extra in un attacco riuscito."
+  specialization: "Volto Celeste: Il vostro volto soprannaturale incute timore e paura. Quando siete in volo, avete vantaggio sui Tiri Presenza. Quando avete successo con Speranza in un Tiro Presenza, potete rimuovere una Paura dalla riserva di Paura del GM invece di guadagnare Speranza."
+  mastery: "Ascendente: Guadagnate bonus +4 permanente alla soglia dei danni gravi. Potere degli Dei: Quando siete in volo grazie al privilegio Ali di Luce, infliggete 1d12 danni extra invece di 1d8."
+  background_questions:
+    - "A quale divinita vi siete votati? Quale incredibile miracolo ha compiuto per voi in un momento di disperazione?"
+    - "Come e cambiato il vostro aspetto dopo il vostro giuramento sacro?"
+    - "In quale modo strano o unico comunicate con la vostra divinita?"
+  bonds:
+    - "Quale promessa mi hai fatto accettare, se tu dovessi morire sul campo di battaglia?"
+    - "Perche mi fai tante domande sulla mia divinita?"
+    - "Mi hai detto di proteggere un membro del nostro gruppo piu di tutti gli altri, anche di te stesso. Chi e e perche me lo hai chiesto?"
+
+- name: Druido
+  subclass: Custode degli Elementi
+  rank: 1
+  domains: "Saggezza e Arcano"
+  evasion: 10
+  hp: 6
+  class_item: "Un piccolo sacchetto di rocce e ossa o uno strano ciondolo trovato nella terra"
+  hope_privilege: "Evoluzione: Spendete 3 Speranze per trasformarvi in Forma Bestiale senza marcare Stress. Quando la forma termina, aumentate un tratto di +1 finche non annullate la Forma Bestiale."
+  class_privileges:
+    - "Forma Bestiale: Marcate uno Stress per trasformarvi magicamente in una creatura del vostro rango o inferiore dall'elenco delle Forme Bestiali. Potete abbandonare questa forma in qualsiasi momento. Durante la trasformazione, non potete usare armi o lanciare incantesimi dalle carte dominio, ma potete servirvi di altri privilegi o abilita cui abbiate accesso. Gli incantesimi lanciati prima della trasformazione rimangono attivi e durano normalmente, e potete continuare a parlare e a comunicare senza difficolta. Inoltre, ottenete i privilegi della Forma Bestiale, aggiungete il suo bonus di Evasione alle vostre Caselle e utilizzate il tratto specificato nelle sue statistiche per gli attacchi. Mentre siete in Forma Bestiale, l'armatura diventa parte del vostro corpo e utilizzate le Caselle Armatura come di consueto; quando abbandonate la Forma Bestiale, le Caselle Armatura segnate rimangono tali. Se subite l'ultimo Punto Ferita, la Forma Bestiale termina immediatamente."
+    - "Tocco della Natura: Potete eseguire a volonta effetti innocui e minori che coinvolgono la natura, come far crescere rapidamente un fiore, evocare una leggera folata di vento o accendere la legna per il fuoco."
+  description: "Diventare un druido e piu di un'occupazione: e una chiamata per coloro che desiderano imparare e proteggere la magia della natura incontaminata. Mentre si potrebbe sottovalutare un druido gentile che in silenzio si prende cura della vegetazione, i druidi che incanalano le forze indomite della natura sono terrificanti e verdi. I druidi coltivano le loro abilita in piccoli gruppi, spesso legati da un'etica o da un luogo specifico, ma alcuni scelgono di lavorare da soli. Attraverso anni di studio e dedizione, i druidi possono imparare a trasformarsi in bestie e a plasmare la natura stessa."
+  caster_trait: "Istinto"
+  base_privileges:
+    - "Incarnazione Elementale: Marcate uno Stress per Incanalare uno dei seguenti elementi finche non subite un danno Grave o fino al vostro prossimo riposo: Fuoco (chi vi infligge danni Mischia subisce 1d10 danni magici), Terra (bonus alle soglie danno pari alla Competenza), Acqua (quando infliggete danni Mischia tutti gli altri avversari entro Prossima marcano uno Stress), Aria (potete librarvi in aria ottenendo vantaggio nei Tiri Agilita)."
+  specialization: "Aura Elementale: Una volta per riposo, mentre Incanalate, potete marcare uno Stress per emettere un'aura che colpisce i bersagli entro Ravvicinata finche non smettete di Incanalare. Fuoco: quando un avversario subisce 1+ PF deve marcare anche uno Stress. Terra: gli alleati ottengono bonus +1 alla Forza. Acqua: quando un avversario vi infligge un danno, potete marcare uno Stress per sottrarre un numero qualsiasi da dove si trova. Aria: quando un alleato subisce danni da un attacco non in Mischia, riducete i danni di 1d8."
+  mastery: "Dominio Elementale: Mentre Incanalate ottenete il beneficio corrispondente: Fuoco bonus +1 ai danni Competenza per gli attacchi e gli incantesimi che infliggono danni. Terra quando subite Punti Ferita tirate un d6 per ogni Punto Ferita subito, per ogni risultato di 6 riducete di 1 il numero di Punti Ferita subiti. Acqua quando un attacco contro di voi ha successo potete marcare uno Stress per rendere l'attaccante temporaneamente Vulnerabile. Aria guadagnate bonus +1 all'Evasione e potete volare."
+
+- name: Druido
+  subclass: Custode del Rinnovamento
+  rank: 1
+  domains: "Saggezza e Arcano"
+  evasion: 10
+  hp: 6
+  class_item: "Un piccolo sacchetto di rocce e ossa o uno strano ciondolo trovato nella terra"
+  hope_privilege: "Evoluzione: Spendete 3 Speranze per trasformarvi in Forma Bestiale senza marcare Stress. Quando la forma termina, aumentate un tratto di +1 finche non annullate la Forma Bestiale."
+  class_privileges:
+    - "Forma Bestiale: Marcate uno Stress per trasformarvi magicamente in una creatura del vostro rango o inferiore dall'elenco delle Forme Bestiali. Potete abbandonare questa forma in qualsiasi momento. Durante la trasformazione, non potete usare armi o lanciare incantesimi dalle carte dominio, ma potete servirvi di altri privilegi o abilita cui abbiate accesso. Gli incantesimi lanciati prima della trasformazione rimangono attivi e durano normalmente, e potete continuare a parlare e a comunicare senza difficolta. Inoltre, ottenete i privilegi della Forma Bestiale, aggiungete il suo bonus di Evasione alle vostre Caselle e utilizzate il tratto specificato nelle sue statistiche per gli attacchi."
+    - "Tocco della Natura: Potete eseguire a volonta effetti innocui e minori che coinvolgono la natura, come far crescere rapidamente un fiore, evocare una leggera folata di vento o accendere la legna per il fuoco."
+  description: "I druidi coltivano le loro abilita in piccoli gruppi, spesso legati da un'etica o da un luogo specifico. Con pazienza e pratica imparano a rinnovare la vita della natura e a proteggere i compagni."
+  caster_trait: "Istinto"
+  base_privileges:
+    - "Illuminazione della Natura: Una volta per riposo lungo, potete creare uno spazio di serenita naturale entro distanza Ravvicinata. Quando trascorrete alcuni minuti di riposo all'interno dello spazio, rimuovete un valore totale di Stress pari al vostro Istinto, a scelta tra voi e i vostri alleati."
+    - "Rigenerazione: Toccate una creatura e spendete 3 Speranze. La creatura recupera 1d4 Punti Ferita."
+  specialization: "Onda Rigenerante: Potete bersagliare con il privilegio Rigenerazione creature entro distanza Prossima. Protezione del Guardiano: Una volta per riposo lungo, spendete 2 Speranze per curare 2 Punti Ferita a 1d4 alleati a distanza Ravvicinata."
+  mastery: "Difensore: La vostra trasformazione animale incarna uno spirito protettore della guarigione e del rinnovamento. Quando siete in Forma Bestiale e un alleato entro distanza Ravvicinata subisce 2 o piu Punti Ferita, potete marcare uno Stress per ridurre di 1 il numero di Punti Ferita subiti."
+  background_questions:
+    - "Perche la comunita in cui siete cresciuti era cosi legata alla natura e alle sue creature?"
+    - "Quale e stato il primo animale selvatico con cui avete stretto amicizia? Perche il vostro legame e finito?"
+    - "Chi ha cercato di rubarvi la caccia? Cosa vogliono da voi?"
+  bonds:
+    - "Cosa mi hai confidato che mi fa correre ogni volta dei rischi per te?"
+    - "Quale animale ti ho detto che mi ricordi?"
+    - "Quale soprannome affettuoso mi hai dato?"

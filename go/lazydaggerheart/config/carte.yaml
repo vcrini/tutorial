@@ -1595,3 +1595,171 @@
   caster_trait: Forza
   description: "Effettuate un Tiro Incantesimo (20). In caso di successo, riportate in vita una creatura morta da non più di 100 anni. Quindi tirate un d6. Se ottenete un risultato pari o inferiore a 5, spostate questa carta nella vostra riserva permanentemente. In caso di fallimento, non potrete lanciare Resurrezione per una settimana."
   effects: []
+
+- name: Esploratore Scattante
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 1 | Mischia, Agilita, d4 fisico | Evasione +2. Vantaggio: ingannare, localizzare, sgattaiolare. Agilita: il movimento e naturalmente silenzioso e potete spendere una Speranza per muovervi fino a Lontana senza tirare. Fragile: quando subite un danno Maggiore o superiore, abbandonate la Forma Bestiale."
+  effects: []
+
+- name: Erbivoro Rapido
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 1 | Mischia, Agilita, d6 fisico | Evasione +3. Vantaggio: saltare, sgattaiolare, scattare. Preda Sfuggente: quando un tiro di attacco contro di voi avrebbe successo, potete marcare uno Stress e tirare un d4, aggiungendo il risultato alla vostra Evasione contro questo attacco. Fragile: quando subite un danno Maggiore o superiore, abbandonate la Forma Bestiale."
+  effects: []
+
+- name: Esploratore Acquatico
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 1 | Mischia, Agilita, d4 fisico | Evasione +2. Vantaggio: orientarsi, nuotare. Acquatico: potete respirare e muovervi naturalmente sott'acqua. Fragile: quando subite un danno Maggiore o superiore, abbandonate la Forma Bestiale."
+  effects: []
+
+- name: Animale Domestico
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Istinto
+  description: "Rango 1 | Mischia, Istinto, d6 fisico | Evasione +2. Vantaggio: arrampicarsi, localizzare, proteggere. Compagno: quando aiutate un alleato, tirate un d8 come dado vantaggio. Fragile: quando subite un danno Maggiore o superiore, abbandonate la Forma Bestiale."
+  effects: []
+
+- name: Cacciatore in Branco
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 1 | Mischia, Forza, d6+2 fisico | Evasione +1. Vantaggio: attaccare, scattare, inseguire. Colpo Azzoppante: quando colpite un bersaglio in Mischia, potete marcare uno Stress per renderlo temporaneamente Vulnerabile. Caccia del Branco: quando colpite lo stesso bersaglio di un alleato che agisce immediatamente prima di voi, aggiungete un d8 al tiro per i danni."
+  effects: []
+
+- name: Aracnide in Agguato
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Astuzia
+  description: "Rango 1 | Mischia, Astuzia, d6+1 fisico | Evasione +2. Vantaggio: attaccare, scalare, sgattaiolare. Morso Velenoso: quando colpite in Mischia, se il bersaglio e Vulnerabile, infliggete 1d10 danni fisici diretti aggiuntivi. Lancio di Ragnatele: potete creare una robusta ragnatela utile per ostacolare o intrappolare."
+  effects: []
+
+- name: Sentinella Corazzata
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 2 | Mischia, Forza, d8+2 fisico | Evasione +1. Vantaggio: scavare, localizzare, proteggere. Guscio Corazzato: resistenza ai danni fisici. Casella Armatura: segnate una Casella Armatura per ritirarvi nel guscio. Palla di Cannone: marcate uno Stress per travolgere un alleato ostile in carica."
+  effects: []
+
+- name: Corridore Potente
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 2 | Mischia, Agilita, d8+1 fisico | Evasione +2. Vantaggio: saltare, orientarsi, scattare. Trotto Veloce: in linea retta fino a Ravvicinata senza opportunita; +1 danni ai bersagli attraversati. Travolgere: marcate uno Stress per colpire in linea entro Ravvicinata."
+  effects: []
+
+- name: Predatore Feroce
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Istinto
+  description: "Rango 2 | Mischia, Istinto, d8+6 fisico | Evasione +3. Vantaggio: attaccare, scalare, sgattaiolare. Fuga: spendete una Speranza per spostarvi fino a Lontana. Bloccare la Fuga: marcate uno Stress per ottenere bonus +2 Competenza al prossimo attacco e imporre Stress al bersaglio."
+  effects: []
+
+- name: Bestia Possente
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 2 | Mischia, Forza, d10+4 fisico | Evasione +3. Vantaggio: orientarsi, proteggere, spaventare. Furia Belluina: quando tirate 1 su un dado danno, potete ritirare un d10 e aggiungerlo al danno; potete marcare uno Stress per bonus +1 Competenza al prossimo attacco. Pelle Coriacea: bonus +2 alle soglie di danno."
+  effects: []
+
+- name: Serpe Scattante
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Astuzia
+  description: "Rango 2 | Prossima, Astuzia, d8+4 fisico | Evasione +2. Vantaggio: arrampicarsi, ingannare, scattare. Colpo Velenoso: colpite un numero di bersagli in Prossima con successo e ciascuno subisce Avvelenato. Sibilo Minaccioso: marcate uno Stress per costringere bersagli in Mischia ad arretrare a Prossima."
+  effects: []
+
+- name: Bestia Alata
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Astuzia
+  description: "Rango 2 | Mischia, Astuzia, d4+2 fisico | Evasione +3. Vantaggio: ingannare, individuare, orientarsi. Vista a Volo d'Uccello: potete volare e, una volta per riposo, durante un Tiro Azione in volo, ottenete vantaggio. Ossa Cave: subite penalita -2 alle soglie di danno."
+  effects: []
+
+- name: Grande Predatore
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 3 | Mischia, Forza, d12+8 fisico | Evasione +2. Vantaggio: attaccare, furtivita, scattare. Animale da Selva: trasportate fino a due alleati consenzienti quando vi muovete. Mazzata Feroce: su attacco riuscito spendete Speranza per rendere Vulnerabile e ottenere bonus +1 Competenza."
+  effects: []
+
+- name: Grande Bestia Alata
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Astuzia
+  description: "Rango 3 | Mischia, Astuzia, d8+6 fisico | Evasione +3. Vantaggio: ingannare, distrarre, individuare. Vista a Volo d'Uccello: volate, +1d6 ai danni mentre siete in volo. Animale da Selva: quando vi muovete, trasportate fino a due alleati consenzienti."
+  effects: []
+
+- name: Lucertola Possente
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Istinto
+  description: "Rango 3 | Mischia, Istinto, d10+7 fisico | Evasione +1. Vantaggio: attaccare, muoversi furtivamente, inseguire. Difesa Fisica: +3 alle soglie di danno. Azzannare: su attacco riuscito in Mischia contro bersaglio in Mischia, potete spendere Speranza per Trattenere temporaneamente e rendere Vulnerabile."
+  effects: []
+
+- name: Predatore Acquatico
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 3 | Mischia, Agilita, d10+6 fisico | Evasione +4. Vantaggio: attaccare, nuotare, inseguire. Acquatico: potete respirare e muovervi naturalmente sott'acqua. Mazzata Feroce: su attacco riuscito spendete Speranza per rendere Vulnerabile e guadagnare bonus +1 Competenza."
+  effects: []
+
+- name: Bestia Leggendaria
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Evoluzione
+  description: "Rango 3 Evoluzione (opzioni da Rango 1 potenziate). Potenziate una Forma Bestiale di Rango 1: guadagna +6 ai tiri danno, +1 al tratto usato, +2 all'Evasione."
+  effects: []
+
+- name: Ibrido Leggendario
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 3 | Mischia, Forza, d10+8 fisico | Evasione +3. Privilegio dell'Ibrido: per trasformarvi marcate 3 Stress aggiuntivi. Scegliete due opzioni di Forma Bestiale di grado 1-2 e combinatele."
+  effects: []
+
+- name: Mastodonte Colossale
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 4 | Mischia, Forza, d12+12 fisico | Evasione +1. Vantaggio: individuare, proteggere, spaventare, scattare. Animale da Selva: trasportate fino a quattro alleati. Demolire: spendete Speranza per muovervi in linea retta fino a Lontana e colpire tutti i bersagli lungo il percorso con d8+10 danni fisici + Competenza."
+  effects: []
+
+- name: Signore dei Cieli
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Astuzia
+  description: "Rango 4 | Mischia, Astuzia, d10+11 fisico | Evasione +4. Vantaggio: attaccare, ingannare, localizzare, orientarsi. Animale da Selva: trasportate fino a tre alleati. Rapace Letale: in linea retta in Mischia, tutti i bersagli sulla linea subiscono d6 danni e un bersaglio colpito subisce anche un attacco con il tiro originale."
+  effects: []
+
+- name: Lucertola Terribile
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 4 | Mischia, Forza, d12+10 fisico | Evasione +2. Vantaggio: attaccare, ingannare, spaventare, inseguire. Colpi Devastanti: su attacco riuscito potete marcare Stress per infliggere +1d12 fisico. Passo Massiccio: movimento fino a Lontana ignorando il terreno difficile grazie alla stazza."
+  effects: []
+
+- name: Bestia Acquatica Epica
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Agilita
+  description: "Rango 4 | Mischia, Agilita, d10+10 fisico | Evasione +3. Vantaggio: localizzare, proteggere, spaventare, inseguire. Signore dell'Oceano: respirate e vi muovete sott'acqua; su attacco in Mischia riuscito potete rendere temporaneamente Trattenuto. Inflessibile: quando usate una Casella Armatura e tirate un d6, con 5+ riducete la gravita di una soglia senza usare la Casella."
+  effects: []
+
+- name: Bestia Mitica
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Evoluzione
+  description: "Rango 4 Evoluzione (opzioni da Rango 2 potenziate). Potenziate una Forma Bestiale di Rango 2: +9 ai tiri danno, +2 al tratto usato, +3 all'Evasione, dado danno aumenta di una taglia (d8->d10, d10->d12)."
+  effects: []
+
+- name: Ibrido Mitico
+  class: Druido
+  type: Forma Bestiale
+  caster_trait: Forza
+  description: "Rango 4 | Mischia, Forza, d12+10 fisico | Evasione +2. Privilegio dell'Ibrido: per trasformarvi marcate 2 Stress aggiuntivi. Scegliete tre opzioni di Forma Bestiale grado 1-3 e combinatene i benefici."
+  effects: []
