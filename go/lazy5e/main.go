@@ -4,6 +4,7 @@ import (
 	crand "crypto/rand"
 	_ "embed"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -31,6 +32,7 @@ const (
 	defaultDicePath        = "dice.yaml"
 	lastDicePathFile       = ".dice_last_path"
 	filtersStatePath       = ".filters_state.yaml"
+	descScrollStatePath    = ".description_scroll.yaml"
 )
 
 //go:embed data/monster.yaml
@@ -51,6 +53,12 @@ var embeddedRacesYAML []byte
 //go:embed data/feat.yaml
 var embeddedFeatsYAML []byte
 
+//go:embed data/book.yaml
+var embeddedBooksYAML []byte
+
+//go:embed data/adventure.yaml
+var embeddedAdventuresYAML []byte
+
 type BrowseMode int
 
 const (
@@ -60,6 +68,8 @@ const (
 	BrowseCharacters
 	BrowseRaces
 	BrowseFeats
+	BrowseBooks
+	BrowseAdventures
 )
 
 type Monster struct {
@@ -94,6 +104,14 @@ type racesDataset struct {
 
 type featsDataset struct {
 	Feats []map[string]any `yaml:"feats"`
+}
+
+type booksDataset struct {
+	Books []map[string]any `yaml:"books"`
+}
+
+type adventuresDataset struct {
+	Adventures []map[string]any `yaml:"adventures"`
 }
 
 type EncounterEntry struct {
@@ -162,6 +180,13 @@ type PersistedFilters struct {
 	Chars    PersistedFilterMode `yaml:"characters,omitempty"`
 	Races    PersistedFilterMode `yaml:"races,omitempty"`
 	Feats    PersistedFilterMode `yaml:"feats,omitempty"`
+	Books    PersistedFilterMode `yaml:"books,omitempty"`
+	Advs     PersistedFilterMode `yaml:"adventures,omitempty"`
+}
+
+type PersistedDescriptionScroll struct {
+	Version int            `yaml:"version"`
+	Offsets map[string]int `yaml:"offsets"`
 }
 
 type EncounterUndoState struct {
@@ -269,6 +294,8 @@ type UI struct {
 	classes       []Monster
 	races         []Monster
 	feats         []Monster
+	books         []Monster
+	adventures    []Monster
 	browseMode    BrowseMode
 	filtered      []int
 	envOptions    []string
@@ -302,15 +329,19 @@ type UI struct {
 	detailPanel    *tview.Flex
 	filterHost     *tview.Pages
 
-	focusOrder   []tview.Primitive
-	rawText      string
-	rawQuery     string
-	treasureText string
-	diceLog      []DiceResult
-	diceRender   bool
-	wideFilter   bool
-	modeFilters  map[BrowseMode]PersistedFilterMode
-	monsterScale map[int]int
+	focusOrder     []tview.Primitive
+	rawText        string
+	rawQuery       string
+	treasureText   string
+	diceLog        []DiceResult
+	diceRender     bool
+	wideFilter     bool
+	modeFilters    map[BrowseMode]PersistedFilterMode
+	monsterScale   map[int]int
+	descScroll     map[string]int
+	currentDescKey string
+	bookBodyCache  map[string]string
+	advBodyCache   map[string]string
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -356,6 +387,8 @@ func main() {
 		classes  []Monster
 		races    []Monster
 		feats    []Monster
+		books    []Monster
+		advs     []Monster
 		envs     []string
 		crs      []string
 		types    []string
@@ -394,8 +427,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("errore caricamento feat YAML embedded: %v", err)
 	}
+	books, _, _, _, err = loadBooksFromBytes(embeddedBooksYAML)
+	if err != nil {
+		log.Fatalf("errore caricamento book YAML embedded: %v", err)
+	}
+	advs, _, _, _, err = loadAdventuresFromBytes(embeddedAdventuresYAML)
+	if err != nil {
+		log.Fatalf("errore caricamento adventure YAML embedded: %v", err)
+	}
 
-	ui := newUI(monsters, items, spells, classes, races, feats, envs, crs, types, encountersPath, dicePath)
+	ui := newUI(monsters, items, spells, classes, races, feats, books, advs, envs, crs, types, encountersPath, dicePath)
 	if err := ui.run(); err != nil {
 		log.Fatal(err)
 	}
@@ -408,9 +449,12 @@ func main() {
 	if err := ui.saveFilterStates(); err != nil {
 		log.Printf("errore salvataggio filtri: %v", err)
 	}
+	if err := ui.saveDescriptionScrollStates(); err != nil {
+		log.Printf("errore salvataggio posizione description: %v", err)
+	}
 }
 
-func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, types []string, encountersPath string, dicePath string) *UI {
+func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster, envs, crs, types []string, encountersPath string, dicePath string) *UI {
 	setTheme()
 
 	ui := &UI{
@@ -421,6 +465,8 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		classes:           classes,
 		races:             races,
 		feats:             feats,
+		books:             books,
+		adventures:        advs,
 		browseMode:        BrowseMonsters,
 		sourceFilters:     map[string]struct{}{},
 		envOptions:        append([]string{"All"}, envs...),
@@ -434,6 +480,9 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		dicePath:          dicePath,
 		modeFilters:       map[BrowseMode]PersistedFilterMode{},
 		monsterScale:      map[int]int{},
+		descScroll:        map[string]int{},
+		bookBodyCache:     map[string]string{},
+		advBodyCache:      map[string]string{},
 		activeBottomPanel: "description",
 	}
 
@@ -701,9 +750,12 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 	ui.modeFilters[BrowseCharacters] = PersistedFilterMode{}
 	ui.modeFilters[BrowseRaces] = PersistedFilterMode{}
 	ui.modeFilters[BrowseFeats] = PersistedFilterMode{}
+	ui.modeFilters[BrowseBooks] = PersistedFilterMode{}
+	ui.modeFilters[BrowseAdventures] = PersistedFilterMode{}
 	if err := ui.loadFilterStates(); err != nil {
 		ui.status.SetText(fmt.Sprintf(" [white:red] errore load filtri[-:-] %v  %s", err, helpText))
 	}
+	_ = ui.loadDescriptionScrollStates()
 	ui.applyModeFilters(ui.browseMode)
 	ui.updateBrowsePanelTitle()
 	ui.updateFilterLayout(0)
@@ -838,7 +890,7 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 			ui.app.SetFocus(ui.nameInput)
 			return nil
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'e':
-			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems || ui.browseMode == BrowseSpells || ui.browseMode == BrowseCharacters || ui.browseMode == BrowseRaces || ui.browseMode == BrowseFeats {
+			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems || ui.browseMode == BrowseSpells || ui.browseMode == BrowseCharacters || ui.browseMode == BrowseRaces || ui.browseMode == BrowseFeats || ui.browseMode == BrowseBooks || ui.browseMode == BrowseAdventures {
 				ui.app.SetFocus(ui.envDrop)
 				return nil
 			}
@@ -860,9 +912,13 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 				ui.app.SetFocus(ui.crDrop)
 				return nil
 			}
+			if ui.browseMode == BrowseBooks || ui.browseMode == BrowseAdventures {
+				ui.app.SetFocus(ui.crDrop)
+				return nil
+			}
 			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 't':
-			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems || ui.browseMode == BrowseCharacters || ui.browseMode == BrowseRaces || ui.browseMode == BrowseFeats {
+			if ui.browseMode == BrowseMonsters || ui.browseMode == BrowseItems || ui.browseMode == BrowseCharacters || ui.browseMode == BrowseRaces || ui.browseMode == BrowseFeats || ui.browseMode == BrowseBooks || ui.browseMode == BrowseAdventures {
 				ui.app.SetFocus(ui.typeDrop)
 				return nil
 			}
@@ -881,6 +937,10 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 				return nil
 			}
 			if ui.browseMode == BrowseRaces || ui.browseMode == BrowseFeats {
+				ui.app.SetFocus(ui.sourceDrop)
+				return nil
+			}
+			if ui.browseMode == BrowseBooks || ui.browseMode == BrowseAdventures {
 				ui.app.SetFocus(ui.sourceDrop)
 				return nil
 			}
@@ -1040,6 +1100,12 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '9':
 			ui.setBrowseMode(BrowseFeats)
 			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'b':
+			ui.setBrowseMode(BrowseBooks)
+			return nil
+		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'v':
+			ui.setBrowseMode(BrowseAdventures)
+			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == '[':
 			ui.cycleBrowseMode(-1)
 			return nil
@@ -1163,7 +1229,8 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 		"  Tab / Shift+Tab : cambia focus\n" +
 		"  0 / 1 / 2 / 3 : vai a Dice / Encounters / Catalogo / Description\n" +
 		"  [ / ] : browse precedente/successivo\n" +
-		"  4 / 5 / 6 / 7 / 8 / 9 : Monsters / Items / Spells / Characters / Races / Feats\n\n"
+		"  4 / 5 / 6 / 7 / 8 / 9 : Monsters / Items / Spells / Characters / Races / Feats\n" +
+		"  b / v : Manuals / Adventures\n\n"
 
 	switch focus {
 	case ui.dice:
@@ -1251,6 +1318,24 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  a : crea personaggio (livello + razza)\n" +
 				"  n / e / s / c / t : focus su Name / Primary / Source(multi) / Hit Die / Caster\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells/Characters/Races/Feats\n" +
+				"  PgUp / PgDn : scroll del pannello Description\n"
+		}
+		if ui.browseMode == BrowseBooks {
+			return header +
+				"[black:gold]Manuals[-:-]\n" +
+				"  j / k (o frecce) : naviga manuali\n" +
+				"  / : cerca nella Description del manuale selezionato\n" +
+				"  n / e / s / c / t : focus su Name / Group / Source(multi) / Year / Author\n" +
+				"  [ / ] : cambia panel Monsters/Items/Spells/Characters/Races/Feats/Manuals/Adventures\n" +
+				"  PgUp / PgDn : scroll del pannello Description\n"
+		}
+		if ui.browseMode == BrowseAdventures {
+			return header +
+				"[black:gold]Adventures[-:-]\n" +
+				"  j / k (o frecce) : naviga avventure\n" +
+				"  / : cerca nella Description dell'avventura selezionata\n" +
+				"  n / e / s / c / t : focus su Name / Group / Source(multi) / Year / Author\n" +
+				"  [ / ] : cambia panel Monsters/Items/Spells/Characters/Races/Feats/Manuals/Adventures\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
 		}
 		if ui.browseMode == BrowseRaces {
@@ -2652,6 +2737,10 @@ func (ui *UI) browseModeName() string {
 		return "Races"
 	case BrowseFeats:
 		return "Feats"
+	case BrowseBooks:
+		return "Manuals"
+	case BrowseAdventures:
+		return "Adventures"
 	default:
 		return "Monsters"
 	}
@@ -2669,6 +2758,10 @@ func (ui *UI) activeEntries() []Monster {
 		return ui.races
 	case BrowseFeats:
 		return ui.feats
+	case BrowseBooks:
+		return ui.books
+	case BrowseAdventures:
+		return ui.adventures
 	default:
 		return ui.monsters
 	}
@@ -2834,6 +2927,74 @@ func (ui *UI) setFilterOptionsForMode() {
 		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
 		ui.crOptions = append(ui.crOptions, keysSorted(seenCategory)...)
 		ui.typeOptions = append(ui.typeOptions, keysSorted(seenAbility)...)
+	case BrowseBooks:
+		ui.nameInput.SetLabel(" Name ")
+		ui.envDrop.SetLabel(" Group ")
+		ui.sourceDrop.SetLabel(" Source ")
+		ui.crDrop.SetLabel(" Year ")
+		ui.typeDrop.SetLabel(" Author ")
+		ui.envOptions = []string{"All"}
+		ui.sourceOptions = []string{"All"}
+		ui.crOptions = []string{"All"}
+		ui.typeOptions = []string{"All"}
+		seenGroup := map[string]struct{}{}
+		seenSource := map[string]struct{}{}
+		seenYear := map[string]struct{}{}
+		seenAuthor := map[string]struct{}{}
+		for _, bk := range ui.books {
+			for _, p := range bk.Environment {
+				if strings.TrimSpace(p) != "" {
+					seenGroup[p] = struct{}{}
+				}
+			}
+			if s := strings.TrimSpace(bk.Source); s != "" {
+				seenSource[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(bk.CR); s != "" {
+				seenYear[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(bk.Type); s != "" {
+				seenAuthor[s] = struct{}{}
+			}
+		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenGroup)...)
+		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
+		ui.crOptions = append(ui.crOptions, keysSorted(seenYear)...)
+		ui.typeOptions = append(ui.typeOptions, keysSorted(seenAuthor)...)
+	case BrowseAdventures:
+		ui.nameInput.SetLabel(" Name ")
+		ui.envDrop.SetLabel(" Group ")
+		ui.sourceDrop.SetLabel(" Source ")
+		ui.crDrop.SetLabel(" Year ")
+		ui.typeDrop.SetLabel(" Author ")
+		ui.envOptions = []string{"All"}
+		ui.sourceOptions = []string{"All"}
+		ui.crOptions = []string{"All"}
+		ui.typeOptions = []string{"All"}
+		seenGroup := map[string]struct{}{}
+		seenSource := map[string]struct{}{}
+		seenYear := map[string]struct{}{}
+		seenAuthor := map[string]struct{}{}
+		for _, ad := range ui.adventures {
+			for _, p := range ad.Environment {
+				if strings.TrimSpace(p) != "" {
+					seenGroup[p] = struct{}{}
+				}
+			}
+			if s := strings.TrimSpace(ad.Source); s != "" {
+				seenSource[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(ad.CR); s != "" {
+				seenYear[s] = struct{}{}
+			}
+			if s := strings.TrimSpace(ad.Type); s != "" {
+				seenAuthor[s] = struct{}{}
+			}
+		}
+		ui.envOptions = append(ui.envOptions, keysSorted(seenGroup)...)
+		ui.sourceOptions = append(ui.sourceOptions, keysSorted(seenSource)...)
+		ui.crOptions = append(ui.crOptions, keysSorted(seenYear)...)
+		ui.typeOptions = append(ui.typeOptions, keysSorted(seenAuthor)...)
 	default:
 		ui.nameInput.SetLabel(" Name ")
 		ui.envDrop.SetLabel(" Env ")
@@ -3042,6 +3203,93 @@ func (ui *UI) maybeReturnFocusToListFromFilter() {
 	}
 }
 
+func (ui *UI) descriptionKeyForMode(mode BrowseMode, idx int) string {
+	switch mode {
+	case BrowseItems:
+		return fmt.Sprintf("items:%d", idx)
+	case BrowseSpells:
+		return fmt.Sprintf("spells:%d", idx)
+	case BrowseCharacters:
+		return fmt.Sprintf("classes:%d", idx)
+	case BrowseRaces:
+		return fmt.Sprintf("races:%d", idx)
+	case BrowseFeats:
+		return fmt.Sprintf("feats:%d", idx)
+	case BrowseBooks:
+		return fmt.Sprintf("books:%d", idx)
+	case BrowseAdventures:
+		return fmt.Sprintf("adventures:%d", idx)
+	default:
+		return fmt.Sprintf("monsters:%d", idx)
+	}
+}
+
+func (ui *UI) descriptionKeyForEncounterEntry(entry EncounterEntry) string {
+	if entry.Custom {
+		return fmt.Sprintf("encounter:custom:%s:%d", strings.ToLower(strings.TrimSpace(entry.CustomName)), entry.Ordinal)
+	}
+	return fmt.Sprintf("monsters:%d", entry.MonsterIndex)
+}
+
+func (ui *UI) saveCurrentDescriptionScroll() {
+	if ui.detailRaw == nil || ui.currentDescKey == "" {
+		return
+	}
+	row, _ := ui.detailRaw.GetScrollOffset()
+	if row < 0 {
+		row = 0
+	}
+	ui.descScroll[ui.currentDescKey] = row
+}
+
+func (ui *UI) restoreDescriptionScrollForKey(key string) {
+	if ui.detailRaw == nil {
+		return
+	}
+	ui.currentDescKey = key
+	row, ok := ui.descScroll[key]
+	if !ok || row <= 0 {
+		ui.detailRaw.ScrollToBeginning()
+		return
+	}
+	ui.detailRaw.ScrollTo(row, 0)
+}
+
+func (ui *UI) loadDescriptionScrollStates() error {
+	b, err := os.ReadFile(descScrollStatePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	var data PersistedDescriptionScroll
+	if err := yaml.Unmarshal(b, &data); err != nil {
+		return err
+	}
+	ui.descScroll = map[string]int{}
+	for k, v := range data.Offsets {
+		if strings.TrimSpace(k) == "" || v < 0 {
+			continue
+		}
+		ui.descScroll[k] = v
+	}
+	return nil
+}
+
+func (ui *UI) saveDescriptionScrollStates() error {
+	ui.saveCurrentDescriptionScroll()
+	data := PersistedDescriptionScroll{
+		Version: 1,
+		Offsets: ui.descScroll,
+	}
+	out, err := yaml.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(descScrollStatePath, out, 0o644)
+}
+
 func (ui *UI) saveCurrentModeFilters() {
 	ui.modeFilters[ui.browseMode] = PersistedFilterMode{
 		Name:    strings.TrimSpace(ui.nameFilter),
@@ -3112,7 +3360,7 @@ func (ui *UI) collectMonsterTypeOptions() []string {
 }
 
 func (ui *UI) updateBrowsePanelTitle() {
-	count := 6
+	count := 8
 	prev := BrowseMode((int(ui.browseMode) - 1 + count) % count)
 	next := BrowseMode((int(ui.browseMode) + 1) % count)
 	ui.monstersPanel.SetTitle(fmt.Sprintf(" [2]-%s  [:%s  ]:%s ", ui.browseModeName(), browseModeLabel(prev), browseModeLabel(next)))
@@ -3122,7 +3370,7 @@ func (ui *UI) cycleBrowseMode(delta int) {
 	if delta == 0 {
 		return
 	}
-	count := 6
+	count := 8
 	next := (int(ui.browseMode) + delta) % count
 	if next < 0 {
 		next += count
@@ -3142,6 +3390,10 @@ func browseModeLabel(mode BrowseMode) string {
 		return "Races"
 	case BrowseFeats:
 		return "Feats"
+	case BrowseBooks:
+		return "Manuals"
+	case BrowseAdventures:
+		return "Adventures"
 	default:
 		return "Monsters"
 	}
@@ -3215,13 +3467,16 @@ func (ui *UI) renderList() {
 }
 
 func (ui *UI) renderDetailByListIndex(listIndex int) {
+	ui.saveCurrentDescriptionScroll()
 	if listIndex < 0 || listIndex >= len(ui.filtered) {
 		ui.detailMeta.SetText(fmt.Sprintf("Seleziona un elemento da %s.", ui.browseModeName()))
 		ui.detailRaw.SetText("")
 		ui.rawText = ""
+		ui.currentDescKey = ""
 		return
 	}
 	activeIndex := ui.filtered[listIndex]
+	descKey := ui.descriptionKeyForMode(ui.browseMode, activeIndex)
 	switch ui.browseMode {
 	case BrowseItems:
 		ui.renderDetailByItemIndex(activeIndex)
@@ -3233,21 +3488,30 @@ func (ui *UI) renderDetailByListIndex(listIndex int) {
 		ui.renderDetailByRaceIndex(activeIndex)
 	case BrowseFeats:
 		ui.renderDetailByFeatIndex(activeIndex)
+	case BrowseBooks:
+		ui.renderDetailByBookIndex(activeIndex)
+	case BrowseAdventures:
+		ui.renderDetailByAdventureIndex(activeIndex)
 	default:
 		ui.renderDetailByMonsterIndex(activeIndex)
 	}
+	ui.restoreDescriptionScrollForKey(descKey)
 }
 
 func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
+	ui.saveCurrentDescriptionScroll()
 	if encounterIndex < 0 || encounterIndex >= len(ui.encounterItems) {
 		return
 	}
 	entry := ui.encounterItems[encounterIndex]
+	descKey := ui.descriptionKeyForEncounterEntry(entry)
 	if entry.Custom {
 		ui.renderDetailByCustomEntry(entry)
+		ui.restoreDescriptionScrollForKey(descKey)
 		return
 	}
 	ui.renderDetailByMonsterIndex(entry.MonsterIndex)
+	ui.restoreDescriptionScrollForKey(descKey)
 }
 
 func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
@@ -3435,6 +3699,44 @@ func (ui *UI) renderDetailByFeatIndex(featIndex int) {
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
 	ui.rawText = buildFeatDescriptionText(ft)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
+
+func (ui *UI) renderDetailByBookIndex(bookIndex int) {
+	if bookIndex < 0 || bookIndex >= len(ui.books) {
+		return
+	}
+	bk := ui.books[bookIndex]
+	builder := &strings.Builder{}
+	fmt.Fprintf(builder, "[yellow]%s[-]\n", bk.Name)
+	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(bk.Source, "n/a"))
+	fmt.Fprintf(builder, "[white]Group:[-] %s\n", blankIfEmpty(strings.Join(bk.Environment, ", "), "n/a"))
+	fmt.Fprintf(builder, "[white]Published:[-] %s\n", blankIfEmpty(bk.CR, "n/a"))
+	fmt.Fprintf(builder, "[white]Author:[-] %s\n", blankIfEmpty(bk.Type, "n/a"))
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = ui.fullBookDescriptionText(bk)
+	ui.rawQuery = ""
+	ui.renderRawWithHighlight("", -1)
+	ui.detailRaw.ScrollToBeginning()
+}
+
+func (ui *UI) renderDetailByAdventureIndex(adventureIndex int) {
+	if adventureIndex < 0 || adventureIndex >= len(ui.adventures) {
+		return
+	}
+	ad := ui.adventures[adventureIndex]
+	builder := &strings.Builder{}
+	fmt.Fprintf(builder, "[yellow]%s[-]\n", ad.Name)
+	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(ad.Source, "n/a"))
+	fmt.Fprintf(builder, "[white]Group:[-] %s\n", blankIfEmpty(strings.Join(ad.Environment, ", "), "n/a"))
+	fmt.Fprintf(builder, "[white]Published:[-] %s\n", blankIfEmpty(ad.CR, "n/a"))
+	fmt.Fprintf(builder, "[white]Author:[-] %s\n", blankIfEmpty(ad.Type, "n/a"))
+	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.ScrollToBeginning()
+	ui.rawText = ui.fullAdventureDescriptionText(ad)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
@@ -3881,6 +4183,268 @@ func buildFeatDescriptionText(ft Monster) string {
 		fmt.Fprintf(b, "\nBenefit\n%s\n", entries)
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func buildBookDescriptionText(bk Monster) string {
+	raw := bk.Raw
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "Name: %s\n", bk.Name)
+	if src := strings.TrimSpace(bk.Source); src != "" {
+		fmt.Fprintf(b, "Source: %s\n", src)
+	}
+	if len(bk.Environment) > 0 {
+		fmt.Fprintf(b, "Group: %s\n", strings.Join(bk.Environment, ", "))
+	}
+	if published := strings.TrimSpace(bk.CR); published != "" {
+		fmt.Fprintf(b, "Published: %s\n", published)
+	}
+	if author := strings.TrimSpace(bk.Type); author != "" {
+		fmt.Fprintf(b, "Author: %s\n", author)
+	}
+	if id := strings.TrimSpace(asString(raw["id"])); id != "" {
+		fmt.Fprintf(b, "ID: %s\n", id)
+	}
+	if contents := plainAny(raw["contents"]); contents != "" {
+		fmt.Fprintf(b, "\nContents\n%s\n", contents)
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func buildAdventureDescriptionText(ad Monster) string {
+	raw := ad.Raw
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "Name: %s\n", ad.Name)
+	if src := strings.TrimSpace(ad.Source); src != "" {
+		fmt.Fprintf(b, "Source: %s\n", src)
+	}
+	if len(ad.Environment) > 0 {
+		fmt.Fprintf(b, "Group: %s\n", strings.Join(ad.Environment, ", "))
+	}
+	if published := strings.TrimSpace(ad.CR); published != "" {
+		fmt.Fprintf(b, "Published: %s\n", published)
+	}
+	if author := strings.TrimSpace(ad.Type); author != "" {
+		fmt.Fprintf(b, "Author: %s\n", author)
+	}
+	if level := strings.TrimSpace(plainAny(raw["level"])); level != "" {
+		fmt.Fprintf(b, "Level: %s\n", level)
+	}
+	if storyline := strings.TrimSpace(plainAny(raw["storyline"])); storyline != "" {
+		fmt.Fprintf(b, "Storyline: %s\n", storyline)
+	}
+	if id := strings.TrimSpace(asString(raw["id"])); id != "" {
+		fmt.Fprintf(b, "ID: %s\n", id)
+	}
+	if contents := plainAny(raw["contents"]); contents != "" {
+		fmt.Fprintf(b, "\nContents\n%s\n", contents)
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func full5eDataRoot() string {
+	if p := strings.TrimSpace(os.Getenv("FIVETOOLS_DATA_DIR")); p != "" {
+		return p
+	}
+	home, err := os.UserHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return ""
+	}
+	return filepath.Join(home, "Downloads", "5etools-w-img-2.24.2", "data")
+}
+
+func (ui *UI) fullBookDescriptionText(bk Monster) string {
+	base := buildBookDescriptionText(bk)
+	id := strings.TrimSpace(asString(bk.Raw["id"]))
+	if id == "" {
+		return base
+	}
+	key := strings.ToLower(id)
+	if txt, ok := ui.bookBodyCache[key]; ok {
+		if txt == "" {
+			return base
+		}
+		return base + "\n\nFull Text\n" + txt
+	}
+	txt := load5eEntryBody("book", id)
+	ui.bookBodyCache[key] = txt
+	if txt == "" {
+		return base
+	}
+	return base + "\n\nFull Text\n" + txt
+}
+
+func (ui *UI) fullAdventureDescriptionText(ad Monster) string {
+	base := buildAdventureDescriptionText(ad)
+	id := strings.TrimSpace(asString(ad.Raw["id"]))
+	if id == "" {
+		return base
+	}
+	key := strings.ToLower(id)
+	if txt, ok := ui.advBodyCache[key]; ok {
+		if txt == "" {
+			return base
+		}
+		return base + "\n\nFull Text\n" + txt
+	}
+	txt := load5eEntryBody("adventure", id)
+	ui.advBodyCache[key] = txt
+	if txt == "" {
+		return base
+	}
+	return base + "\n\nFull Text\n" + txt
+}
+
+func load5eEntryBody(kind string, id string) string {
+	root := full5eDataRoot()
+	if root == "" {
+		return ""
+	}
+	file := filepath.Join(root, kind, fmt.Sprintf("%s-%s.json", kind, strings.ToLower(strings.TrimSpace(id))))
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return ""
+	}
+	var payload struct {
+		Data any `json:"data"`
+	}
+	if err := json.Unmarshal(b, &payload); err != nil {
+		return ""
+	}
+	txt := format5eStructuredText(payload.Data, 0)
+	if strings.TrimSpace(txt) == "" {
+		txt = manualText(payload.Data)
+	}
+	if strings.TrimSpace(txt) == "" {
+		txt = plainAny(payload.Data)
+	}
+	return strings.TrimSpace(txt)
+}
+
+func format5eStructuredText(v any, depth int) string {
+	switch t := v.(type) {
+	case []any:
+		parts := make([]string, 0, len(t))
+		for _, it := range t {
+			if s := strings.TrimSpace(format5eStructuredText(it, depth)); s != "" {
+				parts = append(parts, s)
+			}
+		}
+		return strings.Join(parts, "\n\n")
+	case map[string]any:
+		return format5eStructuredMap(t, depth)
+	case string:
+		return clean5eTags(strings.TrimSpace(t))
+	default:
+		return clean5eTags(strings.TrimSpace(asString(t)))
+	}
+}
+
+func format5eStructuredMap(m map[string]any, depth int) string {
+	kind := strings.ToLower(strings.TrimSpace(asString(m["type"])))
+	name := clean5eTags(strings.TrimSpace(asString(m["name"])))
+	id := strings.TrimSpace(asString(m["id"]))
+	page := strings.TrimSpace(asString(m["page"]))
+
+	header := name
+	if header == "" && id != "" {
+		header = strings.ToUpper(id)
+	}
+	if page != "" {
+		if header == "" {
+			header = fmt.Sprintf("Page %s", page)
+		} else {
+			header = fmt.Sprintf("%s (p.%s)", header, page)
+		}
+	}
+	if header != "" {
+		header = strings.Repeat("#", min(6, depth+2)) + " " + header
+	}
+
+	switch kind {
+	case "entries", "section":
+		body := format5eStructuredText(m["entries"], depth+1)
+		return joinHeaderBody(header, body)
+	case "inset", "insetreadaloud":
+		body := format5eStructuredText(m["entries"], depth+1)
+		if body != "" {
+			lines := strings.Split(body, "\n")
+			for i := range lines {
+				lines[i] = "> " + lines[i]
+			}
+			body = strings.Join(lines, "\n")
+		}
+		return joinHeaderBody(header, body)
+	case "quote":
+		body := format5eStructuredText(m["entries"], depth+1)
+		if body == "" {
+			body = clean5eTags(strings.TrimSpace(asString(m["by"])))
+		}
+		if body != "" {
+			lines := strings.Split(body, "\n")
+			for i := range lines {
+				lines[i] = "> " + lines[i]
+			}
+			body = strings.Join(lines, "\n")
+		}
+		return joinHeaderBody(header, body)
+	case "list":
+		items, _ := m["items"].([]any)
+		lines := make([]string, 0, len(items))
+		for _, it := range items {
+			txt := strings.TrimSpace(format5eStructuredText(it, depth+1))
+			if txt == "" {
+				continue
+			}
+			txt = strings.ReplaceAll(txt, "\n", " ")
+			lines = append(lines, "- "+txt)
+		}
+		return joinHeaderBody(header, strings.Join(lines, "\n"))
+	case "table":
+		var lines []string
+		if capn := clean5eTags(strings.TrimSpace(plainAny(m["caption"]))); capn != "" {
+			lines = append(lines, capn)
+		}
+		if labels, ok := m["colLabels"].([]any); ok && len(labels) > 0 {
+			cols := make([]string, 0, len(labels))
+			for _, l := range labels {
+				cols = append(cols, clean5eTags(strings.TrimSpace(plainAny(l))))
+			}
+			lines = append(lines, strings.Join(cols, " | "))
+		}
+		if rows, ok := m["rows"].([]any); ok {
+			for _, r := range rows {
+				arr, ok := r.([]any)
+				if !ok {
+					continue
+				}
+				cols := make([]string, 0, len(arr))
+				for _, c := range arr {
+					cols = append(cols, clean5eTags(strings.TrimSpace(plainAny(c))))
+				}
+				lines = append(lines, strings.Join(cols, " | "))
+			}
+		}
+		return joinHeaderBody(header, strings.Join(lines, "\n"))
+	default:
+		// Generic fallback for unknown node types.
+		body := format5eStructuredText(m["entries"], depth+1)
+		if body == "" {
+			body = clean5eTags(strings.TrimSpace(plainAny(m)))
+		}
+		return joinHeaderBody(header, body)
+	}
+}
+
+func joinHeaderBody(header string, body string) string {
+	header = strings.TrimSpace(header)
+	body = strings.TrimSpace(body)
+	if header == "" {
+		return body
+	}
+	if body == "" {
+		return header
+	}
+	return header + "\n" + body
 }
 
 type generatedCharacterSheet struct {
@@ -6235,6 +6799,10 @@ func modeToKey(mode BrowseMode) string {
 		return "races"
 	case BrowseFeats:
 		return "feats"
+	case BrowseBooks:
+		return "books"
+	case BrowseAdventures:
+		return "adventures"
 	default:
 		return "monsters"
 	}
@@ -6252,6 +6820,10 @@ func modeFromKey(s string) BrowseMode {
 		return BrowseRaces
 	case "feats":
 		return BrowseFeats
+	case "books":
+		return BrowseBooks
+	case "adventures":
+		return BrowseAdventures
 	default:
 		return BrowseMonsters
 	}
@@ -6275,6 +6847,8 @@ func (ui *UI) loadFilterStates() error {
 	ui.modeFilters[BrowseCharacters] = data.Chars
 	ui.modeFilters[BrowseRaces] = data.Races
 	ui.modeFilters[BrowseFeats] = data.Feats
+	ui.modeFilters[BrowseBooks] = data.Books
+	ui.modeFilters[BrowseAdventures] = data.Advs
 	ui.browseMode = modeFromKey(data.Active)
 	return nil
 }
@@ -6290,6 +6864,8 @@ func (ui *UI) saveFilterStates() error {
 		Chars:    ui.modeFilters[BrowseCharacters],
 		Races:    ui.modeFilters[BrowseRaces],
 		Feats:    ui.modeFilters[BrowseFeats],
+		Books:    ui.modeFilters[BrowseBooks],
+		Advs:     ui.modeFilters[BrowseAdventures],
 	}
 	out, err := yaml.Marshal(data)
 	if err != nil {
@@ -6786,6 +7362,102 @@ func loadFeatsFromBytes(b []byte) ([]Monster, []string, []string, []string, erro
 		return li < lj
 	})
 	return feats, keysSorted(prereqSet), keysSorted(categorySet), keysSorted(abilitySet), nil
+}
+
+func loadBooksFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
+	var ds booksDataset
+	if err := yaml.Unmarshal(b, &ds); err != nil {
+		return nil, nil, nil, nil, err
+	}
+	books := make([]Monster, 0, len(ds.Books))
+	groupSet := map[string]struct{}{}
+	yearSet := map[string]struct{}{}
+	authorSet := map[string]struct{}{}
+	for i, raw := range ds.Books {
+		name := strings.TrimSpace(asString(raw["name"]))
+		if name == "" {
+			continue
+		}
+		source := strings.TrimSpace(asString(raw["source"]))
+		group := strings.TrimSpace(asString(raw["group"]))
+		published := strings.TrimSpace(asString(raw["published"]))
+		author := strings.TrimSpace(asString(raw["author"]))
+		env := []string{}
+		if group != "" {
+			env = append(env, group)
+			groupSet[group] = struct{}{}
+		}
+		if source != "" {
+			groupSet[source] = struct{}{}
+		}
+		if published != "" {
+			yearSet[published] = struct{}{}
+		}
+		if author != "" {
+			authorSet[author] = struct{}{}
+		}
+		books = append(books, Monster{
+			ID:          i,
+			Name:        name,
+			CR:          published,
+			Environment: env,
+			Source:      source,
+			Type:        author,
+			Raw:         raw,
+		})
+	}
+	sort.Slice(books, func(i, j int) bool {
+		return strings.ToLower(books[i].Name) < strings.ToLower(books[j].Name)
+	})
+	return books, keysSorted(groupSet), keysSorted(yearSet), keysSorted(authorSet), nil
+}
+
+func loadAdventuresFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
+	var ds adventuresDataset
+	if err := yaml.Unmarshal(b, &ds); err != nil {
+		return nil, nil, nil, nil, err
+	}
+	adventures := make([]Monster, 0, len(ds.Adventures))
+	groupSet := map[string]struct{}{}
+	yearSet := map[string]struct{}{}
+	authorSet := map[string]struct{}{}
+	for i, raw := range ds.Adventures {
+		name := strings.TrimSpace(asString(raw["name"]))
+		if name == "" {
+			continue
+		}
+		source := strings.TrimSpace(asString(raw["source"]))
+		group := strings.TrimSpace(asString(raw["group"]))
+		published := strings.TrimSpace(asString(raw["published"]))
+		author := strings.TrimSpace(asString(raw["author"]))
+		env := []string{}
+		if group != "" {
+			env = append(env, group)
+			groupSet[group] = struct{}{}
+		}
+		if source != "" {
+			groupSet[source] = struct{}{}
+		}
+		if published != "" {
+			yearSet[published] = struct{}{}
+		}
+		if author != "" {
+			authorSet[author] = struct{}{}
+		}
+		adventures = append(adventures, Monster{
+			ID:          i,
+			Name:        name,
+			CR:          published,
+			Environment: env,
+			Source:      source,
+			Type:        author,
+			Raw:         raw,
+		})
+	}
+	sort.Slice(adventures, func(i, j int) bool {
+		return strings.ToLower(adventures[i].Name) < strings.ToLower(adventures[j].Name)
+	})
+	return adventures, keysSorted(groupSet), keysSorted(yearSet), keysSorted(authorSet), nil
 }
 
 func extractRaceSize(v any) string {

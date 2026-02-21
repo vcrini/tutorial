@@ -30,7 +30,7 @@ func makeTestUI(t *testing.T, monsters []Monster) *UI {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, path, dicePath)
 	return ui
 }
 
@@ -283,6 +283,29 @@ func TestScaleDamageInText(t *testing.T) {
 	}
 }
 
+func TestFormat5eStructuredText(t *testing.T) {
+	in := []any{
+		map[string]any{
+			"type": "section",
+			"name": "Chapter One",
+			"entries": []any{
+				"Intro text.",
+				map[string]any{
+					"type":  "list",
+					"items": []any{"A", "B"},
+				},
+			},
+		},
+	}
+	out := format5eStructuredText(in, 0)
+	if !strings.Contains(out, "## Chapter One") {
+		t.Fatalf("expected section header, got: %q", out)
+	}
+	if !strings.Contains(out, "- A") || !strings.Contains(out, "- B") {
+		t.Fatalf("expected list formatting, got: %q", out)
+	}
+}
+
 func TestAddGeneratedCharacterToEncounter(t *testing.T) {
 	ui := makeTestUI(t, nil)
 	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY")
@@ -507,7 +530,7 @@ func TestSetFilterOptionsForItemsAndSpellsPopulateEnv(t *testing.T) {
 
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, nil, nil, path, dicePath)
 
 	ui.browseMode = BrowseItems
 	ui.setFilterOptionsForMode()
@@ -541,7 +564,7 @@ func TestEmbeddedItemsAndSpellsEnvOptionsNotOnlyAll(t *testing.T) {
 	monsters := []Monster{mkMonster(1, "A", 10, 5, "1d1")}
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, nil, nil, path, dicePath)
 
 	ui.browseMode = BrowseItems
 	ui.setFilterOptionsForMode()
@@ -598,7 +621,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 
 	monsters := []Monster{mkMonster(100, "A", 12, 13, "3d8"), mkMonster(200, "B", 14, 20, "4d8")}
 	path := filepath.Join(tmp, "my-enc.yaml")
-	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
+	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	ui.encounterItems = []EncounterEntry{
 		{MonsterIndex: 0, Ordinal: 1, BaseHP: 13, CurrentHP: 8, HPFormula: "3d8", UseRolledHP: true, RolledHP: 10, HasInitRoll: true, InitRoll: 15},
 		{MonsterIndex: 1, Ordinal: 1, BaseHP: 20, CurrentHP: 20, HPFormula: "4d8", UseRolledHP: false, RolledHP: 0, HasInitRoll: false, InitRoll: 0},
@@ -613,7 +636,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 		t.Fatalf("saveEncountersAs failed: %v", err)
 	}
 
-	ui2 := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
+	ui2 := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	if err := ui2.loadEncounters(); err != nil {
 		t.Fatalf("loadEncounters failed: %v", err)
 	}
