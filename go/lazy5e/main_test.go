@@ -272,6 +272,17 @@ func TestMonsterCRScaling(t *testing.T) {
 	}
 }
 
+func TestScaleDamageInText(t *testing.T) {
+	in := "Bite. Hit: 8 (1d8 + 4) piercing damage. The target takes 3 fire damage."
+	out := scaleDamageInText(in, 1.5)
+	if !strings.Contains(out, "12 (1d8 + 4) piercing damage") {
+		t.Fatalf("expected scaled parenthesized damage, got: %q", out)
+	}
+	if !strings.Contains(out, "5 fire damage") {
+		t.Fatalf("expected scaled simple damage, got: %q", out)
+	}
+}
+
 func TestAddGeneratedCharacterToEncounter(t *testing.T) {
 	ui := makeTestUI(t, nil)
 	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY")

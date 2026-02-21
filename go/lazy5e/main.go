@@ -208,17 +208,20 @@ type crBenchmark struct {
 }
 
 type monsterScalePreview struct {
-	BaseCR    string
-	TargetCR  string
-	Step      int
-	BaseAC    int
-	TargetAC  int
-	BaseHP    int
-	TargetHP  int
-	TargetAtk int
-	TargetDC  int
-	DPRMin    int
-	DPRMax    int
+	BaseCR     string
+	TargetCR   string
+	Step       int
+	BaseAC     int
+	TargetAC   int
+	BaseHP     int
+	TargetHP   int
+	BaseDPRMin int
+	BaseDPRMax int
+	TargetAtk  int
+	TargetDC   int
+	DPRMin     int
+	DPRMax     int
+	DamageMul  float64
 }
 
 var crBenchmarks = []crBenchmark{
@@ -3548,14 +3551,57 @@ func buildMonsterDescriptionTextScaled(m Monster, preview monsterScalePreview, s
 	if !scaled {
 		return base
 	}
+	scaledText := scaleDamageInText(base, preview.DamageMul)
 	b := &strings.Builder{}
 	fmt.Fprintf(b, "Scaled by CR step %+d (DMG benchmark)\n", preview.Step)
 	fmt.Fprintf(b, "CR: %s -> %s\n", preview.BaseCR, preview.TargetCR)
 	fmt.Fprintf(b, "AC: %d -> %d\n", preview.BaseAC, preview.TargetAC)
 	fmt.Fprintf(b, "HP: %d -> %d\n", preview.BaseHP, preview.TargetHP)
-	fmt.Fprintf(b, "Offense target: hit %+d, save DC %d, DPR %d-%d\n", preview.TargetAtk, preview.TargetDC, preview.DPRMin, preview.DPRMax)
-	fmt.Fprintf(b, "\n%s", base)
+	fmt.Fprintf(b, "Offense target: hit %+d, save DC %d, DPR %d-%d (x%.2f dmg)\n", preview.TargetAtk, preview.TargetDC, preview.DPRMin, preview.DPRMax, preview.DamageMul)
+	fmt.Fprintf(b, "\n%s", scaledText)
 	return b.String()
+}
+
+func scaleDamageInText(text string, mul float64) string {
+	if strings.TrimSpace(text) == "" || mul <= 0 {
+		return text
+	}
+	if math.Abs(mul-1.0) < 0.01 {
+		return text
+	}
+	// Scale the displayed average in patterns like "8 (1d8 + 4) slashing damage".
+	reWithParens := regexp.MustCompile(`\b(\d+)(\s*\([^)]*\)\s*[^.\n]*?\bdamage\b)`)
+	out := reWithParens.ReplaceAllStringFunc(text, func(match string) string {
+		sub := reWithParens.FindStringSubmatch(match)
+		if len(sub) < 3 {
+			return match
+		}
+		base, err := strconv.Atoi(sub[1])
+		if err != nil || base <= 0 {
+			return match
+		}
+		scaled := max(1, int(math.Round(float64(base)*mul)))
+		return strconv.Itoa(scaled) + sub[2]
+	})
+	// Scale simple patterns like "takes 7 fire damage".
+	reSimple := regexp.MustCompile(`\b(\d+)(\s+[^.\n]*?\bdamage\b)`)
+	out = reSimple.ReplaceAllStringFunc(out, func(match string) string {
+		sub := reSimple.FindStringSubmatch(match)
+		if len(sub) < 3 {
+			return match
+		}
+		// Skip already-processed patterns with parenthesized formula.
+		if strings.Contains(sub[2], "(") {
+			return match
+		}
+		base, err := strconv.Atoi(sub[1])
+		if err != nil || base <= 0 {
+			return match
+		}
+		scaled := max(1, int(math.Round(float64(base)*mul)))
+		return strconv.Itoa(scaled) + sub[2]
+	})
+	return out
 }
 
 func scaleMonsterByCR(m Monster, step int) (monsterScalePreview, bool) {
@@ -3593,18 +3639,25 @@ func scaleMonsterByCR(m Monster, step int) (monsterScalePreview, bool) {
 	targetHP := max(1, int(math.Round(float64(baseHP)*ratio)))
 	targetAC := max(1, baseAC+(target.AC-base.AC))
 
+	baseMidDPR := float64(max(1, (base.DPRMin+base.DPRMax)/2))
+	targetMidDPR := float64(max(1, (target.DPRMin+target.DPRMax)/2))
+	damageMul := targetMidDPR / baseMidDPR
+
 	return monsterScalePreview{
-		BaseCR:    base.CR,
-		TargetCR:  target.CR,
-		Step:      targetIdx - baseIdx,
-		BaseAC:    baseAC,
-		TargetAC:  targetAC,
-		BaseHP:    baseHP,
-		TargetHP:  targetHP,
-		TargetAtk: target.Atk,
-		TargetDC:  target.SaveDC,
-		DPRMin:    target.DPRMin,
-		DPRMax:    target.DPRMax,
+		BaseCR:     base.CR,
+		TargetCR:   target.CR,
+		Step:       targetIdx - baseIdx,
+		BaseAC:     baseAC,
+		TargetAC:   targetAC,
+		BaseHP:     baseHP,
+		TargetHP:   targetHP,
+		BaseDPRMin: base.DPRMin,
+		BaseDPRMax: base.DPRMax,
+		TargetAtk:  target.Atk,
+		TargetDC:   target.SaveDC,
+		DPRMin:     target.DPRMin,
+		DPRMax:     target.DPRMax,
+		DamageMul:  damageMul,
 	}, true
 }
 
