@@ -137,6 +137,146 @@ func TestLoadFeatsFromBytes(t *testing.T) {
 	}
 }
 
+func TestGenerateCharacterSheetFromScores(t *testing.T) {
+	cl := Monster{
+		Name:        "Wizard",
+		Source:      "PHB",
+		CR:          "d6",
+		Environment: []string{"INT", "WIS"},
+		Raw: map[string]any{
+			"spellcastingAbility": "int",
+		},
+	}
+	rc := Monster{
+		Name:   "Elf",
+		Source: "PHB",
+		Raw: map[string]any{
+			"ability": []any{map[string]any{"dex": 2, "int": 1}},
+			"speed":   map[string]any{"walk": 30},
+		},
+	}
+	base := [6]int{10, 12, 14, 8, 13, 15}
+	meta, body := generateCharacterSheetFromScores(cl, rc, 5, base)
+
+	if !strings.Contains(meta, "Wizard Elf Lv5") {
+		t.Fatalf("unexpected meta title: %q", meta)
+	}
+	if !strings.Contains(meta, "AC:[-] 12") {
+		t.Fatalf("expected AC 12 in meta: %q", meta)
+	}
+	if !strings.Contains(meta, "HP:[-] 32") {
+		t.Fatalf("expected HP 32 in meta: %q", meta)
+	}
+	if !strings.Contains(body, "Proficiency Bonus: +3") {
+		t.Fatalf("expected proficiency +3 in body: %q", body)
+	}
+	if !strings.Contains(body, "Spell Save DC: 10") || !strings.Contains(body, "Spell Attack Bonus: +2") {
+		t.Fatalf("expected spell stats in body: %q", body)
+	}
+	if !strings.Contains(body, "INT +2 (proficient)") {
+		t.Fatalf("expected INT save with proficiency in body: %q", body)
+	}
+	if !strings.Contains(body, "Background:") {
+		t.Fatalf("expected background section in body: %q", body)
+	}
+	if !strings.Contains(body, "Starting Equipment") {
+		t.Fatalf("expected starting equipment section in body: %q", body)
+	}
+}
+
+func TestExtractClassSkillChoices(t *testing.T) {
+	raw := map[string]any{
+		"startingProficiencies": map[string]any{
+			"skills": []any{
+				map[string]any{
+					"choose": map[string]any{
+						"count": 2,
+						"from":  []any{"arcana", "history", "insight"},
+					},
+				},
+			},
+		},
+	}
+	n, opts := extractClassSkillChoices(raw)
+	if n != 2 {
+		t.Fatalf("expected count 2, got %d", n)
+	}
+	if len(opts) != 3 || opts[0] != "Arcana" {
+		t.Fatalf("unexpected options: %#v", opts)
+	}
+}
+
+func TestSpellMaxLevelForProgression(t *testing.T) {
+	if got := spellMaxLevelForProgression("full", 5); got != 3 {
+		t.Fatalf("full caster level 5 expected 3, got %d", got)
+	}
+	if got := spellMaxLevelForProgression("half", 1); got != 0 {
+		t.Fatalf("half caster level 1 expected 0, got %d", got)
+	}
+	if got := spellMaxLevelForProgression("half", 9); got != 2 {
+		t.Fatalf("half caster level 9 expected 2, got %d", got)
+	}
+	if got := spellMaxLevelForProgression("artificer", 1); got != 1 {
+		t.Fatalf("artificer level 1 expected 1, got %d", got)
+	}
+}
+
+func TestGenerateCharacterSpellSelection(t *testing.T) {
+	class := Monster{
+		Name: "Wizard",
+		Raw: map[string]any{
+			"casterProgression": "full",
+			"cantripProgression": []any{
+				3, 3, 3, 4, 4,
+			},
+			"spellsKnownProgression": []any{
+				2, 3, 4, 5, 6,
+			},
+		},
+	}
+	spells := []Monster{
+		{Name: "Acid Splash", CR: "0"},
+		{Name: "Light", CR: "0"},
+		{Name: "Mage Hand", CR: "0"},
+		{Name: "Shield", CR: "1"},
+		{Name: "Magic Missile", CR: "1"},
+		{Name: "Misty Step", CR: "2"},
+		{Name: "Fireball", CR: "3"},
+	}
+	out := generateCharacterSpellSelection(class, 5, spells)
+	if !strings.Contains(out, "Cantrips") {
+		t.Fatalf("expected cantrips in output: %q", out)
+	}
+	if !strings.Contains(out, "Leveled") {
+		t.Fatalf("expected leveled spells in output: %q", out)
+	}
+}
+
+func TestAddGeneratedCharacterToEncounter(t *testing.T) {
+	ui := makeTestUI(t, nil)
+	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY")
+
+	if len(ui.encounterItems) != 1 {
+		t.Fatalf("expected 1 encounter entry, got %d", len(ui.encounterItems))
+	}
+	got := ui.encounterItems[0]
+	if !got.Custom {
+		t.Fatal("expected custom encounter entry")
+	}
+	if got.CustomName != "Wizard Elf Lv5" {
+		t.Fatalf("unexpected custom name: %q", got.CustomName)
+	}
+	if got.CustomInit != 2 || got.BaseHP != 32 || got.CurrentHP != 32 || got.CustomAC != "12" {
+		t.Fatalf("unexpected custom entry payload: %#v", got)
+	}
+	if got.CustomMeta != "META" || got.CustomBody != "BODY" {
+		t.Fatalf("expected custom meta/body to be stored: %#v", got)
+	}
+	if label := ui.encounterEntryDisplay(got); strings.Contains(label, "#") {
+		t.Fatalf("custom encounter label should not contain ordinal: %q", label)
+	}
+}
+
 func TestMatchFunctions(t *testing.T) {
 	if !matchName("Adult Red Dragon", "red") {
 		t.Fatal("expected matchName true")

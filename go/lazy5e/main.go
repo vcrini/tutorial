@@ -102,6 +102,8 @@ type EncounterEntry struct {
 	CustomName   string
 	CustomInit   int
 	CustomAC     string
+	CustomMeta   string
+	CustomBody   string
 	BaseHP       int
 	CurrentHP    int
 	HPFormula    string
@@ -126,6 +128,8 @@ type PersistedEncounterItem struct {
 	CustomName string `yaml:"custom_name,omitempty"`
 	CustomInit int    `yaml:"custom_init,omitempty"`
 	CustomAC   string `yaml:"custom_ac,omitempty"`
+	CustomMeta string `yaml:"custom_meta,omitempty"`
+	CustomBody string `yaml:"custom_body,omitempty"`
 	BaseHP     int    `yaml:"base_hp"`
 	CurrentHP  int    `yaml:"current_hp"`
 	HPFormula  string `yaml:"hp_formula,omitempty"`
@@ -256,6 +260,7 @@ type UI struct {
 	helpVisible          bool
 	helpReturnFocus      tview.Primitive
 	addCustomVisible     bool
+	charCreateVisible    bool
 	fullscreenActive     bool
 	fullscreenTarget     string
 	spellShortcutAlt     bool
@@ -642,6 +647,10 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		if ui.addCustomVisible && event.Key() == tcell.KeyTab {
 			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
 		}
+		if ui.charCreateVisible {
+			// While character creation modal is open, avoid global hotkeys stealing focus.
+			return event
+		}
 
 		if ui.helpVisible {
 			if event.Key() == tcell.KeyEscape ||
@@ -748,7 +757,14 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 			}
 			return event
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'a':
-			ui.addSelectedMonsterToEncounter()
+			if ui.browseMode == BrowseMonsters {
+				ui.addSelectedMonsterToEncounter()
+				return nil
+			}
+			if ui.browseMode == BrowseCharacters {
+				ui.openCreateCharacterFromClassForm()
+				return nil
+			}
 			return nil
 		case focus == ui.list && event.Key() == tcell.KeyRune && event.Rune() == 'n':
 			ui.app.SetFocus(ui.nameInput)
@@ -1157,6 +1173,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"[black:gold]Characters[-:-]\n" +
 				"  j / k (o frecce) : naviga classi\n" +
 				"  / : cerca nella Description della classe selezionata\n" +
+				"  a : crea personaggio (livello + razza)\n" +
 				"  n / e / s / c / t : focus su Name / Primary / Source(multi) / Hit Die / Caster\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells/Characters/Races/Feats\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -3334,25 +3351,29 @@ func (ui *UI) renderDetailByFeatIndex(featIndex int) {
 }
 
 func (ui *UI) renderDetailByCustomEntry(entry EncounterEntry) {
-	builder := &strings.Builder{}
-	fmt.Fprintf(builder, "[yellow]%s[-]\n", ui.encounterEntryDisplay(entry))
-	if init, ok := ui.encounterInitBase(entry); ok {
-		if entry.HasInitRoll {
-			fmt.Fprintf(builder, "[white]Init:[-] %d/%d\n", entry.InitRoll, init)
-		} else {
-			fmt.Fprintf(builder, "[white]Init:[-] %d\n", init)
-		}
-	}
-	if strings.TrimSpace(entry.CustomAC) != "" {
-		fmt.Fprintf(builder, "[white]AC:[-] %s\n", entry.CustomAC)
-	}
 	maxHP := ui.encounterMaxHP(entry)
-	if maxHP > 0 {
-		fmt.Fprintf(builder, "[white]HP:[-] %d/%d\n", entry.CurrentHP, maxHP)
-	} else {
-		fmt.Fprintf(builder, "[white]HP:[-] ?\n")
+	meta := strings.TrimSpace(entry.CustomMeta)
+	if meta == "" {
+		builder := &strings.Builder{}
+		fmt.Fprintf(builder, "[yellow]%s[-]\n", ui.encounterEntryDisplay(entry))
+		if init, ok := ui.encounterInitBase(entry); ok {
+			if entry.HasInitRoll {
+				fmt.Fprintf(builder, "[white]Init:[-] %d/%d\n", entry.InitRoll, init)
+			} else {
+				fmt.Fprintf(builder, "[white]Init:[-] %d\n", init)
+			}
+		}
+		if strings.TrimSpace(entry.CustomAC) != "" {
+			fmt.Fprintf(builder, "[white]AC:[-] %s\n", entry.CustomAC)
+		}
+		if maxHP > 0 {
+			fmt.Fprintf(builder, "[white]HP:[-] %d/%d\n", entry.CurrentHP, maxHP)
+		} else {
+			fmt.Fprintf(builder, "[white]HP:[-] ?\n")
+		}
+		meta = builder.String()
 	}
-	ui.detailMeta.SetText(builder.String())
+	ui.detailMeta.SetText(meta)
 	ui.detailMeta.ScrollToBeginning()
 	ui.rawText = buildCustomDescriptionText(entry, maxHP)
 	ui.rawQuery = ""
@@ -3613,6 +3634,839 @@ func buildFeatDescriptionText(ft Monster) string {
 	return strings.TrimSpace(b.String())
 }
 
+type generatedCharacterSheet struct {
+	Meta string
+	Body string
+	HP   int
+	AC   int
+	Init int
+}
+
+type backgroundProfile struct {
+	Name      string
+	Skills    []string
+	Tools     []string
+	Languages []string
+	Equipment []string
+}
+
+func generateCharacterSheet(cl Monster, rc Monster, level int) (meta string, body string) {
+	sheet := generateCharacterSheetData(cl, rc, level)
+	return sheet.Meta, sheet.Body
+}
+
+func generateCharacterSheetFromScores(cl Monster, rc Monster, level int, base [6]int) (meta string, body string) {
+	sheet := generateCharacterSheetDataFromScores(cl, rc, level, base)
+	return sheet.Meta, sheet.Body
+}
+
+func generateCharacterSheetData(cl Monster, rc Monster, level int) generatedCharacterSheet {
+	base := [6]int{}
+	for i := 0; i < 6; i++ {
+		base[i] = rollAbilityScore4d6DropLowest()
+	}
+	return generateCharacterSheetDataFromScores(cl, rc, level, base)
+}
+
+func generateCharacterSheetDataFromScores(cl Monster, rc Monster, level int, base [6]int) generatedCharacterSheet {
+	// STR, DEX, CON, INT, WIS, CHA
+	labels := []string{"STR", "DEX", "CON", "INT", "WIS", "CHA"}
+	keys := []string{"str", "dex", "con", "int", "wis", "cha"}
+	bonuses := extractRaceAbilityBonuses(rc.Raw["ability"])
+	scores := make([]int, 6)
+	for i := range base {
+		scores[i] = base[i] + bonuses[keys[i]]
+	}
+	mods := make([]int, 6)
+	for i := range scores {
+		mods[i] = abilityMod(scores[i])
+	}
+
+	prof := proficiencyBonusForLevel(level)
+	hitDieFaces := classHitDieFaces(cl.CR)
+	if hitDieFaces <= 0 {
+		hitDieFaces = 8
+	}
+	hp := max(1, hitDieFaces+mods[2])
+	if level > 1 {
+		perLevel := max(1, (hitDieFaces/2)+1+mods[2])
+		hp += (level - 1) * perLevel
+	}
+	ac := 10 + mods[1]
+	init := mods[1]
+	passive := 10 + mods[4]
+	speed := extractSpeed(rc.Raw)
+	if speed == "" {
+		speed = "30 ft."
+	}
+	spellAbility := strings.TrimSpace(asString(cl.Raw["spellcastingAbility"]))
+	spellDC := 0
+	spellAtk := 0
+	if spellAbility != "" {
+		idx := abilityIndex(spellAbility)
+		if idx >= 0 {
+			spellDC = 8 + prof + mods[idx]
+			spellAtk = prof + mods[idx]
+		}
+	}
+	saveProf := map[string]struct{}{}
+	for _, s := range cl.Environment {
+		saveProf[strings.ToUpper(strings.TrimSpace(s))] = struct{}{}
+	}
+	bg := randomBackgroundProfile()
+	classSkillChoiceCount, classSkillChoices := extractClassSkillChoices(cl.Raw)
+	classSkillsPicked := chooseRandomN(classSkillChoices, classSkillChoiceCount)
+	raceSkills := extractRaceSkillProficiencies(rc.Raw)
+	allSkills := uniqueSortedStrings(append(append([]string{}, classSkillsPicked...), append(bg.Skills, raceSkills...)...))
+	tools := uniqueSortedStrings(append(extractClassToolProficiencies(cl.Raw), bg.Tools...))
+	languages := uniqueSortedStrings(append(extractRaceLanguages(rc.Raw), bg.Languages...))
+	equipment := append(extractStartingEquipment(cl.Raw), bg.Equipment...)
+	subclassTitle := strings.TrimSpace(asString(cl.Raw["subclassTitle"]))
+	subclassLevels := extractSubclassFeatureLevels(cl.Raw["classFeatures"], level)
+	classFeatures := extractClassFeaturesUpToLevel(cl.Raw["classFeatures"], level, 8)
+	spellPlan := buildSpellPlan(cl.Raw, level)
+
+	metaB := &strings.Builder{}
+	fmt.Fprintf(metaB, "[yellow]%s %s Lv%d[-]\n", cl.Name, rc.Name, level)
+	fmt.Fprintf(metaB, "[white]Background:[-] %s\n", bg.Name)
+	if subclassTitle != "" {
+		fmt.Fprintf(metaB, "[white]Subclass:[-] %s\n", subclassTitle)
+	}
+	fmt.Fprintf(metaB, "[white]AC:[-] %d\n", ac)
+	fmt.Fprintf(metaB, "[white]HP:[-] %d\n", hp)
+	fmt.Fprintf(metaB, "[white]Init:[-] %+d\n", init)
+	fmt.Fprintf(metaB, "[white]Speed:[-] %s\n", speed)
+	fmt.Fprintf(metaB, "[white]PB:[-] %+d\n", prof)
+	if spellAbility != "" {
+		fmt.Fprintf(metaB, "[white]Spell:[-] %s (DC %d, ATK %+d)\n", strings.ToUpper(spellAbility), spellDC, spellAtk)
+	}
+
+	bodyB := &strings.Builder{}
+	fmt.Fprintf(bodyB, "%s %s (Level %d)\n", cl.Name, rc.Name, level)
+	fmt.Fprintf(bodyB, "Source: %s / %s\n", blankIfEmpty(cl.Source, "n/a"), blankIfEmpty(rc.Source, "n/a"))
+	fmt.Fprintf(bodyB, "Hit Die: d%d\n", hitDieFaces)
+	fmt.Fprintf(bodyB, "Proficiency Bonus: %+d\n", prof)
+	fmt.Fprintf(bodyB, "Armor Class: %d\n", ac)
+	fmt.Fprintf(bodyB, "Hit Points: %d\n", hp)
+	fmt.Fprintf(bodyB, "Initiative: %+d\n", init)
+	fmt.Fprintf(bodyB, "Speed: %s\n", speed)
+	fmt.Fprintf(bodyB, "Passive Perception: %d\n", passive)
+	fmt.Fprintf(bodyB, "Background: %s\n", bg.Name)
+	if subclassTitle != "" {
+		fmt.Fprintf(bodyB, "Subclass Track: %s\n", subclassTitle)
+	}
+	if spellAbility != "" {
+		fmt.Fprintf(bodyB, "Spellcasting Ability: %s\n", strings.ToUpper(spellAbility))
+		fmt.Fprintf(bodyB, "Spell Save DC: %d\n", spellDC)
+		fmt.Fprintf(bodyB, "Spell Attack Bonus: %+d\n", spellAtk)
+	}
+	if len(subclassLevels) > 0 {
+		fmt.Fprintf(bodyB, "Subclass Feature Levels: %s\n", strings.Join(intSliceToStrings(subclassLevels), ", "))
+	}
+	if spellPlan != "" {
+		fmt.Fprintf(bodyB, "Spellcasting Plan: %s\n", spellPlan)
+	}
+
+	fmt.Fprintf(bodyB, "\nAbilities\n")
+	for i := range labels {
+		fmt.Fprintf(bodyB, "%s %d (%+d)", labels[i], scores[i], mods[i])
+		if b := bonuses[keys[i]]; b != 0 {
+			fmt.Fprintf(bodyB, " [race %+d]", b)
+		}
+		fmt.Fprintf(bodyB, "\n")
+	}
+
+	fmt.Fprintf(bodyB, "\nSaving Throws\n")
+	for i := range labels {
+		val := mods[i]
+		if _, ok := saveProf[labels[i]]; ok {
+			val += prof
+			fmt.Fprintf(bodyB, "%s %+d (proficient)\n", labels[i], val)
+		} else {
+			fmt.Fprintf(bodyB, "%s %+d\n", labels[i], val)
+		}
+	}
+	if len(allSkills) > 0 {
+		fmt.Fprintf(bodyB, "\nSkills\n%s\n", strings.Join(allSkills, ", "))
+	}
+	if len(tools) > 0 {
+		fmt.Fprintf(bodyB, "\nTools\n%s\n", strings.Join(tools, ", "))
+	}
+	if len(languages) > 0 {
+		fmt.Fprintf(bodyB, "\nLanguages\n%s\n", strings.Join(languages, ", "))
+	}
+	if len(equipment) > 0 {
+		fmt.Fprintf(bodyB, "\nStarting Equipment\n")
+		for _, item := range equipment {
+			fmt.Fprintf(bodyB, "- %s\n", item)
+		}
+	}
+	if len(classFeatures) > 0 {
+		fmt.Fprintf(bodyB, "\nClass Features up to Level %d\n", level)
+		for _, f := range classFeatures {
+			fmt.Fprintf(bodyB, "- %s\n", f)
+		}
+	}
+	return generatedCharacterSheet{
+		Meta: metaB.String(),
+		Body: bodyB.String(),
+		HP:   hp,
+		AC:   ac,
+		Init: init,
+	}
+}
+
+func rollAbilityScore4d6DropLowest() int {
+	rolls := []int{rand.Intn(6) + 1, rand.Intn(6) + 1, rand.Intn(6) + 1, rand.Intn(6) + 1}
+	sort.Ints(rolls)
+	return rolls[1] + rolls[2] + rolls[3]
+}
+
+func extractRaceAbilityBonuses(v any) map[string]int {
+	out := map[string]int{}
+	arr, ok := v.([]any)
+	if !ok {
+		return out
+	}
+	for _, it := range arr {
+		m, ok := it.(map[string]any)
+		if !ok {
+			continue
+		}
+		for _, k := range []string{"str", "dex", "con", "int", "wis", "cha"} {
+			if val, ok := anyToInt(m[k]); ok {
+				out[k] += val
+			}
+		}
+	}
+	return out
+}
+
+func abilityMod(score int) int {
+	return (score / 2) - 5
+}
+
+func proficiencyBonusForLevel(level int) int {
+	if level < 1 {
+		level = 1
+	}
+	if level > 20 {
+		level = 20
+	}
+	return 2 + (level-1)/4
+}
+
+func classHitDieFaces(hitDie string) int {
+	s := strings.TrimSpace(strings.ToLower(hitDie))
+	if strings.HasPrefix(s, "d") {
+		if v, err := strconv.Atoi(strings.TrimPrefix(s, "d")); err == nil && v > 0 {
+			return v
+		}
+	}
+	return 0
+}
+
+func abilityIndex(k string) int {
+	switch strings.ToLower(strings.TrimSpace(k)) {
+	case "str":
+		return 0
+	case "dex":
+		return 1
+	case "con":
+		return 2
+	case "int":
+		return 3
+	case "wis":
+		return 4
+	case "cha":
+		return 5
+	default:
+		return -1
+	}
+}
+
+func randomBackgroundProfile() backgroundProfile {
+	backgrounds := []backgroundProfile{
+		{Name: "Acolyte", Skills: []string{"Insight", "Religion"}, Languages: []string{"Any", "Any"}, Equipment: []string{"holy symbol", "prayer book", "vestments"}},
+		{Name: "Criminal", Skills: []string{"Deception", "Stealth"}, Tools: []string{"thieves' tools", "gaming set"}, Equipment: []string{"crowbar", "dark common clothes"}},
+		{Name: "Sage", Skills: []string{"Arcana", "History"}, Languages: []string{"Any", "Any"}, Equipment: []string{"ink", "quill", "small knife"}},
+		{Name: "Soldier", Skills: []string{"Athletics", "Intimidation"}, Tools: []string{"gaming set", "vehicles (land)"}, Equipment: []string{"insignia of rank", "trophy from enemy"}},
+		{Name: "Hermit", Skills: []string{"Medicine", "Religion"}, Tools: []string{"herbalism kit"}, Languages: []string{"Any"}, Equipment: []string{"scroll case", "herbalism kit"}},
+		{Name: "Noble", Skills: []string{"History", "Persuasion"}, Tools: []string{"gaming set"}, Languages: []string{"Any"}, Equipment: []string{"set of fine clothes", "signet ring"}},
+		{Name: "Outlander", Skills: []string{"Athletics", "Survival"}, Tools: []string{"musical instrument"}, Languages: []string{"Any"}, Equipment: []string{"staff", "hunting trap"}},
+		{Name: "Charlatan", Skills: []string{"Deception", "Sleight of Hand"}, Tools: []string{"disguise kit", "forgery kit"}, Equipment: []string{"set of fine clothes", "disguise kit"}},
+		{Name: "Entertainer", Skills: []string{"Acrobatics", "Performance"}, Tools: []string{"disguise kit", "musical instrument"}, Equipment: []string{"musical instrument", "costume"}},
+		{Name: "Folk Hero", Skills: []string{"Animal Handling", "Survival"}, Tools: []string{"artisan's tools", "vehicles (land)"}, Equipment: []string{"artisan's tools", "shovel"}},
+	}
+	if len(backgrounds) == 0 {
+		return backgroundProfile{Name: "Custom"}
+	}
+	return backgrounds[rand.Intn(len(backgrounds))]
+}
+
+func extractClassSkillChoices(raw map[string]any) (int, []string) {
+	sp, ok := raw["startingProficiencies"].(map[string]any)
+	if !ok {
+		return 0, nil
+	}
+	skills, ok := sp["skills"].([]any)
+	if !ok {
+		return 0, nil
+	}
+	count := 0
+	opts := []string{}
+	for _, it := range skills {
+		m, ok := it.(map[string]any)
+		if !ok {
+			continue
+		}
+		ch, ok := m["choose"].(map[string]any)
+		if !ok {
+			continue
+		}
+		if c, ok := anyToInt(ch["count"]); ok && c > 0 {
+			count = c
+		}
+		for _, from := range asStringSlice(ch["from"]) {
+			opts = append(opts, titleCase(strings.TrimSpace(from)))
+		}
+	}
+	return count, uniqueSortedStrings(opts)
+}
+
+func extractClassToolProficiencies(raw map[string]any) []string {
+	sp, ok := raw["startingProficiencies"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	out := []string{}
+	for _, key := range []string{"tools", "toolProficiencies"} {
+		v, ok := sp[key]
+		if !ok {
+			continue
+		}
+		switch vv := v.(type) {
+		case []any:
+			for _, it := range vv {
+				t := strings.TrimSpace(clean5eTags(asString(it)))
+				if t != "" {
+					out = append(out, t)
+				}
+				if m, ok := it.(map[string]any); ok {
+					for k, mv := range m {
+						if b, ok := mv.(bool); ok && b {
+							out = append(out, strings.TrimSpace(k))
+						}
+					}
+				}
+			}
+		case map[string]any:
+			for k, mv := range vv {
+				if b, ok := mv.(bool); ok && b {
+					out = append(out, strings.TrimSpace(k))
+				}
+			}
+		}
+	}
+	return uniqueSortedStrings(out)
+}
+
+func extractRaceLanguages(raw map[string]any) []string {
+	v, ok := raw["languageProficiencies"]
+	if !ok {
+		return nil
+	}
+	out := []string{}
+	if arr, ok := v.([]any); ok {
+		for _, it := range arr {
+			if m, ok := it.(map[string]any); ok {
+				for k, mv := range m {
+					switch tv := mv.(type) {
+					case bool:
+						if tv {
+							out = append(out, titleCase(strings.TrimSpace(k)))
+						}
+					case int:
+						if tv > 0 {
+							out = append(out, titleCase(strings.TrimSpace(k)))
+						}
+					}
+				}
+			}
+		}
+	}
+	if len(out) == 0 {
+		txt := manualText(v)
+		if txt != "" {
+			out = append(out, txt)
+		}
+	}
+	return uniqueSortedStrings(out)
+}
+
+func extractRaceSkillProficiencies(raw map[string]any) []string {
+	v, ok := raw["skillProficiencies"]
+	if !ok {
+		return nil
+	}
+	out := []string{}
+	if arr, ok := v.([]any); ok {
+		for _, it := range arr {
+			if m, ok := it.(map[string]any); ok {
+				for k, mv := range m {
+					if _, reserved := map[string]struct{}{"choose": {}, "from": {}, "count": {}}[k]; reserved {
+						continue
+					}
+					switch mv.(type) {
+					case int, bool:
+						out = append(out, titleCase(strings.TrimSpace(k)))
+					}
+				}
+			}
+		}
+	}
+	if len(out) == 0 {
+		txt := manualText(v)
+		if txt != "" {
+			out = append(out, txt)
+		}
+	}
+	return uniqueSortedStrings(out)
+}
+
+func extractStartingEquipment(raw map[string]any) []string {
+	se, ok := raw["startingEquipment"].(map[string]any)
+	if !ok {
+		return nil
+	}
+	def, ok := se["default"].([]any)
+	if !ok {
+		return nil
+	}
+	out := make([]string, 0, len(def)+1)
+	for _, it := range def {
+		t := strings.TrimSpace(manualText(it))
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	if gold := strings.TrimSpace(manualText(se["goldAlternative"])); gold != "" {
+		out = append(out, "Alternative starting gold: "+gold)
+	}
+	return out
+}
+
+func extractSubclassFeatureLevels(v any, maxLevel int) []int {
+	arr, ok := v.([]any)
+	if !ok {
+		return nil
+	}
+	out := []int{}
+	for _, it := range arr {
+		m, ok := it.(map[string]any)
+		if !ok {
+			continue
+		}
+		if g, ok := m["gainSubclassFeature"].(bool); !ok || !g {
+			continue
+		}
+		cf := asString(m["classFeature"])
+		if cf == "" {
+			continue
+		}
+		parts := strings.Split(cf, "|")
+		for i := len(parts) - 1; i >= 0; i-- {
+			lv, err := strconv.Atoi(strings.TrimSpace(parts[i]))
+			if err == nil && lv > 0 && lv <= maxLevel {
+				out = append(out, lv)
+				break
+			}
+		}
+	}
+	sort.Ints(out)
+	uniq := out[:0]
+	prev := -1
+	for _, v := range out {
+		if v == prev {
+			continue
+		}
+		uniq = append(uniq, v)
+		prev = v
+	}
+	return uniq
+}
+
+func extractClassFeaturesUpToLevel(v any, maxLevel int, limit int) []string {
+	arr, ok := v.([]any)
+	if !ok {
+		return nil
+	}
+	type feature struct {
+		level int
+		name  string
+	}
+	out := []feature{}
+	for _, it := range arr {
+		switch vv := it.(type) {
+		case string:
+			parts := strings.Split(vv, "|")
+			if len(parts) == 0 {
+				continue
+			}
+			lv := 0
+			if len(parts) >= 4 {
+				lv, _ = strconv.Atoi(strings.TrimSpace(parts[3]))
+			}
+			if lv <= 0 || lv > maxLevel {
+				continue
+			}
+			name := strings.TrimSpace(parts[0])
+			if name == "" {
+				continue
+			}
+			out = append(out, feature{level: lv, name: clean5eTags(name)})
+		case map[string]any:
+			cf := strings.TrimSpace(asString(vv["classFeature"]))
+			if cf == "" {
+				continue
+			}
+			parts := strings.Split(cf, "|")
+			if len(parts) == 0 {
+				continue
+			}
+			lv := 0
+			for i := len(parts) - 1; i >= 0; i-- {
+				if n, err := strconv.Atoi(strings.TrimSpace(parts[i])); err == nil {
+					lv = n
+					break
+				}
+			}
+			if lv <= 0 || lv > maxLevel {
+				continue
+			}
+			name := strings.TrimSpace(strings.TrimPrefix(parts[0], "classFeature:"))
+			if name == "" {
+				continue
+			}
+			out = append(out, feature{level: lv, name: clean5eTags(name)})
+		}
+	}
+	sort.SliceStable(out, func(i, j int) bool {
+		if out[i].level != out[j].level {
+			return out[i].level < out[j].level
+		}
+		return out[i].name < out[j].name
+	})
+	names := make([]string, 0, len(out))
+	seen := map[string]struct{}{}
+	for _, f := range out {
+		key := fmt.Sprintf("%d|%s", f.level, f.name)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		names = append(names, fmt.Sprintf("Lv%d %s", f.level, f.name))
+		if limit > 0 && len(names) >= limit {
+			break
+		}
+	}
+	return names
+}
+
+func intSliceToStrings(v []int) []string {
+	out := make([]string, 0, len(v))
+	for _, n := range v {
+		out = append(out, strconv.Itoa(n))
+	}
+	return out
+}
+
+func buildSpellPlan(raw map[string]any, level int) string {
+	caster := strings.ToLower(strings.TrimSpace(asString(raw["casterProgression"])))
+	if caster == "" || caster == "none" {
+		return ""
+	}
+	cantrips := progressionValueAt(raw["cantripProgression"], level)
+	maxSpellLevel := spellMaxLevelForProgression(caster, level)
+	if cantrips <= 0 && maxSpellLevel <= 0 {
+		return ""
+	}
+	parts := []string{}
+	if cantrips > 0 {
+		parts = append(parts, fmt.Sprintf("%d cantrips", cantrips))
+	}
+	if maxSpellLevel > 0 {
+		parts = append(parts, fmt.Sprintf("max spell level %d", maxSpellLevel))
+	}
+	if slots := spellSlotsSummary(raw, level); slots != "" {
+		parts = append(parts, slots)
+	}
+	return strings.Join(parts, " | ")
+}
+
+func progressionValueAt(v any, level int) int {
+	if level < 1 {
+		return 0
+	}
+	arr, ok := v.([]any)
+	if !ok || len(arr) == 0 {
+		return 0
+	}
+	idx := level - 1
+	if idx >= len(arr) {
+		idx = len(arr) - 1
+	}
+	val, _ := anyToInt(arr[idx])
+	return val
+}
+
+func spellMaxLevelForProgression(caster string, level int) int {
+	if level <= 0 {
+		return 0
+	}
+	switch caster {
+	case "full":
+		if level <= 2 {
+			return 1
+		}
+		if level >= 17 {
+			return 9
+		}
+		return (level + 1) / 2
+	case "half":
+		if level < 2 {
+			return 0
+		}
+		if level >= 17 {
+			return 5
+		}
+		return (level + 1) / 4
+	case "third":
+		if level < 3 {
+			return 0
+		}
+		if level >= 19 {
+			return 4
+		}
+		return (level + 2) / 6
+	case "artificer":
+		if level < 1 {
+			return 0
+		}
+		if level >= 17 {
+			return 5
+		}
+		return (level + 3) / 4
+	case "pact":
+		switch {
+		case level >= 9:
+			return 5
+		case level >= 7:
+			return 4
+		case level >= 5:
+			return 3
+		case level >= 3:
+			return 2
+		case level >= 1:
+			return 1
+		default:
+			return 0
+		}
+	default:
+		return 0
+	}
+}
+
+func spellSlotsSummary(raw map[string]any, level int) string {
+	groups, ok := raw["classTableGroups"].([]any)
+	if !ok {
+		return ""
+	}
+	for _, g := range groups {
+		m, ok := g.(map[string]any)
+		if !ok {
+			continue
+		}
+		rows, ok := m["rowsSpellProgression"].([]any)
+		if !ok || len(rows) == 0 {
+			continue
+		}
+		idx := level - 1
+		if idx < 0 {
+			idx = 0
+		}
+		if idx >= len(rows) {
+			idx = len(rows) - 1
+		}
+		row, ok := rows[idx].([]any)
+		if !ok {
+			continue
+		}
+		parts := []string{}
+		for i, slot := range row {
+			n, ok := anyToInt(slot)
+			if !ok || n <= 0 {
+				continue
+			}
+			parts = append(parts, fmt.Sprintf("%d:%d", i+1, n))
+		}
+		if len(parts) > 0 {
+			return "slots " + strings.Join(parts, " ")
+		}
+	}
+	return ""
+}
+
+func chooseRandomN(values []string, n int) []string {
+	vals := uniqueSortedStrings(values)
+	if n <= 0 || len(vals) == 0 {
+		return nil
+	}
+	if n >= len(vals) {
+		return vals
+	}
+	perm := rand.Perm(len(vals))
+	out := make([]string, 0, n)
+	for i := 0; i < n; i++ {
+		out = append(out, vals[perm[i]])
+	}
+	sort.Strings(out)
+	return out
+}
+
+func uniqueSortedStrings(v []string) []string {
+	seen := map[string]struct{}{}
+	out := make([]string, 0, len(v))
+	for _, s := range v {
+		t := strings.TrimSpace(s)
+		if t == "" {
+			continue
+		}
+		if _, ok := seen[t]; ok {
+			continue
+		}
+		seen[t] = struct{}{}
+		out = append(out, t)
+	}
+	sort.Strings(out)
+	return out
+}
+
+func titleCase(s string) string {
+	parts := strings.Fields(strings.ToLower(strings.TrimSpace(s)))
+	for i, p := range parts {
+		if p == "" {
+			continue
+		}
+		parts[i] = strings.ToUpper(p[:1]) + p[1:]
+	}
+	return strings.Join(parts, " ")
+}
+
+func generateCharacterSpellSelection(cl Monster, level int, spells []Monster) string {
+	if len(spells) == 0 {
+		return ""
+	}
+	raw := cl.Raw
+	caster := strings.ToLower(strings.TrimSpace(asString(raw["casterProgression"])))
+	maxLvl := spellMaxLevelForProgression(caster, level)
+	cantripN := progressionValueAt(raw["cantripProgression"], level)
+	knownN := progressionValueAt(raw["spellsKnownProgression"], level)
+	if knownN <= 0 {
+		knownN = progressionValueAt(raw["spellsKnownProgressionFixed"], level)
+	}
+	if knownN <= 0 && maxLvl > 0 {
+		knownN = max(1, level/2+1)
+	}
+	if cantripN <= 0 && maxLvl <= 0 {
+		return ""
+	}
+
+	cantripPool := make([]Monster, 0, 64)
+	levelledPool := make([]Monster, 0, 256)
+	for _, sp := range spells {
+		lv, ok := spellLevelNumber(sp)
+		if !ok {
+			continue
+		}
+		if lv == 0 {
+			cantripPool = append(cantripPool, sp)
+			continue
+		}
+		if maxLvl > 0 && lv <= maxLvl {
+			levelledPool = append(levelledPool, sp)
+		}
+	}
+
+	cantrips := pickRandomSpellNames(cantripPool, cantripN)
+	if knownN > 0 {
+		if knownN > 20 {
+			knownN = 20
+		}
+	}
+	levelled := pickRandomSpellNames(levelledPool, knownN)
+	if len(cantrips) == 0 && len(levelled) == 0 {
+		return ""
+	}
+
+	b := &strings.Builder{}
+	if len(cantrips) > 0 {
+		fmt.Fprintf(b, "Cantrips (%d): %s\n", len(cantrips), strings.Join(cantrips, ", "))
+	}
+	if len(levelled) > 0 {
+		fmt.Fprintf(b, "Leveled (%d, up to level %d): %s\n", len(levelled), maxLvl, strings.Join(levelled, ", "))
+	}
+	return strings.TrimSpace(b.String())
+}
+
+func spellLevelNumber(sp Monster) (int, bool) {
+	s := strings.TrimSpace(strings.ToLower(sp.CR))
+	if s == "" {
+		return 0, false
+	}
+	switch s {
+	case "0", "cantrip", "c":
+		return 0, true
+	}
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, false
+	}
+	if n < 0 {
+		return 0, false
+	}
+	return n, true
+}
+
+func pickRandomSpellNames(spells []Monster, count int) []string {
+	if count <= 0 || len(spells) == 0 {
+		return nil
+	}
+	if count > len(spells) {
+		count = len(spells)
+	}
+	perm := rand.Perm(len(spells))
+	out := make([]string, 0, count)
+	seen := map[string]struct{}{}
+	for _, idx := range perm {
+		name := strings.TrimSpace(spells[idx].Name)
+		if name == "" {
+			continue
+		}
+		key := strings.ToLower(name)
+		if _, ok := seen[key]; ok {
+			continue
+		}
+		seen[key] = struct{}{}
+		out = append(out, name)
+		if len(out) >= count {
+			break
+		}
+	}
+	sort.Strings(out)
+	return out
+}
+
 func manualSection(v any) string {
 	if _, ok := v.([]any); ok {
 		return manualText(plainSection(v))
@@ -3671,6 +4525,9 @@ func clean5eTags(s string) string {
 }
 
 func buildCustomDescriptionText(entry EncounterEntry, maxHP int) string {
+	if strings.TrimSpace(entry.CustomBody) != "" {
+		return strings.TrimSpace(entry.CustomBody)
+	}
 	b := &strings.Builder{}
 	fmt.Fprintf(b, "Name: %s\n", entry.CustomName)
 	fmt.Fprintf(b, "Initiative: %d\n", entry.CustomInit)
@@ -3947,6 +4804,186 @@ func (ui *UI) openEncounterLoadInput() {
 
 	ui.pages.AddPage("encounter-load", modal, true, true)
 	ui.app.SetFocus(input)
+}
+
+func (ui *UI) openCreateCharacterFromClassForm() {
+	if ui.browseMode != BrowseCharacters || len(ui.filtered) == 0 {
+		return
+	}
+	listIndex := ui.list.GetCurrentItem()
+	if listIndex < 0 || listIndex >= len(ui.filtered) {
+		return
+	}
+	classIndex := ui.filtered[listIndex]
+	if classIndex < 0 || classIndex >= len(ui.classes) {
+		return
+	}
+	cl := ui.classes[classIndex]
+
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(fmt.Sprintf(" Create Character - %s ", cl.Name))
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+	var raceDrop *tview.DropDown
+	var runGenerate func()
+	form.SetCancelFunc(func() {
+		ui.pages.RemovePage("character-create")
+		ui.charCreateVisible = false
+		ui.app.SetFocus(ui.list)
+	})
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape {
+			ui.pages.RemovePage("character-create")
+			ui.charCreateVisible = false
+			ui.app.SetFocus(ui.list)
+			return nil
+		}
+		// On Race field, Enter should confirm current option and jump to Generate.
+		if event.Key() == tcell.KeyEnter && raceDrop != nil {
+			focus := ui.app.GetFocus()
+			formItem, button := form.GetFocusedItemIndex()
+			onRace := focus == raceDrop || (button < 0 && formItem == 1)
+			if onRace && !raceDrop.IsOpen() {
+				if runGenerate != nil {
+					runGenerate()
+				}
+				return nil
+			}
+		}
+		return event
+	})
+
+	levelField := tview.NewInputField().SetLabel("Level (1-20): ").SetFieldWidth(8)
+	levelField.SetText("1")
+	raceOptions := make([]string, 0, len(ui.races))
+	raceIndexByOption := make([]int, 0, len(ui.races))
+	for i, rc := range ui.races {
+		label := rc.Name
+		if strings.TrimSpace(rc.Source) != "" {
+			label = fmt.Sprintf("%s [%s]", rc.Name, rc.Source)
+		}
+		raceOptions = append(raceOptions, label)
+		raceIndexByOption = append(raceIndexByOption, i)
+	}
+	raceDrop = tview.NewDropDown().SetLabel("Race: ")
+	if len(raceOptions) == 0 {
+		raceOptions = []string{"(no races loaded)"}
+		raceIndexByOption = []int{-1}
+	}
+	raceDrop.SetOptions(raceOptions, nil)
+	raceDrop.SetCurrentOption(0)
+	raceDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape {
+			ui.pages.RemovePage("character-create")
+			ui.charCreateVisible = false
+			ui.app.SetFocus(ui.list)
+			return nil
+		}
+		// Keep DropDown closed-state Enter behavior deterministic:
+		// do not open the list, execute Generate directly.
+		if event.Key() == tcell.KeyEnter && !raceDrop.IsOpen() {
+			if runGenerate != nil {
+				runGenerate()
+			}
+			return nil
+		}
+		return event
+	})
+
+	setInput := func(f *tview.InputField) {
+		f.SetLabelColor(tcell.ColorGold)
+		f.SetFieldBackgroundColor(tcell.ColorWhite)
+		f.SetFieldTextColor(tcell.ColorBlack)
+		f.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	}
+	setInput(levelField)
+	raceDrop.SetLabelColor(tcell.ColorGold)
+	raceDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	raceDrop.SetFieldTextColor(tcell.ColorWhite)
+	raceDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
+
+	form.AddFormItem(levelField)
+	form.AddFormItem(raceDrop)
+
+	runGenerate = func() {
+		level, err := strconv.Atoi(strings.TrimSpace(levelField.GetText()))
+		if err != nil || level < 1 || level > 20 {
+			ui.status.SetText(fmt.Sprintf(" [white:red] livello non valido (1-20)[-:-]  %s", helpText))
+			return
+		}
+		raceOpt, _ := raceDrop.GetCurrentOption()
+		if raceOpt < 0 || raceOpt >= len(raceIndexByOption) || raceIndexByOption[raceOpt] < 0 || raceIndexByOption[raceOpt] >= len(ui.races) {
+			ui.status.SetText(fmt.Sprintf(" [white:red] razza non valida[-:-]  %s", helpText))
+			return
+		}
+		rc := ui.races[raceIndexByOption[raceOpt]]
+		sheet := generateCharacterSheetData(cl, rc, level)
+		if spellText := generateCharacterSpellSelection(cl, level, ui.spells); spellText != "" {
+			sheet.Body += "\n\nSpells Prepared/Known\n" + spellText
+		}
+		ui.detailMeta.SetText(sheet.Meta)
+		ui.detailMeta.ScrollToBeginning()
+		ui.rawText = sheet.Body
+		ui.rawQuery = ""
+		ui.renderRawWithHighlight("", -1)
+		ui.detailRaw.ScrollToBeginning()
+		charName := fmt.Sprintf("%s %s Lv%d", cl.Name, rc.Name, level)
+		ui.addGeneratedCharacterToEncounter(charName, sheet.Init, sheet.AC, sheet.HP, sheet.Meta, sheet.Body)
+		ui.pages.RemovePage("character-create")
+		ui.charCreateVisible = false
+		ui.app.SetFocus(ui.list)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] personaggio creato[-:-] %s Lv%d (%s) + aggiunto a Encounters  %s", cl.Name, level, rc.Name, helpText))
+	}
+	form.AddButton("Generate", runGenerate)
+	form.AddButton("Cancel", func() {
+		ui.pages.RemovePage("character-create")
+		ui.charCreateVisible = false
+		ui.app.SetFocus(ui.list)
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 10, 0, true).
+			AddItem(nil, 0, 1, false), 70, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("character-create", modal, true, true)
+	ui.charCreateVisible = true
+	ui.app.SetFocus(form)
+}
+
+func (ui *UI) addGeneratedCharacterToEncounter(name string, init int, ac int, hp int, meta string, body string) {
+	n := strings.TrimSpace(name)
+	if n == "" {
+		n = "Character"
+	}
+	if hp < 0 {
+		hp = 0
+	}
+	entry := EncounterEntry{
+		Custom:     true,
+		CustomName: n,
+		CustomInit: init,
+		CustomMeta: strings.TrimSpace(meta),
+		CustomBody: strings.TrimSpace(body),
+		BaseHP:     hp,
+		CurrentHP:  hp,
+	}
+	if ac > 0 {
+		entry.CustomAC = strconv.Itoa(ac)
+	}
+	ui.pushEncounterUndo()
+	ui.encounterItems = append(ui.encounterItems, entry)
+	ui.renderEncounterList()
+	if len(ui.encounterItems) > 0 {
+		ui.encounter.SetCurrentItem(len(ui.encounterItems) - 1)
+	}
 }
 
 func (ui *UI) addSelectedMonsterToEncounter() {
@@ -4698,6 +5735,8 @@ func (ui *UI) loadEncounters() error {
 			CustomName:   it.CustomName,
 			CustomInit:   it.CustomInit,
 			CustomAC:     it.CustomAC,
+			CustomMeta:   it.CustomMeta,
+			CustomBody:   it.CustomBody,
 			BaseHP:       baseHP,
 			CurrentHP:    currentHP,
 			HPFormula:    hpFormula,
@@ -4741,6 +5780,8 @@ func (ui *UI) saveEncounters() error {
 			CustomName: it.CustomName,
 			CustomInit: it.CustomInit,
 			CustomAC:   it.CustomAC,
+			CustomMeta: it.CustomMeta,
+			CustomBody: it.CustomBody,
 			BaseHP:     it.BaseHP,
 			CurrentHP:  it.CurrentHP,
 			HPFormula:  it.HPFormula,
