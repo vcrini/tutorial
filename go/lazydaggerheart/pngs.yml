@@ -1,0 +1,14 @@
+pngs:
+    - name: Wisteria Tringle (Oratore | Bardo L4)
+      token: 2
+      class: Bardo
+      subclass: Oratore
+      level: 4
+      description: I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette. Sia che si esibiscano per un pubblico o che si rivolgano a un singolo interlocutore, i bardi danno il meglio nelle situazioni sociali. I membri di questa professione si leggono e si addestrano in scuole o gilde, ma possono anche essere soggetti all'egocentrismo. Sebbene siano la classe piu adatta a riunire le persone, un bardo di cattivo umore puo altrettanto facilmente distruggere una festa.
+    - name: Bellamy Emrik (Trovatore | Bardo L3)
+      token: 3
+      class: Bardo
+      subclass: Trovatore
+      level: 3
+      description: I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette.
+selected: Bellamy Emrik (Trovatore | Bardo L3)

@@ -781,6 +781,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openResetTokensConfirm()
 			return nil
 		}
+	case 'm':
+		if focus == ui.pngList {
+			ui.openRenamePNGModal()
+			return nil
+		}
 	case 'a':
 		if focus == ui.dice {
 			ui.openDiceRollInput()
@@ -788,6 +793,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop) {
 			ui.addSelectedMonsterToEncounter()
+			return nil
+		}
+		if ui.catalogMode == "classe" && (focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop) {
+			ui.openClassPNGInput()
 			return nil
 		}
 	case 'e':
@@ -1487,7 +1496,33 @@ func (ui *tviewUI) refreshDetail() {
 		return
 	}
 	p := ui.pngs[ui.selected]
-	ui.detailRaw = fmt.Sprintf("%s\nToken: %d", p.Name, p.Token)
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf("%s\nToken: %d", p.Name, p.Token))
+	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
+		classLine := ""
+		if strings.TrimSpace(p.Subclass) != "" {
+			classLine += strings.TrimSpace(p.Subclass)
+		}
+		if strings.TrimSpace(p.Class) != "" {
+			if classLine != "" {
+				classLine += " | "
+			}
+			classLine += strings.TrimSpace(p.Class)
+		}
+		if p.Level > 0 {
+			if classLine != "" {
+				classLine += " "
+			}
+			classLine += fmt.Sprintf("L%d", p.Level)
+		}
+		if classLine != "" {
+			b.WriteString("\nClasse: " + classLine)
+		}
+	}
+	if strings.TrimSpace(p.Description) != "" {
+		b.WriteString("\n\nDescrizione:\n" + strings.TrimSpace(p.Description))
+	}
+	ui.detailRaw = b.String()
 	ui.renderDetail()
 }
 
@@ -2258,6 +2293,167 @@ func (ui *tviewUI) openCreatePNGModal() {
 	})
 }
 
+func (ui *tviewUI) openRenamePNGModal() {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+
+	currentName := ui.pngs[ui.selected].Name
+	input := tview.NewInputField().SetLabel(" Nuovo nome ").SetFieldWidth(28)
+	input.SetText(currentName)
+	input.SetBorder(true).SetTitle("Rinomina PNG")
+	returnFocus := ui.app.GetFocus()
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 48, 0, true).
+			AddItem(nil, 0, 1, false), 5, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "rename_png"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			return
+		}
+		newName := strings.TrimSpace(input.GetText())
+		if newName == "" {
+			ui.message = "Nome PNG non valido."
+			ui.refreshStatus()
+			return
+		}
+		for i, p := range ui.pngs {
+			if i == ui.selected {
+				continue
+			}
+			if strings.EqualFold(strings.TrimSpace(p.Name), newName) {
+				ui.message = "Nome già esistente."
+				ui.refreshStatus()
+				return
+			}
+		}
+		ui.pngs[ui.selected].Name = newName
+		ui.persistPNGs()
+		ui.closeModal()
+		ui.focusPanel(focusPNG)
+		ui.message = fmt.Sprintf("PNG rinominato in %s.", newName)
+		ui.refreshAll()
+	})
+}
+
+func (ui *tviewUI) openClassPNGInput() {
+	idx := ui.currentClassIndex()
+	if idx < 0 || idx >= len(ui.classes) {
+		ui.message = "Nessuna classe selezionata."
+		ui.refreshStatus()
+		return
+	}
+	c := ui.classes[idx]
+	returnFocus := ui.app.GetFocus()
+
+	levels := make([]string, 0, 10)
+	for i := 1; i <= 10; i++ {
+		levels = append(levels, strconv.Itoa(i))
+	}
+	selectedLevel := 1
+	ready := false
+
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Crea PNG da Classe").SetTitleAlign(tview.AlignLeft)
+	advanceToGenerate := func() {
+		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
+	}
+	form.AddDropDown("Livello", levels, 0, func(option string, _ int) {
+		if option == "" {
+			return
+		}
+		if v, err := strconv.Atoi(option); err == nil && v > 0 {
+			selectedLevel = v
+		}
+		if ready {
+			advanceToGenerate()
+		}
+	})
+	if item := form.GetFormItem(0); item != nil {
+		if dd, ok := item.(*tview.DropDown); ok {
+			dd.SetFieldBackgroundColor(tcell.ColorBlack)
+			dd.SetFieldTextColor(tcell.ColorWhite)
+			dd.SetListStyles(
+				tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+				tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+			)
+			dd.SetFinishedFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					advanceToGenerate()
+				case tcell.KeyBacktab:
+					form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Annulla"))
+				}
+			})
+		}
+	}
+
+	form.AddButton("Genera", func() {
+		baseName := uniqueRandomPNGName(ui.pngs)
+		png := PNG{
+			Name:        fmt.Sprintf("%s (%s | %s L%d)", baseName, c.Subclass, c.Name, selectedLevel),
+			Token:       defaultToken,
+			Class:       strings.TrimSpace(c.Name),
+			Subclass:    strings.TrimSpace(c.Subclass),
+			Level:       selectedLevel,
+			Description: strings.TrimSpace(c.Description),
+		}
+		ui.pngs = append(ui.pngs, png)
+		ui.selected = len(ui.pngs) - 1
+		ui.persistPNGs()
+		ui.closeModal()
+		ui.focusPanel(focusPNG)
+		ui.message = fmt.Sprintf("Creato PNG da classe: %s | %s L%d", c.Subclass, c.Name, selectedLevel)
+		ui.refreshAll()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetButtonsAlign(tview.AlignLeft)
+	ready = true
+
+	info := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	info.SetText(fmt.Sprintf("[yellow]%s | %s[-]\nScegli il livello e genera un PNG.", c.Subclass, c.Name))
+
+	container := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(info, 2, 0, false).
+		AddItem(form, 0, 1, true)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(container, 66, 0, true).
+			AddItem(nil, 0, 1, false), 11, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "class_png"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
+}
+
 func (ui *tviewUI) openDeletePNGConfirm() {
 	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
 		ui.message = "Nessun PNG selezionato."
@@ -2667,6 +2863,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panel = "PNG"
 		panelLines = []string{
 			"- c: crea PNG",
+			"- m: rinomina PNG selezionato",
 			"- x: elimina PNG selezionato",
 			"- r: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
@@ -2717,6 +2914,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- u / t / g: focus filtro Cerca / Classe / Sottoclasse",
 			"- v: reset filtri Classe (Cerca/Classe/Sottoclasse)",
+			"- a: genera PNG dalla classe selezionata (con livello)",
 		}
 	default:
 		panelLines = []string{"- /: evidenzia testo nei dettagli"}

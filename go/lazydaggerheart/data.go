@@ -142,8 +142,12 @@ type ClassItem struct {
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
-	Name  string `json:"Name"`
-	Token int    `json:"Token"`
+	Name        string `json:"Name" yaml:"name"`
+	Token       int    `json:"Token" yaml:"token"`
+	Class       string `json:"Class,omitempty" yaml:"class,omitempty"`
+	Subclass    string `json:"Subclass,omitempty" yaml:"subclass,omitempty"`
+	Level       int    `json:"Level,omitempty" yaml:"level,omitempty"`
+	Description string `json:"Description,omitempty" yaml:"description,omitempty"`
 }
 
 func (p *PNG) UnmarshalJSON(data []byte) error {
@@ -153,6 +157,14 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		Counter      *int   `json:"Counter"`
 		TokenLower   *int   `json:"token"`
 		CounterLower *int   `json:"counter"`
+		Class        string `json:"Class"`
+		ClassLower   string `json:"class"`
+		Subclass     string `json:"Subclass"`
+		SubclassLow  string `json:"subclass"`
+		Level        *int   `json:"Level"`
+		LevelLower   *int   `json:"level"`
+		Description  string `json:"Description"`
+		DescLower    string `json:"description"`
 	}
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
@@ -170,16 +182,44 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 	default:
 		p.Token = 0
 	}
+	if strings.TrimSpace(aux.Class) != "" {
+		p.Class = strings.TrimSpace(aux.Class)
+	} else {
+		p.Class = strings.TrimSpace(aux.ClassLower)
+	}
+	if strings.TrimSpace(aux.Subclass) != "" {
+		p.Subclass = strings.TrimSpace(aux.Subclass)
+	} else {
+		p.Subclass = strings.TrimSpace(aux.SubclassLow)
+	}
+	if aux.Level != nil {
+		p.Level = *aux.Level
+	} else if aux.LevelLower != nil {
+		p.Level = *aux.LevelLower
+	}
+	if strings.TrimSpace(aux.Description) != "" {
+		p.Description = strings.TrimSpace(aux.Description)
+	} else {
+		p.Description = strings.TrimSpace(aux.DescLower)
+	}
 	return nil
 }
 
 func (p PNG) MarshalJSON() ([]byte, error) {
 	out := struct {
-		Name  string `json:"Name"`
-		Token int    `json:"Token"`
+		Name        string `json:"Name"`
+		Token       int    `json:"Token"`
+		Class       string `json:"Class,omitempty"`
+		Subclass    string `json:"Subclass,omitempty"`
+		Level       int    `json:"Level,omitempty"`
+		Description string `json:"Description,omitempty"`
 	}{
-		Name:  p.Name,
-		Token: p.Token,
+		Name:        p.Name,
+		Token:       p.Token,
+		Class:       strings.TrimSpace(p.Class),
+		Subclass:    strings.TrimSpace(p.Subclass),
+		Level:       p.Level,
+		Description: strings.TrimSpace(p.Description),
 	}
 	return json.Marshal(out)
 }
