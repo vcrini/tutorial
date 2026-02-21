@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"regexp"
 	"sort"
 	"strconv"
@@ -46,6 +47,17 @@ const (
 type DiceResult struct {
 	Expression string `yaml:"expression"`
 	Output     string `yaml:"output"`
+}
+
+type classPreset struct {
+	Traits    string
+	Primary   string
+	Secondary string
+	Armor     string
+	ExtraA    string
+	ExtraB    string
+	Abiti     []string
+	Attitude  []string
 }
 
 type tviewUI struct {
@@ -720,12 +732,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -1518,6 +1530,84 @@ func (ui *tviewUI) refreshDetail() {
 		if classLine != "" {
 			b.WriteString("\nClasse: " + classLine)
 		}
+	}
+	if p.Level > 0 {
+		rank := p.Rank
+		if rank <= 0 {
+			rank = rankFromLevel(p.Level)
+		}
+		compBonus := p.CompBonus
+		expBonus := p.ExpBonus
+		if compBonus == 0 && p.Level > 1 {
+			compBonus = progressionBonusAtLevel(p.Level)
+		}
+		if expBonus == 0 && p.Level > 1 {
+			expBonus = progressionBonusAtLevel(p.Level)
+		}
+		b.WriteString(fmt.Sprintf("\nLivello: %d | Rango: %d", p.Level, rank))
+		b.WriteString(fmt.Sprintf("\nBonus Competenza (livello): +%d", compBonus))
+		b.WriteString(fmt.Sprintf("\nEsperienze aggiuntive (livello): +%d", expBonus))
+	}
+	if def := ui.findClassDefinition(p.Class, p.Subclass); def != nil {
+		if def.Evasion > 0 {
+			b.WriteString(fmt.Sprintf("\nEvasione iniziale: %d", def.Evasion))
+		}
+		if def.HP > 0 {
+			b.WriteString(fmt.Sprintf("\nPF iniziali: %d", def.HP))
+		}
+		if p.Level > 0 {
+			b.WriteString("\nRegola soglie: aggiungi il livello attuale alle soglie base dell'armatura.")
+		}
+		if strings.TrimSpace(def.CasterTrait) != "" {
+			b.WriteString("\nTratto da Incantatore: " + strings.TrimSpace(def.CasterTrait))
+		}
+		if strings.TrimSpace(def.HopePrivilege) != "" {
+			b.WriteString("\n\nPrivilegio della Speranza:\n" + strings.TrimSpace(def.HopePrivilege))
+		}
+		if len(def.ClassPrivileges) > 0 {
+			b.WriteString("\n\nPrivilegi di Classe:")
+			for _, it := range def.ClassPrivileges {
+				it = strings.TrimSpace(it)
+				if it == "" {
+					continue
+				}
+				b.WriteString("\n- " + it)
+			}
+		}
+		if len(def.BasePrivileges) > 0 {
+			b.WriteString("\n\nPrivilegi Base:")
+			for _, it := range def.BasePrivileges {
+				it = strings.TrimSpace(it)
+				if it == "" {
+					continue
+				}
+				b.WriteString("\n- " + it)
+			}
+		}
+		if strings.TrimSpace(def.Specialization) != "" {
+			b.WriteString("\n\nSpecializzazione:\n" + strings.TrimSpace(def.Specialization))
+		}
+		if strings.TrimSpace(def.Mastery) != "" {
+			b.WriteString("\n\nMaestria:\n" + strings.TrimSpace(def.Mastery))
+		}
+	}
+	if strings.TrimSpace(p.Traits) != "" {
+		b.WriteString("\n\nTratti consigliati:\n" + strings.TrimSpace(p.Traits))
+	}
+	if strings.TrimSpace(p.Primary) != "" {
+		b.WriteString("\nArma primaria consigliata:\n" + strings.TrimSpace(p.Primary))
+	}
+	if strings.TrimSpace(p.Secondary) != "" {
+		b.WriteString("\nArma secondaria consigliata:\n" + strings.TrimSpace(p.Secondary))
+	}
+	if strings.TrimSpace(p.Armor) != "" {
+		b.WriteString("\nArmatura consigliata:\n" + strings.TrimSpace(p.Armor))
+	}
+	if strings.TrimSpace(p.Inventory) != "" {
+		b.WriteString("\nInventario suggerito:\n" + strings.TrimSpace(p.Inventory))
+	}
+	if strings.TrimSpace(p.Look) != "" {
+		b.WriteString("\nDescrizione scelta:\n" + strings.TrimSpace(p.Look))
 	}
 	if strings.TrimSpace(p.Description) != "" {
 		b.WriteString("\n\nDescrizione:\n" + strings.TrimSpace(p.Description))
@@ -2404,13 +2494,25 @@ func (ui *tviewUI) openClassPNGInput() {
 
 	form.AddButton("Genera", func() {
 		baseName := uniqueRandomPNGName(ui.pngs)
+		preset := classPresetFor(c.Name)
+		inv := buildSuggestedInventory(preset)
+		look := buildSuggestedLook(preset)
 		png := PNG{
 			Name:        fmt.Sprintf("%s (%s | %s L%d)", baseName, c.Subclass, c.Name, selectedLevel),
 			Token:       defaultToken,
 			Class:       strings.TrimSpace(c.Name),
 			Subclass:    strings.TrimSpace(c.Subclass),
 			Level:       selectedLevel,
+			Rank:        rankFromLevel(selectedLevel),
+			CompBonus:   progressionBonusAtLevel(selectedLevel),
+			ExpBonus:    progressionBonusAtLevel(selectedLevel),
 			Description: strings.TrimSpace(c.Description),
+			Traits:      strings.TrimSpace(preset.Traits),
+			Primary:     strings.TrimSpace(preset.Primary),
+			Secondary:   strings.TrimSpace(preset.Secondary),
+			Armor:       strings.TrimSpace(preset.Armor),
+			Look:        look,
+			Inventory:   inv,
 		}
 		ui.pngs = append(ui.pngs, png)
 		ui.selected = len(ui.pngs) - 1
@@ -2452,6 +2554,211 @@ func (ui *tviewUI) openClassPNGInput() {
 	ui.modalName = "class_png"
 	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
 	ui.app.SetFocus(form.GetFormItem(0))
+}
+
+func chooseOne(items []string) string {
+	if len(items) == 0 {
+		return ""
+	}
+	return strings.TrimSpace(items[rand.IntN(len(items))])
+}
+
+func buildSuggestedInventory(p classPreset) string {
+	base := []string{
+		"torcia",
+		"16 metri di corda",
+		"provviste di base",
+		"una manciata d'oro",
+	}
+	potion := chooseOne([]string{"Pozione di Guarigione Minore", "Pozione di Recupero Minore"})
+	extra := chooseOne([]string{strings.TrimSpace(p.ExtraA), strings.TrimSpace(p.ExtraB)})
+	if potion != "" {
+		base = append(base, potion)
+	}
+	if extra != "" {
+		base = append(base, extra)
+	}
+	return strings.Join(base, ", ")
+}
+
+func buildSuggestedLook(p classPreset) string {
+	eyes := []string{
+		"vivaci", "del colore della terra", "dell'oceano", "di fuoco", "verde edera", "lilla", "la notte", "schiuma del mare", "gelidi",
+	}
+	body := []string{
+		"spalle larghe", "scolpita", "formosa", "allampanata", "tondeggiante", "piccola statura", "robusta", "alta", "slanciata", "minuta", "allenata",
+	}
+	skin := []string{
+		"cenere", "nivea", "sabbia", "ossidiana", "rosea", "trifoglio", "zaffiro", "glicine",
+	}
+
+	abiti := chooseOne(p.Abiti)
+	atteggiamento := chooseOne(p.Attitude)
+	occhi := chooseOne(eyes)
+	corporatura := chooseOne(body)
+	carnagione := chooseOne(skin)
+
+	parts := []string{}
+	if abiti != "" {
+		parts = append(parts, "Abiti: "+abiti)
+	}
+	if occhi != "" {
+		parts = append(parts, "Occhi: "+occhi)
+	}
+	if corporatura != "" {
+		parts = append(parts, "Corporatura: "+corporatura)
+	}
+	if carnagione != "" {
+		parts = append(parts, "Carnagione: "+carnagione)
+	}
+	if atteggiamento != "" {
+		parts = append(parts, "Atteggiamento: "+atteggiamento)
+	}
+	return strings.Join(parts, " | ")
+}
+
+func classPresetFor(className string) classPreset {
+	switch strings.ToLower(strings.TrimSpace(className)) {
+	case "bardo":
+		return classPreset{
+			Traits:    "0 Agilita, -1 Forza, +1 Astuzia, 0 Istinto, +2 Presenza, +1 Conoscenza",
+			Primary:   "Stocco - Presenza, Mischia - d8 fis - A una mano",
+			Secondary: "Stiletto - Astuzia, Mischia - d8 fis - A una mano",
+			Armor:     "Gambesone - Soglie 5/11 - Punteggio Base 3 (Flessibile: +1 all'Evasione)",
+			ExtraA:    "un racconto romantico",
+			ExtraB:    "una lettera mai aperta",
+			Abiti:     []string{"stravaganti", "lussuosi", "vistosi", "di una taglia in piu", "cenciosi", "eleganti", "grezzi"},
+			Attitude:  []string{"taverniere", "prestigiatore", "circense", "rockstar", "smargiasso"},
+		}
+	case "consacrato":
+		return classPreset{
+			Traits:    "0 Agilita, +2 Forza, 0 Astuzia, +1 Istinto, +1 Presenza, -1 Conoscenza",
+			Primary:   "Ascia Consacrata - Forza, Mischia - d8+1 mag - A una mano",
+			Secondary: "Scudo Rotella - Forza, Mischia - d4 fis - A una mano",
+			Armor:     "Cotta di Maglia - Soglie 7/15 - Punteggio Base 4 (Pesante: -1 all'Evasione)",
+			ExtraA:    "una raccolta di offerte",
+			ExtraB:    "il simbolo sacro della vostra divinita",
+			Abiti:     []string{"splendenti", "ondeggianti", "ornati", "aderenti", "modesti", "strani", "naturali"},
+			Attitude:  []string{"angelico", "di un medico", "di un predicatore", "monastico", "sacerdotale"},
+		}
+	case "druido":
+		return classPreset{
+			Traits:    "+1 Agilita, 0 Forza, +1 Astuzia, +2 Istinto, -1 Presenza, 0 Conoscenza",
+			Primary:   "Verga - Istinto, Ravvicinata - d8+1 mag - A una mano",
+			Secondary: "Scudo Rotella - Forza, Mischia - d4 fis - A una mano",
+			Armor:     "Corazza di Cuoio - Soglie 6/13 - Punteggio Base 3",
+			ExtraA:    "una borsa piena di pietruzze e ossicini",
+			ExtraB:    "uno strano pendente scovato nella sporcizia",
+			Abiti:     []string{"mimetici", "di fibre vegetali", "confortevoli", "naturali", "di pezze cucite insieme", "regali", "stracci"},
+			Attitude:  []string{"esplosivo", "astuto come una volpe", "da guida nella foresta", "come un figlio dei fiori", "stregonesco"},
+		}
+	case "fuorilegge":
+		return classPreset{
+			Traits:    "+1 Agilita, -1 Forza, +2 Astuzia, 0 Istinto, +1 Presenza, 0 Conoscenza",
+			Primary:   "Pugnale - Astuzia, Mischia - d8+1 fis - A una mano",
+			Secondary: "Stiletto - Astuzia, Mischia - d8 fis - A una mano",
+			Armor:     "Gambesone - Soglie 5/11 - Punteggio Base 3 (Flessibile: +1 all'Evasione)",
+			ExtraA:    "attrezzatura da falsario",
+			ExtraB:    "un rampino",
+			Abiti:     []string{"puliti", "scuri", "anonimi", "in pelle", "inquietanti", "mimetici", "tattici", "aderenti"},
+			Attitude:  []string{"da bandito", "da truffatore", "da giocatore d'azzardo", "da capobanda", "da pirata"},
+		}
+	case "guardiano":
+		return classPreset{
+			Traits:    "+1 Agilita, +2 Forza, -1 Astuzia, 0 Istinto, +1 Presenza, 0 Conoscenza",
+			Primary:   "Ascia da Battaglia - Forza, Mischia - d10+3 fis - A due mani",
+			Secondary: "",
+			Armor:     "Cotta di Maglia - Soglie 7/15 - Punteggio Base 4 (Pesante: -1 all'Evasione)",
+			ExtraA:    "un ricordo del vostro mentore",
+			ExtraB:    "una chiave misteriosa",
+			Abiti:     []string{"casual", "ornati", "confortevoli", "imbottiti", "regali", "tattici", "consunti"},
+			Attitude:  []string{"di un capitano", "di un guardiano", "di un elefante", "di un generale", "di un lottatore"},
+		}
+	case "guerriero":
+		return classPreset{
+			Traits:    "+2 Agilita, +1 Forza, 0 Astuzia, +1 Istinto, -1 Presenza, 0 Conoscenza",
+			Primary:   "Spada Lunga - Agilita, Mischia - d8+3 fis - A due mani",
+			Secondary: "",
+			Armor:     "Cotta di Maglia - Soglie 7/15 - Punteggio Base 4 (Pesante: -1 all'Evasione)",
+			ExtraA:    "il ritratto di chi amate",
+			ExtraB:    "una cote per affilare",
+			Abiti:     []string{"provocanti", "rattoppati", "rinforzati", "regali", "eleganti", "di ricambio", "consunti"},
+			Attitude:  []string{"da toro", "da soldato fedele", "da gladiatore", "eroico", "da mercenario"},
+		}
+	case "mago":
+		return classPreset{
+			Traits:    "-1 Agilita, 0 Forza, 0 Astuzia, +1 Istinto, +1 Presenza, +2 Conoscenza",
+			Primary:   "Bordone - Conoscenza, Remota - d6 mag - A due mani",
+			Secondary: "",
+			Armor:     "Corazza di Cuoio - Soglie 6/13 - Punteggio Base 3",
+			ExtraA:    "un libro che state cercando di tradurre",
+			ExtraB:    "un piccolo e innocuo cucciolo elementale",
+			Abiti:     []string{"belli", "puliti", "ordinari", "fluenti", "a strati", "rattoppati", "aderenti"},
+			Attitude:  []string{"eccentrico", "da bibliotecario", "di una miccia accesa", "da filosofo", "da professore"},
+		}
+	case "ranger":
+		return classPreset{
+			Traits:    "+2 Agilita, 0 Forza, +1 Astuzia, +1 Istinto, -1 Presenza, 0 Conoscenza",
+			Primary:   "Arco Corto - Agilita, Lontana - d6+3 fis - A due mani",
+			Secondary: "",
+			Armor:     "Corazza di Cuoio - Soglie 6/13 - Punteggio Base 3",
+			ExtraA:    "un trofeo della vostra prima preda",
+			ExtraB:    "una bussola apparentemente rotta",
+			Abiti:     []string{"fluenti", "dai colori spenti", "naturali", "macchiati", "tattici", "aderenti", "di lana o di lino"},
+			Attitude:  []string{"di un bambino", "spettrale", "di un survivalista", "di un insegnante", "di un cane da guardia"},
+		}
+	case "stregone":
+		return classPreset{
+			Traits:    "0 Agilita, -1 Forza, +1 Astuzia, +2 Istinto, +1 Presenza, 0 Conoscenza",
+			Primary:   "Bastone Doppio - Istinto, Lontana - 1d6+3 mag - A due mani",
+			Secondary: "",
+			Armor:     "Gambesone - Soglie 5/11 - Punteggio Base 3 (Flessibile: +1 all'Evasione)",
+			ExtraA:    "un globo sussurrante",
+			ExtraB:    "un cimelio di famiglia",
+			Abiti:     []string{"a strati", "aderenti", "decorati", "poco appariscenti", "sempre in movimento", "sgargianti"},
+			Attitude:  []string{"burlone", "da celebrita", "da condottiero", "da politico", "da lupo travestito da agnello"},
+		}
+	default:
+		return classPreset{}
+	}
+}
+
+func rankFromLevel(level int) int {
+	switch {
+	case level <= 1:
+		return 1
+	case level <= 4:
+		return 2
+	case level <= 7:
+		return 3
+	default:
+		return 4
+	}
+}
+
+func progressionBonusAtLevel(level int) int {
+	bonus := 0
+	if level >= 2 {
+		bonus++
+	}
+	if level >= 5 {
+		bonus++
+	}
+	if level >= 8 {
+		bonus++
+	}
+	return bonus
+}
+
+func (ui *tviewUI) findClassDefinition(className, subclass string) *ClassItem {
+	for i := range ui.classes {
+		c := &ui.classes[i]
+		if strings.EqualFold(strings.TrimSpace(c.Name), strings.TrimSpace(className)) &&
+			strings.EqualFold(strings.TrimSpace(c.Subclass), strings.TrimSpace(subclass)) {
+			return c
+		}
+	}
+	return nil
 }
 
 func (ui *tviewUI) openDeletePNGConfirm() {

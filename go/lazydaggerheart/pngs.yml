@@ -1,14 +1,32 @@
 pngs:
-    - name: Wisteria Tringle (Oratore | Bardo L4)
-      token: 2
-      class: Bardo
-      subclass: Oratore
-      level: 4
-      description: I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette. Sia che si esibiscano per un pubblico o che si rivolgano a un singolo interlocutore, i bardi danno il meglio nelle situazioni sociali. I membri di questa professione si leggono e si addestrano in scuole o gilde, ma possono anche essere soggetti all'egocentrismo. Sebbene siano la classe piu adatta a riunire le persone, un bardo di cattivo umore puo altrettanto facilmente distruggere una festa.
-    - name: Bellamy Emrik (Trovatore | Bardo L3)
+    - name: Chartreuse Fury (Oratore | Bardo L7)
       token: 3
       class: Bardo
-      subclass: Trovatore
+      subclass: Oratore
+      level: 7
+      rank: 3
+      description: I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette. Sia che si esibiscano per un pubblico o che si rivolgano a un singolo interlocutore, i bardi danno il meglio nelle situazioni sociali. I membri di questa professione si leggono e si addestrano in scuole o gilde, ma possono anche essere soggetti all'egocentrismo. Sebbene siano la classe piu adatta a riunire le persone, un bardo di cattivo umore puo altrettanto facilmente distruggere una festa.
+      traits: 0 Agilita, -1 Forza, +1 Astuzia, 0 Istinto, +2 Presenza, +1 Conoscenza
+      primary: Stocco - Presenza, Mischia - d8 fis - A una mano
+      secondary: Stiletto - Astuzia, Mischia - d8 fis - A una mano
+      armor: 'Gambesone - Soglie 5/11 - Punteggio Base 3 (Flessibile: +1 all''Evasione)'
+      look: 'Abiti: stravaganti | Occhi: lilla | Corporatura: spalle larghe | Carnagione: glicine | Atteggiamento: circense'
+      inventory: torcia, 16 metri di corda, provviste di base, una manciata d'oro, Pozione di Recupero Minore, una lettera mai aperta
+    - name: Yanelle Lockamy (Emissario Divino | Consacrato L3)
+      token: 3
+      class: Consacrato
+      subclass: Emissario Divino
       level: 3
-      description: I bardi sono le figure piu carismatiche di tutti i reami. I membri di questa classe sono maestri nell'attirare l'attenzione e si specializzano in diversi tipi di esibizione, tra cui cantare, suonare strumenti musicali, tessere storie o raccontare barzellette.
-selected: Bellamy Emrik (Trovatore | Bardo L3)
+      rank: 2
+      comp_bonus: 1
+      exp_bonus: 1
+      description: I consacrati sono combattenti e guaritori divini, dotati di uno scopo sacro. Nei regni esistono molte divinita, che fungono da patrono per diversi ordini di consacrati. La loro etica si allinea tradizionalmente con il dominio o gli obiettivi di tale dio, come la difesa dei deboli, la vendetta, la protezione di una terra o di un artefatto o la difesa di una particolare fede. Alcuni consacrati si alleano con un esercito o un regno, con grande soddisfazione dei loro governanti, ma altri crociati combattono in opposizione alle follie del dominio del Regno Mortale. E meglio essere alleati di un consacrato che suoi avversari, poiche sono nemici terrificanti per coloro che si oppongono al loro credo.
+      traits: 0 Agilita, +2 Forza, 0 Astuzia, +1 Istinto, +1 Presenza, -1 Conoscenza
+      primary: Ascia Consacrata - Forza, Mischia - d8+1 mag - A una mano
+      secondary: Scudo Rotella - Forza, Mischia - d4 fis - A una mano
+      armor: 'Cotta di Maglia - Soglie 7/15 - Punteggio Base 4 (Pesante: -1 all''Evasione)'
+      look: 'Abiti: modesti | Occhi: dell''oceano | Corporatura: allampanata | Carnagione: cenere | Atteggiamento: monastico'
+      inventory: torcia, 16 metri di corda, provviste di base, una manciata d'oro, Pozione di Guarigione Minore, il simbolo sacro della vostra divinita
+    - name: Moon Rose
+      token: 3
+selected: Chartreuse Fury (Oratore | Bardo L7)
