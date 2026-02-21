@@ -252,6 +252,26 @@ func TestGenerateCharacterSpellSelection(t *testing.T) {
 	}
 }
 
+func TestMonsterCRScaling(t *testing.T) {
+	m := mkMonster(1, "Aarakocra", 14, 13, "3d8")
+	m.CR = "1/4"
+	m.Raw["ac"] = []any{map[string]any{"ac": 12}}
+
+	p, ok := scaleMonsterByCR(m, 2)
+	if !ok {
+		t.Fatal("expected scaling preview")
+	}
+	if p.BaseCR != "1/4" || p.TargetCR != "1" {
+		t.Fatalf("unexpected CR scaling: %+v", p)
+	}
+	if p.TargetHP <= p.BaseHP {
+		t.Fatalf("expected HP to increase when scaling up: %+v", p)
+	}
+	if p.TargetAC < 1 {
+		t.Fatalf("unexpected target AC: %+v", p)
+	}
+}
+
 func TestAddGeneratedCharacterToEncounter(t *testing.T) {
 	ui := makeTestUI(t, nil)
 	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY")

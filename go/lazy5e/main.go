@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -195,6 +196,68 @@ type treasureOutcome struct {
 	Extras    []string
 }
 
+type crBenchmark struct {
+	CR     string
+	AC     int
+	HPMin  int
+	HPMax  int
+	Atk    int
+	DPRMin int
+	DPRMax int
+	SaveDC int
+}
+
+type monsterScalePreview struct {
+	BaseCR    string
+	TargetCR  string
+	Step      int
+	BaseAC    int
+	TargetAC  int
+	BaseHP    int
+	TargetHP  int
+	TargetAtk int
+	TargetDC  int
+	DPRMin    int
+	DPRMax    int
+}
+
+var crBenchmarks = []crBenchmark{
+	{CR: "0", AC: 13, HPMin: 1, HPMax: 6, Atk: 3, DPRMin: 0, DPRMax: 1, SaveDC: 13},
+	{CR: "1/8", AC: 13, HPMin: 7, HPMax: 35, Atk: 3, DPRMin: 2, DPRMax: 3, SaveDC: 13},
+	{CR: "1/4", AC: 13, HPMin: 36, HPMax: 49, Atk: 3, DPRMin: 4, DPRMax: 5, SaveDC: 13},
+	{CR: "1/2", AC: 13, HPMin: 50, HPMax: 70, Atk: 3, DPRMin: 6, DPRMax: 8, SaveDC: 13},
+	{CR: "1", AC: 13, HPMin: 71, HPMax: 85, Atk: 3, DPRMin: 9, DPRMax: 14, SaveDC: 13},
+	{CR: "2", AC: 13, HPMin: 86, HPMax: 100, Atk: 3, DPRMin: 15, DPRMax: 20, SaveDC: 13},
+	{CR: "3", AC: 13, HPMin: 101, HPMax: 115, Atk: 4, DPRMin: 21, DPRMax: 26, SaveDC: 13},
+	{CR: "4", AC: 14, HPMin: 116, HPMax: 130, Atk: 5, DPRMin: 27, DPRMax: 32, SaveDC: 14},
+	{CR: "5", AC: 15, HPMin: 131, HPMax: 145, Atk: 6, DPRMin: 33, DPRMax: 38, SaveDC: 15},
+	{CR: "6", AC: 15, HPMin: 146, HPMax: 160, Atk: 6, DPRMin: 39, DPRMax: 44, SaveDC: 15},
+	{CR: "7", AC: 15, HPMin: 161, HPMax: 175, Atk: 6, DPRMin: 45, DPRMax: 50, SaveDC: 15},
+	{CR: "8", AC: 16, HPMin: 176, HPMax: 190, Atk: 7, DPRMin: 51, DPRMax: 56, SaveDC: 16},
+	{CR: "9", AC: 16, HPMin: 191, HPMax: 205, Atk: 7, DPRMin: 57, DPRMax: 62, SaveDC: 16},
+	{CR: "10", AC: 17, HPMin: 206, HPMax: 220, Atk: 7, DPRMin: 63, DPRMax: 68, SaveDC: 16},
+	{CR: "11", AC: 17, HPMin: 221, HPMax: 235, Atk: 8, DPRMin: 69, DPRMax: 74, SaveDC: 17},
+	{CR: "12", AC: 17, HPMin: 236, HPMax: 250, Atk: 8, DPRMin: 75, DPRMax: 80, SaveDC: 18},
+	{CR: "13", AC: 18, HPMin: 251, HPMax: 265, Atk: 8, DPRMin: 81, DPRMax: 86, SaveDC: 18},
+	{CR: "14", AC: 18, HPMin: 266, HPMax: 280, Atk: 8, DPRMin: 87, DPRMax: 92, SaveDC: 18},
+	{CR: "15", AC: 18, HPMin: 281, HPMax: 295, Atk: 8, DPRMin: 93, DPRMax: 98, SaveDC: 18},
+	{CR: "16", AC: 18, HPMin: 296, HPMax: 310, Atk: 9, DPRMin: 99, DPRMax: 104, SaveDC: 18},
+	{CR: "17", AC: 19, HPMin: 311, HPMax: 325, Atk: 10, DPRMin: 105, DPRMax: 110, SaveDC: 19},
+	{CR: "18", AC: 19, HPMin: 326, HPMax: 340, Atk: 10, DPRMin: 111, DPRMax: 116, SaveDC: 19},
+	{CR: "19", AC: 19, HPMin: 341, HPMax: 355, Atk: 10, DPRMin: 117, DPRMax: 122, SaveDC: 19},
+	{CR: "20", AC: 19, HPMin: 356, HPMax: 400, Atk: 10, DPRMin: 123, DPRMax: 140, SaveDC: 19},
+	{CR: "21", AC: 19, HPMin: 401, HPMax: 445, Atk: 11, DPRMin: 141, DPRMax: 158, SaveDC: 20},
+	{CR: "22", AC: 19, HPMin: 446, HPMax: 490, Atk: 11, DPRMin: 159, DPRMax: 176, SaveDC: 20},
+	{CR: "23", AC: 19, HPMin: 491, HPMax: 535, Atk: 11, DPRMin: 177, DPRMax: 194, SaveDC: 20},
+	{CR: "24", AC: 19, HPMin: 536, HPMax: 580, Atk: 12, DPRMin: 195, DPRMax: 212, SaveDC: 21},
+	{CR: "25", AC: 19, HPMin: 581, HPMax: 625, Atk: 12, DPRMin: 213, DPRMax: 230, SaveDC: 21},
+	{CR: "26", AC: 19, HPMin: 626, HPMax: 670, Atk: 12, DPRMin: 231, DPRMax: 248, SaveDC: 21},
+	{CR: "27", AC: 19, HPMin: 671, HPMax: 715, Atk: 13, DPRMin: 249, DPRMax: 266, SaveDC: 22},
+	{CR: "28", AC: 19, HPMin: 716, HPMax: 760, Atk: 13, DPRMin: 267, DPRMax: 284, SaveDC: 22},
+	{CR: "29", AC: 19, HPMin: 761, HPMax: 805, Atk: 13, DPRMin: 285, DPRMax: 302, SaveDC: 22},
+	{CR: "30", AC: 19, HPMin: 806, HPMax: 850, Atk: 14, DPRMin: 303, DPRMax: 320, SaveDC: 23},
+}
+
 type UI struct {
 	app           *tview.Application
 	monsters      []Monster
@@ -244,6 +307,7 @@ type UI struct {
 	diceRender   bool
 	wideFilter   bool
 	modeFilters  map[BrowseMode]PersistedFilterMode
+	monsterScale map[int]int
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -366,6 +430,7 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		encountersPath:    encountersPath,
 		dicePath:          dicePath,
 		modeFilters:       map[BrowseMode]PersistedFilterMode{},
+		monsterScale:      map[int]int{},
 		activeBottomPanel: "description",
 	}
 
@@ -880,6 +945,12 @@ func newUI(monsters, items, spells, classes, races, feats []Monster, envs, crs, 
 		case focus == ui.encounter && event.Key() == tcell.KeyRight:
 			ui.openEncounterHPInput(1)
 			return nil
+		case focus == ui.list && ui.browseMode == BrowseMonsters && event.Key() == tcell.KeyLeft:
+			ui.adjustSelectedMonsterScale(-1)
+			return nil
+		case focus == ui.list && ui.browseMode == BrowseMonsters && event.Key() == tcell.KeyRight:
+			ui.adjustSelectedMonsterScale(1)
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			ui.deleteSelectedEncounterEntry()
 			return nil
@@ -1143,6 +1214,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 				"  a : aggiungi mostro a Encounters\n" +
 				"  m : genera tesoro da CR (regole 5e)\n" +
 				"  l : genera lair treasure da CR (regole 5e)\n" +
+				"  freccia sinistra/destra : scala CR del mostro (-/+) con benchmark 5e\n" +
 				"  n / e / s / c / t : focus su Name / Env / Source(multi) / CR / Type\n" +
 				"  [ / ] : cambia panel Monsters/Items/Spells/Characters/Races/Feats\n" +
 				"  PgUp / PgDn : scroll del pannello Description\n"
@@ -3181,20 +3253,35 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	}
 
 	m := ui.monsters[monsterIndex]
+	scaleStep := ui.monsterScale[monsterIndex]
+	scalePreview, hasScale := scaleMonsterByCR(m, scaleStep)
 
 	builder := &strings.Builder{}
 	fmt.Fprintf(builder, "[yellow]%s[-]\n", m.Name)
 	fmt.Fprintf(builder, "[white]Source:[-] %s\n", blankIfEmpty(m.Source, "n/a"))
 	fmt.Fprintf(builder, "[white]Type:[-] %s\n", blankIfEmpty(m.Type, "n/a"))
-	fmt.Fprintf(builder, "[white]CR:[-] %s\n", blankIfEmpty(m.CR, "n/a"))
-	if ac := extractAC(m.Raw); ac != "" {
+	if hasScale {
+		fmt.Fprintf(builder, "[white]CR:[-] %s -> %s (%+d)\n", blankIfEmpty(scalePreview.BaseCR, "n/a"), scalePreview.TargetCR, scalePreview.Step)
+	} else {
+		fmt.Fprintf(builder, "[white]CR:[-] %s\n", blankIfEmpty(m.CR, "n/a"))
+	}
+	if hasScale {
+		fmt.Fprintf(builder, "[white]AC:[-] %d -> %d\n", scalePreview.BaseAC, scalePreview.TargetAC)
+	} else if ac := extractAC(m.Raw); ac != "" {
 		fmt.Fprintf(builder, "[white]AC:[-] %s\n", ac)
 	}
 	if speed := extractSpeed(m.Raw); speed != "" {
 		fmt.Fprintf(builder, "[white]Speed:[-] %s\n", speed)
 	}
 	hpAverage, hpFormula := extractHP(m.Raw)
-	if hpAverage != "" || hpFormula != "" {
+	if hasScale {
+		if hpFormula != "" {
+			fmt.Fprintf(builder, "[white]HP:[-] %d -> %d (%s)\n", scalePreview.BaseHP, scalePreview.TargetHP, hpFormula)
+		} else {
+			fmt.Fprintf(builder, "[white]HP:[-] %d -> %d\n", scalePreview.BaseHP, scalePreview.TargetHP)
+		}
+		fmt.Fprintf(builder, "[white]Offense Target:[-] hit %+d / DC %d / DPR %d-%d\n", scalePreview.TargetAtk, scalePreview.TargetDC, scalePreview.DPRMin, scalePreview.DPRMax)
+	} else if hpAverage != "" || hpFormula != "" {
 		switch {
 		case hpAverage != "" && hpFormula != "":
 			fmt.Fprintf(builder, "[white]HP:[-] %s (%s)\n", hpAverage, hpFormula)
@@ -3211,7 +3298,7 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	}
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
-	ui.rawText = buildMonsterDescriptionText(m)
+	ui.rawText = buildMonsterDescriptionTextScaled(m, scalePreview, hasScale)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
 	ui.detailRaw.ScrollToBeginning()
@@ -3454,6 +3541,115 @@ func buildMonsterDescriptionText(m Monster) string {
 		}
 	}
 	return strings.TrimSpace(b.String())
+}
+
+func buildMonsterDescriptionTextScaled(m Monster, preview monsterScalePreview, scaled bool) string {
+	base := buildMonsterDescriptionText(m)
+	if !scaled {
+		return base
+	}
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "Scaled by CR step %+d (DMG benchmark)\n", preview.Step)
+	fmt.Fprintf(b, "CR: %s -> %s\n", preview.BaseCR, preview.TargetCR)
+	fmt.Fprintf(b, "AC: %d -> %d\n", preview.BaseAC, preview.TargetAC)
+	fmt.Fprintf(b, "HP: %d -> %d\n", preview.BaseHP, preview.TargetHP)
+	fmt.Fprintf(b, "Offense target: hit %+d, save DC %d, DPR %d-%d\n", preview.TargetAtk, preview.TargetDC, preview.DPRMin, preview.DPRMax)
+	fmt.Fprintf(b, "\n%s", base)
+	return b.String()
+}
+
+func scaleMonsterByCR(m Monster, step int) (monsterScalePreview, bool) {
+	if step == 0 {
+		return monsterScalePreview{}, false
+	}
+	baseIdx, ok := crBenchmarkIndex(m.CR)
+	if !ok {
+		return monsterScalePreview{}, false
+	}
+	targetIdx := baseIdx + step
+	if targetIdx < 0 {
+		targetIdx = 0
+	}
+	if targetIdx >= len(crBenchmarks) {
+		targetIdx = len(crBenchmarks) - 1
+	}
+	if targetIdx == baseIdx {
+		return monsterScalePreview{}, false
+	}
+	base := crBenchmarks[baseIdx]
+	target := crBenchmarks[targetIdx]
+
+	baseHP, ok := extractHPAverageInt(m.Raw)
+	if !ok || baseHP <= 0 {
+		baseHP = (base.HPMin + base.HPMax) / 2
+	}
+	baseAC := extractACInt(m.Raw)
+	if baseAC <= 0 {
+		baseAC = base.AC
+	}
+	baseMid := max(1, (base.HPMin+base.HPMax)/2)
+	targetMid := max(1, (target.HPMin+target.HPMax)/2)
+	ratio := float64(targetMid) / float64(baseMid)
+	targetHP := max(1, int(math.Round(float64(baseHP)*ratio)))
+	targetAC := max(1, baseAC+(target.AC-base.AC))
+
+	return monsterScalePreview{
+		BaseCR:    base.CR,
+		TargetCR:  target.CR,
+		Step:      targetIdx - baseIdx,
+		BaseAC:    baseAC,
+		TargetAC:  targetAC,
+		BaseHP:    baseHP,
+		TargetHP:  targetHP,
+		TargetAtk: target.Atk,
+		TargetDC:  target.SaveDC,
+		DPRMin:    target.DPRMin,
+		DPRMax:    target.DPRMax,
+	}, true
+}
+
+func crBenchmarkIndex(cr string) (int, bool) {
+	s := strings.TrimSpace(strings.ToLower(cr))
+	if s == "" {
+		return 0, false
+	}
+	s = strings.TrimPrefix(s, "cr ")
+	s = strings.TrimSpace(s)
+	for i, b := range crBenchmarks {
+		if s == strings.ToLower(b.CR) {
+			return i, true
+		}
+	}
+	if v, err := strconv.ParseFloat(s, 64); err == nil {
+		best := -1
+		bestDist := 1e9
+		for i, b := range crBenchmarks {
+			bv, ok := crToFloat(b.CR)
+			if !ok {
+				continue
+			}
+			d := math.Abs(v - bv)
+			if d < bestDist {
+				bestDist = d
+				best = i
+			}
+		}
+		if best >= 0 {
+			return best, true
+		}
+	}
+	return 0, false
+}
+
+func extractACInt(raw map[string]any) int {
+	ac := extractAC(raw)
+	re := regexp.MustCompile(`\d+`)
+	m := re.FindString(ac)
+	if m == "" {
+		return 0
+	}
+	n, _ := strconv.Atoi(m)
+	return n
 }
 
 func buildItemDescriptionText(it Monster) string {
@@ -5008,6 +5204,9 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 	if !ok {
 		baseHP = 0
 	}
+	if scaled, ok := ui.scaledMonsterHP(monsterIndex); ok {
+		baseHP = scaled
+	}
 	_, hpFormula := extractHP(ui.monsters[monsterIndex].Raw)
 	ui.encounterItems = append(ui.encounterItems, EncounterEntry{
 		MonsterIndex: monsterIndex,
@@ -5025,6 +5224,50 @@ func (ui *UI) addSelectedMonsterToEncounter() {
 
 	m := ui.monsters[monsterIndex]
 	ui.status.SetText(fmt.Sprintf(" [black:gold] aggiunto[-:-] %s #%d  %s", m.Name, ordinal, helpText))
+}
+
+func (ui *UI) adjustSelectedMonsterScale(delta int) {
+	if delta == 0 || ui.browseMode != BrowseMonsters || len(ui.filtered) == 0 {
+		return
+	}
+	listIndex := ui.list.GetCurrentItem()
+	if listIndex < 0 || listIndex >= len(ui.filtered) {
+		return
+	}
+	monsterIndex := ui.filtered[listIndex]
+	step := ui.monsterScale[monsterIndex] + delta
+	if step > 12 {
+		step = 12
+	}
+	if step < -12 {
+		step = -12
+	}
+	if step == 0 {
+		delete(ui.monsterScale, monsterIndex)
+	} else {
+		ui.monsterScale[monsterIndex] = step
+	}
+	ui.renderDetailByMonsterIndex(monsterIndex)
+	if p, ok := scaleMonsterByCR(ui.monsters[monsterIndex], step); ok {
+		ui.status.SetText(fmt.Sprintf(" [black:gold]monster scale[-:-] %s CR %s -> %s (%+d)  %s", ui.monsters[monsterIndex].Name, p.BaseCR, p.TargetCR, p.Step, helpText))
+		return
+	}
+	ui.status.SetText(fmt.Sprintf(" [white:red] CR non scalabile per %s[-:-]  %s", ui.monsters[monsterIndex].Name, helpText))
+}
+
+func (ui *UI) scaledMonsterHP(monsterIndex int) (int, bool) {
+	if monsterIndex < 0 || monsterIndex >= len(ui.monsters) {
+		return 0, false
+	}
+	step := ui.monsterScale[monsterIndex]
+	if step == 0 {
+		return 0, false
+	}
+	p, ok := scaleMonsterByCR(ui.monsters[monsterIndex], step)
+	if !ok {
+		return 0, false
+	}
+	return p.TargetHP, true
 }
 
 func (ui *UI) openAddCustomEncounterForm() {
@@ -5745,6 +5988,7 @@ func (ui *UI) loadEncounters() error {
 			HasInitRoll:  it.InitRolled,
 			InitRoll:     it.InitRoll,
 		}
+		ui.backfillCustomEncounterDetails(&entry)
 		ui.encounterItems = append(ui.encounterItems, entry)
 		if !it.Custom && ordinal > ui.encounterSerial[monsterIndex] {
 			ui.encounterSerial[monsterIndex] = ordinal
@@ -5762,6 +6006,36 @@ func (ui *UI) loadEncounters() error {
 		}
 	}
 	return nil
+}
+
+func (ui *UI) backfillCustomEncounterDetails(entry *EncounterEntry) {
+	if entry == nil || !entry.Custom {
+		return
+	}
+	if strings.TrimSpace(entry.CustomMeta) == "" {
+		b := &strings.Builder{}
+		fmt.Fprintf(b, "[yellow]%s[-]\n", ui.encounterEntryDisplay(*entry))
+		if init, ok := ui.encounterInitBase(*entry); ok {
+			if entry.HasInitRoll {
+				fmt.Fprintf(b, "[white]Init:[-] %d/%d\n", entry.InitRoll, init)
+			} else {
+				fmt.Fprintf(b, "[white]Init:[-] %d\n", init)
+			}
+		}
+		if strings.TrimSpace(entry.CustomAC) != "" {
+			fmt.Fprintf(b, "[white]AC:[-] %s\n", entry.CustomAC)
+		}
+		maxHP := ui.encounterMaxHP(*entry)
+		if maxHP > 0 {
+			fmt.Fprintf(b, "[white]HP:[-] %d/%d\n", entry.CurrentHP, maxHP)
+		} else {
+			fmt.Fprintf(b, "[white]HP:[-] ?\n")
+		}
+		entry.CustomMeta = strings.TrimSpace(b.String())
+	}
+	if strings.TrimSpace(entry.CustomBody) == "" {
+		entry.CustomBody = buildCustomDescriptionText(*entry, ui.encounterMaxHP(*entry))
+	}
 }
 
 func (ui *UI) saveEncounters() error {
