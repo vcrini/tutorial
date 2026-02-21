@@ -30,7 +30,7 @@ func makeTestUI(t *testing.T, monsters []Monster) *UI {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, nil, nil, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, dicePath)
 	return ui
 }
 
@@ -75,6 +75,65 @@ func TestLoadMonstersFromBytes(t *testing.T) {
 	}
 	if !reflect.DeepEqual(types, []string{"humanoid"}) {
 		t.Fatalf("unexpected types: %#v", types)
+	}
+}
+
+func TestLoadRacesFromBytes(t *testing.T) {
+	yml := `races:
+  - name: Elf
+    source: PHB
+    size: [M]
+    lineage: none
+    ability:
+      - dex: 2
+    entries:
+      - Keen Senses.
+`
+	races, envs, crs, types, err := loadRacesFromBytes([]byte(yml))
+	if err != nil {
+		t.Fatalf("loadRacesFromBytes error: %v", err)
+	}
+	if len(races) != 1 || races[0].Name != "Elf" {
+		t.Fatalf("unexpected races: %#v", races)
+	}
+	if !reflect.DeepEqual(envs, []string{"DEX"}) {
+		t.Fatalf("unexpected race env options: %#v", envs)
+	}
+	if !reflect.DeepEqual(crs, []string{"M"}) {
+		t.Fatalf("unexpected race size options: %#v", crs)
+	}
+	if !reflect.DeepEqual(types, []string{"none"}) {
+		t.Fatalf("unexpected race lineage options: %#v", types)
+	}
+}
+
+func TestLoadFeatsFromBytes(t *testing.T) {
+	yml := `feats:
+  - name: Alert
+    source: PHB
+    category: G
+    prerequisite:
+      - level: 4
+    ability:
+      - dex: 1
+    entries:
+      - Always on guard.
+`
+	feats, envs, crs, types, err := loadFeatsFromBytes([]byte(yml))
+	if err != nil {
+		t.Fatalf("loadFeatsFromBytes error: %v", err)
+	}
+	if len(feats) != 1 || feats[0].Name != "Alert" {
+		t.Fatalf("unexpected feats: %#v", feats)
+	}
+	if len(envs) != 1 || !strings.Contains(strings.ToLower(envs[0]), "level") {
+		t.Fatalf("unexpected feat prereq options: %#v", envs)
+	}
+	if !reflect.DeepEqual(crs, []string{"G"}) {
+		t.Fatalf("unexpected feat category options: %#v", crs)
+	}
+	if len(types) != 1 || !strings.Contains(strings.ToLower(types[0]), "dex") {
+		t.Fatalf("unexpected feat ability options: %#v", types)
 	}
 }
 
@@ -277,7 +336,7 @@ func TestSetFilterOptionsForItemsAndSpellsPopulateEnv(t *testing.T) {
 
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, items, spells, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, path, dicePath)
 
 	ui.browseMode = BrowseItems
 	ui.setFilterOptionsForMode()
@@ -311,7 +370,7 @@ func TestEmbeddedItemsAndSpellsEnvOptionsNotOnlyAll(t *testing.T) {
 	monsters := []Monster{mkMonster(1, "A", 10, 5, "1d1")}
 	path := filepath.Join(t.TempDir(), "encounters.yaml")
 	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
-	ui := newUI(monsters, items, spells, nil, nil, nil, path, dicePath)
+	ui := newUI(monsters, items, spells, nil, nil, nil, nil, nil, nil, path, dicePath)
 
 	ui.browseMode = BrowseItems
 	ui.setFilterOptionsForMode()
@@ -368,7 +427,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 
 	monsters := []Monster{mkMonster(100, "A", 12, 13, "3d8"), mkMonster(200, "B", 14, 20, "4d8")}
 	path := filepath.Join(tmp, "my-enc.yaml")
-	ui := newUI(monsters, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
+	ui := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	ui.encounterItems = []EncounterEntry{
 		{MonsterIndex: 0, Ordinal: 1, BaseHP: 13, CurrentHP: 8, HPFormula: "3d8", UseRolledHP: true, RolledHP: 10, HasInitRoll: true, InitRoll: 15},
 		{MonsterIndex: 1, Ordinal: 1, BaseHP: 20, CurrentHP: 20, HPFormula: "4d8", UseRolledHP: false, RolledHP: 0, HasInitRoll: false, InitRoll: 0},
@@ -383,7 +442,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 		t.Fatalf("saveEncountersAs failed: %v", err)
 	}
 
-	ui2 := newUI(monsters, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
+	ui2 := newUI(monsters, nil, nil, nil, nil, nil, nil, nil, nil, path, filepath.Join(tmp, "dice.yaml"))
 	if err := ui2.loadEncounters(); err != nil {
 		t.Fatalf("loadEncounters failed: %v", err)
 	}
