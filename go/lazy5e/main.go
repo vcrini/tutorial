@@ -4255,6 +4255,11 @@ func full5eDataRoot() string {
 func (ui *UI) fullBookDescriptionText(bk Monster) string {
 	base := buildBookDescriptionText(bk)
 	id := strings.TrimSpace(asString(bk.Raw["id"]))
+	if fd, ok := bk.Raw["full_data"]; ok {
+		if txt := strings.TrimSpace(format5eStructuredText(fd, 0)); txt != "" {
+			return base + "\n\nFull Text\n" + txt
+		}
+	}
 	if id == "" {
 		return base
 	}
@@ -4276,6 +4281,11 @@ func (ui *UI) fullBookDescriptionText(bk Monster) string {
 func (ui *UI) fullAdventureDescriptionText(ad Monster) string {
 	base := buildAdventureDescriptionText(ad)
 	id := strings.TrimSpace(asString(ad.Raw["id"]))
+	if fd, ok := ad.Raw["full_data"]; ok {
+		if txt := strings.TrimSpace(format5eStructuredText(fd, 0)); txt != "" {
+			return base + "\n\nFull Text\n" + txt
+		}
+	}
 	if id == "" {
 		return base
 	}
