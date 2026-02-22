@@ -184,6 +184,65 @@ func TestGenerateCharacterSheetFromScores(t *testing.T) {
 	}
 }
 
+func TestGenerateCharacterSheetFromBuildMultiClass(t *testing.T) {
+	ui := &UI{
+		classes: []Monster{
+			{
+				Name:        "Wizard",
+				Source:      "PHB",
+				CR:          "d6",
+				Environment: []string{"INT", "WIS"},
+				Raw:         map[string]any{"spellcastingAbility": "int"},
+			},
+			{
+				Name:        "Fighter",
+				Source:      "PHB",
+				CR:          "d10",
+				Environment: []string{"STR", "CON"},
+				Raw:         map[string]any{},
+			},
+		},
+		races: []Monster{
+			{
+				Name:   "Elf",
+				Source: "PHB",
+				Raw: map[string]any{
+					"ability": []any{map[string]any{"dex": 2, "int": 1}},
+					"speed":   map[string]any{"walk": 30},
+				},
+			},
+		},
+		spells: []Monster{
+			{Name: "Light", CR: "0", Source: "PHB", Type: "Evocation"},
+			{Name: "Shield", CR: "1", Source: "PHB", Type: "Abjuration"},
+		},
+	}
+	build := CharacterBuild{
+		Name:       "Aramil",
+		Race:       "Elf",
+		Classes:    []CharacterClassLevel{{Name: "Wizard", Levels: 3}, {Name: "Fighter", Levels: 2}},
+		BaseScores: []int{10, 14, 12, 15, 8, 10},
+		Feats:      []string{"Alert"},
+		Spells:     []string{"Misty Step"},
+	}
+	sheet, normalized, err := ui.generateCharacterSheetFromBuild(build)
+	if err != nil {
+		t.Fatalf("unexpected build generation error: %v", err)
+	}
+	if got := classLevelsTotal(normalized.Classes); got != 5 {
+		t.Fatalf("expected total level 5, got %d", got)
+	}
+	if !strings.Contains(sheet.Meta, "Build:") || !strings.Contains(sheet.Meta, "Wizard 3") || !strings.Contains(sheet.Meta, "Fighter 2") {
+		t.Fatalf("expected multiclass summary in meta: %q", sheet.Meta)
+	}
+	if !strings.Contains(sheet.Body, "Feats") || !strings.Contains(sheet.Body, "Alert") {
+		t.Fatalf("expected feats in body: %q", sheet.Body)
+	}
+	if !strings.Contains(sheet.Body, "Custom Spells") || !strings.Contains(sheet.Body, "Misty Step") {
+		t.Fatalf("expected custom spells in body: %q", sheet.Body)
+	}
+}
+
 func TestExtractClassSkillChoices(t *testing.T) {
 	raw := map[string]any{
 		"startingProficiencies": map[string]any{
@@ -203,6 +262,28 @@ func TestExtractClassSkillChoices(t *testing.T) {
 	}
 	if len(opts) != 3 || opts[0] != "Arcana" {
 		t.Fatalf("unexpected options: %#v", opts)
+	}
+}
+
+func TestInferCharacterBuildFromEntry(t *testing.T) {
+	ui := &UI{
+		classes: []Monster{{Name: "Artificer"}, {Name: "Fighter"}},
+		races:   []Monster{{Name: "Aarakocra"}, {Name: "Elf"}},
+	}
+	entry := EncounterEntry{
+		Custom:     true,
+		CustomName: "Artificer Aarakocra Lv20",
+		CustomBody: "Artificer Aarakocra (Level 20)\nArmor Class: 12",
+	}
+	build, ok := ui.inferCharacterBuildFromEntry(entry)
+	if !ok || build == nil {
+		t.Fatalf("expected inferred character build, got %#v", build)
+	}
+	if build.Race != "Aarakocra" {
+		t.Fatalf("unexpected inferred race: %#v", build)
+	}
+	if len(build.Classes) != 1 || build.Classes[0].Name != "Artificer" || build.Classes[0].Levels != 20 {
+		t.Fatalf("unexpected inferred classes: %#v", build.Classes)
 	}
 }
 
@@ -308,7 +389,13 @@ func TestFormat5eStructuredText(t *testing.T) {
 
 func TestAddGeneratedCharacterToEncounter(t *testing.T) {
 	ui := makeTestUI(t, nil)
-	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY")
+	build := &CharacterBuild{
+		Name:       "Wizard Elf Lv5",
+		Race:       "Elf",
+		Classes:    []CharacterClassLevel{{Name: "Wizard", Levels: 5}},
+		BaseScores: []int{10, 12, 14, 16, 8, 10},
+	}
+	ui.addGeneratedCharacterToEncounter("Wizard Elf Lv5", 2, 12, 32, "META", "BODY", build)
 
 	if len(ui.encounterItems) != 1 {
 		t.Fatalf("expected 1 encounter entry, got %d", len(ui.encounterItems))
@@ -325,6 +412,9 @@ func TestAddGeneratedCharacterToEncounter(t *testing.T) {
 	}
 	if got.CustomMeta != "META" || got.CustomBody != "BODY" {
 		t.Fatalf("expected custom meta/body to be stored: %#v", got)
+	}
+	if got.Character == nil || got.Character.Race != "Elf" {
+		t.Fatalf("expected character build persisted on encounter: %#v", got.Character)
 	}
 	if label := ui.encounterEntryDisplay(got); strings.Contains(label, "#") {
 		t.Fatalf("custom encounter label should not contain ordinal: %q", label)

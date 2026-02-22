@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] e[-:-] edit char encounter  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
 	defaultEncountersPath  = "encounters.yaml"
 	lastEncountersPathFile = ".encounters_last_path"
 	defaultDicePath        = "dice.yaml"
@@ -132,6 +132,21 @@ type EncounterEntry struct {
 	RolledHP     int
 	HasInitRoll  bool
 	InitRoll     int
+	Character    *CharacterBuild
+}
+
+type CharacterBuild struct {
+	Name       string                `yaml:"name,omitempty"`
+	Race       string                `yaml:"race,omitempty"`
+	Classes    []CharacterClassLevel `yaml:"classes,omitempty"`
+	BaseScores []int                 `yaml:"base_scores,omitempty"`
+	Feats      []string              `yaml:"feats,omitempty"`
+	Spells     []string              `yaml:"spells,omitempty"`
+}
+
+type CharacterClassLevel struct {
+	Name   string `yaml:"name,omitempty"`
+	Levels int    `yaml:"levels,omitempty"`
 }
 
 type PersistedEncounters struct {
@@ -143,22 +158,23 @@ type PersistedEncounters struct {
 }
 
 type PersistedEncounterItem struct {
-	MonsterID  int            `yaml:"monster_id"`
-	Ordinal    int            `yaml:"ordinal"`
-	Custom     bool           `yaml:"custom,omitempty"`
-	CustomName string         `yaml:"custom_name,omitempty"`
-	CustomInit int            `yaml:"custom_init,omitempty"`
-	CustomAC   string         `yaml:"custom_ac,omitempty"`
-	CustomMeta string         `yaml:"custom_meta,omitempty"`
-	CustomBody string         `yaml:"custom_body,omitempty"`
-	Conditions map[string]int `yaml:"conditions,omitempty"`
-	BaseHP     int            `yaml:"base_hp"`
-	CurrentHP  int            `yaml:"current_hp"`
-	HPFormula  string         `yaml:"hp_formula,omitempty"`
-	UseRolled  bool           `yaml:"use_rolled,omitempty"`
-	RolledHP   int            `yaml:"rolled_hp,omitempty"`
-	InitRolled bool           `yaml:"init_rolled,omitempty"`
-	InitRoll   int            `yaml:"init_roll,omitempty"`
+	MonsterID  int             `yaml:"monster_id"`
+	Ordinal    int             `yaml:"ordinal"`
+	Custom     bool            `yaml:"custom,omitempty"`
+	CustomName string          `yaml:"custom_name,omitempty"`
+	CustomInit int             `yaml:"custom_init,omitempty"`
+	CustomAC   string          `yaml:"custom_ac,omitempty"`
+	CustomMeta string          `yaml:"custom_meta,omitempty"`
+	CustomBody string          `yaml:"custom_body,omitempty"`
+	Conditions map[string]int  `yaml:"conditions,omitempty"`
+	BaseHP     int             `yaml:"base_hp"`
+	CurrentHP  int             `yaml:"current_hp"`
+	HPFormula  string          `yaml:"hp_formula,omitempty"`
+	UseRolled  bool            `yaml:"use_rolled,omitempty"`
+	RolledHP   int             `yaml:"rolled_hp,omitempty"`
+	InitRolled bool            `yaml:"init_rolled,omitempty"`
+	InitRoll   int             `yaml:"init_roll,omitempty"`
+	Character  *CharacterBuild `yaml:"character,omitempty"`
 }
 
 type PersistedDice struct {
@@ -378,6 +394,7 @@ type UI struct {
 	helpReturnFocus      tview.Primitive
 	addCustomVisible     bool
 	charCreateVisible    bool
+	encounterEditVisible bool
 	fullscreenActive     bool
 	fullscreenTarget     string
 	spellShortcutAlt     bool
@@ -784,7 +801,7 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		if ui.addCustomVisible && event.Key() == tcell.KeyTab {
 			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
 		}
-		if ui.charCreateVisible {
+		if ui.charCreateVisible || ui.encounterEditVisible {
 			// While character creation modal is open, avoid global hotkeys stealing focus.
 			return event
 		}
@@ -1018,6 +1035,9 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 			return event
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'e':
+			ui.openEncounterCharacterEditForm()
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'c':
 			ui.openEncounterConditionModal()
@@ -1294,6 +1314,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  j / k (o frecce) : seleziona entry\n" +
 			"  / : cerca nella Description del mostro selezionato\n" +
 			"  a : aggiungi entry custom\n" +
+			"  e : modifica personaggio custom (nome/level-up/multiclass/feat/spell)\n" +
 			"  d : elimina entry selezionata\n" +
 			"  s : salva encounter su file (save as)\n" +
 			"  l : carica encounter da file (load)\n" +
@@ -4511,11 +4532,16 @@ func generateCharacterSheetFromScores(cl Monster, rc Monster, level int, base [6
 }
 
 func generateCharacterSheetData(cl Monster, rc Monster, level int) generatedCharacterSheet {
+	base := rollBaseAbilityScores()
+	return generateCharacterSheetDataFromScores(cl, rc, level, base)
+}
+
+func rollBaseAbilityScores() [6]int {
 	base := [6]int{}
 	for i := range 6 {
 		base[i] = rollAbilityScore4d6DropLowest()
 	}
-	return generateCharacterSheetDataFromScores(cl, rc, level, base)
+	return base
 }
 
 func generateCharacterSheetDataFromScores(cl Monster, rc Monster, level int, base [6]int) generatedCharacterSheet {
@@ -4664,6 +4690,215 @@ func generateCharacterSheetDataFromScores(cl Monster, rc Monster, level int, bas
 		AC:   ac,
 		Init: init,
 	}
+}
+
+func classLevelsTotal(classes []CharacterClassLevel) int {
+	total := 0
+	for _, c := range classes {
+		if c.Levels > 0 {
+			total += c.Levels
+		}
+	}
+	if total <= 0 {
+		return 1
+	}
+	return total
+}
+
+func normalizeClassLevels(classes []CharacterClassLevel) []CharacterClassLevel {
+	out := make([]CharacterClassLevel, 0, len(classes))
+	seen := map[string]int{}
+	for _, c := range classes {
+		name := strings.TrimSpace(c.Name)
+		if name == "" || c.Levels <= 0 {
+			continue
+		}
+		key := strings.ToLower(name)
+		if idx, ok := seen[key]; ok {
+			out[idx].Levels += c.Levels
+			continue
+		}
+		seen[key] = len(out)
+		out = append(out, CharacterClassLevel{Name: name, Levels: c.Levels})
+	}
+	if len(out) == 0 {
+		out = append(out, CharacterClassLevel{Name: "Fighter", Levels: 1})
+	}
+	return out
+}
+
+func classLevelsSummary(classes []CharacterClassLevel) string {
+	parts := make([]string, 0, len(classes))
+	for _, c := range classes {
+		if strings.TrimSpace(c.Name) == "" || c.Levels <= 0 {
+			continue
+		}
+		parts = append(parts, fmt.Sprintf("%s %d", c.Name, c.Levels))
+	}
+	if len(parts) == 0 {
+		return "n/a"
+	}
+	return strings.Join(parts, ", ")
+}
+
+func parseBaseScores(v []int) [6]int {
+	base := [6]int{10, 10, 10, 10, 10, 10}
+	for i := 0; i < len(base) && i < len(v); i++ {
+		if v[i] > 0 {
+			base[i] = v[i]
+		}
+	}
+	return base
+}
+
+func (ui *UI) findClassByName(name string) (Monster, bool) {
+	n := strings.TrimSpace(strings.ToLower(name))
+	if n == "" {
+		return Monster{}, false
+	}
+	for _, cl := range ui.classes {
+		if strings.EqualFold(strings.TrimSpace(cl.Name), n) {
+			return cl, true
+		}
+	}
+	return Monster{}, false
+}
+
+func (ui *UI) findRaceByName(name string) (Monster, bool) {
+	n := strings.TrimSpace(strings.ToLower(name))
+	if n == "" {
+		return Monster{}, false
+	}
+	for _, rc := range ui.races {
+		if strings.EqualFold(strings.TrimSpace(rc.Name), n) {
+			return rc, true
+		}
+	}
+	return Monster{}, false
+}
+
+func (ui *UI) primaryClassFromBuild(build CharacterBuild) (Monster, bool) {
+	classes := normalizeClassLevels(build.Classes)
+	bestName := ""
+	bestLevels := -1
+	for _, c := range classes {
+		if c.Levels > bestLevels {
+			bestLevels = c.Levels
+			bestName = c.Name
+		}
+	}
+	return ui.findClassByName(bestName)
+}
+
+func computeMultiClassHP(classes []CharacterClassLevel, conMod int, classesData map[string]Monster) int {
+	total := 0
+	first := true
+	for _, c := range classes {
+		if c.Levels <= 0 {
+			continue
+		}
+		cl, ok := classesData[strings.ToLower(strings.TrimSpace(c.Name))]
+		hitDieFaces := 8
+		if ok {
+			if hd := classHitDieFaces(cl.CR); hd > 0 {
+				hitDieFaces = hd
+			}
+		}
+		for i := 0; i < c.Levels; i++ {
+			if first {
+				total += max(1, hitDieFaces+conMod)
+				first = false
+			} else {
+				total += max(1, (hitDieFaces/2)+1+conMod)
+			}
+		}
+	}
+	if total <= 0 {
+		return 1
+	}
+	return total
+}
+
+func (ui *UI) generateCharacterSheetFromBuild(build CharacterBuild) (generatedCharacterSheet, CharacterBuild, error) {
+	outBuild := CharacterBuild{
+		Name:       strings.TrimSpace(build.Name),
+		Race:       strings.TrimSpace(build.Race),
+		Classes:    normalizeClassLevels(build.Classes),
+		BaseScores: append([]int(nil), build.BaseScores...),
+		Feats:      uniqueSortedStrings(build.Feats),
+		Spells:     uniqueSortedStrings(build.Spells),
+	}
+	if outBuild.Name == "" {
+		outBuild.Name = "Character"
+	}
+	if len(outBuild.BaseScores) < 6 {
+		base := rollBaseAbilityScores()
+		outBuild.BaseScores = []int{base[0], base[1], base[2], base[3], base[4], base[5]}
+	}
+	base := parseBaseScores(outBuild.BaseScores)
+
+	primary, ok := ui.primaryClassFromBuild(outBuild)
+	if !ok {
+		return generatedCharacterSheet{}, outBuild, fmt.Errorf("classe principale non valida")
+	}
+	race, ok := ui.findRaceByName(outBuild.Race)
+	if !ok {
+		if len(ui.races) == 0 {
+			return generatedCharacterSheet{}, outBuild, fmt.Errorf("nessuna razza disponibile")
+		}
+		race = ui.races[0]
+		outBuild.Race = race.Name
+	}
+	totalLevel := classLevelsTotal(outBuild.Classes)
+	sheet := generateCharacterSheetDataFromScores(primary, race, totalLevel, base)
+
+	if len(outBuild.Classes) > 1 {
+		classesData := map[string]Monster{}
+		for _, cl := range ui.classes {
+			classesData[strings.ToLower(strings.TrimSpace(cl.Name))] = cl
+		}
+		scores := make([]int, 6)
+		mods := make([]int, 6)
+		keys := []string{"str", "dex", "con", "int", "wis", "cha"}
+		bonuses := extractRaceAbilityBonuses(race.Raw["ability"])
+		for i := range 6 {
+			scores[i] = base[i] + bonuses[keys[i]]
+			mods[i] = abilityMod(scores[i])
+		}
+		sheet.HP = computeMultiClassHP(outBuild.Classes, mods[2], classesData)
+	}
+	metaLines := strings.Split(strings.TrimSpace(sheet.Meta), "\n")
+	if len(metaLines) == 0 {
+		metaLines = []string{fmt.Sprintf("[yellow]%s[-]", outBuild.Name)}
+	} else {
+		metaLines[0] = fmt.Sprintf("[yellow]%s[-]", outBuild.Name)
+	}
+	metaLines = append(metaLines, "[white]Build:[-] "+classLevelsSummary(outBuild.Classes))
+	if len(outBuild.Feats) > 0 {
+		metaLines = append(metaLines, "[white]Feats:[-] "+strings.Join(outBuild.Feats, ", "))
+	}
+	if len(outBuild.Spells) > 0 {
+		metaLines = append(metaLines, "[white]Custom Spells:[-] "+strings.Join(outBuild.Spells, ", "))
+	}
+	sheet.Meta = strings.Join(metaLines, "\n")
+
+	body := &strings.Builder{}
+	fmt.Fprintf(body, "%s\n", outBuild.Name)
+	fmt.Fprintf(body, "Race: %s\n", outBuild.Race)
+	fmt.Fprintf(body, "Classes: %s\n", classLevelsSummary(outBuild.Classes))
+	fmt.Fprintf(body, "Total Level: %d\n\n", totalLevel)
+	body.WriteString(sheet.Body)
+	if spellText := generateCharacterSpellSelection(primary, totalLevel, ui.spells); spellText != "" {
+		fmt.Fprintf(body, "\n\nSpells Prepared/Known\n%s", spellText)
+	}
+	if len(outBuild.Spells) > 0 {
+		fmt.Fprintf(body, "\n\nCustom Spells\n- %s", strings.Join(outBuild.Spells, "\n- "))
+	}
+	if len(outBuild.Feats) > 0 {
+		fmt.Fprintf(body, "\n\nFeats\n- %s", strings.Join(outBuild.Feats, "\n- "))
+	}
+	sheet.Body = strings.TrimSpace(body.String())
+	return sheet, outBuild, nil
 }
 
 func rollAbilityScore4d6DropLowest() int {
@@ -5684,36 +5919,38 @@ func (ui *UI) openCreateCharacterFromClassForm() {
 	form.SetBorderColor(tcell.ColorGold)
 	form.SetTitleColor(tcell.ColorGold)
 	var raceDrop *tview.DropDown
-	var runGenerate func()
-	form.SetCancelFunc(func() {
+	closeModal := func() {
 		ui.pages.RemovePage("character-create")
 		ui.charCreateVisible = false
 		ui.app.SetFocus(ui.list)
-	})
+	}
+	var runGenerate func()
+	form.SetCancelFunc(closeModal)
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEscape {
-			ui.pages.RemovePage("character-create")
-			ui.charCreateVisible = false
-			ui.app.SetFocus(ui.list)
+			closeModal()
 			return nil
 		}
-		// On Race field, Enter should confirm current option and jump to Generate.
-		if event.Key() == tcell.KeyEnter && raceDrop != nil {
-			focus := ui.app.GetFocus()
-			formItem, button := form.GetFocusedItemIndex()
-			onRace := focus == raceDrop || (button < 0 && formItem == 1)
-			if onRace && !raceDrop.IsOpen() {
-				if runGenerate != nil {
-					runGenerate()
-				}
-				return nil
+		if isSubmitEvent(event) && runGenerate != nil && (raceDrop == nil || !raceDrop.IsOpen()) {
+			if runGenerate != nil {
+				runGenerate()
 			}
+			return nil
 		}
 		return event
 	})
 
 	levelField := tview.NewInputField().SetLabel("Level (1-20): ").SetFieldWidth(8)
 	levelField.SetText("1")
+	levelField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) && runGenerate != nil {
+			runGenerate()
+		}
+	})
 	raceOptions := make([]string, 0, len(ui.races))
 	raceIndexByOption := make([]int, 0, len(ui.races))
 	for i, rc := range ui.races {
@@ -5731,19 +5968,18 @@ func (ui *UI) openCreateCharacterFromClassForm() {
 	}
 	raceDrop.SetOptions(raceOptions, nil)
 	raceDrop.SetCurrentOption(0)
+	raceDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) && runGenerate != nil {
+			runGenerate()
+		}
+	})
 	raceDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyEscape {
-			ui.pages.RemovePage("character-create")
-			ui.charCreateVisible = false
-			ui.app.SetFocus(ui.list)
-			return nil
-		}
-		// Keep DropDown closed-state Enter behavior deterministic:
-		// do not open the list, execute Generate directly.
-		if event.Key() == tcell.KeyEnter && !raceDrop.IsOpen() {
-			if runGenerate != nil {
-				runGenerate()
-			}
+			closeModal()
 			return nil
 		}
 		return event
@@ -5779,9 +6015,19 @@ func (ui *UI) openCreateCharacterFromClassForm() {
 			return
 		}
 		rc := ui.races[raceIndexByOption[raceOpt]]
-		sheet := generateCharacterSheetData(cl, rc, level)
-		if spellText := generateCharacterSpellSelection(cl, level, ui.spells); spellText != "" {
-			sheet.Body += "\n\nSpells Prepared/Known\n" + spellText
+		base := rollBaseAbilityScores()
+		build := CharacterBuild{
+			Name: rc.Name + " " + cl.Name,
+			Race: rc.Name,
+			Classes: []CharacterClassLevel{
+				{Name: cl.Name, Levels: level},
+			},
+			BaseScores: []int{base[0], base[1], base[2], base[3], base[4], base[5]},
+		}
+		sheet, build, err := ui.generateCharacterSheetFromBuild(build)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] errore creazione personaggio[-:-] %v  %s", err, helpText))
+			return
 		}
 		ui.detailMeta.SetText(sheet.Meta)
 		ui.detailMeta.ScrollToBeginning()
@@ -5790,17 +6036,14 @@ func (ui *UI) openCreateCharacterFromClassForm() {
 		ui.renderRawWithHighlight("", -1)
 		ui.detailRaw.ScrollToBeginning()
 		charName := fmt.Sprintf("%s %s Lv%d", cl.Name, rc.Name, level)
-		ui.addGeneratedCharacterToEncounter(charName, sheet.Init, sheet.AC, sheet.HP, sheet.Meta, sheet.Body)
-		ui.pages.RemovePage("character-create")
-		ui.charCreateVisible = false
-		ui.app.SetFocus(ui.list)
+		build.Name = charName
+		ui.addGeneratedCharacterToEncounter(charName, sheet.Init, sheet.AC, sheet.HP, sheet.Meta, sheet.Body, &build)
+		closeModal()
 		ui.status.SetText(fmt.Sprintf(" [black:gold] personaggio creato[-:-] %s Lv%d (%s) + aggiunto a Encounters  %s", cl.Name, level, rc.Name, helpText))
 	}
 	form.AddButton("Generate", runGenerate)
 	form.AddButton("Cancel", func() {
-		ui.pages.RemovePage("character-create")
-		ui.charCreateVisible = false
-		ui.app.SetFocus(ui.list)
+		closeModal()
 	})
 
 	modal := tview.NewFlex().
@@ -5816,7 +6059,7 @@ func (ui *UI) openCreateCharacterFromClassForm() {
 	ui.app.SetFocus(form)
 }
 
-func (ui *UI) addGeneratedCharacterToEncounter(name string, init int, ac int, hp int, meta string, body string) {
+func (ui *UI) addGeneratedCharacterToEncounter(name string, init int, ac int, hp int, meta string, body string, build *CharacterBuild) {
 	n := strings.TrimSpace(name)
 	if n == "" {
 		n = "Character"
@@ -5832,6 +6075,7 @@ func (ui *UI) addGeneratedCharacterToEncounter(name string, init int, ac int, hp
 		CustomBody: strings.TrimSpace(body),
 		BaseHP:     hp,
 		CurrentHP:  hp,
+		Character:  cloneCharacterBuild(build),
 	}
 	if ac > 0 {
 		entry.CustomAC = strconv.Itoa(ac)
@@ -6026,6 +6270,263 @@ func (ui *UI) openAddCustomEncounterForm() {
 		AddItem(nil, 0, 1, false)
 
 	ui.pages.AddPage("encounter-add-custom", modal, true, true)
+	ui.app.SetFocus(form)
+}
+
+func splitCSVValues(s string) []string {
+	if strings.TrimSpace(s) == "" {
+		return nil
+	}
+	parts := strings.Split(s, ",")
+	out := make([]string, 0, len(parts))
+	for _, p := range parts {
+		t := strings.TrimSpace(p)
+		if t != "" {
+			out = append(out, t)
+		}
+	}
+	return uniqueSortedStrings(out)
+}
+
+func (ui *UI) openEncounterCharacterEditForm() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	entry := ui.encounterItems[index]
+	if !entry.Custom {
+		ui.status.SetText(fmt.Sprintf(" [white:red] edit personaggio disponibile solo per entry custom[-:-]  %s", helpText))
+		return
+	}
+	if entry.Character == nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] questa entry non ha dati personaggio editabili[-:-]  %s", helpText))
+		return
+	}
+	build := cloneCharacterBuild(entry.Character)
+	if build == nil {
+		ui.status.SetText(fmt.Sprintf(" [white:red] dati personaggio non validi[-:-]  %s", helpText))
+		return
+	}
+
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Edit Encounter Character ")
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+	var classDrop *tview.DropDown
+	closeModal := func() {
+		ui.pages.RemovePage("encounter-edit-character")
+		ui.encounterEditVisible = false
+		ui.app.SetFocus(ui.encounter)
+	}
+	var apply func()
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		case tcell.KeyTab:
+			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
+		case tcell.KeyEnter, tcell.KeyCtrlJ, tcell.KeyCtrlM:
+			formItem, button := form.GetFocusedItemIndex()
+			if formItem == 0 {
+				form.SetFocus(1)
+				return nil
+			}
+			if formItem == 1 && classDrop != nil && !classDrop.IsOpen() {
+				form.SetFocus(2)
+				return nil
+			}
+			if button == 0 {
+				if apply != nil {
+					apply()
+				}
+				return nil
+			}
+			if button == 1 {
+				closeModal()
+				return nil
+			}
+			return event
+		default:
+			return event
+		}
+	})
+
+	nameField := tview.NewInputField().SetLabel("Name: ").SetFieldWidth(34)
+	nameField.SetText(blankIfEmpty(build.Name, entry.CustomName))
+	levelAddField := tview.NewInputField().SetLabel("Add Levels: ").SetFieldWidth(8)
+	levelAddField.SetText("1")
+
+	classOptions := make([]string, 0, len(ui.classes))
+	classIdx := 0
+	defaultClass := ""
+	if len(build.Classes) > 0 {
+		defaultClass = build.Classes[0].Name
+	}
+	for i, cl := range ui.classes {
+		classOptions = append(classOptions, cl.Name)
+		if defaultClass != "" && strings.EqualFold(strings.TrimSpace(cl.Name), strings.TrimSpace(defaultClass)) {
+			classIdx = i
+		}
+	}
+	if len(classOptions) == 0 {
+		classOptions = []string{"Fighter"}
+		classIdx = 0
+	}
+	classDrop = tview.NewDropDown().SetLabel("Class to Advance: ")
+	classDrop.SetOptions(classOptions, nil)
+	classDrop.SetCurrentOption(classIdx)
+	nameField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(1)
+		}
+	})
+	levelAddField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			if apply != nil {
+				apply()
+			}
+		}
+	})
+	classDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(2)
+		}
+	})
+	classDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		}
+		return event
+	})
+
+	setInput := func(f *tview.InputField) {
+		f.SetLabelColor(tcell.ColorGold)
+		f.SetFieldBackgroundColor(tcell.ColorWhite)
+		f.SetFieldTextColor(tcell.ColorBlack)
+		f.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	}
+	setInput(nameField)
+	setInput(levelAddField)
+
+	setDrop := func(d *tview.DropDown) {
+		d.SetLabelColor(tcell.ColorGold)
+		d.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+		d.SetFieldTextColor(tcell.ColorWhite)
+		d.SetListStyles(
+			tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+			tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+		)
+	}
+	setDrop(classDrop)
+
+	form.AddFormItem(nameField)
+	form.AddFormItem(classDrop)
+	form.AddFormItem(levelAddField)
+
+	apply = func() {
+		addLevels, err := strconv.Atoi(strings.TrimSpace(levelAddField.GetText()))
+		if err != nil || addLevels < 1 || addLevels > 20 {
+			ui.status.SetText(fmt.Sprintf(" [white:red] livelli da aggiungere non validi (1-20)[-:-]  %s", helpText))
+			return
+		}
+		newName := strings.TrimSpace(nameField.GetText())
+		if newName == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome non valido[-:-]  %s", helpText))
+			return
+		}
+		_, classLabel := classDrop.GetCurrentOption()
+		classLabel = strings.TrimSpace(classLabel)
+		if classLabel == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] classe non valida[-:-]  %s", helpText))
+			return
+		}
+
+		next := cloneCharacterBuild(build)
+		next.Name = newName
+		next.Classes = normalizeClassLevels(next.Classes)
+		found := false
+		for i := range next.Classes {
+			if strings.EqualFold(strings.TrimSpace(next.Classes[i].Name), classLabel) {
+				next.Classes[i].Levels += addLevels
+				found = true
+				break
+			}
+		}
+		if !found {
+			next.Classes = append(next.Classes, CharacterClassLevel{Name: classLabel, Levels: addLevels})
+		}
+		next.Classes = normalizeClassLevels(next.Classes)
+		sheet, normalizedBuild, err := ui.generateCharacterSheetFromBuild(*next)
+		if err != nil {
+			ui.status.SetText(fmt.Sprintf(" [white:red] errore aggiornamento personaggio[-:-] %v  %s", err, helpText))
+			return
+		}
+
+		ui.pushEncounterUndo()
+		cur := &ui.encounterItems[index]
+		oldMax := ui.encounterMaxHP(*cur)
+		cur.CustomName = normalizedBuild.Name
+		cur.Character = &normalizedBuild
+		cur.CustomMeta = strings.TrimSpace(sheet.Meta)
+		cur.CustomBody = strings.TrimSpace(sheet.Body)
+		cur.CustomInit = sheet.Init
+		cur.BaseHP = sheet.HP
+		if sheet.AC > 0 {
+			cur.CustomAC = strconv.Itoa(sheet.AC)
+		}
+		newMax := ui.encounterMaxHP(*cur)
+		if oldMax > 0 && cur.CurrentHP >= oldMax {
+			cur.CurrentHP = newMax
+		} else if cur.CurrentHP > newMax {
+			cur.CurrentHP = newMax
+		}
+		if cur.CurrentHP < 0 {
+			cur.CurrentHP = 0
+		}
+
+		ui.pages.RemovePage("encounter-edit-character")
+		ui.encounterEditVisible = false
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(index)
+		ui.renderDetailByEncounterIndex(index)
+		ui.app.SetFocus(ui.encounter)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] personaggio aggiornato[-:-] %s  %s", cur.CustomName, helpText))
+	}
+
+	form.AddButton("Apply", apply)
+	form.AddButton("Cancel", func() {
+		closeModal()
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 16, 0, true).
+			AddItem(nil, 0, 1, false), 84, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("encounter-edit-character", modal, true, true)
+	ui.encounterEditVisible = true
 	ui.app.SetFocus(form)
 }
 
@@ -6913,6 +7414,7 @@ func (ui *UI) loadEncounters() error {
 			RolledHP:     it.RolledHP,
 			HasInitRoll:  it.InitRolled,
 			InitRoll:     it.InitRoll,
+			Character:    cloneCharacterBuild(it.Character),
 		}
 		ui.backfillCustomEncounterDetails(&entry)
 		ui.encounterItems = append(ui.encounterItems, entry)
@@ -6962,6 +7464,62 @@ func (ui *UI) backfillCustomEncounterDetails(entry *EncounterEntry) {
 	if strings.TrimSpace(entry.CustomBody) == "" {
 		entry.CustomBody = buildCustomDescriptionText(*entry, ui.encounterMaxHP(*entry))
 	}
+	if entry.Character == nil {
+		if inferred, ok := ui.inferCharacterBuildFromEntry(*entry); ok {
+			entry.Character = inferred
+		}
+	}
+}
+
+var levelLineRe = regexp.MustCompile(`(?i)^(.+)\s+\(level\s+(\d+)\)\s*$`)
+
+func (ui *UI) inferCharacterBuildFromEntry(entry EncounterEntry) (*CharacterBuild, bool) {
+	if !entry.Custom {
+		return nil, false
+	}
+	lines := strings.Split(strings.TrimSpace(entry.CustomBody), "\n")
+	if len(lines) == 0 {
+		return nil, false
+	}
+	m := levelLineRe.FindStringSubmatch(strings.TrimSpace(lines[0]))
+	if len(m) != 3 {
+		return nil, false
+	}
+	combined := strings.TrimSpace(m[1])
+	lv, err := strconv.Atoi(strings.TrimSpace(m[2]))
+	if err != nil || lv <= 0 {
+		return nil, false
+	}
+	className := ""
+	raceName := ""
+	for _, cl := range ui.classes {
+		if strings.HasPrefix(strings.ToLower(combined), strings.ToLower(cl.Name+" ")) || strings.EqualFold(strings.TrimSpace(combined), strings.TrimSpace(cl.Name)) {
+			className = cl.Name
+			raceName = strings.TrimSpace(strings.TrimPrefix(combined, cl.Name))
+			break
+		}
+	}
+	if className == "" {
+		return nil, false
+	}
+	if raceName == "" {
+		for _, rc := range ui.races {
+			if strings.Contains(strings.ToLower(combined), strings.ToLower(rc.Name)) {
+				raceName = rc.Name
+				break
+			}
+		}
+	}
+	if raceName == "" && len(ui.races) > 0 {
+		raceName = ui.races[0].Name
+	}
+	build := &CharacterBuild{
+		Name:       blankIfEmpty(strings.TrimSpace(entry.CustomName), combined),
+		Race:       raceName,
+		Classes:    []CharacterClassLevel{{Name: className, Levels: lv}},
+		BaseScores: []int{10, 10, 10, 10, 10, 10},
+	}
+	return build, true
 }
 
 func (ui *UI) saveEncounters() error {
@@ -6990,6 +7548,7 @@ func (ui *UI) saveEncounters() error {
 			RolledHP:   it.RolledHP,
 			InitRolled: it.HasInitRoll,
 			InitRoll:   it.InitRoll,
+			Character:  cloneCharacterBuild(it.Character),
 		}
 		if !it.Custom {
 			if it.MonsterIndex < 0 || it.MonsterIndex >= len(ui.monsters) {
@@ -9181,6 +9740,25 @@ func cloneEncounterEntries(src []EncounterEntry) []EncounterEntry {
 	for i := range src {
 		out[i] = src[i]
 		out[i].Conditions = cloneStringIntMap(src[i].Conditions)
+		out[i].Character = cloneCharacterBuild(src[i].Character)
+	}
+	return out
+}
+
+func cloneCharacterBuild(src *CharacterBuild) *CharacterBuild {
+	if src == nil {
+		return nil
+	}
+	out := &CharacterBuild{
+		Name:       src.Name,
+		Race:       src.Race,
+		BaseScores: append([]int(nil), src.BaseScores...),
+		Feats:      append([]string(nil), src.Feats...),
+		Spells:     append([]string(nil), src.Spells...),
+	}
+	if len(src.Classes) > 0 {
+		out.Classes = make([]CharacterClassLevel, len(src.Classes))
+		copy(out.Classes, src.Classes)
 	}
 	return out
 }
@@ -9207,4 +9785,21 @@ func setTheme() {
 	tview.Styles.TertiaryTextColor = tcell.ColorAqua
 	tview.Styles.InverseTextColor = tcell.ColorBlack
 	tview.Styles.ContrastSecondaryTextColor = tcell.ColorBlack
+}
+
+func isSubmitEvent(event *tcell.EventKey) bool {
+	if event == nil {
+		return false
+	}
+	if event.Key() == tcell.KeyEnter || event.Key() == tcell.KeyCtrlJ || event.Key() == tcell.KeyCtrlM {
+		return true
+	}
+	if event.Key() == tcell.KeyRune && (event.Rune() == '\n' || event.Rune() == '\r') {
+		return true
+	}
+	return false
+}
+
+func isSubmitKey(key tcell.Key) bool {
+	return key == tcell.KeyEnter || key == tcell.KeyCtrlJ || key == tcell.KeyCtrlM
 }
