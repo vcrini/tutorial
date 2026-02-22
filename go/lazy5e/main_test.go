@@ -699,6 +699,37 @@ func TestEncounterEntryDisplayCustomDoesNotShowOrdinal(t *testing.T) {
 	}
 }
 
+func TestEncounterConditionsBadgeAndRoundProgress(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			MonsterIndex: 0,
+			Ordinal:      1,
+			BaseHP:       13,
+			CurrentHP:    13,
+			Conditions: map[string]int{
+				"O": 1, // Poisoned
+				"U": 2, // Unconscious
+			},
+		},
+	}
+	ui.turnMode = true
+	ui.turnIndex = 0
+	ui.turnRound = 1
+	ui.renderEncounterList()
+
+	line, _ := ui.encounter.GetItemText(0)
+	if !strings.Contains(line, "*[1]") || !strings.Contains(line, "O1U2") {
+		t.Fatalf("unexpected encounter condition badge: %q", line)
+	}
+
+	// Advance one round and ensure condition rounds increase.
+	ui.nextEncounterTurn()
+	if ui.encounterItems[0].Conditions["O"] != 2 || ui.encounterItems[0].Conditions["U"] != 3 {
+		t.Fatalf("expected condition rounds to increase: %#v", ui.encounterItems[0].Conditions)
+	}
+}
+
 func TestRollDiceExpression(t *testing.T) {
 	total, breakdown, err := rollDiceExpression("2d1+d1+5")
 	if err != nil {

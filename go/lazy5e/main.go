@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"math"
 	"math/rand"
 	"os"
@@ -123,6 +124,7 @@ type EncounterEntry struct {
 	CustomAC     string
 	CustomMeta   string
 	CustomBody   string
+	Conditions   map[string]int
 	BaseHP       int
 	CurrentHP    int
 	HPFormula    string
@@ -141,21 +143,22 @@ type PersistedEncounters struct {
 }
 
 type PersistedEncounterItem struct {
-	MonsterID  int    `yaml:"monster_id"`
-	Ordinal    int    `yaml:"ordinal"`
-	Custom     bool   `yaml:"custom,omitempty"`
-	CustomName string `yaml:"custom_name,omitempty"`
-	CustomInit int    `yaml:"custom_init,omitempty"`
-	CustomAC   string `yaml:"custom_ac,omitempty"`
-	CustomMeta string `yaml:"custom_meta,omitempty"`
-	CustomBody string `yaml:"custom_body,omitempty"`
-	BaseHP     int    `yaml:"base_hp"`
-	CurrentHP  int    `yaml:"current_hp"`
-	HPFormula  string `yaml:"hp_formula,omitempty"`
-	UseRolled  bool   `yaml:"use_rolled,omitempty"`
-	RolledHP   int    `yaml:"rolled_hp,omitempty"`
-	InitRolled bool   `yaml:"init_rolled,omitempty"`
-	InitRoll   int    `yaml:"init_roll,omitempty"`
+	MonsterID  int            `yaml:"monster_id"`
+	Ordinal    int            `yaml:"ordinal"`
+	Custom     bool           `yaml:"custom,omitempty"`
+	CustomName string         `yaml:"custom_name,omitempty"`
+	CustomInit int            `yaml:"custom_init,omitempty"`
+	CustomAC   string         `yaml:"custom_ac,omitempty"`
+	CustomMeta string         `yaml:"custom_meta,omitempty"`
+	CustomBody string         `yaml:"custom_body,omitempty"`
+	Conditions map[string]int `yaml:"conditions,omitempty"`
+	BaseHP     int            `yaml:"base_hp"`
+	CurrentHP  int            `yaml:"current_hp"`
+	HPFormula  string         `yaml:"hp_formula,omitempty"`
+	UseRolled  bool           `yaml:"use_rolled,omitempty"`
+	RolledHP   int            `yaml:"rolled_hp,omitempty"`
+	InitRolled bool           `yaml:"init_rolled,omitempty"`
+	InitRoll   int            `yaml:"init_roll,omitempty"`
 }
 
 type PersistedDice struct {
@@ -205,13 +208,6 @@ type DiceUndoState struct {
 	Selected int
 }
 
-type treasureCoinRoll struct {
-	Currency  string
-	DiceN     int
-	DiceSides int
-	Mult      int
-}
-
 type treasureOutcome struct {
 	Kind      string
 	Band      string
@@ -247,6 +243,29 @@ type monsterScalePreview struct {
 	DPRMin     int
 	DPRMax     int
 	DamageMul  float64
+}
+
+type encounterConditionDef struct {
+	Code string
+	Name string
+}
+
+var encounterConditionDefs = []encounterConditionDef{
+	{Code: "B", Name: "Blinded"},
+	{Code: "C", Name: "Charmed"},
+	{Code: "D", Name: "Deafened"},
+	{Code: "E", Name: "Exhausted"},
+	{Code: "F", Name: "Frightened"},
+	{Code: "G", Name: "Grappled"},
+	{Code: "I", Name: "Incapacitated"},
+	{Code: "V", Name: "Invisible"},
+	{Code: "A", Name: "Paralyzed"},
+	{Code: "T", Name: "Petrified"},
+	{Code: "O", Name: "Poisoned"},
+	{Code: "P", Name: "Prone"},
+	{Code: "R", Name: "Restrained"},
+	{Code: "S", Name: "Stunned"},
+	{Code: "U", Name: "Unconscious"},
 }
 
 var crBenchmarks = []crBenchmark{
@@ -369,8 +388,6 @@ type UI struct {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
-
 	yamlPath := strings.TrimSpace(os.Getenv("MONSTERS_YAML"))
 	encountersPath := strings.TrimSpace(os.Getenv("ENCOUNTERS_YAML"))
 	dicePath := strings.TrimSpace(os.Getenv("DICE_YAML"))
@@ -1002,6 +1019,18 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openAddCustomEncounterForm()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'c':
+			ui.openEncounterConditionModal()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'C':
+			ui.clearEncounterConditions()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == '[':
+			ui.adjustEncounterConditionRounds(-1)
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == ']':
+			ui.adjustEncounterConditionRounds(1)
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyLeft:
 			ui.openEncounterHPInput(-1)
 			return nil
@@ -1272,6 +1301,9 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  n / p : turno successivo / precedente\n" +
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
+			"  c : aggiungi/togli condizioni (multi select)\n" +
+			"  C : rimuovi tutte le condizioni dall'entry\n" +
+			"  [ / ] : diminuisci/aumenta round condizioni\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
 			"  freccia sinistra : sottrai HP\n" +
 			"  freccia destra : aggiungi HP\n"
@@ -1430,15 +1462,9 @@ func (ui *UI) scrollDetailByPage(direction int) {
 	}
 
 	row, _ := ui.detailRaw.GetScrollOffset()
-	step := height - 1
-	if step < 1 {
-		step = 1
-	}
+	step := max(height-1, 1)
 
-	nextRow := row + (step * direction)
-	if nextRow < 0 {
-		nextRow = 0
-	}
+	nextRow := max(row+(step*direction), 0)
 	ui.detailRaw.ScrollTo(nextRow, 0)
 }
 
@@ -1909,7 +1935,7 @@ func (ui *UI) generateSpellTreasure(filter SpellTreasureFilter, count int) ([]Mo
 		return nil, fmt.Errorf("nessuna spell trovata per level=%q school=%q", filter.Level, filter.School)
 	}
 	out := make([]Monster, 0, count)
-	for i := 0; i < count; i++ {
+	for range count {
 		idx := rand.Intn(len(candidates))
 		out = append(out, candidates[idx])
 	}
@@ -1967,7 +1993,7 @@ func (ui *UI) generateItemTreasureByKinds(kinds []string, count int) ([]Monster,
 		return nil, fmt.Errorf("nessun item trovato per tipo \"%s\"", strings.Join(kinds, ","))
 	}
 	out := make([]Monster, 0, count)
-	for i := 0; i < count; i++ {
+	for range count {
 		idx := rand.Intn(len(candidates))
 		out = append(out, candidates[idx])
 	}
@@ -2368,10 +2394,7 @@ func (ui *UI) appendDiceLog(entry DiceResult) {
 func (ui *UI) renderDiceList() {
 	ui.diceRender = true
 	defer func() { ui.diceRender = false }()
-	current := ui.dice.GetCurrentItem()
-	if current < 0 {
-		current = 0
-	}
+	current := max(ui.dice.GetCurrentItem(), 0)
 	ui.dice.Clear()
 	for i, row := range ui.diceLog {
 		expr := row.Expression
@@ -2454,10 +2477,7 @@ func (ui *UI) restoreDiceState(state DiceUndoState) {
 	if len(ui.diceLog) == 0 {
 		return
 	}
-	idx := state.Selected
-	if idx < 0 {
-		idx = 0
-	}
+	idx := max(state.Selected, 0)
 	if idx >= len(ui.diceLog) {
 		idx = len(ui.diceLog) - 1
 	}
@@ -3055,10 +3075,6 @@ func (ui *UI) refreshSourceDropOptions(preferredIdx int) {
 	ui.updatingSourceDrop = false
 }
 
-func (ui *UI) toggleCurrentSourceOption() {
-	// legacy no-op; source multi-select now uses dedicated modal.
-}
-
 func (ui *UI) selectedSourcesSorted() []string {
 	return keysSorted(ui.sourceFilters)
 }
@@ -3507,11 +3523,25 @@ func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
 	descKey := ui.descriptionKeyForEncounterEntry(entry)
 	if entry.Custom {
 		ui.renderDetailByCustomEntry(entry)
+		ui.appendEncounterConditionsToMeta(entry)
 		ui.restoreDescriptionScrollForKey(descKey)
 		return
 	}
 	ui.renderDetailByMonsterIndex(entry.MonsterIndex)
+	ui.appendEncounterConditionsToMeta(entry)
 	ui.restoreDescriptionScrollForKey(descKey)
+}
+
+func (ui *UI) appendEncounterConditionsToMeta(entry EncounterEntry) {
+	if len(entry.Conditions) == 0 {
+		return
+	}
+	text := ui.detailMeta.GetText(false)
+	b := &strings.Builder{}
+	b.WriteString(strings.TrimRight(text, "\n"))
+	b.WriteString("\n[white]Conditions:[-] ")
+	b.WriteString(ui.encounterConditionsLong(entry))
+	ui.detailMeta.SetText(b.String())
 }
 
 func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
@@ -3914,10 +3944,7 @@ func scaleMonsterByCR(m Monster, step int) (monsterScalePreview, bool) {
 	if !ok {
 		return monsterScalePreview{}, false
 	}
-	targetIdx := baseIdx + step
-	if targetIdx < 0 {
-		targetIdx = 0
-	}
+	targetIdx := max(baseIdx+step, 0)
 	if targetIdx >= len(crBenchmarks) {
 		targetIdx = len(crBenchmarks) - 1
 	}
@@ -4473,11 +4500,6 @@ type backgroundProfile struct {
 	Equipment []string
 }
 
-func generateCharacterSheet(cl Monster, rc Monster, level int) (meta string, body string) {
-	sheet := generateCharacterSheetData(cl, rc, level)
-	return sheet.Meta, sheet.Body
-}
-
 func generateCharacterSheetFromScores(cl Monster, rc Monster, level int, base [6]int) (meta string, body string) {
 	sheet := generateCharacterSheetDataFromScores(cl, rc, level, base)
 	return sheet.Meta, sheet.Body
@@ -4485,7 +4507,7 @@ func generateCharacterSheetFromScores(cl Monster, rc Monster, level int, base [6
 
 func generateCharacterSheetData(cl Monster, rc Monster, level int) generatedCharacterSheet {
 	base := [6]int{}
-	for i := 0; i < 6; i++ {
+	for i := range 6 {
 		base[i] = rollAbilityScore4d6DropLowest()
 	}
 	return generateCharacterSheetDataFromScores(cl, rc, level, base)
@@ -4681,8 +4703,8 @@ func proficiencyBonusForLevel(level int) int {
 
 func classHitDieFaces(hitDie string) int {
 	s := strings.TrimSpace(strings.ToLower(hitDie))
-	if strings.HasPrefix(s, "d") {
-		if v, err := strconv.Atoi(strings.TrimPrefix(s, "d")); err == nil && v > 0 {
+	if after, ok := strings.CutPrefix(s, "d"); ok {
+		if v, err := strconv.Atoi(after); err == nil && v > 0 {
 			return v
 		}
 	}
@@ -5114,10 +5136,7 @@ func spellSlotsSummary(raw map[string]any, level int) string {
 		if !ok || len(rows) == 0 {
 			continue
 		}
-		idx := level - 1
-		if idx < 0 {
-			idx = 0
-		}
+		idx := max(level-1, 0)
 		if idx >= len(rows) {
 			idx = len(rows) - 1
 		}
@@ -5150,7 +5169,7 @@ func chooseRandomN(values []string, n int) []string {
 	}
 	perm := rand.Perm(len(vals))
 	out := make([]string, 0, n)
-	for i := 0; i < n; i++ {
+	for i := range n {
 		out = append(out, vals[perm[i]])
 	}
 	sort.Strings(out)
@@ -5364,6 +5383,17 @@ func buildCustomDescriptionText(entry EncounterEntry, maxHP int) string {
 		fmt.Fprintf(b, "Hit Points: %d/%d\n", entry.CurrentHP, maxHP)
 	} else {
 		fmt.Fprintf(b, "Hit Points: ?\n")
+	}
+	if len(entry.Conditions) > 0 {
+		parts := []string{}
+		for _, d := range encounterConditionDefs {
+			if r := entry.Conditions[d.Code]; r > 0 {
+				parts = append(parts, fmt.Sprintf("%s %d", d.Name, r))
+			}
+		}
+		if len(parts) > 0 {
+			fmt.Fprintf(b, "Conditions: %s\n", strings.Join(parts, ", "))
+		}
 	}
 	return strings.TrimSpace(b.String())
 }
@@ -5862,13 +5892,7 @@ func (ui *UI) adjustSelectedMonsterScale(delta int) {
 		return
 	}
 	monsterIndex := ui.filtered[listIndex]
-	step := ui.monsterScale[monsterIndex] + delta
-	if step > 12 {
-		step = 12
-	}
-	if step < -12 {
-		step = -12
-	}
+	step := max(min(ui.monsterScale[monsterIndex]+delta, 12), -12)
 	if step == 0 {
 		delete(ui.monsterScale, monsterIndex)
 	} else {
@@ -6000,6 +6024,158 @@ func (ui *UI) openAddCustomEncounterForm() {
 	ui.app.SetFocus(form)
 }
 
+func (ui *UI) openEncounterConditionModal() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	entry := ui.encounterItems[index]
+	temp := cloneStringIntMap(entry.Conditions)
+	if temp == nil {
+		temp = map[string]int{}
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true)
+	list.SetTitle(" Encounter Conditions (Space=toggle, Enter=apply, Esc=cancel) ")
+	list.SetBorderColor(tcell.ColorGold)
+	list.SetTitleColor(tcell.ColorGold)
+	list.SetMainTextColor(tcell.ColorWhite)
+	list.SetSelectedTextColor(tcell.ColorBlack)
+	list.SetSelectedBackgroundColor(tcell.ColorGold)
+	list.ShowSecondaryText(false)
+
+	render := func() {
+		cur := list.GetCurrentItem()
+		list.Clear()
+		for _, d := range encounterConditionDefs {
+			r := temp[d.Code]
+			mark := "[ ]"
+			if r > 0 {
+				mark = fmt.Sprintf("[x%d]", r)
+			}
+			list.AddItem(fmt.Sprintf("%s %s (%s)", mark, d.Name, d.Code), "", 0, nil)
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		if cur >= list.GetItemCount() {
+			cur = list.GetItemCount() - 1
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		list.SetCurrentItem(cur)
+	}
+
+	toggle := func() {
+		idx := list.GetCurrentItem()
+		if idx < 0 || idx >= len(encounterConditionDefs) {
+			return
+		}
+		code := encounterConditionDefs[idx].Code
+		if temp[code] > 0 {
+			delete(temp, code)
+		} else {
+			temp[code] = 1
+		}
+		render()
+	}
+
+	closeModal := func(apply bool) {
+		ui.pages.RemovePage("encounter-conditions")
+		ui.app.SetFocus(ui.encounter)
+		if !apply {
+			return
+		}
+		ui.pushEncounterUndo()
+		ui.encounterItems[index].Conditions = cloneStringIntMap(temp)
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(index)
+		ui.renderDetailByEncounterIndex(index)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] aggiornate su %s  %s", ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+	}
+
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			toggle()
+			return nil
+		case event.Key() == tcell.KeyEnter:
+			closeModal(true)
+			return nil
+		case event.Key() == tcell.KeyEscape:
+			closeModal(false)
+			return nil
+		default:
+			return event
+		}
+	})
+
+	render()
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 20, 0, true).
+			AddItem(nil, 0, 1, false), 74, 0, true).
+		AddItem(nil, 0, 1, false)
+	ui.pages.AddPage("encounter-conditions", modal, true, true)
+	ui.app.SetFocus(list)
+}
+
+func (ui *UI) clearEncounterConditions() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	if len(ui.encounterItems[index].Conditions) == 0 {
+		return
+	}
+	ui.pushEncounterUndo()
+	ui.encounterItems[index].Conditions = nil
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(index)
+	ui.renderDetailByEncounterIndex(index)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] rimosse da %s  %s", ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+}
+
+func (ui *UI) adjustEncounterConditionRounds(delta int) {
+	if delta == 0 || len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	if len(ui.encounterItems[index].Conditions) == 0 {
+		return
+	}
+	ui.pushEncounterUndo()
+	for code, r := range ui.encounterItems[index].Conditions {
+		n := r + delta
+		if n <= 0 {
+			delete(ui.encounterItems[index].Conditions, code)
+		} else {
+			ui.encounterItems[index].Conditions[code] = n
+		}
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(index)
+	ui.renderDetailByEncounterIndex(index)
+	if delta > 0 {
+		ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] round +1 su %s  %s", ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+	} else {
+		ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] round -1 su %s  %s", ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+	}
+}
+
 func (ui *UI) renderEncounterList() {
 	ui.encounter.Clear()
 	if len(ui.encounterItems) == 0 {
@@ -6036,6 +6212,13 @@ func (ui *UI) renderEncounterList() {
 			label = fmt.Sprintf("%s [HP %d/%d]", label, item.CurrentHP, maxHP)
 		} else {
 			label = fmt.Sprintf("%s [HP ?]", label)
+		}
+		if badge := ui.encounterConditionsBadge(item); badge != "" {
+			if after, ok := strings.CutPrefix(label, "X "); ok {
+				label = "X " + badge + " " + after
+			} else {
+				label = badge + " " + label
+			}
 		}
 		if ui.turnMode {
 			prefix := fmt.Sprintf("%d", i+1)
@@ -6279,10 +6462,7 @@ func (ui *UI) rollAllEncounterInitiative() {
 
 	ui.renderEncounterList()
 	if len(ui.encounterItems) > 0 {
-		idx := ui.encounter.GetCurrentItem()
-		if idx < 0 {
-			idx = 0
-		}
+		idx := max(ui.encounter.GetCurrentItem(), 0)
 		if idx >= len(ui.encounterItems) {
 			idx = len(ui.encounterItems) - 1
 		}
@@ -6338,7 +6518,7 @@ func (ui *UI) sortEncounterByInitiative() {
 
 		an := ui.encounterEntryName(a)
 		bn := ui.encounterEntryName(b)
-		if strings.ToLower(an) != strings.ToLower(bn) {
+		if !strings.EqualFold(an, bn) {
 			return strings.ToLower(an) < strings.ToLower(bn)
 		}
 		return a.Ordinal < b.Ordinal
@@ -6366,7 +6546,7 @@ func (ui *UI) sortEncounterByInitiative() {
 
 func (ui *UI) pushEncounterUndo() {
 	snap := EncounterUndoState{
-		Items:    append([]EncounterEntry(nil), ui.encounterItems...),
+		Items:    cloneEncounterEntries(ui.encounterItems),
 		Serial:   cloneIntMap(ui.encounterSerial),
 		Selected: ui.encounter.GetCurrentItem(),
 	}
@@ -6402,22 +6582,19 @@ func (ui *UI) redoEncounterCommand() {
 
 func (ui *UI) captureEncounterState() EncounterUndoState {
 	return EncounterUndoState{
-		Items:    append([]EncounterEntry(nil), ui.encounterItems...),
+		Items:    cloneEncounterEntries(ui.encounterItems),
 		Serial:   cloneIntMap(ui.encounterSerial),
 		Selected: ui.encounter.GetCurrentItem(),
 	}
 }
 
 func (ui *UI) restoreEncounterState(state EncounterUndoState) {
-	ui.encounterItems = append([]EncounterEntry(nil), state.Items...)
+	ui.encounterItems = cloneEncounterEntries(state.Items)
 	ui.encounterSerial = cloneIntMap(state.Serial)
 	ui.renderEncounterList()
 
 	if len(ui.encounterItems) > 0 {
-		idx := state.Selected
-		if idx < 0 {
-			idx = 0
-		}
+		idx := max(state.Selected, 0)
 		if idx >= len(ui.encounterItems) {
 			idx = len(ui.encounterItems) - 1
 		}
@@ -6439,10 +6616,7 @@ func (ui *UI) toggleEncounterTurnMode() {
 		ui.turnMode = false
 		ui.turnRound = 0
 		ui.renderEncounterList()
-		idx := ui.encounter.GetCurrentItem()
-		if idx < 0 {
-			idx = 0
-		}
+		idx := max(ui.encounter.GetCurrentItem(), 0)
 		ui.encounter.SetCurrentItem(idx)
 		ui.renderDetailByEncounterIndex(idx)
 		ui.status.SetText(fmt.Sprintf(" [black:gold] turn mode[-:-] disattivato  %s", helpText))
@@ -6496,6 +6670,7 @@ func (ui *UI) nextEncounterTurn() {
 		if ui.turnRound <= 0 {
 			ui.turnRound = 1
 		}
+		ui.bumpAllEncounterConditionRounds(1)
 	} else {
 		ui.turnIndex++
 	}
@@ -6513,6 +6688,7 @@ func (ui *UI) prevEncounterTurn() {
 		ui.turnIndex = len(ui.encounterItems) - 1
 		if ui.turnRound > 1 {
 			ui.turnRound--
+			ui.bumpAllEncounterConditionRounds(-1)
 		}
 	} else {
 		ui.turnIndex--
@@ -6521,6 +6697,24 @@ func (ui *UI) prevEncounterTurn() {
 	ui.encounter.SetCurrentItem(ui.turnIndex)
 	ui.renderDetailByEncounterIndex(ui.turnIndex)
 	ui.status.SetText(fmt.Sprintf(" [black:gold] turn[-:-] round %d, entry %d  %s", ui.turnRound, ui.turnIndex+1, helpText))
+}
+
+func (ui *UI) bumpAllEncounterConditionRounds(delta int) {
+	if delta == 0 {
+		return
+	}
+	for i := range ui.encounterItems {
+		if len(ui.encounterItems[i].Conditions) == 0 {
+			continue
+		}
+		for code, r := range ui.encounterItems[i].Conditions {
+			n := r + delta
+			if n <= 0 {
+				n = 1
+			}
+			ui.encounterItems[i].Conditions[code] = n
+		}
+	}
 }
 
 func (ui *UI) loadEncounters() error {
@@ -6607,6 +6801,7 @@ func (ui *UI) loadEncounters() error {
 			CustomAC:     it.CustomAC,
 			CustomMeta:   it.CustomMeta,
 			CustomBody:   it.CustomBody,
+			Conditions:   cloneStringIntMap(it.Conditions),
 			BaseHP:       baseHP,
 			CurrentHP:    currentHP,
 			HPFormula:    hpFormula,
@@ -6683,6 +6878,7 @@ func (ui *UI) saveEncounters() error {
 			CustomAC:   it.CustomAC,
 			CustomMeta: it.CustomMeta,
 			CustomBody: it.CustomBody,
+			Conditions: cloneStringIntMap(it.Conditions),
 			BaseHP:     it.BaseHP,
 			CurrentHP:  it.CurrentHP,
 			HPFormula:  it.HPFormula,
@@ -8222,7 +8418,7 @@ func generateIndividualTreasure(crText string, randIntn func(int) int) (treasure
 
 	roll := func(n, sides, mult int, cur string) (int, string) {
 		sum := 0
-		for i := 0; i < n; i++ {
+		for range n {
 			sum += randIntn(sides) + 1
 		}
 		total := sum * mult
@@ -8322,7 +8518,7 @@ func generateLairTreasure(crText string, randIntn func(int) int) (treasureOutcom
 
 	roll := func(n, sides, mult int, label string) (int, string) {
 		sum := 0
-		for i := 0; i < n; i++ {
+		for range n {
 			sum += randIntn(sides) + 1
 		}
 		total := sum * mult
@@ -8530,7 +8726,7 @@ func rollNamedLootTypes(count int, pool []string, randIntn func(int) int) []stri
 		return nil
 	}
 	out := make([]string, 0, count)
-	for i := 0; i < count; i++ {
+	for range count {
 		idx := randIntn(len(pool))
 		out = append(out, pool[idx])
 	}
@@ -8701,6 +8897,60 @@ func (ui *UI) encounterEntryDisplay(entry EncounterEntry) string {
 	return fmt.Sprintf("%s #%d", name, entry.Ordinal)
 }
 
+func (ui *UI) encounterConditionsBadge(entry EncounterEntry) string {
+	if len(entry.Conditions) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(entry.Conditions))
+	for _, d := range encounterConditionDefs {
+		if n, ok := entry.Conditions[d.Code]; ok && n > 0 {
+			parts = append(parts, fmt.Sprintf("%s%d", d.Code, n))
+		}
+	}
+	if len(parts) == 0 {
+		keys := make([]string, 0, len(entry.Conditions))
+		for k := range entry.Conditions {
+			keys = append(keys, strings.ToUpper(k))
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			n := entry.Conditions[k]
+			if n <= 0 {
+				continue
+			}
+			parts = append(parts, fmt.Sprintf("%s%d", k, n))
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+func (ui *UI) encounterConditionsLong(entry EncounterEntry) string {
+	if len(entry.Conditions) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(entry.Conditions))
+	for _, d := range encounterConditionDefs {
+		if n, ok := entry.Conditions[d.Code]; ok && n > 0 {
+			parts = append(parts, fmt.Sprintf("%s %d", d.Name, n))
+		}
+	}
+	if len(parts) == 0 {
+		keys := make([]string, 0, len(entry.Conditions))
+		for k := range entry.Conditions {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			n := entry.Conditions[k]
+			if n <= 0 {
+				continue
+			}
+			parts = append(parts, fmt.Sprintf("%s %d", conditionNameByCode(k), n))
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
 func (ui *UI) encounterInitBase(entry EncounterEntry) (int, bool) {
 	if entry.Custom {
 		return entry.CustomInit, true
@@ -8739,7 +8989,7 @@ func rollHPFormula(formula string) (int, bool) {
 	}
 
 	total := 0
-	for i := 0; i < nDice; i++ {
+	for range nDice {
 		total += rand.Intn(dieFaces) + 1
 	}
 	if m[3] != "" && m[4] != "" {
@@ -8761,10 +9011,39 @@ func rollHPFormula(formula string) (int, bool) {
 
 func cloneIntMap(src map[int]int) map[int]int {
 	dst := make(map[int]int, len(src))
-	for k, v := range src {
-		dst[k] = v
-	}
+	maps.Copy(dst, src)
 	return dst
+}
+
+func cloneStringIntMap(src map[string]int) map[string]int {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[string]int, len(src))
+	maps.Copy(dst, src)
+	return dst
+}
+
+func cloneEncounterEntries(src []EncounterEntry) []EncounterEntry {
+	if len(src) == 0 {
+		return nil
+	}
+	out := make([]EncounterEntry, len(src))
+	for i := range src {
+		out[i] = src[i]
+		out[i].Conditions = cloneStringIntMap(src[i].Conditions)
+	}
+	return out
+}
+
+func conditionNameByCode(code string) string {
+	c := strings.ToUpper(strings.TrimSpace(code))
+	for _, d := range encounterConditionDefs {
+		if d.Code == c {
+			return d.Name
+		}
+	}
+	return c
 }
 
 func setTheme() {
