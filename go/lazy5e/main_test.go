@@ -730,6 +730,57 @@ func TestEncounterConditionsBadgeAndRoundProgress(t *testing.T) {
 	}
 }
 
+func TestRemoveEncounterConditionByCode(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			MonsterIndex: 0,
+			Ordinal:      1,
+			BaseHP:       13,
+			CurrentHP:    13,
+			Conditions:   map[string]int{"O": 2, "U": 1},
+		},
+	}
+	if ok := ui.removeEncounterConditionByCode(0, "O"); !ok {
+		t.Fatal("expected condition O to be removed")
+	}
+	if _, ok := ui.encounterItems[0].Conditions["O"]; ok {
+		t.Fatalf("condition O should be gone: %#v", ui.encounterItems[0].Conditions)
+	}
+	if ui.encounterItems[0].Conditions["U"] != 1 {
+		t.Fatalf("other conditions must remain untouched: %#v", ui.encounterItems[0].Conditions)
+	}
+}
+
+func TestEncounterDetailsIncludeConditionsForCustomEntry(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:     true,
+			CustomName: "Artificer Aarakocra Lv20",
+			CustomMeta: "Artificer Aarakocra Lv20\nAC: 12\nHP: 123\nInit: +2",
+			CustomInit: 2,
+			BaseHP:     123,
+			CurrentHP:  123,
+			Conditions: map[string]int{
+				"B": 11,
+				"C": 13,
+			},
+		},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(0)
+	ui.renderDetailByEncounterIndex(0)
+
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "Conditions:") {
+		t.Fatalf("expected Conditions line in details, got: %q", meta)
+	}
+	if !strings.Contains(strings.ToLower(meta), "b11 blinded") || !strings.Contains(strings.ToLower(meta), "c13 charmed") {
+		t.Fatalf("expected condition names and rounds in details, got: %q", meta)
+	}
+}
+
 func TestRollDiceExpression(t *testing.T) {
 	total, breakdown, err := rollDiceExpression("2d1+d1+5")
 	if err != nil {

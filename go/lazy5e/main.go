@@ -1022,6 +1022,9 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'c':
 			ui.openEncounterConditionModal()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'x':
+			ui.openEncounterConditionRemoveModal()
+			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'C':
 			ui.clearEncounterConditions()
 			return nil
@@ -1302,6 +1305,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  u : undo ultima operazione encounter\n" +
 			"  r : redo operazione encounter annullata\n" +
 			"  c : aggiungi/togli condizioni (multi select)\n" +
+			"  x : rimuovi una sola condizione dall'entry\n" +
 			"  C : rimuovi tutte le condizioni dall'entry\n" +
 			"  [ / ] : diminuisci/aumenta round condizioni\n" +
 			"  spazio : switch HP average/formula (roll)\n" +
@@ -3523,25 +3527,26 @@ func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
 	descKey := ui.descriptionKeyForEncounterEntry(entry)
 	if entry.Custom {
 		ui.renderDetailByCustomEntry(entry)
-		ui.appendEncounterConditionsToMeta(entry)
-		ui.restoreDescriptionScrollForKey(descKey)
-		return
+	} else {
+		ui.renderDetailByMonsterIndex(entry.MonsterIndex)
 	}
-	ui.renderDetailByMonsterIndex(entry.MonsterIndex)
-	ui.appendEncounterConditionsToMeta(entry)
+	ui.applyEncounterConditionsOverlay(entry)
 	ui.restoreDescriptionScrollForKey(descKey)
 }
 
-func (ui *UI) appendEncounterConditionsToMeta(entry EncounterEntry) {
-	if len(entry.Conditions) == 0 {
+func (ui *UI) applyEncounterConditionsOverlay(entry EncounterEntry) {
+	title := " Details "
+	cond := strings.TrimSpace(ui.encounterConditionsLong(entry))
+	if cond == "" {
+		ui.detailMeta.SetTitle(title)
 		return
 	}
 	text := ui.detailMeta.GetText(false)
-	b := &strings.Builder{}
-	b.WriteString(strings.TrimRight(text, "\n"))
-	b.WriteString("\n[white]Conditions:[-] ")
-	b.WriteString(ui.encounterConditionsLong(entry))
-	ui.detailMeta.SetText(b.String())
+	ui.detailMeta.SetText(insertConditionsLine(text, cond))
+	if badge := ui.encounterConditionsBadge(entry); badge != "" {
+		title = fmt.Sprintf(" Details [%s] ", badge)
+	}
+	ui.detailMeta.SetTitle(title)
 }
 
 func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
@@ -6144,6 +6149,105 @@ func (ui *UI) clearEncounterConditions() {
 	ui.encounter.SetCurrentItem(index)
 	ui.renderDetailByEncounterIndex(index)
 	ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] rimosse da %s  %s", ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+}
+
+func (ui *UI) removeEncounterConditionByCode(index int, code string) bool {
+	if index < 0 || index >= len(ui.encounterItems) {
+		return false
+	}
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if code == "" || len(ui.encounterItems[index].Conditions) == 0 {
+		return false
+	}
+	if _, ok := ui.encounterItems[index].Conditions[code]; !ok {
+		return false
+	}
+	delete(ui.encounterItems[index].Conditions, code)
+	if len(ui.encounterItems[index].Conditions) == 0 {
+		ui.encounterItems[index].Conditions = nil
+	}
+	return true
+}
+
+func (ui *UI) openEncounterConditionRemoveModal() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	index := ui.encounter.GetCurrentItem()
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	entry := ui.encounterItems[index]
+	if len(entry.Conditions) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna condizione da rimuovere[-:-]  %s", helpText))
+		return
+	}
+
+	active := make([]encounterConditionDef, 0, len(entry.Conditions))
+	for _, d := range encounterConditionDefs {
+		if entry.Conditions[d.Code] > 0 {
+			active = append(active, d)
+		}
+	}
+	if len(active) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessuna condizione da rimuovere[-:-]  %s", helpText))
+		return
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true)
+	list.SetTitle(" Remove One Condition (Enter=remove, Esc=cancel) ")
+	list.SetBorderColor(tcell.ColorGold)
+	list.SetTitleColor(tcell.ColorGold)
+	list.SetMainTextColor(tcell.ColorWhite)
+	list.SetSelectedTextColor(tcell.ColorBlack)
+	list.SetSelectedBackgroundColor(tcell.ColorGold)
+	list.ShowSecondaryText(false)
+	for _, d := range active {
+		rounds := entry.Conditions[d.Code]
+		list.AddItem(fmt.Sprintf("%s (%s%d)", d.Name, d.Code, rounds), "", 0, nil)
+	}
+
+	closeModal := func() {
+		ui.pages.RemovePage("encounter-condition-remove")
+		ui.app.SetFocus(ui.encounter)
+	}
+
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		case tcell.KeyEnter:
+			cur := list.GetCurrentItem()
+			if cur < 0 || cur >= len(active) {
+				closeModal()
+				return nil
+			}
+			code := active[cur].Code
+			ui.pushEncounterUndo()
+			if ui.removeEncounterConditionByCode(index, code) {
+				ui.renderEncounterList()
+				ui.encounter.SetCurrentItem(index)
+				ui.renderDetailByEncounterIndex(index)
+				ui.status.SetText(fmt.Sprintf(" [black:gold] condizioni[-:-] rimossa %s da %s  %s", conditionNameByCode(code), ui.encounterEntryDisplay(ui.encounterItems[index]), helpText))
+			}
+			closeModal()
+			return nil
+		default:
+			return event
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 12, 0, true).
+			AddItem(nil, 0, 1, false), 58, 0, true).
+		AddItem(nil, 0, 1, false)
+	ui.pages.AddPage("encounter-condition-remove", modal, true, true)
+	ui.app.SetFocus(list)
 }
 
 func (ui *UI) adjustEncounterConditionRounds(delta int) {
@@ -8925,30 +9029,75 @@ func (ui *UI) encounterConditionsBadge(entry EncounterEntry) string {
 }
 
 func (ui *UI) encounterConditionsLong(entry EncounterEntry) string {
-	if len(entry.Conditions) == 0 {
+	ordered := orderedEncounterConditions(entry.Conditions)
+	if len(ordered) == 0 {
 		return ""
 	}
-	parts := make([]string, 0, len(entry.Conditions))
-	for _, d := range encounterConditionDefs {
-		if n, ok := entry.Conditions[d.Code]; ok && n > 0 {
-			parts = append(parts, fmt.Sprintf("%s %d", d.Name, n))
-		}
-	}
-	if len(parts) == 0 {
-		keys := make([]string, 0, len(entry.Conditions))
-		for k := range entry.Conditions {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-		for _, k := range keys {
-			n := entry.Conditions[k]
-			if n <= 0 {
-				continue
-			}
-			parts = append(parts, fmt.Sprintf("%s %d", conditionNameByCode(k), n))
-		}
+	parts := make([]string, 0, len(ordered))
+	for _, p := range ordered {
+		parts = append(parts, fmt.Sprintf("%s %s", fmt.Sprintf("%s%d", strings.ToUpper(strings.TrimSpace(p.Code)), p.Rounds), conditionNameByCode(p.Code)))
 	}
 	return strings.Join(parts, ", ")
+}
+
+type encounterConditionState struct {
+	Code   string
+	Rounds int
+}
+
+func orderedEncounterConditions(conditions map[string]int) []encounterConditionState {
+	if len(conditions) == 0 {
+		return nil
+	}
+	out := make([]encounterConditionState, 0, len(conditions))
+	seen := map[string]struct{}{}
+	for _, d := range encounterConditionDefs {
+		if n, ok := conditions[d.Code]; ok && n > 0 {
+			out = append(out, encounterConditionState{Code: d.Code, Rounds: n})
+			seen[d.Code] = struct{}{}
+		}
+	}
+	extra := make([]string, 0, len(conditions))
+	extraRounds := map[string]int{}
+	for code, rounds := range conditions {
+		norm := strings.ToUpper(strings.TrimSpace(code))
+		if rounds <= 0 || norm == "" {
+			continue
+		}
+		if _, ok := seen[norm]; ok {
+			continue
+		}
+		extra = append(extra, norm)
+		extraRounds[norm] = rounds
+	}
+	sort.Strings(extra)
+	for _, code := range extra {
+		out = append(out, encounterConditionState{Code: code, Rounds: extraRounds[code]})
+	}
+	return out
+}
+
+func insertConditionsLine(meta string, cond string) string {
+	trimmed := strings.TrimRight(meta, "\n")
+	if trimmed == "" {
+		return "[white]Conditions:[-] " + cond
+	}
+	lines := strings.Split(trimmed, "\n")
+	filtered := make([]string, 0, len(lines)+1)
+	for _, line := range lines {
+		if strings.Contains(strings.ToLower(line), "conditions:") {
+			continue
+		}
+		filtered = append(filtered, line)
+	}
+	if len(filtered) == 0 {
+		return "[white]Conditions:[-] " + cond
+	}
+	withCond := make([]string, 0, len(filtered)+1)
+	withCond = append(withCond, filtered[0])
+	withCond = append(withCond, "[white]Conditions:[-] "+cond)
+	withCond = append(withCond, filtered[1:]...)
+	return strings.Join(withCond, "\n")
 }
 
 func (ui *UI) encounterInitBase(entry EncounterEntry) (int, bool) {
