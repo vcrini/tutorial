@@ -2,7 +2,6 @@ package main
 
 import (
 	crand "crypto/rand"
-	"crypto/sha256"
 	_ "embed"
 	"encoding/hex"
 	"encoding/json"
@@ -35,8 +34,6 @@ const (
 	lastDicePathFile       = ".dice_last_path"
 	defaultBuildPath       = "character_build.yaml"
 	lastBuildPathFile      = ".character_build_last_path"
-	booksCachePath         = ".cache/books_full.json"
-	adventuresCachePath    = ".cache/adventures_full.json"
 	filtersStatePath       = ".filters_state.yaml"
 	descScrollStatePath    = ".description_scroll.yaml"
 )
@@ -118,26 +115,6 @@ type booksDataset struct {
 
 type adventuresDataset struct {
 	Adventures []map[string]any `yaml:"adventures"`
-}
-
-type booksIndexDataset struct {
-	Books []struct {
-		Name      string `yaml:"name"`
-		Source    string `yaml:"source"`
-		Group     string `yaml:"group"`
-		Published string `yaml:"published"`
-		Author    string `yaml:"author"`
-	} `yaml:"books"`
-}
-
-type adventuresIndexDataset struct {
-	Adventures []struct {
-		Name      string `yaml:"name"`
-		Source    string `yaml:"source"`
-		Group     string `yaml:"group"`
-		Published string `yaml:"published"`
-		Author    string `yaml:"author"`
-	} `yaml:"adventures"`
 }
 
 type EncounterEntry struct {
@@ -402,10 +379,6 @@ type UI struct {
 	currentDescKey string
 	bookBodyCache  map[string]string
 	advBodyCache   map[string]string
-	bookRawByID    map[int]map[string]any
-	advRawByID     map[int]map[string]any
-	bookRawLoaded  bool
-	advRawLoaded   bool
 
 	encounterSerial map[int]int
 	encounterItems  []EncounterEntry
@@ -495,13 +468,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("errore caricamento feat YAML embedded: %v", err)
 	}
-	books, _, _, _, err = loadBooksIndexFromBytes(embeddedBooksYAML)
+	books, _, _, _, err = loadBooksFromBytes(embeddedBooksYAML)
 	if err != nil {
-		log.Fatalf("errore caricamento indice book YAML embedded: %v", err)
+		log.Fatalf("errore caricamento book YAML embedded: %v", err)
 	}
-	advs, _, _, _, err = loadAdventuresIndexFromBytes(embeddedAdventuresYAML)
+	advs, _, _, _, err = loadAdventuresFromBytes(embeddedAdventuresYAML)
 	if err != nil {
-		log.Fatalf("errore caricamento indice adventure YAML embedded: %v", err)
+		log.Fatalf("errore caricamento adventure YAML embedded: %v", err)
 	}
 
 	ui := newUI(monsters, items, spells, classes, races, feats, books, advs, envs, crs, types, encountersPath, dicePath)
@@ -553,8 +526,6 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		descScroll:        map[string]int{},
 		bookBodyCache:     map[string]string{},
 		advBodyCache:      map[string]string{},
-		bookRawByID:       map[int]map[string]any{},
-		advRawByID:        map[int]map[string]any{},
 		activeBottomPanel: "description",
 	}
 
@@ -3819,16 +3790,6 @@ func (ui *UI) renderDetailByBookIndex(bookIndex int) {
 	fmt.Fprintf(builder, "[white]Author:[-] %s\n", blankIfEmpty(bk.Type, "n/a"))
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
-	if err := ui.ensureBooksRawLoaded(); err != nil {
-		ui.rawText = fmt.Sprintf("Errore caricamento contenuto manuali: %v", err)
-		ui.rawQuery = ""
-		ui.renderRawWithHighlight("", -1)
-		ui.detailRaw.ScrollToBeginning()
-		return
-	}
-	if raw, ok := ui.bookRawByID[bk.ID]; ok {
-		bk.Raw = raw
-	}
 	ui.rawText = ui.fullBookDescriptionText(bk)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
@@ -3848,16 +3809,6 @@ func (ui *UI) renderDetailByAdventureIndex(adventureIndex int) {
 	fmt.Fprintf(builder, "[white]Author:[-] %s\n", blankIfEmpty(ad.Type, "n/a"))
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
-	if err := ui.ensureAdventuresRawLoaded(); err != nil {
-		ui.rawText = fmt.Sprintf("Errore caricamento contenuto avventure: %v", err)
-		ui.rawQuery = ""
-		ui.renderRawWithHighlight("", -1)
-		ui.detailRaw.ScrollToBeginning()
-		return
-	}
-	if raw, ok := ui.advRawByID[ad.ID]; ok {
-		ad.Raw = raw
-	}
 	ui.rawText = ui.fullAdventureDescriptionText(ad)
 	ui.rawQuery = ""
 	ui.renderRawWithHighlight("", -1)
@@ -4358,109 +4309,6 @@ func buildAdventureDescriptionText(ad Monster) string {
 		fmt.Fprintf(b, "\nContents\n%s\n", contents)
 	}
 	return strings.TrimSpace(b.String())
-}
-
-type heavyRawCache struct {
-	Version    int              `json:"version"`
-	SourceHash string           `json:"source_hash"`
-	Items      []map[string]any `json:"items"`
-}
-
-func sourceHashHex(b []byte) string {
-	sum := sha256.Sum256(b)
-	return hex.EncodeToString(sum[:])
-}
-
-func loadHeavyRawCache(path string, expectedHash string) ([]map[string]any, bool, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, false, nil
-		}
-		return nil, false, err
-	}
-	var cache heavyRawCache
-	if err := json.Unmarshal(b, &cache); err != nil {
-		return nil, false, nil
-	}
-	if cache.Version != 1 || strings.TrimSpace(cache.SourceHash) == "" || cache.SourceHash != expectedHash {
-		return nil, false, nil
-	}
-	return cache.Items, true, nil
-}
-
-func saveHeavyRawCache(path string, sourceHash string, items []map[string]any) error {
-	cache := heavyRawCache{
-		Version:    1,
-		SourceHash: sourceHash,
-		Items:      items,
-	}
-	out, err := json.Marshal(cache)
-	if err != nil {
-		return err
-	}
-	if dir := filepath.Dir(path); dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return err
-		}
-	}
-	return os.WriteFile(path, out, 0o644)
-}
-
-func rawListToIDMap(items []map[string]any) map[int]map[string]any {
-	out := make(map[int]map[string]any, len(items))
-	for i := range items {
-		out[i] = items[i]
-	}
-	return out
-}
-
-func (ui *UI) ensureBooksRawLoaded() error {
-	if ui.bookRawLoaded {
-		return nil
-	}
-	expectedHash := sourceHashHex(embeddedBooksYAML)
-	cached, ok, err := loadHeavyRawCache(booksCachePath, expectedHash)
-	if err != nil {
-		return err
-	}
-	if ok {
-		ui.bookRawByID = rawListToIDMap(cached)
-		ui.bookRawLoaded = true
-		return nil
-	}
-	var ds booksDataset
-	if err := yaml.Unmarshal(embeddedBooksYAML, &ds); err != nil {
-		return err
-	}
-	ui.bookRawByID = rawListToIDMap(ds.Books)
-	ui.bookRawLoaded = true
-	_ = saveHeavyRawCache(booksCachePath, expectedHash, ds.Books)
-	return nil
-}
-
-func (ui *UI) ensureAdventuresRawLoaded() error {
-	if ui.advRawLoaded {
-		return nil
-	}
-	expectedHash := sourceHashHex(embeddedAdventuresYAML)
-	cached, ok, err := loadHeavyRawCache(adventuresCachePath, expectedHash)
-	if err != nil {
-		return err
-	}
-	if ok {
-		ui.advRawByID = rawListToIDMap(cached)
-		ui.advRawLoaded = true
-		return nil
-	}
-	var ds adventuresDataset
-	if err := yaml.Unmarshal(embeddedAdventuresYAML, &ds); err != nil {
-		return err
-	}
-	ui.advRawByID = rawListToIDMap(ds.Adventures)
-	ui.advRawLoaded = true
-	_ = saveHeavyRawCache(adventuresCachePath, expectedHash, ds.Adventures)
-	return nil
 }
 
 func full5eDataRoot() string {
@@ -8756,56 +8604,6 @@ func loadBooksFromBytes(b []byte) ([]Monster, []string, []string, []string, erro
 	return books, keysSorted(groupSet), keysSorted(yearSet), keysSorted(authorSet), nil
 }
 
-func loadBooksIndexFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
-	var ds booksIndexDataset
-	if err := yaml.Unmarshal(b, &ds); err != nil {
-		return nil, nil, nil, nil, err
-	}
-	books := make([]Monster, 0, len(ds.Books))
-	groupSet := map[string]struct{}{}
-	yearSet := map[string]struct{}{}
-	authorSet := map[string]struct{}{}
-	for i, raw := range ds.Books {
-		name := strings.TrimSpace(raw.Name)
-		if name == "" {
-			continue
-		}
-		source := strings.TrimSpace(raw.Source)
-		group := strings.TrimSpace(raw.Group)
-		published := strings.TrimSpace(raw.Published)
-		author := strings.TrimSpace(raw.Author)
-		env := []string{}
-		if group != "" {
-			env = append(env, group)
-			groupSet[group] = struct{}{}
-		}
-		if source != "" {
-			groupSet[source] = struct{}{}
-		}
-		if published == "" {
-			published = "Unknown"
-		}
-		yearSet[published] = struct{}{}
-		if author == "" {
-			author = "Unknown"
-		}
-		authorSet[author] = struct{}{}
-		books = append(books, Monster{
-			ID:          i,
-			Name:        name,
-			CR:          published,
-			Environment: env,
-			Source:      source,
-			Type:        author,
-			Raw:         nil,
-		})
-	}
-	sort.Slice(books, func(i, j int) bool {
-		return strings.ToLower(books[i].Name) < strings.ToLower(books[j].Name)
-	})
-	return books, keysSorted(groupSet), keysSorted(yearSet), keysSorted(authorSet), nil
-}
-
 func loadAdventuresFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
 	var ds adventuresDataset
 	if err := yaml.Unmarshal(b, &ds); err != nil {
@@ -8846,56 +8644,6 @@ func loadAdventuresFromBytes(b []byte) ([]Monster, []string, []string, []string,
 			Source:      source,
 			Type:        author,
 			Raw:         raw,
-		})
-	}
-	sort.Slice(adventures, func(i, j int) bool {
-		return strings.ToLower(adventures[i].Name) < strings.ToLower(adventures[j].Name)
-	})
-	return adventures, keysSorted(groupSet), keysSorted(yearSet), keysSorted(authorSet), nil
-}
-
-func loadAdventuresIndexFromBytes(b []byte) ([]Monster, []string, []string, []string, error) {
-	var ds adventuresIndexDataset
-	if err := yaml.Unmarshal(b, &ds); err != nil {
-		return nil, nil, nil, nil, err
-	}
-	adventures := make([]Monster, 0, len(ds.Adventures))
-	groupSet := map[string]struct{}{}
-	yearSet := map[string]struct{}{}
-	authorSet := map[string]struct{}{}
-	for i, raw := range ds.Adventures {
-		name := strings.TrimSpace(raw.Name)
-		if name == "" {
-			continue
-		}
-		source := strings.TrimSpace(raw.Source)
-		group := strings.TrimSpace(raw.Group)
-		published := strings.TrimSpace(raw.Published)
-		author := strings.TrimSpace(raw.Author)
-		env := []string{}
-		if group != "" {
-			env = append(env, group)
-			groupSet[group] = struct{}{}
-		}
-		if source != "" {
-			groupSet[source] = struct{}{}
-		}
-		if published == "" {
-			published = "Unknown"
-		}
-		yearSet[published] = struct{}{}
-		if author == "" {
-			author = "Unknown"
-		}
-		authorSet[author] = struct{}{}
-		adventures = append(adventures, Monster{
-			ID:          i,
-			Name:        name,
-			CR:          published,
-			Environment: env,
-			Source:      source,
-			Type:        author,
-			Raw:         nil,
 		})
 	}
 	sort.Slice(adventures, func(i, j int) bool {
