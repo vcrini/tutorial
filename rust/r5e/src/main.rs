@@ -11,6 +11,7 @@ use ratatui::widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragra
 use ratatui::{DefaultTerminal, Frame};
 use serde::{Deserialize, Serialize};
 use serde_yaml::Value;
+use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
 use std::io;
@@ -19,7 +20,8 @@ use std::time::Duration;
 
 const DEFAULT_ENCOUNTERS_PATH: &str = "encounters.yaml";
 const DEFAULT_DICE_PATH: &str = "dice.yaml";
-const HELP_TEXT: &str = "q esci | / cerca | tab focus | 0/1/2/3 pannelli | [/] browse | 4..9 browse diretto | a roll dice | Enter aggiungi encounter | e edit encounter | d del encounter / toggle detail | ←/→ hp -/+ | s/l save/load | i/I init one/all | S sort init | * turn mode | n/p next/prev turn | u/r undo/redo | f fullscreen | PgUp/PgDn scroll desc | j/k naviga";
+const DEFAULT_BUILD_PATH: &str = "character_build.yaml";
+const HELP_TEXT: &str = "q esci | / cerca | tab focus | 0/1/2/3 pannelli | [/] browse | 4..9 browse diretto | a roll dice | Enter aggiungi encounter | N nuovo personaggio | e edit encounter | c condizione | x clear cond | d del encounter / toggle detail | ←/→ hp -/+ | s/l save/load | w/o save/load build | i/I init one/all | S sort init | * turn mode | n/p next/prev turn | u/r undo/redo | M/L treasure | f fullscreen | PgUp/PgDn scroll desc | j/k naviga";
 
 #[derive(Parser, Debug)]
 #[command(name = "r5e", version, about = "Rust conversion di lazy5e")]
@@ -145,6 +147,7 @@ struct Record {
     kind: String,
     environment: Vec<String>,
     description: String,
+    stat_block: String,
     base_hp: i32,
     initiative_mod: i32,
 }
@@ -160,6 +163,8 @@ struct EncounterRow {
     base_hp: i32,
     has_init_roll: bool,
     init_roll: i32,
+    conditions: BTreeMap<String, i32>,
+    character: Option<CharacterBuild>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -191,6 +196,10 @@ struct PersistedEncounterItem {
     #[serde(default)]
     init_roll: i32,
     #[serde(default)]
+    conditions: BTreeMap<String, i32>,
+    #[serde(default)]
+    character: Option<CharacterBuild>,
+    #[serde(default)]
     current_hp: i32,
     #[serde(default)]
     base_hp: i32,
@@ -220,8 +229,26 @@ struct PersistedEncounterItemOut {
     init_rolled: bool,
     #[serde(skip_serializing_if = "is_zero_i32")]
     init_roll: i32,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    conditions: BTreeMap<String, i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    character: Option<CharacterBuild>,
     current_hp: i32,
     base_hp: i32,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+struct CharacterBuild {
+    #[serde(default)]
+    name: String,
+    #[serde(default)]
+    race: String,
+    #[serde(default)]
+    class: String,
+    #[serde(default)]
+    level: i32,
+    #[serde(default)]
+    hp: i32,
 }
 
 #[derive(Debug, Deserialize)]
@@ -293,6 +320,8 @@ enum InputMode {
     Search,
     Dice,
     EncounterEdit,
+    ConditionEdit,
+    CharacterCreate,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -326,6 +355,7 @@ struct App {
     status: String,
     encounters_path: PathBuf,
     dice_path: PathBuf,
+    build_path: PathBuf,
     turn_mode: bool,
     turn_index: usize,
     turn_round: i32,
@@ -336,6 +366,7 @@ struct App {
     fullscreen_panel: Option<ActivePanel>,
     detail_mode: DetailMode,
     description_scroll: usize,
+    treasure_text: String,
 }
 
 impl App {
@@ -348,6 +379,10 @@ impl App {
             .ok()
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from(DEFAULT_DICE_PATH));
+        let build_path = std::env::var("BUILD_YAML")
+            .ok()
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from(DEFAULT_BUILD_PATH));
 
         let monsters = parse_dataset("monsters", include_str!("../data/monster.yaml"))?;
         let items = parse_dataset("items", include_str!("../data/item.yaml"))?;
@@ -381,6 +416,7 @@ impl App {
             status: HELP_TEXT.to_string(),
             encounters_path,
             dice_path,
+            build_path,
             turn_mode: false,
             turn_index: 0,
             turn_round: 1,
@@ -391,6 +427,7 @@ impl App {
             fullscreen_panel: None,
             detail_mode: DetailMode::Description,
             description_scroll: 0,
+            treasure_text: "Nessun tesoro generato. Premi M (normal) o L (lair).".to_string(),
         };
 
         app.load_encounters();
@@ -463,6 +500,8 @@ impl App {
             let custom_name = it.custom_name;
             let name = if it.custom && !custom_name.is_empty() {
                 custom_name.clone()
+            } else if let Some(ch) = &it.character {
+                ch.name.clone()
             } else {
                 self.monsters
                     .get(it.monster_id as usize)
@@ -479,6 +518,8 @@ impl App {
                 base_hp: it.base_hp,
                 has_init_roll: it.init_rolled,
                 init_roll: it.init_roll,
+                conditions: it.conditions,
+                character: it.character,
             });
         }
         self.turn_mode = persisted.turn_mode;
@@ -546,6 +587,8 @@ impl App {
                     custom_name: it.custom_name.clone(),
                     init_rolled: it.has_init_roll,
                     init_roll: it.init_roll,
+                    conditions: it.conditions.clone(),
+                    character: it.character.clone(),
                     current_hp: it.current_hp,
                     base_hp: it.base_hp,
                 })
@@ -712,6 +755,7 @@ impl App {
         let mut next = (prev + delta).rem_euclid(len);
         if delta > 0 && next == 0 && prev == len - 1 {
             self.turn_round += 1;
+            self.decay_conditions_round();
         } else if delta < 0 && next == len - 1 && prev == 0 {
             self.turn_round = (self.turn_round - 1).max(1);
         }
@@ -721,6 +765,23 @@ impl App {
         self.turn_index = next as usize;
         self.encounter_state.select(Some(self.turn_index));
         self.status = format!("turn round {} entry {}", self.turn_round, self.turn_index + 1);
+    }
+
+    fn decay_conditions_round(&mut self) {
+        for row in &mut self.encounters {
+            let mut remove = Vec::new();
+            for (k, v) in &mut row.conditions {
+                if *v > 0 {
+                    *v -= 1;
+                }
+                if *v <= 0 {
+                    remove.push(k.clone());
+                }
+            }
+            for k in remove {
+                row.conditions.remove(&k);
+            }
+        }
     }
 
     fn roll_selected_init(&mut self) {
@@ -814,6 +875,8 @@ impl App {
             base_hp: rec.base_hp,
             has_init_roll: false,
             init_roll: 0,
+            conditions: BTreeMap::new(),
+            character: None,
         });
         self.encounter_state
             .select(Some(self.encounters.len().saturating_sub(1)));
@@ -892,6 +955,102 @@ impl App {
         self.input_buffer = format!("{};{};{}", row.name, row.current_hp, row.base_hp);
     }
 
+    fn open_condition_edit(&mut self) {
+        if self.encounter_state.selected().is_none() {
+            return;
+        }
+        self.input_mode = InputMode::ConditionEdit;
+        self.input_buffer.clear();
+    }
+
+    fn open_character_create(&mut self) {
+        self.input_mode = InputMode::CharacterCreate;
+        self.input_buffer.clear();
+    }
+
+    fn apply_character_create(&mut self, payload: &str) {
+        let Ok(build) = parse_character_payload(payload) else {
+            self.status = "nuovo personaggio: formato nome;razza;classe;livello;hp".to_string();
+            return;
+        };
+        self.push_encounter_undo();
+        let hp = build.hp.max(1);
+        self.encounters.push(EncounterRow {
+            name: build.name.clone(),
+            monster_id: 0,
+            ordinal: 1,
+            custom: true,
+            custom_name: build.name.clone(),
+            current_hp: hp,
+            base_hp: hp,
+            has_init_roll: false,
+            init_roll: 0,
+            conditions: BTreeMap::new(),
+            character: Some(build),
+        });
+        self.encounter_state
+            .select(Some(self.encounters.len().saturating_sub(1)));
+        self.active_panel = ActivePanel::Encounters;
+        self.status = "personaggio aggiunto a encounters".to_string();
+    }
+
+    fn save_selected_build(&mut self) -> Result<()> {
+        let Some(idx) = self.encounter_state.selected() else {
+            self.status = "nessun encounter selezionato".to_string();
+            return Ok(());
+        };
+        let Some(row) = self.encounters.get(idx) else {
+            return Ok(());
+        };
+        let build = if let Some(ch) = &row.character {
+            ch.clone()
+        } else {
+            CharacterBuild {
+                name: row.name.clone(),
+                race: String::new(),
+                class: String::new(),
+                level: 1,
+                hp: row.base_hp,
+            }
+        };
+        let yaml = serde_yaml::to_string(&build)?;
+        fs::write(&self.build_path, yaml)
+            .with_context(|| format!("errore save build {}", self.build_path.display()))?;
+        self.status = format!("build salvato {}", self.build_path.display());
+        Ok(())
+    }
+
+    fn load_build_into_encounter(&mut self) -> Result<()> {
+        let content = fs::read_to_string(&self.build_path)
+            .with_context(|| format!("errore load build {}", self.build_path.display()))?;
+        let build: CharacterBuild = serde_yaml::from_str(&content)
+            .with_context(|| format!("build yaml non valido {}", self.build_path.display()))?;
+        if build.name.trim().is_empty() {
+            self.status = "build non valido (name vuoto)".to_string();
+            return Ok(());
+        }
+        self.push_encounter_undo();
+        let hp = build.hp.max(1);
+        self.encounters.push(EncounterRow {
+            name: build.name.clone(),
+            monster_id: 0,
+            ordinal: 1,
+            custom: true,
+            custom_name: build.name.clone(),
+            current_hp: hp,
+            base_hp: hp,
+            has_init_roll: false,
+            init_roll: 0,
+            conditions: BTreeMap::new(),
+            character: Some(build),
+        });
+        self.encounter_state
+            .select(Some(self.encounters.len().saturating_sub(1)));
+        self.active_panel = ActivePanel::Encounters;
+        self.status = format!("build caricato {}", self.build_path.display());
+        Ok(())
+    }
+
     fn apply_encounter_edit(&mut self, payload: &str) {
         let Some(idx) = self.encounter_state.selected() else {
             return;
@@ -924,7 +1083,57 @@ impl App {
         if row.custom {
             row.custom_name = row.name.clone();
         }
+        if let Some(ch) = &mut row.character {
+            ch.name = row.name.clone();
+            ch.hp = row.base_hp;
+            if parts.len() >= 6 {
+                ch.race = parts[3].trim().to_string();
+                ch.class = parts[4].trim().to_string();
+                if let Ok(level) = parts[5].trim().parse::<i32>() {
+                    ch.level = level.max(1);
+                }
+            }
+        }
         self.status = format!("encounter aggiornato: {}", row.name);
+    }
+
+    fn apply_condition_edit(&mut self, payload: &str) {
+        let Some(idx) = self.encounter_state.selected() else {
+            return;
+        };
+        let parsed = parse_condition_payload(payload);
+        let Ok((code, rounds)) = parsed else {
+            self.status = "condizione non valida".to_string();
+            return;
+        };
+        self.push_encounter_undo();
+        let Some(row) = self.encounters.get_mut(idx) else {
+            return;
+        };
+        if row.conditions.contains_key(&code) {
+            row.conditions.remove(&code);
+            self.status = format!("condizione rimossa: {}", code);
+        } else {
+            row.conditions.insert(code.clone(), rounds);
+            self.status = format!("condizione aggiunta: {}({})", code, rounds);
+        }
+    }
+
+    fn clear_selected_conditions(&mut self) {
+        let Some(idx) = self.encounter_state.selected() else {
+            return;
+        };
+        let Some(row) = self.encounters.get(idx) else {
+            return;
+        };
+        if row.conditions.is_empty() {
+            return;
+        }
+        self.push_encounter_undo();
+        if let Some(row) = self.encounters.get_mut(idx) {
+            row.conditions.clear();
+        }
+        self.status = "condizioni rimosse".to_string();
     }
 
     fn toggle_detail_mode(&mut self) {
@@ -938,57 +1147,82 @@ impl App {
     fn detail_text(&self) -> String {
         match self.detail_mode {
             DetailMode::Description => self.description_text(),
-            DetailMode::Treasure => self.treasure_text(),
+            DetailMode::Treasure => self.treasure_text.clone(),
         }
     }
 
     fn description_text(&self) -> String {
         if let Some(rec) = self.selected_record() {
-            format!(
-                "{}\nsource: {}\ncr: {}\ntype: {}\nenv: {}\n\n{}",
+            let mut parts = Vec::new();
+            parts.push(format!(
+                "{}\nsource: {}\ncr: {}\ntype: {}\nenv: {}",
                 rec.name,
                 rec.source,
                 rec.cr,
                 rec.kind,
-                rec.environment.join(", "),
-                rec.description
-            )
+                rec.environment.join(", ")
+            ));
+            if !rec.stat_block.is_empty() {
+                parts.push(format!("STATISTICHE\n{}", rec.stat_block));
+            }
+            if !rec.description.is_empty() {
+                parts.push(format!("TESTO YAML\n{}", rec.description));
+            }
+            parts.join("\n\n")
         } else {
             "Nessun elemento selezionato".to_string()
         }
     }
 
-    fn treasure_text(&self) -> String {
+    fn generate_treasure(&mut self, lair: bool) {
         let Some(rec) = self.selected_record() else {
-            return "Nessun elemento selezionato".to_string();
+            self.status = "nessun elemento selezionato".to_string();
+            return;
         };
-        let cr = rec.cr.trim();
-        let band = if cr.is_empty() || cr == "0" || cr == "1/8" || cr == "1/4" || cr == "1/2" {
-            "0-4"
-        } else if let Ok(v) = cr.parse::<i32>() {
-            if v <= 4 {
-                "0-4"
-            } else if v <= 10 {
-                "5-10"
-            } else if v <= 16 {
-                "11-16"
-            } else {
-                "17+"
-            }
-        } else {
-            "0-4"
-        };
+        let cr = rec.cr.clone();
+        let name = rec.name.clone();
+        let band = cr_to_band(&cr);
         let mut rng = rand::rng();
-        let gp = match band {
-            "0-4" => rng.random_range(5..=50),
-            "5-10" => rng.random_range(50..=450),
-            "11-16" => rng.random_range(500..=3000),
-            _ => rng.random_range(4000..=20000),
+        let mul = if lair { 5 } else { 1 };
+        let cp = match band {
+            0 => rng.random_range(0..=80) * mul,
+            1 => rng.random_range(0..=500) * mul,
+            2 => rng.random_range(0..=1200) * mul,
+            _ => rng.random_range(0..=3000) * mul,
         };
-        format!(
-            "Treasure Preview\n\nTarget: {}\nCR: {}\nBand: {}\n\nCoins:\n- {} gp\n\nNote:\n- Anteprima rapida (non tabella completa DMG).\n- Premi d su Description per tornare.",
-            rec.name, rec.cr, band, gp
-        )
+        let sp = match band {
+            0 => rng.random_range(0..=30) * mul,
+            1 => rng.random_range(0..=250) * mul,
+            2 => rng.random_range(0..=800) * mul,
+            _ => rng.random_range(0..=2000) * mul,
+        };
+        let gp = match band {
+            0 => rng.random_range(5..=60) * mul,
+            1 => rng.random_range(50..=500) * mul,
+            2 => rng.random_range(400..=3500) * mul,
+            _ => rng.random_range(3000..=25000) * mul,
+        };
+        let pp = match band {
+            0 => 0,
+            1 => rng.random_range(0..=20) * mul,
+            2 => rng.random_range(0..=200) * mul,
+            _ => rng.random_range(50..=1200) * mul,
+        };
+        let kind = if lair { "Lair Treasure" } else { "Treasure" };
+        self.treasure_text = format!(
+            "{}\n\nTarget: {}\nCR: {}\nBand: {}\n\nCoins:\n- {} cp\n- {} sp\n- {} gp\n- {} pp\n\nNote:\n- Generazione rapida ispirata alle bande CR.\n- Premi d per tornare alla Description.",
+            kind,
+            name,
+            cr,
+            band_label(band),
+            cp,
+            sp,
+            gp,
+            pp
+        );
+        self.detail_mode = DetailMode::Treasure;
+        self.description_scroll = 0;
+        self.status = format!("{} generato", kind.to_lowercase());
     }
 
     fn scrolled_text(&self, text: &str) -> String {
@@ -1023,6 +1257,14 @@ impl App {
             }
             InputMode::EncounterEdit => {
                 self.handle_prompt(key, InputMode::EncounterEdit)?;
+                Ok(false)
+            }
+            InputMode::ConditionEdit => {
+                self.handle_prompt(key, InputMode::ConditionEdit)?;
+                Ok(false)
+            }
+            InputMode::CharacterCreate => {
+                self.handle_prompt(key, InputMode::CharacterCreate)?;
                 Ok(false)
             }
         }
@@ -1062,9 +1304,20 @@ impl App {
                 self.input_mode = InputMode::Dice;
                 self.input_buffer.clear();
             }
+            KeyCode::Char('N') => self.open_character_create(),
             KeyCode::Char('e') => {
                 if self.active_panel == ActivePanel::Encounters {
                     self.open_encounter_edit();
+                }
+            }
+            KeyCode::Char('c') => {
+                if self.active_panel == ActivePanel::Encounters {
+                    self.open_condition_edit();
+                }
+            }
+            KeyCode::Char('x') => {
+                if self.active_panel == ActivePanel::Encounters {
+                    self.clear_selected_conditions();
                 }
             }
             KeyCode::Enter => {
@@ -1097,6 +1350,16 @@ impl App {
                 }
                 _ => {}
             },
+            KeyCode::Char('w') => {
+                if self.active_panel == ActivePanel::Encounters {
+                    self.save_selected_build()?;
+                }
+            }
+            KeyCode::Char('o') => {
+                if self.active_panel == ActivePanel::Encounters {
+                    self.load_build_into_encounter()?;
+                }
+            }
             KeyCode::Char('l') => match self.active_panel {
                 ActivePanel::Encounters => self.load_encounters_with_undo(),
                 ActivePanel::Dice => self.load_dice_with_undo(),
@@ -1142,6 +1405,18 @@ impl App {
                 ActivePanel::Dice => self.redo_dice(),
                 _ => {}
             },
+            KeyCode::Char('M') => {
+                if self.active_panel == ActivePanel::Detail || self.active_panel == ActivePanel::Browse
+                {
+                    self.generate_treasure(false);
+                }
+            }
+            KeyCode::Char('L') => {
+                if self.active_panel == ActivePanel::Detail || self.active_panel == ActivePanel::Browse
+                {
+                    self.generate_treasure(true);
+                }
+            }
             KeyCode::Char('f') => {
                 if self.fullscreen_panel.is_some() {
                     self.fullscreen_panel = None;
@@ -1194,6 +1469,12 @@ impl App {
                     }
                     InputMode::EncounterEdit => {
                         self.apply_encounter_edit(&value);
+                    }
+                    InputMode::ConditionEdit => {
+                        self.apply_condition_edit(&value);
+                    }
+                    InputMode::CharacterCreate => {
+                        self.apply_character_create(&value);
                     }
                     InputMode::Normal => {}
                 }
@@ -1368,9 +1649,39 @@ fn render_ui(frame: &mut Frame<'_>, app: &mut App) {
             } else {
                 String::new()
             };
+            let cond = if e.conditions.is_empty() {
+                String::new()
+            } else {
+                let txt = e
+                    .conditions
+                    .iter()
+                    .map(|(k, v)| format!("{k}{v}"))
+                    .collect::<Vec<_>>()
+                    .join(",");
+                format!(" cond=[{}]", txt)
+            };
+            let ch = if let Some(c) = &e.character {
+                let mut parts = Vec::new();
+                if !c.class.trim().is_empty() {
+                    parts.push(c.class.trim().to_string());
+                }
+                if c.level > 0 {
+                    parts.push(format!("Lv{}", c.level));
+                }
+                if !c.race.trim().is_empty() {
+                    parts.push(c.race.trim().to_string());
+                }
+                if parts.is_empty() {
+                    String::new()
+                } else {
+                    format!(" [{}]", parts.join(" "))
+                }
+            } else {
+                String::new()
+            };
             ListItem::new(format!(
-                "{}{} #{} [id={}] hp={}/{}{}",
-                turn_mark, e.name, e.ordinal, e.monster_id, e.current_hp, e.base_hp, init
+                "{}{}{} #{} [id={}] hp={}/{}{}{}",
+                turn_mark, e.name, ch, e.ordinal, e.monster_id, e.current_hp, e.base_hp, init, cond
             ))
         })
         .collect();
@@ -1400,6 +1711,8 @@ fn render_ui(frame: &mut Frame<'_>, app: &mut App) {
             InputMode::Search => "Cerca (/)",
             InputMode::Dice => "Roll Dice (a)",
             InputMode::EncounterEdit => "Edit Encounter (e): nome;current_hp;base_hp",
+            InputMode::ConditionEdit => "Condizione (c): CODE[:rounds] (es. B:2)",
+            InputMode::CharacterCreate => "Nuovo Personaggio (N): nome;razza;classe;livello;hp",
             InputMode::Normal => "",
         };
         let area = centered_rect(70, 3, frame.area());
@@ -1450,9 +1763,39 @@ fn render_fullscreen_panel(frame: &mut Frame<'_>, app: &mut App, area: Rect, pan
                     } else {
                         String::new()
                     };
+                    let cond = if e.conditions.is_empty() {
+                        String::new()
+                    } else {
+                        let txt = e
+                            .conditions
+                            .iter()
+                            .map(|(k, v)| format!("{k}{v}"))
+                            .collect::<Vec<_>>()
+                            .join(",");
+                        format!(" cond=[{}]", txt)
+                    };
+                    let ch = if let Some(c) = &e.character {
+                        let mut parts = Vec::new();
+                        if !c.class.trim().is_empty() {
+                            parts.push(c.class.trim().to_string());
+                        }
+                        if c.level > 0 {
+                            parts.push(format!("Lv{}", c.level));
+                        }
+                        if !c.race.trim().is_empty() {
+                            parts.push(c.race.trim().to_string());
+                        }
+                        if parts.is_empty() {
+                            String::new()
+                        } else {
+                            format!(" [{}]", parts.join(" "))
+                        }
+                    } else {
+                        String::new()
+                    };
                     ListItem::new(format!(
-                        "{}{} #{} [id={}] hp={}/{}{}",
-                        turn_mark, e.name, e.ordinal, e.monster_id, e.current_hp, e.base_hp, init
+                        "{}{}{} #{} [id={}] hp={}/{}{}{}",
+                        turn_mark, e.name, ch, e.ordinal, e.monster_id, e.current_hp, e.base_hp, init, cond
                     ))
                 })
                 .collect();
@@ -1555,7 +1898,16 @@ fn parse_dataset(root: &str, raw: &str) -> Result<Vec<Record>> {
             })
             .unwrap_or_default();
 
-        let description = extract_description(item);
+        let description = if root == "monsters" {
+            extract_monster_yaml_text(item)
+        } else {
+            extract_description(item)
+        };
+        let stat_block = if root == "monsters" {
+            extract_monster_stat_block(item)
+        } else {
+            String::new()
+        };
         out.push(Record {
             id: idx as i32,
             name: field_string(item, "name"),
@@ -1564,6 +1916,7 @@ fn parse_dataset(root: &str, raw: &str) -> Result<Vec<Record>> {
             kind: field_string(item, "type"),
             environment,
             description,
+            stat_block,
             base_hp: extract_base_hp(item),
             initiative_mod: extract_initiative_mod(item),
         });
@@ -1605,6 +1958,35 @@ fn extract_initiative_mod(item: &Value) -> i32 {
     (dex_score - 10).div_euclid(2)
 }
 
+fn cr_to_band(cr: &str) -> i32 {
+    let v = cr.trim();
+    if v.is_empty() || v == "0" || v == "1/8" || v == "1/4" || v == "1/2" {
+        return 0;
+    }
+    if let Ok(n) = v.parse::<i32>() {
+        if n <= 4 {
+            0
+        } else if n <= 10 {
+            1
+        } else if n <= 16 {
+            2
+        } else {
+            3
+        }
+    } else {
+        0
+    }
+}
+
+fn band_label(band: i32) -> &'static str {
+    match band {
+        0 => "0-4",
+        1 => "5-10",
+        2 => "11-16",
+        _ => "17+",
+    }
+}
+
 fn extract_description(item: &Value) -> String {
     for key in ["description", "entries", "entry", "fluff"] {
         if let Some(v) = item.get(key) {
@@ -1615,6 +1997,117 @@ fn extract_description(item: &Value) -> String {
         }
     }
     String::new()
+}
+
+fn extract_monster_stat_block(item: &Value) -> String {
+    let size = field_string(item, "size");
+    let alignment = field_string(item, "alignment");
+    let ac = extract_ac(item);
+    let hp = extract_hp_line(item);
+    let speed = extract_speed(item);
+    let str_score = field_int_or_str(item, "str");
+    let dex_score = field_int_or_str(item, "dex");
+    let con_score = field_int_or_str(item, "con");
+    let int_score = field_int_or_str(item, "int");
+    let wis_score = field_int_or_str(item, "wis");
+    let cha_score = field_int_or_str(item, "cha");
+    let passive = field_int_or_str(item, "passive");
+    let senses = value_to_compact(item.get("senses"));
+    let languages = value_to_compact(item.get("languages"));
+
+    let mut lines = Vec::new();
+    if !size.is_empty() || !alignment.is_empty() {
+        lines.push(format!("size: {} | alignment: {}", size, alignment));
+    }
+    if !ac.is_empty() {
+        lines.push(format!("ac: {}", ac));
+    }
+    if !hp.is_empty() {
+        lines.push(format!("hp: {}", hp));
+    }
+    if !speed.is_empty() {
+        lines.push(format!("speed: {}", speed));
+    }
+    lines.push(format!(
+        "str {} | dex {} | con {} | int {} | wis {} | cha {}",
+        str_score, dex_score, con_score, int_score, wis_score, cha_score
+    ));
+    if !passive.is_empty() || !senses.is_empty() {
+        lines.push(format!("passive: {} | senses: {}", passive, senses));
+    }
+    if !languages.is_empty() {
+        lines.push(format!("languages: {}", languages));
+    }
+    lines.join("\n")
+}
+
+fn extract_monster_yaml_text(item: &Value) -> String {
+    let sections = [
+        ("description", "Description"),
+        ("entries", "Description"),
+        ("entry", "Description"),
+        ("trait", "Traits"),
+        ("traits", "Traits"),
+        ("action", "Actions"),
+        ("actions", "Actions"),
+        ("bonus", "Bonus Actions"),
+        ("bonus_actions", "Bonus Actions"),
+        ("reaction", "Reactions"),
+        ("reactions", "Reactions"),
+        ("legendary", "Legendary Actions"),
+        ("legendary_actions", "Legendary Actions"),
+        ("mythic", "Mythic Actions"),
+        ("spellcasting", "Spellcasting"),
+        ("lair_actions", "Lair Actions"),
+        ("regional_effects", "Regional Effects"),
+        ("fluff", "Lore"),
+    ];
+    let mut grouped: BTreeMap<&str, Vec<String>> = BTreeMap::new();
+    for (key, label) in sections {
+        if let Some(v) = item.get(key) {
+            let text = flatten_text(v);
+            if !text.trim().is_empty() {
+                grouped.entry(label).or_default().push(text);
+            }
+        }
+    }
+
+    // Keep display order intentional instead of alphabetical.
+    let ordered_labels = [
+        "Description",
+        "Traits",
+        "Spellcasting",
+        "Actions",
+        "Bonus Actions",
+        "Reactions",
+        "Legendary Actions",
+        "Mythic Actions",
+        "Lair Actions",
+        "Regional Effects",
+        "Lore",
+    ];
+    let mut chunks = Vec::new();
+    for label in ordered_labels {
+        let Some(parts) = grouped.get(label) else {
+            continue;
+        };
+        let section_text = parts
+            .iter()
+            .filter(|s| !s.trim().is_empty())
+            .cloned()
+            .collect::<Vec<_>>()
+            .join("\n\n");
+        if section_text.is_empty() {
+            continue;
+        }
+        chunks.push(format!("{label}\n{section_text}"));
+    }
+
+    if chunks.is_empty() {
+        extract_description(item)
+    } else {
+        chunks.join("\n\n")
+    }
 }
 
 fn flatten_text(v: &Value) -> String {
@@ -1650,6 +2143,92 @@ fn field_string(item: &Value, key: &str) -> String {
         Some(Value::String(s)) => s.clone(),
         Some(Value::Number(n)) => n.to_string(),
         _ => String::new(),
+    }
+}
+
+fn field_int_or_str(item: &Value, key: &str) -> String {
+    match item.get(key) {
+        Some(Value::String(s)) => s.clone(),
+        Some(Value::Number(n)) => n.to_string(),
+        Some(Value::Mapping(_)) | Some(Value::Sequence(_)) => value_to_compact(item.get(key)),
+        _ => String::new(),
+    }
+}
+
+fn value_to_compact(v: Option<&Value>) -> String {
+    match v {
+        Some(Value::String(s)) => s.clone(),
+        Some(Value::Number(n)) => n.to_string(),
+        Some(Value::Sequence(seq)) => seq
+            .iter()
+            .map(|x| value_to_compact(Some(x)))
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(", "),
+        Some(Value::Mapping(map)) => map
+            .iter()
+            .map(|(k, val)| {
+                let key = k.as_str().unwrap_or("").to_string();
+                let value = value_to_compact(Some(val));
+                if key.is_empty() {
+                    value
+                } else if value.is_empty() {
+                    key
+                } else {
+                    format!("{key} {value}")
+                }
+            })
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(", "),
+        _ => String::new(),
+    }
+}
+
+fn extract_ac(item: &Value) -> String {
+    match item.get("ac") {
+        Some(Value::String(s)) => s.clone(),
+        Some(Value::Number(n)) => n.to_string(),
+        Some(Value::Sequence(seq)) => seq
+            .iter()
+            .map(|v| value_to_compact(Some(v)))
+            .filter(|s| !s.is_empty())
+            .collect::<Vec<_>>()
+            .join(" | "),
+        Some(v) => value_to_compact(Some(v)),
+        None => String::new(),
+    }
+}
+
+fn extract_hp_line(item: &Value) -> String {
+    match item.get("hp") {
+        Some(Value::Number(n)) => n.to_string(),
+        Some(Value::String(s)) => s.clone(),
+        Some(Value::Mapping(map)) => {
+            let avg = map
+                .get(&Value::String("average".to_string()))
+                .map(|v| value_to_compact(Some(v)))
+                .unwrap_or_default();
+            let formula = map
+                .get(&Value::String("formula".to_string()))
+                .map(|v| value_to_compact(Some(v)))
+                .unwrap_or_default();
+            if !avg.is_empty() && !formula.is_empty() {
+                format!("{avg} ({formula})")
+            } else {
+                value_to_compact(Some(&Value::Mapping(map.clone())))
+            }
+        }
+        Some(v) => value_to_compact(Some(v)),
+        None => String::new(),
+    }
+}
+
+fn extract_speed(item: &Value) -> String {
+    match item.get("speed") {
+        Some(Value::String(s)) => s.clone(),
+        Some(v) => value_to_compact(Some(v)),
+        None => String::new(),
     }
 }
 
@@ -1854,6 +2433,48 @@ fn parse_dice_expr(expr: &str) -> Result<(i32, i32, i32)> {
     Ok((count, sides, modifier))
 }
 
+fn parse_character_payload(payload: &str) -> Result<CharacterBuild> {
+    let parts: Vec<&str> = payload.split(';').collect();
+    if parts.len() < 5 {
+        anyhow::bail!("formato atteso nome;razza;classe;livello;hp");
+    }
+    let name = parts[0].trim();
+    let race = parts[1].trim();
+    let class = parts[2].trim();
+    let level = parts[3].trim().parse::<i32>()?;
+    let hp = parts[4].trim().parse::<i32>()?;
+    if name.is_empty() || level <= 0 || hp <= 0 {
+        anyhow::bail!("dati non validi");
+    }
+    Ok(CharacterBuild {
+        name: name.to_string(),
+        race: race.to_string(),
+        class: class.to_string(),
+        level,
+        hp,
+    })
+}
+
+fn parse_condition_payload(payload: &str) -> Result<(String, i32)> {
+    let text = payload.trim();
+    if text.is_empty() {
+        anyhow::bail!("vuoto");
+    }
+    let mut parts = text.split(':');
+    let code = parts.next().unwrap_or("").trim().to_uppercase();
+    if code.is_empty() {
+        anyhow::bail!("code vuoto");
+    }
+    let rounds = parts
+        .next()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .and_then(|s| s.parse::<i32>().ok())
+        .unwrap_or(1)
+        .max(1);
+    Ok((code, rounds))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1873,5 +2494,68 @@ mod tests {
     #[test]
     fn parse_dice_bad() {
         assert!(parse_dice_expr("abc").is_err());
+    }
+
+    #[test]
+    fn parse_character_payload_ok() {
+        let c = parse_character_payload("Aria;Elf;Wizard;5;28").expect("parse char");
+        assert_eq!(c.name, "Aria");
+        assert_eq!(c.race, "Elf");
+        assert_eq!(c.class, "Wizard");
+        assert_eq!(c.level, 5);
+        assert_eq!(c.hp, 28);
+    }
+
+    #[test]
+    fn parse_character_payload_bad() {
+        assert!(parse_character_payload("x;y;z;0;1").is_err());
+        assert!(parse_character_payload("x;y;z;2;0").is_err());
+        assert!(parse_character_payload("x;y;z").is_err());
+    }
+
+    #[test]
+    fn parse_condition_payload_ok() {
+        let (code, rounds) = parse_condition_payload("b:3").expect("cond");
+        assert_eq!(code, "B");
+        assert_eq!(rounds, 3);
+
+        let (code2, rounds2) = parse_condition_payload(" stunned ").expect("cond2");
+        assert_eq!(code2, "STUNNED");
+        assert_eq!(rounds2, 1);
+    }
+
+    #[test]
+    fn parse_condition_payload_bad() {
+        assert!(parse_condition_payload("").is_err());
+        assert!(parse_condition_payload(" :2").is_err());
+    }
+
+    #[test]
+    fn cr_band_mapping() {
+        assert_eq!(cr_to_band("1/2"), 0);
+        assert_eq!(cr_to_band("4"), 0);
+        assert_eq!(cr_to_band("5"), 1);
+        assert_eq!(cr_to_band("11"), 2);
+        assert_eq!(cr_to_band("20"), 3);
+    }
+
+    #[test]
+    fn monster_stat_block_contains_core_fields() {
+        let entries =
+            parse_dataset("monsters", include_str!("../data/monster.yaml")).expect("yaml valido");
+        let first = entries.first().expect("at least one monster");
+        assert!(!first.stat_block.is_empty());
+        let low = first.stat_block.to_lowercase();
+        assert!(low.contains("str"));
+        assert!(low.contains("dex"));
+        assert!(low.contains("hp"));
+    }
+
+    #[test]
+    fn monster_yaml_text_is_present() {
+        let entries =
+            parse_dataset("monsters", include_str!("../data/monster.yaml")).expect("yaml valido");
+        let first = entries.first().expect("at least one monster");
+        assert!(!first.description.is_empty());
     }
 }
