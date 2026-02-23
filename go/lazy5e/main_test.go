@@ -738,6 +738,7 @@ func TestSortEncounterByInitiative(t *testing.T) {
 
 func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	tmp := t.TempDir()
+	t.Setenv("LAZY5E_HOME", tmp)
 	oldWd, _ := os.Getwd()
 	_ = os.Chdir(tmp)
 	defer func() { _ = os.Chdir(oldWd) }()

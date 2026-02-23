@@ -27,15 +27,16 @@ import (
 )
 
 const (
-	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] e[-:-] edit char encounter  [black:gold] w/o[-:-] save/load build  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
-	defaultEncountersPath  = "encounters.yaml"
-	lastEncountersPathFile = ".encounters_last_path"
-	defaultDicePath        = "dice.yaml"
-	lastDicePathFile       = ".dice_last_path"
-	defaultBuildPath       = "character_build.yaml"
-	lastBuildPathFile      = ".character_build_last_path"
-	filtersStatePath       = ".filters_state.yaml"
-	descScrollStatePath    = ".description_scroll.yaml"
+	helpText              = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] e[-:-] edit char encounter  [black:gold] w/o[-:-] save/load build  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	defaultAppDirName     = ".lazy5e"
+	defaultEncountersFile = "encounters.yaml"
+	lastEncountersFile    = ".encounters_last_path"
+	defaultDiceFile       = "dice.yaml"
+	lastDiceFile          = ".dice_last_path"
+	defaultBuildFile      = "character_build.yaml"
+	lastBuildFile         = ".character_build_last_path"
+	filtersStateFile      = ".filters_state.yaml"
+	descScrollStateFile   = ".description_scroll.yaml"
 )
 
 //go:embed data/monster.yaml
@@ -3343,7 +3344,7 @@ func (ui *UI) restoreDescriptionScrollForKey(key string) {
 }
 
 func (ui *UI) loadDescriptionScrollStates() error {
-	b, err := os.ReadFile(descScrollStatePath)
+	b, err := os.ReadFile(descScrollStatePath())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -3374,7 +3375,13 @@ func (ui *UI) saveDescriptionScrollStates() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(descScrollStatePath, out, 0o644)
+	path := descScrollStatePath()
+	if dir := filepath.Dir(path); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(path, out, 0o644)
 }
 
 func (ui *UI) saveCurrentModeFilters() {
@@ -8025,7 +8032,7 @@ func modeFromKey(s string) BrowseMode {
 }
 
 func (ui *UI) loadFilterStates() error {
-	b, err := os.ReadFile(filtersStatePath)
+	b, err := os.ReadFile(filtersStatePath())
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -8066,17 +8073,43 @@ func (ui *UI) saveFilterStates() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filtersStatePath, out, 0o644)
+	path := filtersStatePath()
+	if dir := filepath.Dir(path); dir != "" && dir != "." {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+	}
+	return os.WriteFile(path, out, 0o644)
 }
 
+func lazy5eAppDir() string {
+	if p := strings.TrimSpace(os.Getenv("LAZY5E_HOME")); p != "" {
+		return p
+	}
+	home, err := os.UserHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return "."
+	}
+	return filepath.Join(home, defaultAppDirName)
+}
+
+func defaultEncountersPath() string  { return filepath.Join(lazy5eAppDir(), defaultEncountersFile) }
+func lastEncountersPathFile() string { return filepath.Join(lazy5eAppDir(), lastEncountersFile) }
+func defaultDicePath() string        { return filepath.Join(lazy5eAppDir(), defaultDiceFile) }
+func lastDicePathFile() string       { return filepath.Join(lazy5eAppDir(), lastDiceFile) }
+func defaultBuildPath() string       { return filepath.Join(lazy5eAppDir(), defaultBuildFile) }
+func lastBuildPathFile() string      { return filepath.Join(lazy5eAppDir(), lastBuildFile) }
+func filtersStatePath() string       { return filepath.Join(lazy5eAppDir(), filtersStateFile) }
+func descScrollStatePath() string    { return filepath.Join(lazy5eAppDir(), descScrollStateFile) }
+
 func readLastEncountersPath() string {
-	b, err := os.ReadFile(lastEncountersPathFile)
+	b, err := os.ReadFile(lastEncountersPathFile())
 	if err != nil {
-		return defaultEncountersPath
+		return defaultEncountersPath()
 	}
 	p := strings.TrimSpace(string(b))
 	if p == "" {
-		return defaultEncountersPath
+		return defaultEncountersPath()
 	}
 	return p
 }
@@ -8086,23 +8119,24 @@ func writeLastEncountersPath(path string) error {
 	if p == "" {
 		return nil
 	}
-	dir := filepath.Dir(lastEncountersPathFile)
+	filePath := lastEncountersPathFile()
+	dir := filepath.Dir(filePath)
 	if dir != "." && dir != "" {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
 	}
-	return os.WriteFile(lastEncountersPathFile, []byte(p+"\n"), 0o644)
+	return os.WriteFile(filePath, []byte(p+"\n"), 0o644)
 }
 
 func readLastDicePath() string {
-	b, err := os.ReadFile(lastDicePathFile)
+	b, err := os.ReadFile(lastDicePathFile())
 	if err != nil {
-		return defaultDicePath
+		return defaultDicePath()
 	}
 	p := strings.TrimSpace(string(b))
 	if p == "" {
-		return defaultDicePath
+		return defaultDicePath()
 	}
 	return p
 }
@@ -8112,23 +8146,24 @@ func writeLastDicePath(path string) error {
 	if p == "" {
 		return nil
 	}
-	dir := filepath.Dir(lastDicePathFile)
+	filePath := lastDicePathFile()
+	dir := filepath.Dir(filePath)
 	if dir != "." && dir != "" {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
 	}
-	return os.WriteFile(lastDicePathFile, []byte(p+"\n"), 0o644)
+	return os.WriteFile(filePath, []byte(p+"\n"), 0o644)
 }
 
 func readLastBuildPath() string {
-	b, err := os.ReadFile(lastBuildPathFile)
+	b, err := os.ReadFile(lastBuildPathFile())
 	if err != nil {
-		return defaultBuildPath
+		return defaultBuildPath()
 	}
 	p := strings.TrimSpace(string(b))
 	if p == "" {
-		return defaultBuildPath
+		return defaultBuildPath()
 	}
 	return p
 }
@@ -8138,13 +8173,14 @@ func writeLastBuildPath(path string) error {
 	if p == "" {
 		return nil
 	}
-	dir := filepath.Dir(lastBuildPathFile)
+	filePath := lastBuildPathFile()
+	dir := filepath.Dir(filePath)
 	if dir != "." && dir != "" {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
 	}
-	return os.WriteFile(lastBuildPathFile, []byte(p+"\n"), 0o644)
+	return os.WriteFile(filePath, []byte(p+"\n"), 0o644)
 }
 
 func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {
