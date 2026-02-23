@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	crand "crypto/rand"
 	"crypto/sha256"
 	_ "embed"
-	"encoding/gob"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -30,21 +28,17 @@ import (
 )
 
 const (
-	helpText                      = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] e[-:-] edit char encounter  [black:gold] w/o[-:-] save/load build  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
-	defaultEncountersPath         = "encounters.yaml"
-	lastEncountersPathFile        = ".encounters_last_path"
-	defaultDicePath               = "dice.yaml"
-	lastDicePathFile              = ".dice_last_path"
-	defaultBuildPath              = "character_build.yaml"
-	lastBuildPathFile             = ".character_build_last_path"
-	defaultCacheDirName           = ".lazy5e/cache"
-	booksCacheFileName            = "books_full.gob"
-	adventuresCacheFileName       = "adventures_full.gob"
-	monstersCacheFileName         = "monsters_full.gob"
-	booksLegacyCacheFileName      = "books_full.json"
-	adventuresLegacyCacheFileName = "adventures_full.json"
-	filtersStatePath              = ".filters_state.yaml"
-	descScrollStatePath           = ".description_scroll.yaml"
+	helpText               = " [black:gold] q [-:-] esci  [black:gold] / [-:-] cerca (Name/Description)  [black:gold] tab [-:-] focus  [black:gold] 0/1/2/3 [-:-] pannelli  [black:gold] [/] [-:-] cycle browse  [black:gold] 4..9[-:-] browse diretto  [black:gold] a[-:-] roll Dice  [black:gold] f[-:-] fullscreen panel  [black:gold] j/k [-:-] naviga  [black:gold] e[-:-] edit char encounter  [black:gold] w/o[-:-] save/load build  [black:gold] d [-:-] del encounter | details<->treasure  [black:gold] s/l [-:-] save/load  [black:gold] i/I [-:-] roll init one/all  [black:gold] S [-:-] sort init  [black:gold] * [-:-] turn mode  [black:gold] n/p [-:-] next/prev turn  [black:gold] u/r [-:-] undo/redo  [black:gold] spazio [-:-] avg/formula HP  [black:gold] ←/→ [-:-] danno/cura encounter  [black:gold] PgUp/PgDn [-:-] scroll Description "
+	defaultEncountersPath  = "encounters.yaml"
+	lastEncountersPathFile = ".encounters_last_path"
+	defaultDicePath        = "dice.yaml"
+	lastDicePathFile       = ".dice_last_path"
+	defaultBuildPath       = "character_build.yaml"
+	lastBuildPathFile      = ".character_build_last_path"
+	booksCachePath         = ".cache/books_full.json"
+	adventuresCachePath    = ".cache/adventures_full.json"
+	filtersStatePath       = ".filters_state.yaml"
+	descScrollStatePath    = ".description_scroll.yaml"
 )
 
 //go:embed data/monster.yaml
@@ -475,18 +469,9 @@ func main() {
 			log.Fatalf("errore caricamento YAML esterno (%s): %v", yamlPath, err)
 		}
 	} else {
-		expectedHash := sourceHashHex(embeddedMonstersYAML)
-		cachePath := monstersCachePath()
-		monsters, envs, crs, types, ok, cacheErr := loadMonstersCache(cachePath, expectedHash)
-		if cacheErr != nil {
-			log.Printf("warning: cache mostri non leggibile (%s): %v", cachePath, cacheErr)
-		}
-		if !ok {
-			monsters, envs, crs, types, err = loadMonstersFromBytes(embeddedMonstersYAML)
-			if err != nil {
-				log.Fatalf("errore caricamento YAML embedded: %v", err)
-			}
-			_ = saveMonstersCache(cachePath, expectedHash, monsters, envs, crs, types)
+		monsters, envs, crs, types, err = loadMonstersFromBytes(embeddedMonstersYAML)
+		if err != nil {
+			log.Fatalf("errore caricamento YAML embedded: %v", err)
 		}
 	}
 
@@ -889,9 +874,6 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 			return nil
 		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openDiceRollInput()
-			return nil
-		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'A':
-			ui.rerollAllDiceResults()
 			return nil
 		case focus == ui.dice && event.Key() == tcell.KeyEnter:
 			ui.rerollSelectedDiceResult()
@@ -1352,7 +1334,6 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"[black:gold]Dice[-:-]\n" +
 			"  a : tira espressione dadi (es. 2d6+d20+1)\n" +
 			"  Enter : rilancia riga selezionata\n" +
-			"  A : rilancia tutte le righe della history\n" +
 			"  e : modifica + rilancia riga selezionata\n" +
 			"  d : elimina riga selezionata\n" +
 			"  c : cancella tutte le righe\n" +
@@ -2468,38 +2449,6 @@ func (ui *UI) rerollSelectedDiceResult() {
 	ui.renderDiceList()
 	ui.dice.SetCurrentItem(index)
 	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] rilanciato %s = %d  %s", expr, total, helpText))
-}
-
-func (ui *UI) rerollAllDiceResults() {
-	if len(ui.diceLog) == 0 {
-		return
-	}
-	ui.pushDiceUndo()
-	okCount := 0
-	errCount := 0
-	for i := range ui.diceLog {
-		expr := strings.TrimSpace(ui.diceLog[i].Expression)
-		if expr == "" {
-			errCount++
-			continue
-		}
-		_, breakdown, err := rollDiceExpression(expr)
-		if err != nil {
-			errCount++
-			continue
-		}
-		ui.diceLog[i].Output = breakdown
-		okCount++
-	}
-	ui.renderDiceList()
-	if len(ui.diceLog) > 0 {
-		cur := ui.dice.GetCurrentItem()
-		if cur < 0 || cur >= len(ui.diceLog) {
-			cur = 0
-		}
-		ui.dice.SetCurrentItem(cur)
-	}
-	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] rilanciati tutti (%d ok, %d errori)  %s", okCount, errCount, helpText))
 }
 
 func (ui *UI) appendDiceLog(entry DiceResult) {
@@ -4417,49 +4366,12 @@ type heavyRawCache struct {
 	Items      []map[string]any `json:"items"`
 }
 
-type monstersCache struct {
-	Version    int       `json:"version"`
-	SourceHash string    `json:"source_hash"`
-	Monsters   []Monster `json:"monsters"`
-	Envs       []string  `json:"envs"`
-	CRs        []string  `json:"crs"`
-	Types      []string  `json:"types"`
-}
-
-func init() {
-	// Needed so gob can decode interface values nested in Monster.Raw maps.
-	gob.Register(map[string]any{})
-	gob.Register([]any{})
-	gob.Register("")
-	gob.Register(int(0))
-	gob.Register(float64(0))
-	gob.Register(false)
-}
-
 func sourceHashHex(b []byte) string {
 	sum := sha256.Sum256(b)
 	return hex.EncodeToString(sum[:])
 }
 
 func loadHeavyRawCache(path string, expectedHash string) ([]map[string]any, bool, error) {
-	b, err := os.ReadFile(path)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, false, nil
-		}
-		return nil, false, err
-	}
-	var cache heavyRawCache
-	if err := gob.NewDecoder(bytes.NewReader(b)).Decode(&cache); err != nil {
-		return nil, false, err
-	}
-	if cache.Version != 1 || strings.TrimSpace(cache.SourceHash) == "" || cache.SourceHash != expectedHash {
-		return nil, false, nil
-	}
-	return cache.Items, true, nil
-}
-
-func loadLegacyHeavyRawJSON(path string, expectedHash string) ([]map[string]any, bool, error) {
 	b, err := os.ReadFile(path)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -4483,55 +4395,16 @@ func saveHeavyRawCache(path string, sourceHash string, items []map[string]any) e
 		SourceHash: sourceHash,
 		Items:      items,
 	}
-	if dir := filepath.Dir(path); dir != "" && dir != "." {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return err
-		}
-	}
-	var buf bytes.Buffer
-	if err := gob.NewEncoder(&buf).Encode(cache); err != nil {
-		return err
-	}
-	return os.WriteFile(path, buf.Bytes(), 0o644)
-}
-
-func loadMonstersCache(path string, expectedHash string) ([]Monster, []string, []string, []string, bool, error) {
-	b, err := os.ReadFile(path)
+	out, err := json.Marshal(cache)
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return nil, nil, nil, nil, false, nil
-		}
-		return nil, nil, nil, nil, false, err
-	}
-	var cache monstersCache
-	if err := gob.NewDecoder(bytes.NewReader(b)).Decode(&cache); err != nil {
-		return nil, nil, nil, nil, false, err
-	}
-	if cache.Version != 1 || strings.TrimSpace(cache.SourceHash) == "" || cache.SourceHash != expectedHash {
-		return nil, nil, nil, nil, false, nil
-	}
-	return cache.Monsters, cache.Envs, cache.CRs, cache.Types, true, nil
-}
-
-func saveMonstersCache(path string, sourceHash string, monsters []Monster, envs, crs, types []string) error {
-	cache := monstersCache{
-		Version:    1,
-		SourceHash: sourceHash,
-		Monsters:   monsters,
-		Envs:       envs,
-		CRs:        crs,
-		Types:      types,
+		return err
 	}
 	if dir := filepath.Dir(path); dir != "" && dir != "." {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
 	}
-	var buf bytes.Buffer
-	if err := gob.NewEncoder(&buf).Encode(cache); err != nil {
-		return err
-	}
-	return os.WriteFile(path, buf.Bytes(), 0o644)
+	return os.WriteFile(path, out, 0o644)
 }
 
 func rawListToIDMap(items []map[string]any) map[int]map[string]any {
@@ -4547,19 +4420,13 @@ func (ui *UI) ensureBooksRawLoaded() error {
 		return nil
 	}
 	expectedHash := sourceHashHex(embeddedBooksYAML)
-	cachePath := booksCachePath()
-	cached, ok, err := loadHeavyRawCache(cachePath, expectedHash)
+	cached, ok, err := loadHeavyRawCache(booksCachePath, expectedHash)
 	if err != nil {
-		// Fall back to legacy JSON cache if available.
-		cached, ok, err = loadLegacyHeavyRawJSON(booksLegacyCachePath(), expectedHash)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	if ok {
 		ui.bookRawByID = rawListToIDMap(cached)
 		ui.bookRawLoaded = true
-		_ = saveHeavyRawCache(cachePath, expectedHash, cached)
 		return nil
 	}
 	var ds booksDataset
@@ -4568,7 +4435,7 @@ func (ui *UI) ensureBooksRawLoaded() error {
 	}
 	ui.bookRawByID = rawListToIDMap(ds.Books)
 	ui.bookRawLoaded = true
-	_ = saveHeavyRawCache(cachePath, expectedHash, ds.Books)
+	_ = saveHeavyRawCache(booksCachePath, expectedHash, ds.Books)
 	return nil
 }
 
@@ -4577,18 +4444,13 @@ func (ui *UI) ensureAdventuresRawLoaded() error {
 		return nil
 	}
 	expectedHash := sourceHashHex(embeddedAdventuresYAML)
-	cachePath := adventuresCachePath()
-	cached, ok, err := loadHeavyRawCache(cachePath, expectedHash)
+	cached, ok, err := loadHeavyRawCache(adventuresCachePath, expectedHash)
 	if err != nil {
-		cached, ok, err = loadLegacyHeavyRawJSON(adventuresLegacyCachePath(), expectedHash)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 	if ok {
 		ui.advRawByID = rawListToIDMap(cached)
 		ui.advRawLoaded = true
-		_ = saveHeavyRawCache(cachePath, expectedHash, cached)
 		return nil
 	}
 	var ds adventuresDataset
@@ -4597,7 +4459,7 @@ func (ui *UI) ensureAdventuresRawLoaded() error {
 	}
 	ui.advRawByID = rawListToIDMap(ds.Adventures)
 	ui.advRawLoaded = true
-	_ = saveHeavyRawCache(cachePath, expectedHash, ds.Adventures)
+	_ = saveHeavyRawCache(adventuresCachePath, expectedHash, ds.Adventures)
 	return nil
 }
 
@@ -8406,37 +8268,6 @@ func writeLastBuildPath(path string) error {
 		}
 	}
 	return os.WriteFile(lastBuildPathFile, []byte(p+"\n"), 0o644)
-}
-
-func lazy5eCacheDir() string {
-	if p := strings.TrimSpace(os.Getenv("LAZY5E_CACHE_DIR")); p != "" {
-		return p
-	}
-	home, err := os.UserHomeDir()
-	if err != nil || strings.TrimSpace(home) == "" {
-		return ".cache"
-	}
-	return filepath.Join(home, defaultCacheDirName)
-}
-
-func booksCachePath() string {
-	return filepath.Join(lazy5eCacheDir(), booksCacheFileName)
-}
-
-func adventuresCachePath() string {
-	return filepath.Join(lazy5eCacheDir(), adventuresCacheFileName)
-}
-
-func monstersCachePath() string {
-	return filepath.Join(lazy5eCacheDir(), monstersCacheFileName)
-}
-
-func booksLegacyCachePath() string {
-	return filepath.Join(lazy5eCacheDir(), booksLegacyCacheFileName)
-}
-
-func adventuresLegacyCachePath() string {
-	return filepath.Join(lazy5eCacheDir(), adventuresLegacyCacheFileName)
 }
 
 func (ui *UI) renderRawWithHighlight(query string, lineToHighlight int) {
