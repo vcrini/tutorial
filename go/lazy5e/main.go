@@ -846,6 +846,9 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'a':
 			ui.openDiceRollInput()
 			return nil
+		case focus == ui.dice && event.Key() == tcell.KeyRune && event.Rune() == 'A':
+			ui.rerollAllDiceResults()
+			return nil
 		case focus == ui.dice && event.Key() == tcell.KeyEnter:
 			ui.rerollSelectedDiceResult()
 			return nil
@@ -1305,6 +1308,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"[black:gold]Dice[-:-]\n" +
 			"  a : tira espressione dadi (es. 2d6+d20+1)\n" +
 			"  Enter : rilancia riga selezionata\n" +
+			"  A : rilancia tutte le righe della history\n" +
 			"  e : modifica + rilancia riga selezionata\n" +
 			"  d : elimina riga selezionata\n" +
 			"  c : cancella tutte le righe\n" +
@@ -2420,6 +2424,31 @@ func (ui *UI) rerollSelectedDiceResult() {
 	ui.renderDiceList()
 	ui.dice.SetCurrentItem(index)
 	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] rilanciato %s = %d  %s", expr, total, helpText))
+}
+
+func (ui *UI) rerollAllDiceResults() {
+	if len(ui.diceLog) == 0 {
+		return
+	}
+	ui.pushDiceUndo()
+	okCount := 0
+	errCount := 0
+	for i := range ui.diceLog {
+		expr := strings.TrimSpace(ui.diceLog[i].Expression)
+		if expr == "" {
+			errCount++
+			continue
+		}
+		_, breakdown, err := rollDiceExpression(expr)
+		if err != nil {
+			errCount++
+			continue
+		}
+		ui.diceLog[i].Output = breakdown
+		okCount++
+	}
+	ui.renderDiceList()
+	ui.status.SetText(fmt.Sprintf(" [black:gold]dice[-:-] rilanciati tutti (%d ok, %d errori)  %s", okCount, errCount, helpText))
 }
 
 func (ui *UI) appendDiceLog(entry DiceResult) {
