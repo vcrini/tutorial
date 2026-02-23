@@ -1,0 +1,119 @@
+- name: Strada di Frontiera
+  kind: Viaggio
+  rank: 1
+  description: "Pista battuta tra avamposti, con imboscate frequenti e poche coperture."
+  impeti: "Rallentare il gruppo, consumare risorse, separare i viaggiatori"
+  difficulty: "Bassa"
+  potential_adversaries: "Banditi, lupi, pattuglie ostili"
+  characteristics:
+    - name: Tratto scoperto
+      kind: Passiva
+      text: "Le azioni furtive subiscono penalità in pieno giorno."
+    - name: Imboscata da ciglio
+      kind: Azione
+      text: "Avversari preparati ottengono vantaggio tattico iniziale."
+
+- name: Palude Nera
+  kind: Terreno ostile
+  rank: 2
+  description: "Acque torbide, fango profondo e visibilità ridotta."
+  impeti: "Intrappolare, dividere il gruppo, logorare"
+  difficulty: "Media"
+  potential_adversaries: "Alligatori, sciami d'insetti, predoni"
+  characteristics:
+    - name: Fango viscoso
+      kind: Passiva
+      text: "Movimento ridotto e rischio caduta nelle aree più profonde."
+    - name: Acqua opaca
+      kind: Reazione
+      text: "Le minacce sommerse sono difficili da individuare."
+
+- name: Rovine Infestate
+  kind: Sovrannaturale
+  rank: 2
+  description: "Complesso antico con presenze eteree e corridoi instabili."
+  impeti: "Spaventare, disorientare, isolare"
+  difficulty: "Media-Alta"
+  potential_adversaries: "Fantasmi, cultisti, non morti"
+  characteristics:
+    - name: Eco inquieta
+      kind: Passiva
+      text: "Rumori e ombre possono innescare prove di coraggio."
+    - name: Muri instabili
+      kind: Azione
+      text: "Crolli locali modificano linee di tiro e coperture."
+
+- name: Cava di Pietra
+  kind: Industriale
+  rank: 2
+  description: "Cunicoli, impalcature e pareti alte favoriscono combattimento verticale."
+  impeti: "Tagliare vie di fuga, creare strozzature"
+  difficulty: "Media"
+  potential_adversaries: "Guardie, mercenari, cani da guerra"
+  characteristics:
+    - name: Dislivelli netti
+      kind: Passiva
+      text: "La posizione rialzata concede vantaggio di tiro."
+    - name: Crollo controllato
+      kind: Azione
+      text: "Cariche esplosive possono chiudere passaggi o aprirne di nuovi."
+
+- name: Centro Urbano Affollato
+  kind: Sociale
+  rank: 1
+  description: "Mercati, vicoli e folla in movimento continuo."
+  impeti: "Coprire movimenti, confondere le tracce"
+  difficulty: "Bassa-Media"
+  potential_adversaries: "Borseggiatori, agenti, gang locali"
+  characteristics:
+    - name: Folla dinamica
+      kind: Passiva
+      text: "Inseguimenti e linee di vista cambiano rapidamente."
+    - name: Panico improvviso
+      kind: Reazione
+      text: "Un evento violento può disperdere i civili e isolare i PG."
+
+- name: Cielo di Tempesta
+  kind: Climatico
+  rank: 2
+  description: "Vento forte, pioggia intensa e fulmini rendono instabili manovre e tiri a distanza."
+  impeti: "Ridurre precisione, imporre riposizionamenti"
+  difficulty: "Media"
+  potential_adversaries: "Elementali dell'aria, predoni equipaggiati"
+  characteristics:
+    - name: Raffiche laterali
+      kind: Passiva
+      text: "Tiri a distanza difficili oltre corta gittata."
+    - name: Fulmine a terra
+      kind: Azione
+      text: "Eventi elettrici occasionali in zone esposte."
+
+- name: Desolazione Radioattiva
+  kind: Estremo
+  rank: 3
+  description: "Zona contaminata, canyon vetrificati e pozze tossiche."
+  impeti: "Affaticare, contaminare, consumare equipaggiamento"
+  difficulty: "Alta"
+  potential_adversaries: "Mutanti, predoni, bestie contaminate"
+  characteristics:
+    - name: Contaminazione diffusa
+      kind: Passiva
+      text: "Esposizione prolungata richiede gestione rischio ambientale."
+    - name: Sacche tossiche
+      kind: Reazione
+      text: "Aree instabili rilasciano gas nocivi se disturbate."
+
+- name: Bunker Corazzato
+  kind: Militare
+  rank: 3
+  description: "Corridoi stretti, porte blindate e sensori."
+  impeti: "Canalizzare lo scontro, bloccare infiltrazioni"
+  difficulty: "Alta"
+  potential_adversaries: "Mech sentinella, truppe d'assalto"
+  characteristics:
+    - name: Accessi segmentati
+      kind: Passiva
+      text: "Le porte a tenuta dividono il campo di battaglia."
+    - name: Allarme locale
+      kind: Azione
+      text: "L'allarme richiama rinforzi o attiva difese automatiche."

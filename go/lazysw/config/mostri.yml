@@ -1,0 +1,335 @@
+- name: Alligatore/Coccodrillo
+  role: Bestia
+  wild_card: false
+  size: 1
+  pace: "3 (5 in acqua)"
+  skills:
+    - Atletica d6
+    - Combattere d8
+    - Furtivita d8
+    - Percezione d8
+  parry: "6"
+  toughness: "10 (2)"
+  wounds_max: 1
+  description: "Predatore anfibio usato spesso in avventure pulp e ambienti paludosi."
+  motivations_tactics: "Agguato in acqua, morso e rotolata, trascinare la preda"
+  attack:
+    bonus: "Combattere d8"
+    name: Morso
+    range: Mischia
+    damage: For+d6
+    damage_type: fisico
+  traits:
+    - name: Acquatico
+      kind: Passiva
+      text: "Passo 5 in acqua."
+    - name: Rotolare
+      kind: Azione
+      text: "Se colpisce con incremento, il dado danni extra e d10 invece di d6."
+
+- name: Draco
+  role: Mostro
+  wild_card: false
+  size: 6
+  pace: "6"
+  skills:
+    - Atletica d8
+    - Combattere d10
+    - Furtivita d6
+    - Intimidire d12
+    - Percezione d8
+  parry: "7"
+  toughness: "18 (4)"
+  wounds_max: 2
+  description: "Rettiliano simile al drago ma privo di ali, aggressivo e corazzato."
+  motivations_tactics: "Soffio, coda, pressione frontale"
+  attack:
+    bonus: "Combattere d10"
+    name: Artigli/Morso
+    range: Mischia
+    damage: For+d8
+    damage_type: fisico
+  traits:
+    - name: Soffio di Fuoco
+      kind: Azione
+      text: "Cono da 3d6 danni fuoco."
+    - name: Sferzata di Coda
+      kind: Azione
+      text: "Colpisce fino a due nemici sui fianchi o alle spalle."
+
+- name: Drago
+  role: Boss
+  wild_card: true
+  size: 8
+  pace: "8 (volo 24)"
+  skills:
+    - Atletica d10
+    - Combattere d10
+    - Furtivita d8
+    - Intimidire d12
+    - Percezione d12
+    - Persuasione d10
+  parry: "7"
+  toughness: "20 (4)"
+  wounds_max: 3
+  description: "Predatore leggendario, intelligente e letale."
+  motivations_tactics: "Paura, volo, soffio, schiacciare"
+  attack:
+    bonus: "Combattere d10"
+    name: Artigli/Morso
+    range: Mischia
+    damage: For+d8
+    damage_type: fisico
+  traits:
+    - name: Paura (-2)
+      kind: Passiva
+      text: "La vista impone tiro di Paura a -2."
+    - name: Volo
+      kind: Passiva
+      text: "Passo in volo 24."
+    - name: Soffio di Fuoco
+      kind: Azione
+      text: "Cono da 3d6 danni fuoco."
+
+- name: Elementale della Terra
+  role: Elementale
+  wild_card: false
+  size: 2
+  pace: "4"
+  skills:
+    - Atletica d6
+    - Combattere d8
+    - Furtivita d6
+    - Percezione d4
+  parry: "6"
+  toughness: "11 (4)"
+  wounds_max: 2
+  description: "Entita di roccia e terra, lenta ma molto resistente."
+  motivations_tactics: "Schianto, scavo, controllo zona"
+  attack:
+    bonus: "Combattere d8"
+    name: Schianto
+    range: Mischia
+    damage: For+d6
+    damage_type: fisico
+  traits:
+    - name: Scavatore
+      kind: Passiva
+      text: "Scava fino a 10 per round."
+    - name: Elementale
+      kind: Passiva
+      text: "Immunita a veleni/malattie; riduce effetti da colpi mirati."
+
+- name: Fantasma
+  role: Non Morto
+  wild_card: false
+  size: -1
+  pace: "6"
+  skills:
+    - Atletica d6
+    - Combattere d6
+    - Furtivita d12
+    - Intimidire d12
+    - Percezione d12
+    - Provocare d10
+  parry: "5"
+  toughness: "5"
+  wounds_max: 1
+  description: "Entita eterea che tormenta i vivi."
+  motivations_tactics: "Manifestarsi, terrorizzare, attraversare ostacoli"
+  attack:
+    bonus: "Combattere d6"
+    name: Oggetti scagliati
+    range: Ravvicinata
+    damage: For+d4
+    damage_type: spirituale
+  traits:
+    - name: Etereo
+      kind: Passiva
+      text: "Danneggiabile solo da magia/attacchi magici."
+    - name: Paura (-2)
+      kind: Passiva
+      text: "Quando si manifesta impone tiro di Paura a -2."
+
+- name: Goblin
+  role: Umanoide
+  wild_card: false
+  size: -1
+  pace: "5"
+  skills:
+    - Atletica d6
+    - Combattere d6
+    - Furtivita d10
+    - Percezione d6
+    - Sparare d8
+  parry: "5"
+  toughness: "4"
+  wounds_max: 1
+  description: "Piccolo predone notturno e opportunista."
+  motivations_tactics: "Tiro da distanza, imboscate, fuga"
+  attack:
+    bonus: "Combattere d6"
+    name: Lancia corta
+    range: Mischia
+    damage: For+d4
+    damage_type: fisico
+  traits:
+    - name: Infravisione
+      kind: Passiva
+      text: "Dimezza penalita da illuminazione contro bersagli caldi."
+    - name: Arco
+      kind: Azione
+      text: "Gittata 12/24/48, danni 2d6."
+
+- name: Licantropo
+  role: Boss
+  wild_card: true
+  size: 1
+  pace: "8"
+  skills:
+    - Atletica d8
+    - Combattere d12+2
+    - Furtivita d10
+    - Intimidire d10
+    - Percezione d12
+    - Sopravvivenza d10
+  parry: "9"
+  toughness: "8"
+  wounds_max: 3
+  description: "Predatore umanoide maledetto, feroce e rigenerante."
+  motivations_tactics: "Assalto rapido, paura, rigenerazione"
+  attack:
+    bonus: "Combattere d12+2"
+    name: Artigli/Morso
+    range: Mischia
+    damage: For+d8
+    damage_type: fisico
+  traits:
+    - name: Rigenerazione Rapida
+      kind: Passiva
+      text: "Guarigione naturale ogni round, eccetto ferite da argento."
+    - name: Paura (-2)
+      kind: Passiva
+      text: "La vista impone tiro di Paura a -2."
+
+- name: Ragno Gigante
+  role: Bestia
+  wild_card: false
+  size: -1
+  pace: "8"
+  skills:
+    - Atletica d10
+    - Combattere d8
+    - Furtivita d10
+    - Intimidire d10
+    - Percezione d8
+    - Sparare d10
+  parry: "6"
+  toughness: "4"
+  wounds_max: 1
+  description: "Predatore da tana che intrappola con ragnatele e veleno."
+  motivations_tactics: "Avviluppare, isolare bersagli, avvelenare"
+  attack:
+    bonus: "Combattere d8"
+    name: Morso
+    range: Mischia
+    damage: For+d4
+    damage_type: veleno
+  traits:
+    - name: Ragnatela
+      kind: Azione
+      text: "Modello esplosione piccola, puo avviluppare o bloccare."
+    - name: Veleno (-4)
+      kind: Reazione
+      text: "Applicare effetto veleno lieve o letale in base alla scena."
+
+- name: Orco
+  role: Bruto
+  wild_card: false
+  size: 1
+  pace: "6"
+  skills:
+    - Atletica d6
+    - Combattere d6
+    - Furtivita d6
+    - Intimidire d8
+    - Percezione d6
+    - Sparare d6
+  parry: "5"
+  toughness: "8 (1)"
+  wounds_max: 1
+  description: "Umanoide selvaggio e robusto, comune in bande armate."
+  motivations_tactics: "Carica, pressione in mischia"
+  attack:
+    bonus: "Combattere d6"
+    name: Scimitarra
+    range: Mischia
+    damage: For+d8
+    damage_type: fisico
+  traits:
+    - name: Infravisione
+      kind: Passiva
+      text: "Dimezza penalita da illuminazione contro bersagli caldi."
+    - name: Taglia 1
+      kind: Passiva
+      text: "Piu robusto di un umano medio."
+
+- name: Lich
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Atletica d6
+    - Combattere d8
+    - Intimidire d12
+    - Lanciare Incantesimi d12
+    - Occulto d12+2
+    - Percezione d10
+    - Persuasione d8
+  parry: "6"
+  toughness: "15 (6)"
+  wounds_max: 3
+  description: "Negromante non morto di alto livello con vasto arsenale arcano."
+  motivations_tactics: "Magia, non morti servitori, tocco mortale"
+  attack:
+    bonus: "Lanciare Incantesimi d12"
+    name: Tocco Mortale
+    range: Mischia
+    damage: "Ferita automatica su incremento"
+    damage_type: necrotico
+  traits:
+    - name: Non Morto
+      kind: Passiva
+      text: "+2 Robustezza, immunita tipiche dei non morti."
+    - name: Incantesimi
+      kind: Azione
+      text: "50 Punti Potere e ampia lista di magie."
+
+- name: Mech Sentinella
+  role: Costrutto
+  wild_card: true
+  size: 4
+  pace: "10"
+  skills:
+    - Combattere d6
+    - Percezione d10
+    - Sparare d8
+  parry: "5"
+  toughness: "14 (4)"
+  wounds_max: 3
+  description: "Unita meccanizzata da pattuglia, sensori avanzati e corazza pesante."
+  motivations_tactics: "Fuoco di soppressione, pattugliamento, inseguimento"
+  attack:
+    bonus: "Sparare d8"
+    name: Mitragliatrice
+    range: Lontana
+    damage: 2d8
+    damage_type: balistico
+  traits:
+    - name: Costrutto
+      kind: Passiva
+      text: "Immunita a veleni/malattie, +2 a riprendersi da Scosso."
+    - name: Visione Notturna
+      kind: Passiva
+      text: "Ignora penalita da illuminazione."

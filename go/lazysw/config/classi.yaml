@@ -1,0 +1,175 @@
+- name: Guerriero
+  subclass: Soldato di Frontiera
+  rank: 1
+  domains: "Combattimento"
+  evasion: 6
+  hp: 7
+  class_item: "Arma principale e kit manutenzione"
+  hope_privilege: "Spinta offensiva una volta per scontro"
+  class_privileges:
+    - "Specialista nelle armi e nelle manovre tattiche."
+    - "Elevata tenuta in prima linea."
+  description: "Combattente versatile, efficace in mischia e a distanza ravvicinata."
+  caster_trait: Forza
+  base_privileges:
+    - "Addestramento marziale avanzato."
+  specialization: "Duellante o caposquadra."
+  mastery: "Massima efficienza in pressione."
+  background_questions:
+    - "In quale campagna militare ti sei formato?"
+  bonds:
+    - "Chi del gruppo copri quando la situazione peggiora?"
+
+- name: Ranger
+  subclass: Cacciatore
+  rank: 1
+  domains: "Sopravvivenza"
+  evasion: 7
+  hp: 6
+  class_item: "Arma da tiro, trappole, bussola"
+  hope_privilege: "Vantaggio tattico in ambiente naturale"
+  class_privileges:
+    - "Tracciamento e controllo del territorio."
+    - "Efficace contro bestie e predatori."
+  description: "Esploratore armato, ideale per inseguimenti e ricognizione."
+  caster_trait: Agilità
+  base_privileges:
+    - "Conoscenza fauna e piste."
+  specialization: "Tiratore scelto o braccatore."
+  mastery: "Predatore d'élite."
+  background_questions:
+    - "Quale preda ti ha quasi ucciso?"
+  bonds:
+    - "Chi nel gruppo segue sempre le tue tracce?"
+
+- name: Ladro
+  subclass: Infiltratore
+  rank: 1
+  domains: "Furtività"
+  evasion: 8
+  hp: 5
+  class_item: "Grimaldelli, coltello, mantello"
+  hope_privilege: "Azione rapida extra su successo critico"
+  class_privileges:
+    - "Infiltrazione, sabotaggio e attacco opportunistico."
+    - "Eccellente gestione di serrature e trappole."
+  description: "Operatore mobile specializzato in accessi e colpi precisi."
+  caster_trait: Astuzia
+  base_privileges:
+    - "Movimento silenzioso in zone urbane e interne."
+  specialization: "Scassinatore o assassino."
+  mastery: "Fantasma operativo."
+  background_questions:
+    - "Qual è il colpo più rischioso che hai tentato?"
+  bonds:
+    - "Chi ti copre mentre lavori su una serratura?"
+
+- name: Mistico
+  subclass: Chierico da Campo
+  rank: 1
+  domains: "Miracoli"
+  evasion: 5
+  hp: 6
+  class_item: "Simbolo sacro, reliquia, testi rituali"
+  hope_privilege: "Intercessione miracolosa in emergenza"
+  class_privileges:
+    - "Background Arcano (Miracoli)."
+    - "Supporto e protezione del gruppo."
+  description: "Canale spirituale con capacità di cura e protezione."
+  caster_trait: Spirito
+  base_privileges:
+    - "Rituali e invocazioni contestuali."
+  specialization: "Guaritore o giudice sacro."
+  mastery: "Autorità spirituale massima."
+  background_questions:
+    - "Quale voto ti vincola ancora oggi?"
+  bonds:
+    - "Chi nel gruppo difendi a ogni costo?"
+
+- name: Mago
+  subclass: Arcanista
+  rank: 1
+  domains: "Magia"
+  evasion: 5
+  hp: 5
+  class_item: "Grimorio e focus arcano"
+  hope_privilege: "Canalizzazione superiore su rituali"
+  class_privileges:
+    - "Background Arcano (Magia)."
+    - "Ampia flessibilità di effetti sovrannaturali."
+  description: "Incantatore da studio, potente ma meno resistente."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Preparazione arcana prima dello scontro."
+  specialization: "Evocatore o illusionista."
+  mastery: "Arcimago."
+  background_questions:
+    - "Chi ha insegnato la tua prima formula?"
+  bonds:
+    - "Chi nel gruppo teme i tuoi esperimenti?"
+
+- name: Psionico
+  subclass: Telepate
+  rank: 1
+  domains: "Arti Psioniche"
+  evasion: 6
+  hp: 5
+  class_item: "Focalizzatore mentale"
+  hope_privilege: "Controllo mentale rafforzato in scena critica"
+  class_privileges:
+    - "Background Arcano (Arti Psioniche)."
+    - "Controllo mentale e percezione avanzata."
+  description: "Specialista della mente e della manipolazione psichica."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Disciplina mentale sotto pressione."
+  specialization: "Lettore mentale o cinetico."
+  mastery: "Mente adamantina."
+  background_questions:
+    - "Quando si è manifestato il tuo potere?"
+  bonds:
+    - "Chi accetta senza paura le tue intrusioni mentali?"
+
+- name: Scienziato Folle
+  subclass: Tecnomante
+  rank: 1
+  domains: "Scienza Folle"
+  evasion: 6
+  hp: 5
+  class_item: "Kit prototipi e strumenti"
+  hope_privilege: "Overclock controllato del dispositivo"
+  class_privileges:
+    - "Background Arcano (Scienza Folle)."
+    - "Uso tattico di gadget sperimentali."
+  description: "Inventore che traduce teoria in armi e supporti impossibili."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Riparazione e improvvisazione tecnica."
+  specialization: "Armi energetiche o supporto da campo."
+  mastery: "Ingegnere leggendario."
+  background_questions:
+    - "Quale prototipo è esploso per primo?"
+  bonds:
+    - "Chi nel gruppo testa i tuoi dispositivi?"
+
+- name: Dotato
+  subclass: Fenomeno Innato
+  rank: 1
+  domains: "Dono"
+  evasion: 6
+  hp: 6
+  class_item: "Catalizzatore personale"
+  hope_privilege: "Picco di potere una volta per scena"
+  class_privileges:
+    - "Background Arcano (Dono)."
+    - "Manifestazione spontanea del talento."
+  description: "Individuo con capacità rare e poco convenzionali."
+  caster_trait: Spirito
+  base_privileges:
+    - "Controllo progressivo del dono."
+  specialization: "Offensivo o utilitario."
+  mastery: "Talento eccezionale."
+  background_questions:
+    - "Come reagì la tua comunità al tuo potere?"
+  bonds:
+    - "Chi ti aiuta a restare lucido quando perdi il controllo?"
