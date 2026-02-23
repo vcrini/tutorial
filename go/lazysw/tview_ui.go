@@ -1381,7 +1381,11 @@ func (ui *tviewUI) refreshEncounter() {
 	for i, e := range ui.encounter {
 		base := encounterWoundsCap(e)
 		label := ui.encounterLabelAt(i)
-		ui.encList.AddItem(fmt.Sprintf("%s [Ferite %d/%d]", label, e.Wounds, base), "", 0, nil)
+		remaining := base - e.Wounds
+		if remaining < 0 {
+			remaining = 0
+		}
+		ui.encList.AddItem(fmt.Sprintf("%s [Ferite %d/%d]", label, remaining, base), "", 0, nil)
 	}
 	if current >= len(ui.encounter) {
 		current = len(ui.encounter) - 1
@@ -1470,7 +1474,11 @@ func (ui *tviewUI) refreshDetail() {
 		}
 		e := ui.encounter[idx]
 		base := encounterWoundsCap(e)
-		extra := fmt.Sprintf("Stato: %d/%d ferite (%s)", e.Wounds, base, encounterStateLabel(e))
+		remaining := base - e.Wounds
+		if remaining < 0 {
+			remaining = 0
+		}
+		extra := fmt.Sprintf("Stato: %d/%d ferite residue (%s)", remaining, base, encounterStateLabel(e))
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
 		ui.renderDetail()
 		return
