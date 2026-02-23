@@ -34,6 +34,39 @@ func makeTestUI(t *testing.T, monsters []Monster) *UI {
 	return ui
 }
 
+func makeCharacterUI(t *testing.T) *UI {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "encounters.yaml")
+	dicePath := filepath.Join(t.TempDir(), "dice.yaml")
+	classes := []Monster{
+		{
+			Name:        "Wizard",
+			Source:      "PHB",
+			CR:          "d6",
+			Environment: []string{"INT", "WIS"},
+			Raw:         map[string]any{"spellcastingAbility": "int"},
+		},
+		{
+			Name:        "Fighter",
+			Source:      "PHB",
+			CR:          "d10",
+			Environment: []string{"STR", "CON"},
+			Raw:         map[string]any{},
+		},
+	}
+	races := []Monster{
+		{
+			Name:   "Elf",
+			Source: "PHB",
+			Raw: map[string]any{
+				"ability": []any{map[string]any{"dex": 2, "int": 1}},
+				"speed":   map[string]any{"walk": 30},
+			},
+		},
+	}
+	return newUI(nil, nil, nil, classes, races, nil, nil, nil, nil, nil, nil, path, dicePath)
+}
+
 func TestLoadMonstersFromBytes(t *testing.T) {
 	yml := `monsters:
   - name: Aarakocra
@@ -1398,5 +1431,112 @@ func TestHighlightEscapedAndFindRawMatch(t *testing.T) {
 	lineIdx, ok := ui.findRawMatch("target")
 	if !ok || lineIdx != 1 {
 		t.Fatalf("expected line 1 match, got idx=%d ok=%v", lineIdx, ok)
+	}
+}
+
+func TestResolveCreateCharacterSubmit(t *testing.T) {
+	if got := resolveCreateCharacterSubmit(0, -1, false); got != submitFocusRace {
+		t.Fatalf("expected focus race action, got %v", got)
+	}
+	if got := resolveCreateCharacterSubmit(1, -1, true); got != submitNone {
+		t.Fatalf("expected no action while race is open, got %v", got)
+	}
+	if got := resolveCreateCharacterSubmit(1, -1, false); got != submitGenerate {
+		t.Fatalf("expected generate action, got %v", got)
+	}
+	if got := resolveCreateCharacterSubmit(-1, 1, false); got != submitCancel {
+		t.Fatalf("expected cancel action, got %v", got)
+	}
+}
+
+func TestResolveEncounterEditSubmit(t *testing.T) {
+	if got := resolveEncounterEditSubmit(0, -1, false); got != submitFocusRace {
+		t.Fatalf("expected focus class action, got %v", got)
+	}
+	if got := resolveEncounterEditSubmit(1, -1, false); got != submitFocusLevels {
+		t.Fatalf("expected focus levels action, got %v", got)
+	}
+	if got := resolveEncounterEditSubmit(2, -1, false); got != submitApply {
+		t.Fatalf("expected apply action, got %v", got)
+	}
+	if got := resolveEncounterEditSubmit(-1, 1, false); got != submitCancel {
+		t.Fatalf("expected cancel action, got %v", got)
+	}
+}
+
+func TestEncounterCharacterBuildRoundTrip(t *testing.T) {
+	ui := makeCharacterUI(t)
+	build := CharacterBuild{
+		Name:       "Aramil",
+		Race:       "Elf",
+		Classes:    []CharacterClassLevel{{Name: "Wizard", Levels: 5}},
+		BaseScores: []int{10, 14, 12, 15, 8, 10},
+	}
+	ui.addGeneratedCharacterToEncounter("Aramil", 2, 13, 30, "META", "BODY", &build)
+	if err := ui.saveEncounters(); err != nil {
+		t.Fatalf("save encounters failed: %v", err)
+	}
+	loaded := makeCharacterUI(t)
+	loaded.encountersPath = ui.encountersPath
+	if err := loaded.loadEncounters(); err != nil {
+		t.Fatalf("load encounters failed: %v", err)
+	}
+	if len(loaded.encounterItems) != 1 || loaded.encounterItems[0].Character == nil {
+		t.Fatalf("expected loaded character build, got %#v", loaded.encounterItems)
+	}
+	if got := loaded.encounterItems[0].Character.Classes[0].Name; got != "Wizard" {
+		t.Fatalf("unexpected class after round trip: %s", got)
+	}
+}
+
+func TestApplyCharacterBuildEditAndUndoRedo(t *testing.T) {
+	ui := makeCharacterUI(t)
+	build := CharacterBuild{
+		Name:       "Aramil",
+		Race:       "Elf",
+		Classes:    []CharacterClassLevel{{Name: "Wizard", Levels: 3}},
+		BaseScores: []int{10, 14, 12, 15, 8, 10},
+	}
+	ui.addGeneratedCharacterToEncounter("Aramil", 2, 13, 24, "META", "BODY", &build)
+	ui.encounter.SetCurrentItem(0)
+	next := build
+	next.Classes = []CharacterClassLevel{{Name: "Wizard", Levels: 4}, {Name: "Fighter", Levels: 1}}
+	ui.pushEncounterUndo()
+	if err := ui.applyCharacterBuildToEncounter(0, next); err != nil {
+		t.Fatalf("apply edit failed: %v", err)
+	}
+	if got := classLevelsTotal(ui.encounterItems[0].Character.Classes); got != 5 {
+		t.Fatalf("expected level 5 after edit, got %d", got)
+	}
+	ui.undoEncounterCommand()
+	if got := classLevelsTotal(ui.encounterItems[0].Character.Classes); got != 3 {
+		t.Fatalf("expected level 3 after undo, got %d", got)
+	}
+	ui.redoEncounterCommand()
+	if got := classLevelsTotal(ui.encounterItems[0].Character.Classes); got != 5 {
+		t.Fatalf("expected level 5 after redo, got %d", got)
+	}
+}
+
+func TestSaveLoadCharacterBuildFile(t *testing.T) {
+	ui := makeCharacterUI(t)
+	build := CharacterBuild{
+		Name:       "Aramil",
+		Race:       "Elf",
+		Classes:    []CharacterClassLevel{{Name: "Wizard", Levels: 2}},
+		BaseScores: []int{10, 14, 12, 15, 8, 10},
+	}
+	ui.addGeneratedCharacterToEncounter("Aramil", 2, 13, 18, "META", "BODY", &build)
+	ui.encounter.SetCurrentItem(0)
+	path := filepath.Join(t.TempDir(), "char-build.yaml")
+	if err := ui.saveCharacterBuildAs(path); err != nil {
+		t.Fatalf("save build failed: %v", err)
+	}
+	ui.encounterItems[0].Character.Classes[0].Levels = 1
+	if err := ui.loadCharacterBuildFrom(path); err != nil {
+		t.Fatalf("load build failed: %v", err)
+	}
+	if got := ui.encounterItems[0].Character.Classes[0].Levels; got != 2 {
+		t.Fatalf("expected loaded level 2, got %d", got)
 	}
 }
