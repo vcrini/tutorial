@@ -170,6 +170,68 @@ func TestLoadFeatsFromBytes(t *testing.T) {
 	}
 }
 
+func TestLoadBooksIndexFromBytes(t *testing.T) {
+	yml := `books:
+  - name: Monster Manual
+    source: MM
+    group: Core
+    published: "2014"
+    author: Wizards
+    entries:
+      - giant payload ignored in index
+`
+	books, envs, years, authors, err := loadBooksIndexFromBytes([]byte(yml))
+	if err != nil {
+		t.Fatalf("loadBooksIndexFromBytes error: %v", err)
+	}
+	if len(books) != 1 || books[0].Name != "Monster Manual" {
+		t.Fatalf("unexpected books index: %#v", books)
+	}
+	if books[0].Raw != nil {
+		t.Fatalf("expected nil raw in index loader, got %#v", books[0].Raw)
+	}
+	if !containsString(envs, "Core") {
+		t.Fatalf("unexpected groups: %#v", envs)
+	}
+	if len(years) == 0 || years[0] != "2014" {
+		t.Fatalf("unexpected years: %#v", years)
+	}
+	if len(authors) == 0 || authors[0] != "Wizards" {
+		t.Fatalf("unexpected authors: %#v", authors)
+	}
+}
+
+func TestLoadAdventuresIndexFromBytes(t *testing.T) {
+	yml := `adventures:
+  - name: Lost Mine of Phandelver
+    source: LMoP
+    group: Starter
+    published: "2014"
+    author: Wizards
+    entries:
+      - giant payload ignored in index
+`
+	advs, envs, years, authors, err := loadAdventuresIndexFromBytes([]byte(yml))
+	if err != nil {
+		t.Fatalf("loadAdventuresIndexFromBytes error: %v", err)
+	}
+	if len(advs) != 1 || advs[0].Name != "Lost Mine of Phandelver" {
+		t.Fatalf("unexpected adventures index: %#v", advs)
+	}
+	if advs[0].Raw != nil {
+		t.Fatalf("expected nil raw in index loader, got %#v", advs[0].Raw)
+	}
+	if !containsString(envs, "Starter") {
+		t.Fatalf("unexpected groups: %#v", envs)
+	}
+	if len(years) == 0 || years[0] != "2014" {
+		t.Fatalf("unexpected years: %#v", years)
+	}
+	if len(authors) == 0 || authors[0] != "Wizards" {
+		t.Fatalf("unexpected authors: %#v", authors)
+	}
+}
+
 func TestGenerateCharacterSheetFromScores(t *testing.T) {
 	cl := Monster{
 		Name:        "Wizard",
