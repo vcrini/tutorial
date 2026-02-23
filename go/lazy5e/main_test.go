@@ -1602,3 +1602,26 @@ func TestSaveLoadCharacterBuildFile(t *testing.T) {
 		t.Fatalf("expected loaded level 2, got %d", got)
 	}
 }
+
+func TestRerollAllDiceResults(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "Aarakocra", 14, 13, "3d8")})
+	ui.diceLog = []DiceResult{
+		{Expression: "1d1+2", Output: "old"},
+		{Expression: "d1", Output: "old"},
+		{Expression: "", Output: "old"},
+	}
+	ui.renderDiceList()
+	ui.rerollAllDiceResults()
+	if len(ui.diceLog) != 3 {
+		t.Fatalf("expected same number of dice rows, got %d", len(ui.diceLog))
+	}
+	if !strings.Contains(ui.diceLog[0].Output, "= 3") {
+		t.Fatalf("expected first row rerolled output, got %q", ui.diceLog[0].Output)
+	}
+	if !strings.Contains(ui.diceLog[1].Output, "= 1") {
+		t.Fatalf("expected second row rerolled output, got %q", ui.diceLog[1].Output)
+	}
+	if ui.diceLog[2].Output != "old" {
+		t.Fatalf("expected invalid/empty expression output unchanged, got %q", ui.diceLog[2].Output)
+	}
+}
