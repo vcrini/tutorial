@@ -811,6 +811,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openClassPNGInput()
 			return nil
 		}
+	case 'n':
+		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop) {
+			ui.openRandomEncounterFromMonstersInput()
+			return nil
+		}
 	case 'e':
 		if focus == ui.dice {
 			ui.openDiceReRollInput()
@@ -3033,6 +3038,242 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 	ui.refreshStatus()
 }
 
+func battleCostForRole(role string) int {
+	r := strings.ToLower(strings.TrimSpace(role))
+	switch {
+	case strings.Contains(r, "seguace"):
+		return 1
+	case strings.Contains(r, "controparte"), strings.Contains(r, "supporto"):
+		return 1
+	case strings.Contains(r, "orda"), strings.Contains(r, "tiratore"), strings.Contains(r, "sicario"), strings.Contains(r, "base"):
+		return 2
+	case strings.Contains(r, "condottiero"):
+		return 3
+	case strings.Contains(r, "bruto"):
+		return 4
+	case strings.Contains(r, "solitario"):
+		return 5
+	default:
+		return 0
+	}
+}
+
+func isFollowerRole(role string) bool {
+	return strings.Contains(strings.ToLower(strings.TrimSpace(role)), "seguace")
+}
+
+func (ui *tviewUI) openRandomEncounterFromMonstersInput() {
+	rankOptions := make([]string, 0, len(ui.rankOpts))
+	defaultRankIdx := 0
+	currentMonsterIdx := ui.currentMonsterIndex()
+	currentRank := 0
+	if currentMonsterIdx >= 0 && currentMonsterIdx < len(ui.monsters) {
+		currentRank = ui.monsters[currentMonsterIdx].Rank
+	}
+	for _, opt := range ui.rankOpts {
+		if strings.EqualFold(strings.TrimSpace(opt), "Tutti") {
+			continue
+		}
+		rankOptions = append(rankOptions, opt)
+		if currentRank > 0 && opt == strconv.Itoa(currentRank) {
+			defaultRankIdx = len(rankOptions) - 1
+		}
+	}
+	if len(rankOptions) == 0 {
+		ui.message = "Nessun rango disponibile nei Mostri."
+		ui.refreshStatus()
+		return
+	}
+
+	defaultPG := len(ui.pngs)
+	if defaultPG < 1 {
+		defaultPG = 1
+	}
+	selectedRank, _ := strconv.Atoi(rankOptions[defaultRankIdx])
+	if selectedRank <= 0 {
+		selectedRank = 1
+	}
+	selectedPG := defaultPG
+	ready := false
+	returnFocus := ui.app.GetFocus()
+
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Genera Encounter Random da Mostri").SetTitleAlign(tview.AlignLeft)
+	advanceToGenerate := func() {
+		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
+	}
+	form.AddDropDown("Rango gruppo", rankOptions, defaultRankIdx, func(option string, _ int) {
+		if option == "" {
+			return
+		}
+		if v, err := strconv.Atoi(strings.TrimSpace(option)); err == nil && v > 0 {
+			selectedRank = v
+		}
+		if ready {
+			form.SetFocus(1)
+		}
+	})
+	form.AddInputField("PG in combatt.", strconv.Itoa(defaultPG), 5, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v > 0 {
+			selectedPG = v
+		}
+	})
+
+	if item := form.GetFormItem(0); item != nil {
+		if dd, ok := item.(*tview.DropDown); ok {
+			dd.SetFieldBackgroundColor(tcell.ColorBlack)
+			dd.SetFieldTextColor(tcell.ColorWhite)
+			dd.SetListStyles(
+				tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+				tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+			)
+			dd.SetFinishedFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					form.SetFocus(1)
+				case tcell.KeyBacktab:
+					form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Annulla"))
+				}
+			})
+		}
+	}
+	if item := form.GetFormItem(1); item != nil {
+		if input, ok := item.(*tview.InputField); ok {
+			input.SetFieldBackgroundColor(tcell.ColorBlack)
+			input.SetFieldTextColor(tcell.ColorWhite)
+			input.SetDoneFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					advanceToGenerate()
+				case tcell.KeyBacktab:
+					form.SetFocus(0)
+				}
+			})
+		}
+	}
+
+	form.AddButton("Genera", func() {
+		v := strings.TrimSpace(form.GetFormItem(1).(*tview.InputField).GetText())
+		n, err := strconv.Atoi(v)
+		if err != nil || n < 1 {
+			ui.message = "Numero PG non valido."
+			ui.refreshStatus()
+			return
+		}
+		selectedPG = n
+		added, spent, left := ui.generateRandomEncounterFromMonsters(selectedRank, selectedPG)
+		if added == 0 {
+			ui.message = fmt.Sprintf("Nessun mostro generato (R%d, %d PG).", selectedRank, selectedPG)
+			ui.refreshStatus()
+			return
+		}
+		ui.closeModal()
+		ui.focusPanel(focusEncounter)
+		ui.message = fmt.Sprintf("Encounter random R%d: +%d nemici (%d PB spesi, %d residui).", selectedRank, added, spent, left)
+		ui.refreshAll()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetButtonsAlign(tview.AlignLeft)
+
+	info := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	info.SetText("Punti Battaglia: (3 x PG in combattimento) + 2.\nCosti ruolo: Seguace/Controparte/Supporto=1, Base/Tiratore/Sicario/Orda=2, Condottiero=3, Bruto=4, Solitario=5.")
+
+	container := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(info, 3, 0, false).
+		AddItem(form, 0, 1, true)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(container, 80, 0, true).
+			AddItem(nil, 0, 1, false), 13, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "monster_random_encounter"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
+	ready = true
+}
+
+func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int) (added int, spent int, remaining int) {
+	if pgCount < 1 {
+		return 0, 0, 0
+	}
+	initialBudget := 3*pgCount + 2
+	if initialBudget < 1 {
+		return 0, 0, 0
+	}
+
+	type candidate struct {
+		mon  Monster
+		cost int
+	}
+	candidates := make([]candidate, 0, len(ui.monsters))
+	for _, m := range ui.monsters {
+		if m.Rank != rank {
+			continue
+		}
+		cost := battleCostForRole(m.Role)
+		if cost <= 0 {
+			continue
+		}
+		candidates = append(candidates, candidate{mon: m, cost: cost})
+	}
+	if len(candidates) == 0 {
+		return 0, 0, initialBudget
+	}
+
+	remaining = initialBudget
+	for remaining > 0 {
+		affordable := make([]candidate, 0, len(candidates))
+		for _, c := range candidates {
+			if c.cost <= remaining {
+				affordable = append(affordable, c)
+			}
+		}
+		if len(affordable) == 0 {
+			break
+		}
+		pick := affordable[rand.IntN(len(affordable))]
+		qty := 1
+		if isFollowerRole(pick.mon.Role) {
+			qty = pgCount
+		}
+		for i := 0; i < qty; i++ {
+			ui.encounter = append(ui.encounter, EncounterEntry{
+				Monster:    pick.mon,
+				BasePF:     pick.mon.PF,
+				Stress:     pick.mon.Stress,
+				BaseStress: pick.mon.Stress,
+			})
+			added++
+		}
+		remaining -= pick.cost
+		spent += pick.cost
+	}
+	if added > 0 {
+		ui.persistEncounter()
+	}
+	return added, spent, remaining
+}
+
 func (ui *tviewUI) removeSelectedEncounter() {
 	idx := ui.currentEncounterIndex()
 	if idx < 0 {
@@ -3187,6 +3428,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panel = "Mostri"
 		panelLines = []string{
 			"- a: aggiungi mostro selezionato a Encounter",
+			"- n: genera Encounter random (Punti Battaglia)",
 			"- u / t / g: focus filtro Nome / Ruolo / Rango",
 			"- v: reset filtri Mostri",
 		}
