@@ -9,12 +9,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const (
-	defaultToken = 3
-	minToken     = 0 // Il valore minimo
-	maxToken     = 3 // Il valore massimo
-)
-
 var dataFile = "pngs.yml"
 var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
@@ -147,10 +141,9 @@ type ClassItem struct {
 	Bonds           []string `yaml:"bonds"`
 }
 
-// PNG rappresenta la struttura dati per un PNG con il suo token.
+// PNG rappresenta la struttura dati per un PNG.
 type PNG struct {
 	Name        string `json:"Name" yaml:"name"`
-	Token       int    `json:"Token" yaml:"token"`
 	Class       string `json:"Class,omitempty" yaml:"class,omitempty"`
 	Subclass    string `json:"Subclass,omitempty" yaml:"subclass,omitempty"`
 	Level       int    `json:"Level,omitempty" yaml:"level,omitempty"`
@@ -204,18 +197,10 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.Name = aux.Name
-	switch {
-	case aux.Token != nil:
-		p.Token = *aux.Token
-	case aux.TokenLower != nil:
-		p.Token = *aux.TokenLower
-	case aux.Counter != nil:
-		p.Token = *aux.Counter
-	case aux.CounterLower != nil:
-		p.Token = *aux.CounterLower
-	default:
-		p.Token = 0
-	}
+	_ = aux.Token
+	_ = aux.TokenLower
+	_ = aux.Counter
+	_ = aux.CounterLower
 	if strings.TrimSpace(aux.Class) != "" {
 		p.Class = strings.TrimSpace(aux.Class)
 	} else {
@@ -287,7 +272,6 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 func (p PNG) MarshalJSON() ([]byte, error) {
 	out := struct {
 		Name        string `json:"Name"`
-		Token       int    `json:"Token"`
 		Class       string `json:"Class,omitempty"`
 		Subclass    string `json:"Subclass,omitempty"`
 		Level       int    `json:"Level,omitempty"`
@@ -303,7 +287,6 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 		Inventory   string `json:"Inventory,omitempty"`
 	}{
 		Name:        p.Name,
-		Token:       p.Token,
 		Class:       strings.TrimSpace(p.Class),
 		Subclass:    strings.TrimSpace(p.Subclass),
 		Level:       p.Level,

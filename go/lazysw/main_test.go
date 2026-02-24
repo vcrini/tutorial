@@ -48,8 +48,8 @@ func TestSaveLoadPNGList(t *testing.T) {
 	path := filepath.Join(dir, "pngs.json")
 
 	input := []PNG{
-		{Name: "Arcano Drago Dor", Token: 2},
-		{Name: "Mistico Vento Mir", Token: 3},
+		{Name: "Arcano Drago Dor"},
+		{Name: "Mistico Vento Mir"},
 	}
 	if err := savePNGList(path, input, "Mistico Vento Mir"); err != nil {
 		t.Fatalf("save failed: %v", err)
@@ -107,8 +107,8 @@ func TestSelectionHelpers(t *testing.T) {
 
 	m := model{
 		pngs: []PNG{
-			{Name: "Arcano Drago Dor", Token: 2},
-			{Name: "Mistico Vento Mir", Token: 1},
+			{Name: "Arcano Drago Dor"},
+			{Name: "Mistico Vento Mir"},
 		},
 		selectedPNGIndex: -1,
 	}
@@ -130,5 +130,35 @@ func TestSelectionHelpers(t *testing.T) {
 
 	if _, err := os.Stat(dataFile); err != nil {
 		t.Fatalf("expected save file to exist: %v", err)
+	}
+}
+
+func TestEncounterConditionsBadgeAndLong(t *testing.T) {
+	e := EncounterEntry{
+		Conditions: map[string]int{
+			"S": 1,
+			"V": 2,
+		},
+	}
+	if got := encounterConditionsBadge(e); got != "S1V2" {
+		t.Fatalf("unexpected badge: %q", got)
+	}
+	long := encounterConditionsLong(e)
+	if !strings.Contains(long, "S1 Scosso") || !strings.Contains(long, "V2 Vulnerabile") {
+		t.Fatalf("unexpected long conditions: %q", long)
+	}
+}
+
+func TestOrderedEncounterConditionsIgnoresNonPositive(t *testing.T) {
+	got := orderedEncounterConditions(map[string]int{
+		"S": 2,
+		"T": 0,
+		"Z": -1,
+	})
+	if len(got) != 1 {
+		t.Fatalf("expected 1 condition, got %d", len(got))
+	}
+	if got[0].Code != "S" || got[0].Rounds != 2 {
+		t.Fatalf("unexpected condition state: %+v", got[0])
 	}
 }

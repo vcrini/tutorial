@@ -245,7 +245,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "left", "h":
 				if m.focusedPanel == 0 {
-					m.decrementSelectedToken()
+					m.selectPrevPNG()
 				} else if m.focusedPanel == 1 {
 					m.encounterEditing = true
 					m.encounterDelta = 1
@@ -257,7 +257,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			case "right", "l":
 				if m.focusedPanel == 0 {
-					m.incrementSelectedToken()
+					m.selectNextPNG()
 				} else if m.focusedPanel == 1 {
 					m.encounterEditing = true
 					m.encounterDelta = -1
@@ -287,22 +287,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return m, textinput.Blink
 				}
 				handled = true
-
-			case "r":
-				if m.focusedPanel == 0 {
-					if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
-						m.pngs[m.selectedPNGIndex].Token = defaultToken
-						m.persistSelection()
-						m.message = "Token del PNG selezionato resettato."
-					} else {
-						m.message = "Nessun PNG selezionato."
-					}
-				}
-
-			case "R":
-				if m.focusedPanel == 0 {
-					return m.handleMenuChoice("Resetta Tutti i Token PNG")
-				}
 
 			case "t":
 				m.detailsCompact = !m.detailsCompact
@@ -366,13 +350,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if found {
 					m.message = fmt.Sprintf("Un PNG con il nome '%s' esiste già. Scegli un nome diverso.", name)
 				} else {
-					newPNG := PNG{Name: name, Token: defaultToken}
+					newPNG := PNG{Name: name}
 					m.pngs = append(m.pngs, newPNG)
 					m.selectedPNGIndex = len(m.pngs) - 1 // Seleziona il nuovo PNG
 					if err := savePNGList(dataFile, m.pngs, selectedPNGName(m.pngs, m.selectedPNGIndex)); err != nil {
 						m.message = fmt.Sprintf("PNG '%s' creato ma salvataggio fallito: %v", name, err)
 					} else {
-						m.message = fmt.Sprintf("PNG '%s' creato con token %d.", name, defaultToken)
+						m.message = fmt.Sprintf("PNG '%s' creato.", name)
 					}
 					m.appState = menuState
 				}

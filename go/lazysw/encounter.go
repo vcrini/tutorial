@@ -2,6 +2,9 @@ package main
 
 import (
 	"os"
+	"sort"
+	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -12,21 +15,134 @@ type EncounterEntry struct {
 	WoundsMax      int
 	InitiativeCard string
 	HasInit        bool
+	Conditions     map[string]int
 	BasePF         int
 	Stress         int
 	BaseStress     int
 }
 
+type encounterConditionDef struct {
+	Code string
+	Name string
+}
+
+var encounterConditionDefs = []encounterConditionDef{
+	{Code: "S", Name: "Scosso"},
+	{Code: "T", Name: "Stordito"},
+	{Code: "D", Name: "Distratto"},
+	{Code: "V", Name: "Vulnerabile"},
+	{Code: "H", Name: "Impedito"},
+	{Code: "F", Name: "Affaticato"},
+	{Code: "E", Name: "Intrappolato"},
+	{Code: "B", Name: "Vincolato"},
+}
+
+type encounterConditionState struct {
+	Code   string
+	Rounds int
+}
+
+func cloneStringIntMap(src map[string]int) map[string]int {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make(map[string]int, len(src))
+	for k, v := range src {
+		dst[k] = v
+	}
+	return dst
+}
+
+func orderedEncounterConditions(conditions map[string]int) []encounterConditionState {
+	if len(conditions) == 0 {
+		return nil
+	}
+	out := make([]encounterConditionState, 0, len(conditions))
+	seen := map[string]struct{}{}
+	for _, d := range encounterConditionDefs {
+		if n, ok := conditions[d.Code]; ok && n > 0 {
+			out = append(out, encounterConditionState{Code: d.Code, Rounds: n})
+			seen[d.Code] = struct{}{}
+		}
+	}
+	extra := make([]string, 0, len(conditions))
+	extraRounds := map[string]int{}
+	for code, rounds := range conditions {
+		norm := strings.ToUpper(strings.TrimSpace(code))
+		if rounds <= 0 || norm == "" {
+			continue
+		}
+		if _, ok := seen[norm]; ok {
+			continue
+		}
+		extra = append(extra, norm)
+		extraRounds[norm] = rounds
+	}
+	sort.Strings(extra)
+	for _, code := range extra {
+		out = append(out, encounterConditionState{Code: code, Rounds: extraRounds[code]})
+	}
+	return out
+}
+
+func encounterConditionsBadge(entry EncounterEntry) string {
+	if len(entry.Conditions) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(entry.Conditions))
+	for _, d := range encounterConditionDefs {
+		if n, ok := entry.Conditions[d.Code]; ok && n > 0 {
+			parts = append(parts, d.Code+strconv.Itoa(n))
+		}
+	}
+	if len(parts) == 0 {
+		keys := make([]string, 0, len(entry.Conditions))
+		for k := range entry.Conditions {
+			keys = append(keys, strings.ToUpper(k))
+		}
+		sort.Strings(keys)
+		for _, k := range keys {
+			if n := entry.Conditions[k]; n > 0 {
+				parts = append(parts, k+strconv.Itoa(n))
+			}
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+func encounterConditionsLong(entry EncounterEntry) string {
+	ordered := orderedEncounterConditions(entry.Conditions)
+	if len(ordered) == 0 {
+		return ""
+	}
+	parts := make([]string, 0, len(ordered))
+	for _, p := range ordered {
+		parts = append(parts, strings.ToUpper(strings.TrimSpace(p.Code))+strconv.Itoa(p.Rounds)+" "+conditionNameByCode(p.Code))
+	}
+	return strings.Join(parts, ", ")
+}
+
+func conditionNameByCode(code string) string {
+	c := strings.ToUpper(strings.TrimSpace(code))
+	for _, d := range encounterConditionDefs {
+		if d.Code == c {
+			return d.Name
+		}
+	}
+	return c
+}
+
 type encounterPersist struct {
 	Entries []struct {
-		Name             string `yaml:"name"`
-		Wounds           int    `yaml:"wounds"`
-		PF               int    `yaml:"pf"`
-		InitiativeCard   string `yaml:"initiative_card,omitempty"`
-		LegacyInitiative int    `yaml:"initiative,omitempty"`
-		HasInit          bool   `yaml:"has_initiative,omitempty"`
-		Stress           int    `yaml:"stress,omitempty"`
-		BaseStress       int    `yaml:"base_stress,omitempty"`
+		Name             string         `yaml:"name"`
+		Wounds           int            `yaml:"wounds"`
+		PF               int            `yaml:"pf"`
+		InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+		LegacyInitiative int            `yaml:"initiative,omitempty"`
+		HasInit          bool           `yaml:"has_initiative,omitempty"`
+		Conditions       map[string]int `yaml:"conditions,omitempty"`
+		Stress           int            `yaml:"stress,omitempty"`
+		BaseStress       int            `yaml:"base_stress,omitempty"`
 	} `yaml:"entries"`
 }
 
@@ -58,27 +174,29 @@ func (m *model) removeEncounterAt(idx int) {
 
 func (m *model) persistEncounter() {
 	var entries []struct {
-		Name             string `yaml:"name"`
-		Wounds           int    `yaml:"wounds"`
-		PF               int    `yaml:"pf"`
-		InitiativeCard   string `yaml:"initiative_card,omitempty"`
-		LegacyInitiative int    `yaml:"initiative,omitempty"`
-		HasInit          bool   `yaml:"has_initiative,omitempty"`
-		Stress           int    `yaml:"stress,omitempty"`
-		BaseStress       int    `yaml:"base_stress,omitempty"`
+		Name             string         `yaml:"name"`
+		Wounds           int            `yaml:"wounds"`
+		PF               int            `yaml:"pf"`
+		InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+		LegacyInitiative int            `yaml:"initiative,omitempty"`
+		HasInit          bool           `yaml:"has_initiative,omitempty"`
+		Conditions       map[string]int `yaml:"conditions,omitempty"`
+		Stress           int            `yaml:"stress,omitempty"`
+		BaseStress       int            `yaml:"base_stress,omitempty"`
 	}
 	for _, e := range m.encounter {
 		basePF := encounterMaxWounds(e)
 		entries = append(entries, struct {
-			Name             string `yaml:"name"`
-			Wounds           int    `yaml:"wounds"`
-			PF               int    `yaml:"pf"`
-			InitiativeCard   string `yaml:"initiative_card,omitempty"`
-			LegacyInitiative int    `yaml:"initiative,omitempty"`
-			HasInit          bool   `yaml:"has_initiative,omitempty"`
-			Stress           int    `yaml:"stress,omitempty"`
-			BaseStress       int    `yaml:"base_stress,omitempty"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit})
+			Name             string         `yaml:"name"`
+			Wounds           int            `yaml:"wounds"`
+			PF               int            `yaml:"pf"`
+			InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+			LegacyInitiative int            `yaml:"initiative,omitempty"`
+			HasInit          bool           `yaml:"has_initiative,omitempty"`
+			Conditions       map[string]int `yaml:"conditions,omitempty"`
+			Stress           int            `yaml:"stress,omitempty"`
+			BaseStress       int            `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit, Conditions: cloneStringIntMap(e.Conditions)})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }
@@ -114,6 +232,7 @@ func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 				WoundsMax:      maxWounds,
 				InitiativeCard: e.InitiativeCard,
 				HasInit:        e.HasInit && e.InitiativeCard != "",
+				Conditions:     cloneStringIntMap(e.Conditions),
 				BasePF:         maxWounds,
 			})
 		} else {
@@ -127,6 +246,7 @@ func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 				WoundsMax:      maxWounds,
 				InitiativeCard: e.InitiativeCard,
 				HasInit:        e.HasInit && e.InitiativeCard != "",
+				Conditions:     cloneStringIntMap(e.Conditions),
 				BasePF:         maxWounds,
 			})
 		}
@@ -161,14 +281,15 @@ func encounterMaxWounds(e EncounterEntry) int {
 }
 
 func saveEncounter(path string, entries []struct {
-	Name             string `yaml:"name"`
-	Wounds           int    `yaml:"wounds"`
-	PF               int    `yaml:"pf"`
-	InitiativeCard   string `yaml:"initiative_card,omitempty"`
-	LegacyInitiative int    `yaml:"initiative,omitempty"`
-	HasInit          bool   `yaml:"has_initiative,omitempty"`
-	Stress           int    `yaml:"stress,omitempty"`
-	BaseStress       int    `yaml:"base_stress,omitempty"`
+	Name             string         `yaml:"name"`
+	Wounds           int            `yaml:"wounds"`
+	PF               int            `yaml:"pf"`
+	InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+	LegacyInitiative int            `yaml:"initiative,omitempty"`
+	HasInit          bool           `yaml:"has_initiative,omitempty"`
+	Conditions       map[string]int `yaml:"conditions,omitempty"`
+	Stress           int            `yaml:"stress,omitempty"`
+	BaseStress       int            `yaml:"base_stress,omitempty"`
 }) error {
 	payload := encounterPersist{Entries: entries}
 	data, err := yaml.Marshal(payload)
@@ -179,27 +300,29 @@ func saveEncounter(path string, entries []struct {
 }
 
 func readEncounter(path string) ([]struct {
-	Name             string `yaml:"name"`
-	Wounds           int    `yaml:"wounds"`
-	PF               int    `yaml:"pf"`
-	InitiativeCard   string `yaml:"initiative_card,omitempty"`
-	LegacyInitiative int    `yaml:"initiative,omitempty"`
-	HasInit          bool   `yaml:"has_initiative,omitempty"`
-	Stress           int    `yaml:"stress,omitempty"`
-	BaseStress       int    `yaml:"base_stress,omitempty"`
+	Name             string         `yaml:"name"`
+	Wounds           int            `yaml:"wounds"`
+	PF               int            `yaml:"pf"`
+	InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+	LegacyInitiative int            `yaml:"initiative,omitempty"`
+	HasInit          bool           `yaml:"has_initiative,omitempty"`
+	Conditions       map[string]int `yaml:"conditions,omitempty"`
+	Stress           int            `yaml:"stress,omitempty"`
+	BaseStress       int            `yaml:"base_stress,omitempty"`
 }, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []struct {
-				Name             string `yaml:"name"`
-				Wounds           int    `yaml:"wounds"`
-				PF               int    `yaml:"pf"`
-				InitiativeCard   string `yaml:"initiative_card,omitempty"`
-				LegacyInitiative int    `yaml:"initiative,omitempty"`
-				HasInit          bool   `yaml:"has_initiative,omitempty"`
-				Stress           int    `yaml:"stress,omitempty"`
-				BaseStress       int    `yaml:"base_stress,omitempty"`
+				Name             string         `yaml:"name"`
+				Wounds           int            `yaml:"wounds"`
+				PF               int            `yaml:"pf"`
+				InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+				LegacyInitiative int            `yaml:"initiative,omitempty"`
+				HasInit          bool           `yaml:"has_initiative,omitempty"`
+				Conditions       map[string]int `yaml:"conditions,omitempty"`
+				Stress           int            `yaml:"stress,omitempty"`
+				BaseStress       int            `yaml:"base_stress,omitempty"`
 			}{}, nil
 		}
 		return nil, err
@@ -210,14 +333,15 @@ func readEncounter(path string) ([]struct {
 	}
 	if payload.Entries == nil {
 		return []struct {
-			Name             string `yaml:"name"`
-			Wounds           int    `yaml:"wounds"`
-			PF               int    `yaml:"pf"`
-			InitiativeCard   string `yaml:"initiative_card,omitempty"`
-			LegacyInitiative int    `yaml:"initiative,omitempty"`
-			HasInit          bool   `yaml:"has_initiative,omitempty"`
-			Stress           int    `yaml:"stress,omitempty"`
-			BaseStress       int    `yaml:"base_stress,omitempty"`
+			Name             string         `yaml:"name"`
+			Wounds           int            `yaml:"wounds"`
+			PF               int            `yaml:"pf"`
+			InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+			LegacyInitiative int            `yaml:"initiative,omitempty"`
+			HasInit          bool           `yaml:"has_initiative,omitempty"`
+			Conditions       map[string]int `yaml:"conditions,omitempty"`
+			Stress           int            `yaml:"stress,omitempty"`
+			BaseStress       int            `yaml:"base_stress,omitempty"`
 		}{}, nil
 	}
 	return payload.Entries, nil

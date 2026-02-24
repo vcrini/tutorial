@@ -209,7 +209,7 @@ func (m model) View() string {
 			items = []string{dim.Render("Nessun PNG creato.")}
 		} else {
 			for i, png := range m.pngs {
-				line := fmt.Sprintf("%s (Token: %d)", png.Name, png.Token)
+				line := png.Name
 				if i == m.selectedPNGIndex {
 					items = append(items, selectedPNGStyle.Render("• "+line))
 				} else {
@@ -377,7 +377,6 @@ func (m model) View() string {
 		if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
 			png := m.pngs[m.selectedPNGIndex]
 			details.WriteString(fmt.Sprintf("Nome:  %s\n", png.Name))
-			details.WriteString(fmt.Sprintf("Token: %d\n", png.Token))
 			details.WriteString(fmt.Sprintf("Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs)))
 		} else {
 			details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
@@ -477,11 +476,8 @@ func (m model) View() string {
 			lines = append(lines,
 				"PNGs:",
 				"↑↓: seleziona PNG",
-				"←→: token -/+",
 				"n: nuovo PNG",
 				"d/x/Backspace/Delete: elimina PNG",
-				"r: reset token selezionato",
-				"R: reset token di tutti",
 			)
 		case 1: // Incontro
 			lines = append(lines,

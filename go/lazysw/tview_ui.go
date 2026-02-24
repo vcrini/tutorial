@@ -721,16 +721,6 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyBacktab:
 		ui.focusPrev()
 		return nil
-	case tcell.KeyLeft:
-		if focus == ui.pngList {
-			ui.adjustSelectedToken(-1)
-			return nil
-		}
-	case tcell.KeyRight:
-		if focus == ui.pngList {
-			ui.adjustSelectedToken(1)
-			return nil
-		}
 	case tcell.KeyPgUp:
 		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 			ui.scrollDetailByPage(-1)
@@ -768,9 +758,17 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.focusPanel(focusDice)
 		return nil
 	case '[':
+		if focus == ui.encList {
+			ui.adjustEncounterConditionRounds(-1)
+			return nil
+		}
 		ui.switchCatalog(-1)
 		return nil
 	case ']':
+		if focus == ui.encList {
+			ui.adjustEncounterConditionRounds(1)
+			return nil
+		}
 		ui.switchCatalog(1)
 		return nil
 	case '/':
@@ -783,14 +781,22 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.clearDiceResults()
 			return nil
 		}
+		if focus == ui.encList {
+			ui.openEncounterConditionModal()
+			return nil
+		}
 		ui.openCreatePNGModal()
 		return nil
 	case 'x':
+		if focus == ui.encList {
+			ui.openEncounterConditionRemoveModal()
+			return nil
+		}
 		ui.openDeletePNGConfirm()
 		return nil
-	case 'r':
-		if focus == ui.pngList {
-			ui.openResetTokensConfirm()
+	case 'C':
+		if focus == ui.encList {
+			ui.clearEncounterConditions()
 			return nil
 		}
 	case 'm':
@@ -801,6 +807,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'a':
 		if focus == ui.dice {
 			ui.openDiceRollInput()
+			return nil
+		}
+		if focus == ui.pngList {
+			ui.addSelectedPNGToEncounter()
 			return nil
 		}
 		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop) {
@@ -1156,7 +1166,7 @@ func (ui *tviewUI) refreshPNGs() {
 		if i == ui.selected {
 			prefix = "* "
 		}
-		ui.pngList.AddItem(fmt.Sprintf("%s%s [token %d]", prefix, p.Name, p.Token), "", 0, nil)
+		ui.pngList.AddItem(fmt.Sprintf("%s%s", prefix, p.Name), "", 0, nil)
 	}
 	if current >= len(ui.pngs) {
 		current = len(ui.pngs) - 1
@@ -1396,6 +1406,9 @@ func (ui *tviewUI) refreshEncounter() {
 	for i, e := range ui.encounter {
 		base := encounterWoundsCap(e)
 		label := ui.encounterLabelAt(i)
+		if badge := encounterConditionsBadge(e); badge != "" {
+			label = badge + " " + label
+		}
 		remaining := base - e.Wounds
 		if remaining < 0 {
 			remaining = 0
@@ -1502,6 +1515,9 @@ func (ui *tviewUI) refreshDetail() {
 			initLabel = e.InitiativeCard
 		}
 		extra := fmt.Sprintf("Iniziativa: %s | Stato: %d/%d ferite residue (%s)", initLabel, remaining, base, encounterStateLabel(e))
+		if cond := encounterConditionsLong(e); cond != "" {
+			extra += " | Condizioni: " + cond
+		}
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
 		ui.renderDetail()
 		return
@@ -1513,7 +1529,7 @@ func (ui *tviewUI) refreshDetail() {
 	}
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s\nToken: %d", p.Name, p.Token))
+	b.WriteString(p.Name)
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -2363,27 +2379,6 @@ func encounterStateLabel(e EncounterEntry) string {
 	return "Operativo"
 }
 
-func (ui *tviewUI) adjustSelectedToken(delta int) {
-	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
-		ui.message = "Nessun PNG selezionato."
-		ui.refreshStatus()
-		return
-	}
-	p := &ui.pngs[ui.selected]
-	p.Token += delta
-	if p.Token < minToken {
-		p.Token = minToken
-	}
-	if p.Token > maxToken {
-		p.Token = maxToken
-	}
-	ui.persistPNGs()
-	ui.message = fmt.Sprintf("Token di %s: %d", p.Name, p.Token)
-	ui.refreshPNGs()
-	ui.refreshDetail()
-	ui.refreshStatus()
-}
-
 func (ui *tviewUI) openCreatePNGModal() {
 	input := tview.NewInputField().SetLabel(" Nome PNG ").SetFieldWidth(24)
 	input.SetText(uniqueRandomPNGName(ui.pngs))
@@ -2420,7 +2415,7 @@ func (ui *tviewUI) openCreatePNGModal() {
 				return
 			}
 		}
-		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken})
+		ui.pngs = append(ui.pngs, PNG{Name: name})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
 		ui.closeModal()
@@ -2546,7 +2541,6 @@ func (ui *tviewUI) openClassPNGInput() {
 		look := buildSuggestedLook(preset)
 		png := PNG{
 			Name:        fmt.Sprintf("%s (%s | %s L%d)", baseName, c.Subclass, c.Name, selectedLevel),
-			Token:       defaultToken,
 			Class:       strings.TrimSpace(c.Name),
 			Subclass:    strings.TrimSpace(c.Subclass),
 			Level:       selectedLevel,
@@ -2820,17 +2814,6 @@ func (ui *tviewUI) openDeletePNGConfirm() {
 	})
 }
 
-func (ui *tviewUI) openResetTokensConfirm() {
-	if len(ui.pngs) == 0 {
-		ui.message = "Nessun PNG disponibile."
-		ui.refreshStatus()
-		return
-	}
-	ui.openConfirmModal("Conferma", "Resettare tutti i token PNG?", func() {
-		ui.resetTokens()
-	})
-}
-
 func (ui *tviewUI) openConfirmModal(title, message string, onConfirm func()) {
 	returnFocus := ui.app.GetFocus()
 	text := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
@@ -3051,15 +3034,6 @@ func (ui *tviewUI) deleteSelectedPNG() {
 	ui.refreshAll()
 }
 
-func (ui *tviewUI) resetTokens() {
-	for i := range ui.pngs {
-		ui.pngs[i].Token = defaultToken
-	}
-	ui.persistPNGs()
-	ui.message = fmt.Sprintf("Token PNG resettati a %d.", defaultToken)
-	ui.refreshAll()
-}
-
 func (ui *tviewUI) addSelectedMonsterToEncounter() {
 	idx := ui.currentMonsterIndex()
 	if idx < 0 {
@@ -3078,6 +3052,66 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 	})
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Aggiunto %s a encounter.", mon.Name)
+	ui.refreshEncounter()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) addSelectedPNGToEncounter() {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	p := ui.pngs[ui.selected]
+	name := strings.TrimSpace(p.Name)
+	if name == "" {
+		ui.message = "Nome PNG non valido."
+		ui.refreshStatus()
+		return
+	}
+
+	woundsMax := 3
+	if def := ui.findClassDefinition(p.Class, p.Subclass); def != nil && def.HP > 0 {
+		woundsMax = def.HP
+	}
+	if p.Level > 1 {
+		woundsMax += (p.Level - 1) / 2
+	}
+	if woundsMax < 1 {
+		woundsMax = 1
+	}
+
+	mon := Monster{
+		Name:               "PNG: " + name,
+		Role:               "PNG",
+		WildCard:           true,
+		Size:               0,
+		Pace:               "6",
+		Parry:              "-",
+		Toughness:          "-",
+		WoundsMax:          woundsMax,
+		Description:        strings.TrimSpace(p.Description),
+		MotivationsTactics: strings.TrimSpace(p.Traits),
+	}
+	if strings.TrimSpace(p.Primary) != "" {
+		mon.Skills = append(mon.Skills, "Primario: "+strings.TrimSpace(p.Primary))
+	}
+	if strings.TrimSpace(p.Secondary) != "" {
+		mon.Skills = append(mon.Skills, "Secondario: "+strings.TrimSpace(p.Secondary))
+	}
+	if strings.TrimSpace(p.Armor) != "" {
+		mon.Skills = append(mon.Skills, "Armatura: "+strings.TrimSpace(p.Armor))
+	}
+
+	ui.encounter = append(ui.encounter, EncounterEntry{
+		Monster:    mon,
+		WoundsMax:  woundsMax,
+		BasePF:     woundsMax,
+		Stress:     0,
+		BaseStress: 0,
+	})
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Aggiunto PNG %s a encounter.", name)
 	ui.refreshEncounter()
 	ui.refreshStatus()
 }
@@ -3540,6 +3574,268 @@ func (ui *tviewUI) sortEncounterByInitiative() {
 	ui.refreshStatus()
 }
 
+func (ui *tviewUI) openEncounterConditionModal() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	temp := cloneStringIntMap(ui.encounter[idx].Conditions)
+	if temp == nil {
+		temp = map[string]int{}
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true)
+	list.SetTitle(" Encounter Conditions (Space=toggle, Enter=apply, Esc=cancel) ")
+	list.SetBorderColor(tcell.ColorGold)
+	list.SetTitleColor(tcell.ColorGold)
+	list.SetMainTextColor(tcell.ColorWhite)
+	list.SetSelectedTextColor(tcell.ColorBlack)
+	list.SetSelectedBackgroundColor(tcell.ColorGold)
+	list.ShowSecondaryText(false)
+
+	render := func() {
+		cur := list.GetCurrentItem()
+		list.Clear()
+		for _, d := range encounterConditionDefs {
+			r := temp[d.Code]
+			mark := "[ ]"
+			if r > 0 {
+				mark = fmt.Sprintf("[x%d]", r)
+			}
+			list.AddItem(fmt.Sprintf("%s %s (%s)", mark, d.Name, d.Code), "", 0, nil)
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		if cur >= list.GetItemCount() {
+			cur = list.GetItemCount() - 1
+		}
+		if cur < 0 {
+			cur = 0
+		}
+		list.SetCurrentItem(cur)
+	}
+
+	toggle := func() {
+		cur := list.GetCurrentItem()
+		if cur < 0 || cur >= len(encounterConditionDefs) {
+			return
+		}
+		code := encounterConditionDefs[cur].Code
+		if temp[code] > 0 {
+			delete(temp, code)
+		} else {
+			temp[code] = 1
+		}
+		render()
+	}
+
+	closeModal := func(apply bool) {
+		ui.pages.RemovePage("encounter-conditions")
+		ui.app.SetFocus(ui.encList)
+		if !apply {
+			return
+		}
+		ui.encounter[idx].Conditions = cloneStringIntMap(temp)
+		ui.persistEncounter()
+		ui.refreshEncounter()
+		ui.encList.SetCurrentItem(idx)
+		ui.refreshDetail()
+		ui.message = fmt.Sprintf("Condizioni aggiornate su %s.", ui.encounterLabelAt(idx))
+		ui.refreshStatus()
+	}
+
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch {
+		case event.Key() == tcell.KeyRune && event.Rune() == ' ':
+			toggle()
+			return nil
+		case event.Key() == tcell.KeyEnter:
+			closeModal(true)
+			return nil
+		case event.Key() == tcell.KeyEscape:
+			closeModal(false)
+			return nil
+		default:
+			return event
+		}
+	})
+
+	render()
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 20, 0, true).
+			AddItem(nil, 0, 1, false), 74, 0, true).
+		AddItem(nil, 0, 1, false)
+	ui.pages.AddPage("encounter-conditions", modal, true, true)
+	ui.app.SetFocus(list)
+}
+
+func (ui *tviewUI) clearEncounterConditions() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	if len(ui.encounter[idx].Conditions) == 0 {
+		ui.message = "Nessuna condizione da rimuovere."
+		ui.refreshStatus()
+		return
+	}
+	ui.encounter[idx].Conditions = nil
+	ui.persistEncounter()
+	ui.refreshEncounter()
+	ui.encList.SetCurrentItem(idx)
+	ui.refreshDetail()
+	ui.message = fmt.Sprintf("Condizioni rimosse da %s.", ui.encounterLabelAt(idx))
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) removeEncounterConditionByCode(index int, code string) bool {
+	if index < 0 || index >= len(ui.encounter) {
+		return false
+	}
+	code = strings.ToUpper(strings.TrimSpace(code))
+	if code == "" || len(ui.encounter[index].Conditions) == 0 {
+		return false
+	}
+	if _, ok := ui.encounter[index].Conditions[code]; !ok {
+		return false
+	}
+	delete(ui.encounter[index].Conditions, code)
+	if len(ui.encounter[index].Conditions) == 0 {
+		ui.encounter[index].Conditions = nil
+	}
+	return true
+}
+
+func (ui *tviewUI) openEncounterConditionRemoveModal() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	entry := ui.encounter[idx]
+	if len(entry.Conditions) == 0 {
+		ui.message = "Nessuna condizione da rimuovere."
+		ui.refreshStatus()
+		return
+	}
+
+	active := make([]encounterConditionDef, 0, len(entry.Conditions))
+	for _, d := range encounterConditionDefs {
+		if entry.Conditions[d.Code] > 0 {
+			active = append(active, d)
+		}
+	}
+	if len(active) == 0 {
+		ui.message = "Nessuna condizione da rimuovere."
+		ui.refreshStatus()
+		return
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true)
+	list.SetTitle(" Remove One Condition (Enter=remove, Esc=cancel) ")
+	list.SetBorderColor(tcell.ColorGold)
+	list.SetTitleColor(tcell.ColorGold)
+	list.SetMainTextColor(tcell.ColorWhite)
+	list.SetSelectedTextColor(tcell.ColorBlack)
+	list.SetSelectedBackgroundColor(tcell.ColorGold)
+	list.ShowSecondaryText(false)
+	for _, d := range active {
+		rounds := entry.Conditions[d.Code]
+		list.AddItem(fmt.Sprintf("%s (%s%d)", d.Name, d.Code, rounds), "", 0, nil)
+	}
+
+	closeModal := func() {
+		ui.pages.RemovePage("encounter-condition-remove")
+		ui.app.SetFocus(ui.encList)
+	}
+
+	list.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		case tcell.KeyEnter:
+			cur := list.GetCurrentItem()
+			if cur < 0 || cur >= len(active) {
+				closeModal()
+				return nil
+			}
+			code := active[cur].Code
+			if ui.removeEncounterConditionByCode(idx, code) {
+				ui.persistEncounter()
+				ui.refreshEncounter()
+				ui.encList.SetCurrentItem(idx)
+				ui.refreshDetail()
+				ui.message = fmt.Sprintf("Rimossa condizione %s da %s.", conditionNameByCode(code), ui.encounterLabelAt(idx))
+				ui.refreshStatus()
+			}
+			closeModal()
+			return nil
+		default:
+			return event
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 12, 0, true).
+			AddItem(nil, 0, 1, false), 58, 0, true).
+		AddItem(nil, 0, 1, false)
+	ui.pages.AddPage("encounter-condition-remove", modal, true, true)
+	ui.app.SetFocus(list)
+}
+
+func (ui *tviewUI) adjustEncounterConditionRounds(delta int) {
+	if delta == 0 {
+		return
+	}
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	if len(ui.encounter[idx].Conditions) == 0 {
+		ui.message = "Nessuna condizione attiva."
+		ui.refreshStatus()
+		return
+	}
+	for code, r := range ui.encounter[idx].Conditions {
+		n := r + delta
+		if n <= 0 {
+			delete(ui.encounter[idx].Conditions, code)
+		} else {
+			ui.encounter[idx].Conditions[code] = n
+		}
+	}
+	if len(ui.encounter[idx].Conditions) == 0 {
+		ui.encounter[idx].Conditions = nil
+	}
+	ui.persistEncounter()
+	ui.refreshEncounter()
+	ui.encList.SetCurrentItem(idx)
+	ui.refreshDetail()
+	if delta > 0 {
+		ui.message = fmt.Sprintf("Round condizioni +1 su %s.", ui.encounterLabelAt(idx))
+	} else {
+		ui.message = fmt.Sprintf("Round condizioni -1 su %s.", ui.encounterLabelAt(idx))
+	}
+	ui.refreshStatus()
+}
+
 var initiativeRanks = []string{"A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"}
 var initiativeSuits = []string{"♥", "♦", "♣", "♠"}
 
@@ -3654,8 +3950,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- c: crea PNG",
 			"- m: rinomina PNG selezionato",
 			"- x: elimina PNG selezionato",
-			"- r: reset token di tutti i PNG",
-			"- ← / →: diminuisci/aumenta token selezionato",
+			"- a: aggiungi PNG selezionato a Encounter",
 		}
 	case ui.encList:
 		panel = "Encounter"
@@ -3663,6 +3958,10 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- d: rimuovi mostro selezionato",
 			"- h / l: ferite +1 / -1 sul selezionato",
 			"- j / k: ferite +1 / -1 sul selezionato",
+			"- c: aggiungi/togli condizioni (multi select)",
+			"- x: rimuovi una condizione dall'entry",
+			"- C: rimuovi tutte le condizioni dall'entry",
+			"- [ / ]: diminuisci/aumenta round condizioni",
 			"- i: tira iniziativa sul selezionato",
 			"- I: tira iniziativa per tutti",
 			"- S: ordina encounter per iniziativa",
@@ -3723,7 +4022,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
 	b.WriteString("- i / I / S (su Encounter): iniziativa selezionato/tutti/ordina\n")
-	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe\n")
+	b.WriteString("- [ / ]: alterna Catalogo (oppure round condizioni su Encounter)\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
 	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
@@ -3840,27 +4139,29 @@ func (ui *tviewUI) persistPNGs() {
 
 func (ui *tviewUI) persistEncounter() {
 	entries := make([]struct {
-		Name             string `yaml:"name"`
-		Wounds           int    `yaml:"wounds"`
-		PF               int    `yaml:"pf"`
-		InitiativeCard   string `yaml:"initiative_card,omitempty"`
-		LegacyInitiative int    `yaml:"initiative,omitempty"`
-		HasInit          bool   `yaml:"has_initiative,omitempty"`
-		Stress           int    `yaml:"stress,omitempty"`
-		BaseStress       int    `yaml:"base_stress,omitempty"`
+		Name             string         `yaml:"name"`
+		Wounds           int            `yaml:"wounds"`
+		PF               int            `yaml:"pf"`
+		InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+		LegacyInitiative int            `yaml:"initiative,omitempty"`
+		HasInit          bool           `yaml:"has_initiative,omitempty"`
+		Conditions       map[string]int `yaml:"conditions,omitempty"`
+		Stress           int            `yaml:"stress,omitempty"`
+		BaseStress       int            `yaml:"base_stress,omitempty"`
 	}, 0, len(ui.encounter))
 	for _, e := range ui.encounter {
 		base := encounterWoundsCap(e)
 		entries = append(entries, struct {
-			Name             string `yaml:"name"`
-			Wounds           int    `yaml:"wounds"`
-			PF               int    `yaml:"pf"`
-			InitiativeCard   string `yaml:"initiative_card,omitempty"`
-			LegacyInitiative int    `yaml:"initiative,omitempty"`
-			HasInit          bool   `yaml:"has_initiative,omitempty"`
-			Stress           int    `yaml:"stress,omitempty"`
-			BaseStress       int    `yaml:"base_stress,omitempty"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit})
+			Name             string         `yaml:"name"`
+			Wounds           int            `yaml:"wounds"`
+			PF               int            `yaml:"pf"`
+			InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+			LegacyInitiative int            `yaml:"initiative,omitempty"`
+			HasInit          bool           `yaml:"has_initiative,omitempty"`
+			Conditions       map[string]int `yaml:"conditions,omitempty"`
+			Stress           int            `yaml:"stress,omitempty"`
+			BaseStress       int            `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit, Conditions: cloneStringIntMap(e.Conditions)})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }
