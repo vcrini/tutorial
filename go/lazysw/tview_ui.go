@@ -3973,6 +3973,14 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- e: modifica + rilancia il tiro selezionato",
 			"- d: elimina il tiro selezionato",
 			"- c: svuota storico tiri",
+			"",
+			"Legenda notazione:",
+			"- D6: Savage Worlds (tratto d6e + destino d6e, prendi max)",
+			"- d6e: dado esplosivo (sul massimo ritira e somma)",
+			"- d8v / d8s: vantaggio/svantaggio (max/min tra 2 tiri)",
+			"- d20+5>15 oppure >=15: check ok/ko",
+			"- d20>15 2d6+1: su successo esegue espressione success",
+			"- 1d20+4 x3: batch (3 tiri), d6,d8: lista tiri",
 		}
 	case ui.pngList:
 		panel = "PNG"
@@ -4419,6 +4427,10 @@ func (ui *tviewUI) buildDiceDetail() string {
 		b.WriteString("- e: modifica + rilancia\n")
 		b.WriteString("- d: elimina selezionato\n")
 		b.WriteString("- c: svuota storico\n")
+		b.WriteString("\nLegenda notazione:\n")
+		for _, line := range diceNotationLegend() {
+			b.WriteString("- " + line + "\n")
+		}
 		return strings.TrimSpace(b.String())
 	}
 
@@ -4431,7 +4443,22 @@ func (ui *tviewUI) buildDiceDetail() string {
 	b.WriteString("Espressione: " + entry.Expression + "\n")
 	b.WriteString("Risultato: " + entry.Output + "\n")
 	b.WriteString(fmt.Sprintf("\nTotale tiri: %d", len(ui.diceLog)))
+	b.WriteString("\n\nLegenda notazione:\n")
+	for _, line := range diceNotationLegend() {
+		b.WriteString("- " + line + "\n")
+	}
 	return strings.TrimSpace(b.String())
+}
+
+func diceNotationLegend() []string {
+	return []string{
+		"D6: Savage Worlds (tratto d6e + destino d6e, prendi max)",
+		"d6e: dado esplosivo",
+		"d8v / d8s: vantaggio/svantaggio (max/min)",
+		"d20+5>15 oppure >=15: check ok/ko",
+		"d20>15 2d6+1: su successo esegue espressione success",
+		"1d20+4 x3: batch, d6,d8: lista tiri",
+	}
 }
 
 func (ui *tviewUI) openDiceRollInput() {
