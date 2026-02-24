@@ -1111,6 +1111,17 @@ func TestEncounterDetailsIncludePassivePerceptionForMonster(t *testing.T) {
 	}
 }
 
+func TestMonsterDetailsIncludeXPFromCR(t *testing.T) {
+	mon := mkMonster(1, "Goblin", 14, 7, "2d6")
+	mon.CR = "1/4"
+	ui := makeTestUI(t, []Monster{mon})
+	ui.renderDetailByMonsterIndex(0)
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "XP:") || !strings.Contains(meta, "50") {
+		t.Fatalf("expected XP 50 in monster details, got: %q", meta)
+	}
+}
+
 func TestEncounterDetailsIncludePassivePerceptionForCharacterBuild(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
 	ui.encounterItems = []EncounterEntry{

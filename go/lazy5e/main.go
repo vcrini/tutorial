@@ -3734,6 +3734,9 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 	} else {
 		fmt.Fprintf(builder, "[white]CR:[-] %s\n", blankIfEmpty(m.CR, "n/a"))
 	}
+	if xp, ok := extractMonsterXP(m.Raw, m.CR); ok {
+		fmt.Fprintf(builder, "[white]XP:[-] %d\n", xp)
+	}
 	if hasScale {
 		fmt.Fprintf(builder, "[white]AC:[-] %d -> %d\n", scalePreview.BaseAC, scalePreview.TargetAC)
 	} else if ac := extractAC(m.Raw); ac != "" {
@@ -3992,6 +3995,9 @@ func buildMonsterDescriptionText(m Monster) string {
 	}
 	if cr := strings.TrimSpace(m.CR); cr != "" {
 		fmt.Fprintf(b, "Challenge: %s\n", cr)
+	}
+	if xp, ok := extractMonsterXP(raw, m.CR); ok {
+		fmt.Fprintf(b, "XP: %d\n", xp)
 	}
 	if align := plainAny(raw["alignment"]); align != "" {
 		fmt.Fprintf(b, "Alignment: %s\n", align)
@@ -6431,6 +6437,20 @@ func partyMediumXPBudget(levels []int, forcedLevel int) int {
 func monsterXPFromCR(cr string) (int, bool) {
 	xp, ok := encounterXPByCR[strings.TrimSpace(cr)]
 	return xp, ok
+}
+
+func extractMonsterXP(raw map[string]any, cr string) (int, bool) {
+	if raw != nil {
+		if v, ok := anyToInt(raw["xp"]); ok && v >= 0 {
+			return v, true
+		}
+		if m, ok := raw["xp"].(map[string]any); ok {
+			if v, ok := anyToInt(m["value"]); ok && v >= 0 {
+				return v, true
+			}
+		}
+	}
+	return monsterXPFromCR(cr)
 }
 
 func monsterMatchesEnvironment(m Monster, env string) bool {
