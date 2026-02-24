@@ -4,19 +4,21 @@ import (
 	"encoding/json"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
 )
 
-var dataFile = "pngs.yml"
+var dataFile = persistentPath("pngs.yml")
 var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
 var environmentsFile = "config/ambienti.yml"
 var equipmentFile = "config/equipaggiamento.yaml"
 var cardsFile = "config/carte.yaml"
 var classesFile = "config/classi.yaml"
-var encounterFile = "encounter.yml"
+var encounterFile = persistentPath("encounter.yml")
+var diceHistoryFile = persistentPath("dice_history.yml")
 
 type nameLists struct {
 	First []string `yaml:"first"`
@@ -462,8 +464,50 @@ func uniqueRandomPNGName(existing []PNG) string {
 	}
 }
 
-func loadPNGList(path string) ([]PNG, string, error) {
+func lazyswAppDir() string {
+	if p := strings.TrimSpace(os.Getenv("LAZYSW_HOME")); p != "" {
+		return p
+	}
+	home, err := os.UserHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return "."
+	}
+	return filepath.Join(home, ".lazysw")
+}
+
+func persistentPath(name string) string {
+	return filepath.Join(lazyswAppDir(), name)
+}
+
+func ensureParentDir(path string) error {
+	dir := filepath.Dir(path)
+	if dir == "" || dir == "." {
+		return nil
+	}
+	return os.MkdirAll(dir, 0o755)
+}
+
+func readPersistentFileWithFallback(path string) ([]byte, error) {
 	data, err := os.ReadFile(path)
+	if err == nil {
+		return data, nil
+	}
+	if !os.IsNotExist(err) {
+		return nil, err
+	}
+	legacyPath := filepath.Base(path)
+	if legacyPath == "" || legacyPath == "." || legacyPath == path {
+		return nil, err
+	}
+	legacyData, legacyErr := os.ReadFile(legacyPath)
+	if legacyErr == nil {
+		return legacyData, nil
+	}
+	return nil, err
+}
+
+func loadPNGList(path string) ([]PNG, string, error) {
+	data, err := readPersistentFileWithFallback(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []PNG{}, "", nil
@@ -507,6 +551,9 @@ func savePNGList(path string, pngs []PNG, selected string) error {
 	if err != nil {
 		return err
 	}
+	if err := ensureParentDir(path); err != nil {
+		return err
+	}
 	return os.WriteFile(path, data, 0o644)
 }
 
@@ -515,4 +562,46 @@ func selectedPNGName(pngs []PNG, idx int) string {
 		return ""
 	}
 	return pngs[idx].Name
+}
+
+func loadDiceHistory(path string) ([]DiceResult, error) {
+	data, err := readPersistentFileWithFallback(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return []DiceResult{}, nil
+		}
+		return nil, err
+	}
+	var payload struct {
+		Entries []DiceResult `yaml:"entries"`
+	}
+	if err := yaml.Unmarshal(data, &payload); err != nil {
+		return nil, err
+	}
+	if payload.Entries == nil {
+		return []DiceResult{}, nil
+	}
+	if len(payload.Entries) > 200 {
+		payload.Entries = payload.Entries[len(payload.Entries)-200:]
+	}
+	return payload.Entries, nil
+}
+
+func saveDiceHistory(path string, entries []DiceResult) error {
+	if len(entries) > 200 {
+		entries = entries[len(entries)-200:]
+	}
+	payload := struct {
+		Entries []DiceResult `yaml:"entries"`
+	}{
+		Entries: entries,
+	}
+	data, err := yaml.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	if err := ensureParentDir(path); err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o644)
 }

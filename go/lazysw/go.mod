@@ -34,3 +34,5 @@ require (
 	golang.org/x/term v0.40.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 )
+
+replace github.com/vcrini/diceroll => /Users/vcrini/Repositories/go/modules/diceroll

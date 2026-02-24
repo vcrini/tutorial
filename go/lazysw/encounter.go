@@ -384,6 +384,9 @@ func saveEncounter(path string, entries []struct {
 	if err != nil {
 		return err
 	}
+	if err := ensureParentDir(path); err != nil {
+		return err
+	}
 	return os.WriteFile(path, data, 0o644)
 }
 
@@ -398,7 +401,7 @@ func readEncounter(path string) ([]struct {
 	Stress           int            `yaml:"stress,omitempty"`
 	BaseStress       int            `yaml:"base_stress,omitempty"`
 }, error) {
-	data, err := os.ReadFile(path)
+	data, err := readPersistentFileWithFallback(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return []struct {

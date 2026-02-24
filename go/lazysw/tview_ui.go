@@ -213,6 +213,10 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
 	}
+	diceLog, err := loadDiceHistory(diceHistoryFile)
+	if err != nil {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", diceHistoryFile, err)
+	}
 
 	selected := -1
 	if selectedName != "" {
@@ -237,6 +241,7 @@ func newTViewUI() (*tviewUI, error) {
 		cards:            cards,
 		classes:          classes,
 		encounter:        encounter,
+		diceLog:          diceLog,
 		message:          "Pronto.",
 		catalogMode:      "mostri",
 		activeBottomPane: "details",
@@ -4562,6 +4567,7 @@ func (ui *tviewUI) rerollSelectedDiceResult() {
 		return
 	}
 	ui.diceLog[cur] = DiceResult{Expression: expr, Output: breakdown}
+	ui.persistDiceHistory()
 	ui.renderDiceList()
 	ui.dice.SetCurrentItem(cur)
 	ui.message = "Tiro rilanciato."
@@ -4574,6 +4580,7 @@ func (ui *tviewUI) appendDiceLog(entry DiceResult) {
 	if len(ui.diceLog) > 200 {
 		ui.diceLog = ui.diceLog[len(ui.diceLog)-200:]
 	}
+	ui.persistDiceHistory()
 	ui.renderDiceList()
 	if len(ui.diceLog) > 0 {
 		ui.dice.SetCurrentItem(len(ui.diceLog) - 1)
@@ -4619,6 +4626,7 @@ func (ui *tviewUI) deleteSelectedDiceResult() {
 		cur = len(ui.diceLog) - 1
 	}
 	ui.diceLog = append(ui.diceLog[:cur], ui.diceLog[cur+1:]...)
+	ui.persistDiceHistory()
 	ui.renderDiceList()
 	if len(ui.diceLog) == 0 {
 		ui.message = "Storico dadi svuotato."
@@ -4640,6 +4648,7 @@ func (ui *tviewUI) clearDiceResults() {
 		return
 	}
 	ui.diceLog = nil
+	ui.persistDiceHistory()
 	ui.renderDiceList()
 	ui.message = "Storico dadi svuotato."
 	ui.refreshDetail()
@@ -4652,4 +4661,8 @@ func expandDiceRollInput(input string) ([]string, error) {
 
 func rollDiceExpression(expr string) (int, string, error) {
 	return diceroll.RollExpression(expr)
+}
+
+func (ui *tviewUI) persistDiceHistory() {
+	_ = saveDiceHistory(diceHistoryFile, ui.diceLog)
 }

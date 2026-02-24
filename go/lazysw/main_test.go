@@ -187,3 +187,27 @@ func TestApplyShakenOnWoundReduction(t *testing.T) {
 		t.Fatalf("expected no-op when already shaken")
 	}
 }
+
+func TestSaveLoadDiceHistory(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "dice_history.yml")
+	input := []DiceResult{
+		{Expression: "1d6", Output: "1d6(4) = 4"},
+		{Expression: "2d8+1", Output: "2d8(3+7) + 1 = 11"},
+	}
+	if err := saveDiceHistory(path, input); err != nil {
+		t.Fatalf("save dice history failed: %v", err)
+	}
+	got, err := loadDiceHistory(path)
+	if err != nil {
+		t.Fatalf("load dice history failed: %v", err)
+	}
+	if len(got) != len(input) {
+		t.Fatalf("unexpected history size: got %d want %d", len(got), len(input))
+	}
+	for i := range input {
+		if got[i] != input[i] {
+			t.Fatalf("mismatch at %d: got %+v want %+v", i, got[i], input[i])
+		}
+	}
+}
