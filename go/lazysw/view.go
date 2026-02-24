@@ -489,6 +489,9 @@ func (m model) View() string {
 				"↑↓: seleziona mostro",
 				"d/x/Backspace/Delete: rimuovi",
 				"←→: aggiungi/togli ferite",
+				"i: tira iniziativa selezionato",
+				"I: tira iniziativa tutti",
+				"S: ordina per iniziativa",
 			)
 		case 2: // Mostri
 			lines = append(lines,

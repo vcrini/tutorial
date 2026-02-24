@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -911,6 +911,21 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.adjustEncounterWounds(-1)
 			return nil
 		}
+	case 'i':
+		if focus == ui.encList {
+			ui.rollEncounterInitiativeSelected()
+			return nil
+		}
+	case 'I':
+		if focus == ui.encList {
+			ui.rollEncounterInitiativeAll()
+			return nil
+		}
+	case 'S':
+		if focus == ui.encList {
+			ui.sortEncounterByInitiative()
+			return nil
+		}
 	}
 	return ev
 }
@@ -1385,7 +1400,11 @@ func (ui *tviewUI) refreshEncounter() {
 		if remaining < 0 {
 			remaining = 0
 		}
-		ui.encList.AddItem(fmt.Sprintf("%s [Ferite %d/%d]", label, remaining, base), "", 0, nil)
+		initLabel := "--"
+		if e.HasInit {
+			initLabel = e.InitiativeCard
+		}
+		ui.encList.AddItem(fmt.Sprintf("%s [Ini %s | Ferite %d/%d]", label, initLabel, remaining, base), "", 0, nil)
 	}
 	if current >= len(ui.encounter) {
 		current = len(ui.encounter) - 1
@@ -1478,7 +1497,11 @@ func (ui *tviewUI) refreshDetail() {
 		if remaining < 0 {
 			remaining = 0
 		}
-		extra := fmt.Sprintf("Stato: %d/%d ferite residue (%s)", remaining, base, encounterStateLabel(e))
+		initLabel := "--"
+		if e.HasInit {
+			initLabel = e.InitiativeCard
+		}
+		extra := fmt.Sprintf("Iniziativa: %s | Stato: %d/%d ferite residue (%s)", initLabel, remaining, base, encounterStateLabel(e))
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
 		ui.renderDetail()
 		return
@@ -3431,6 +3454,161 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	ui.refreshStatus()
 }
 
+func (ui *tviewUI) rollEncounterInitiativeSelected() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	e := &ui.encounter[idx]
+	card, ok := ui.drawInitiativeCard(idx)
+	if !ok {
+		ui.message = "Mazzo esaurito per iniziative uniche."
+		ui.refreshStatus()
+		return
+	}
+	e.InitiativeCard = card
+	e.HasInit = true
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Iniziativa %s: %s", e.Monster.Name, e.InitiativeCard)
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) rollEncounterInitiativeAll() {
+	if len(ui.encounter) == 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	deck := buildInitiativeDeck()
+	rand.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
+	for i := range ui.encounter {
+		if i < len(deck) {
+			ui.encounter[i].InitiativeCard = deck[i]
+			ui.encounter[i].HasInit = true
+			continue
+		}
+		ui.encounter[i].InitiativeCard = ""
+		ui.encounter[i].HasInit = false
+	}
+	ui.persistEncounter()
+	if len(ui.encounter) > len(deck) {
+		ui.message = "Iniziativa tirata per i primi 52; mazzo esaurito."
+	} else {
+		ui.message = "Iniziativa tirata per tutti."
+	}
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) sortEncounterByInitiative() {
+	if len(ui.encounter) == 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	currentLabel := ui.encounterLabelAt(ui.currentEncounterIndex())
+	sort.SliceStable(ui.encounter, func(i, j int) bool {
+		ai, aj := ui.encounter[i], ui.encounter[j]
+		if ai.HasInit != aj.HasInit {
+			return ai.HasInit
+		}
+		if ai.HasInit && aj.HasInit {
+			cmp := compareInitiativeCards(ai.InitiativeCard, aj.InitiativeCard)
+			if cmp != 0 {
+				return cmp < 0
+			}
+		}
+		return ai.Monster.Name < aj.Monster.Name
+	})
+	ui.persistEncounter()
+	ui.refreshEncounter()
+	if currentLabel != "" {
+		for i := range ui.encounter {
+			if ui.encounterLabelAt(i) == currentLabel {
+				ui.encList.SetCurrentItem(i)
+				break
+			}
+		}
+	}
+	ui.refreshDetail()
+	ui.message = "Encounter ordinato per iniziativa."
+	ui.refreshStatus()
+}
+
+var initiativeRanks = []string{"A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"}
+var initiativeSuits = []string{"♥", "♦", "♣", "♠"}
+
+func buildInitiativeDeck() []string {
+	deck := make([]string, 0, len(initiativeRanks)*len(initiativeSuits))
+	for _, r := range initiativeRanks {
+		for _, s := range initiativeSuits {
+			deck = append(deck, r+s)
+		}
+	}
+	return deck
+}
+
+func (ui *tviewUI) drawInitiativeCard(excludeIdx int) (string, bool) {
+	used := make(map[string]struct{}, len(ui.encounter))
+	for i, e := range ui.encounter {
+		if i == excludeIdx {
+			continue
+		}
+		if e.HasInit && strings.TrimSpace(e.InitiativeCard) != "" {
+			used[e.InitiativeCard] = struct{}{}
+		}
+	}
+	deck := buildInitiativeDeck()
+	available := make([]string, 0, len(deck))
+	for _, c := range deck {
+		if _, ok := used[c]; !ok {
+			available = append(available, c)
+		}
+	}
+	if len(available) == 0 {
+		return "", false
+	}
+	return available[rand.IntN(len(available))], true
+}
+
+func compareInitiativeCards(a, b string) int {
+	ar, as, aok := parseInitiativeCard(a)
+	br, bs, bok := parseInitiativeCard(b)
+	if !aok && !bok {
+		return strings.Compare(a, b)
+	}
+	if !aok {
+		return 1
+	}
+	if !bok {
+		return -1
+	}
+	if as != bs {
+		return as - bs
+	}
+	return ar - br
+}
+
+func parseInitiativeCard(card string) (rankIdx int, suitIdx int, ok bool) {
+	card = strings.TrimSpace(card)
+	if card == "" {
+		return 0, 0, false
+	}
+	for ri, r := range initiativeRanks {
+		for si, s := range initiativeSuits {
+			if card == r+s || card == s+r {
+				return ri, si, true
+			}
+		}
+	}
+	return 0, 0, false
+}
+
 func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 	if ui.helpVisible {
 		return
@@ -3446,8 +3624,8 @@ func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(nil, 0, 1, false).
-			AddItem(text, 0, 1, true).
-			AddItem(nil, 0, 1, false), 0, 1, true).
+			AddItem(text, 0, 5, true).
+			AddItem(nil, 0, 1, false), 0, 5, true).
 		AddItem(nil, 0, 1, false)
 
 	ui.pages.AddAndSwitchToPage("help", modal, true)
@@ -3485,6 +3663,9 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- d: rimuovi mostro selezionato",
 			"- h / l: ferite +1 / -1 sul selezionato",
 			"- j / k: ferite +1 / -1 sul selezionato",
+			"- i: tira iniziativa sul selezionato",
+			"- I: tira iniziativa per tutti",
+			"- S: ordina encounter per iniziativa",
 		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
 		panel = "Mostri"
@@ -3541,6 +3722,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- ?: apri/chiudi help\n")
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
+	b.WriteString("- i / I / S (su Encounter): iniziativa selezionato/tutti/ordina\n")
 	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
@@ -3658,21 +3840,27 @@ func (ui *tviewUI) persistPNGs() {
 
 func (ui *tviewUI) persistEncounter() {
 	entries := make([]struct {
-		Name       string `yaml:"name"`
-		Wounds     int    `yaml:"wounds"`
-		PF         int    `yaml:"pf"`
-		Stress     int    `yaml:"stress,omitempty"`
-		BaseStress int    `yaml:"base_stress,omitempty"`
+		Name             string `yaml:"name"`
+		Wounds           int    `yaml:"wounds"`
+		PF               int    `yaml:"pf"`
+		InitiativeCard   string `yaml:"initiative_card,omitempty"`
+		LegacyInitiative int    `yaml:"initiative,omitempty"`
+		HasInit          bool   `yaml:"has_initiative,omitempty"`
+		Stress           int    `yaml:"stress,omitempty"`
+		BaseStress       int    `yaml:"base_stress,omitempty"`
 	}, 0, len(ui.encounter))
 	for _, e := range ui.encounter {
 		base := encounterWoundsCap(e)
 		entries = append(entries, struct {
-			Name       string `yaml:"name"`
-			Wounds     int    `yaml:"wounds"`
-			PF         int    `yaml:"pf"`
-			Stress     int    `yaml:"stress,omitempty"`
-			BaseStress int    `yaml:"base_stress,omitempty"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base})
+			Name             string `yaml:"name"`
+			Wounds           int    `yaml:"wounds"`
+			PF               int    `yaml:"pf"`
+			InitiativeCard   string `yaml:"initiative_card,omitempty"`
+			LegacyInitiative int    `yaml:"initiative,omitempty"`
+			HasInit          bool   `yaml:"has_initiative,omitempty"`
+			Stress           int    `yaml:"stress,omitempty"`
+			BaseStress       int    `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }
