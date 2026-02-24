@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.10.1
 	github.com/gdamore/tcell/v2 v2.13.0
 	github.com/rivo/tview v0.42.0
-	github.com/vcrini/diceroll v0.2.0
+	github.com/vcrini/diceroll v0.3.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -35,4 +35,4 @@ require (
 	golang.org/x/text v0.31.0 // indirect
 )
 
-replace github.com/vcrini/diceroll => /Users/vcrini/Repositories/go/modules/diceroll
+// replace github.com/vcrini/diceroll => /Users/vcrini/Repositories/go/modules/diceroll

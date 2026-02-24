@@ -4527,18 +4527,54 @@ func (ui *tviewUI) openDiceReRollInput() {
 		if expr == "" {
 			return
 		}
-		_, breakdown, err := rollDiceExpression(expr)
+		exprs, err := expandDiceRollInput(expr)
 		if err != nil {
 			ui.message = "Errore dadi: " + err.Error()
 			ui.refreshStatus()
 			return
 		}
-		ui.diceLog[cur] = DiceResult{Expression: expr, Output: breakdown}
+		results := make([]DiceResult, 0, len(exprs))
+		for _, ex := range exprs {
+			_, breakdown, rollErr := rollDiceExpression(ex)
+			if rollErr != nil {
+				ui.message = "Errore dadi: " + rollErr.Error()
+				ui.refreshStatus()
+				return
+			}
+			results = append(results, DiceResult{Expression: ex, Output: breakdown})
+		}
+		if len(results) == 0 {
+			ui.message = "Nessun tiro valido."
+			ui.refreshStatus()
+			return
+		}
+		ui.diceLog[cur] = results[0]
+		if len(results) > 1 {
+			insertAt := cur + 1
+			tail := append([]DiceResult{}, ui.diceLog[insertAt:]...)
+			ui.diceLog = append(ui.diceLog[:insertAt], results[1:]...)
+			ui.diceLog = append(ui.diceLog, tail...)
+		}
+		if len(ui.diceLog) > 200 {
+			ui.diceLog = ui.diceLog[len(ui.diceLog)-200:]
+		}
+		ui.persistDiceHistory()
 		ui.renderDiceList()
-		ui.dice.SetCurrentItem(cur)
+		lastIdx := cur + len(results) - 1
+		if lastIdx >= len(ui.diceLog) {
+			lastIdx = len(ui.diceLog) - 1
+		}
+		if lastIdx < 0 {
+			lastIdx = 0
+		}
+		ui.dice.SetCurrentItem(lastIdx)
 		ui.closeModal()
 		ui.focusPanel(focusDice)
-		ui.message = "Tiro aggiornato."
+		if len(results) > 1 {
+			ui.message = fmt.Sprintf("Tiro aggiornato in batch (%d).", len(results))
+		} else {
+			ui.message = "Tiro aggiornato."
+		}
 		ui.refreshDetail()
 		ui.refreshStatus()
 	})
@@ -4560,17 +4596,52 @@ func (ui *tviewUI) rerollSelectedDiceResult() {
 		ui.refreshStatus()
 		return
 	}
-	_, breakdown, err := rollDiceExpression(expr)
+	exprs, err := expandDiceRollInput(expr)
 	if err != nil {
 		ui.message = "Errore dadi: " + err.Error()
 		ui.refreshStatus()
 		return
 	}
-	ui.diceLog[cur] = DiceResult{Expression: expr, Output: breakdown}
+	results := make([]DiceResult, 0, len(exprs))
+	for _, ex := range exprs {
+		_, breakdown, rollErr := rollDiceExpression(ex)
+		if rollErr != nil {
+			ui.message = "Errore dadi: " + rollErr.Error()
+			ui.refreshStatus()
+			return
+		}
+		results = append(results, DiceResult{Expression: ex, Output: breakdown})
+	}
+	if len(results) == 0 {
+		ui.message = "Nessun tiro da rilanciare."
+		ui.refreshStatus()
+		return
+	}
+	ui.diceLog[cur] = results[0]
+	if len(results) > 1 {
+		insertAt := cur + 1
+		tail := append([]DiceResult{}, ui.diceLog[insertAt:]...)
+		ui.diceLog = append(ui.diceLog[:insertAt], results[1:]...)
+		ui.diceLog = append(ui.diceLog, tail...)
+	}
+	if len(ui.diceLog) > 200 {
+		ui.diceLog = ui.diceLog[len(ui.diceLog)-200:]
+	}
 	ui.persistDiceHistory()
 	ui.renderDiceList()
-	ui.dice.SetCurrentItem(cur)
-	ui.message = "Tiro rilanciato."
+	lastIdx := cur + len(results) - 1
+	if lastIdx >= len(ui.diceLog) {
+		lastIdx = len(ui.diceLog) - 1
+	}
+	if lastIdx < 0 {
+		lastIdx = 0
+	}
+	ui.dice.SetCurrentItem(lastIdx)
+	if len(results) > 1 {
+		ui.message = fmt.Sprintf("Tiro rilanciato in batch (%d).", len(results))
+	} else {
+		ui.message = "Tiro rilanciato."
+	}
 	ui.refreshDetail()
 	ui.refreshStatus()
 }
