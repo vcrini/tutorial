@@ -466,7 +466,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqItemTypeDrop.SetCurrentOption(0)
 
-	ui.eqRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.eqRankDrop = tview.NewDropDown().SetLabel(" Era ")
 	ui.eqRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqRankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqRankDrop.SetListStyles(
@@ -1292,8 +1292,14 @@ func (ui *tviewUI) refreshEquipment() {
 		if ui.eqItemTypeFilter != "" && ui.eqItemTypeFilter != "Tutti" && !strings.EqualFold(strings.TrimSpace(it.Type), ui.eqItemTypeFilter) {
 			continue
 		}
-		if ui.eqRankFilter != "" && ui.eqRankFilter != "Tutti" && strconv.Itoa(it.Rank) != ui.eqRankFilter {
-			continue
+		if ui.eqRankFilter != "" && ui.eqRankFilter != "Tutti" {
+			era := strings.TrimSpace(it.Era)
+			if era == "" && it.Rank > 0 {
+				era = strconv.Itoa(it.Rank)
+			}
+			if !strings.EqualFold(era, ui.eqRankFilter) {
+				continue
+			}
 		}
 		ui.filteredEq = append(ui.filteredEq, i)
 	}
@@ -1309,7 +1315,15 @@ func (ui *tviewUI) refreshEquipment() {
 	}
 	for _, idx := range ui.filteredEq {
 		it := ui.equipment[idx]
-		ui.eqList.AddItem(fmt.Sprintf("%s [%s R%d]", it.Name, it.Category, it.Rank), "", 0, nil)
+		era := strings.TrimSpace(it.Era)
+		if era == "" && it.Rank > 0 {
+			era = strconv.Itoa(it.Rank)
+		}
+		if era != "" {
+			ui.eqList.AddItem(fmt.Sprintf("%s [%s | %s]", it.Name, it.Category, era), "", 0, nil)
+		} else {
+			ui.eqList.AddItem(fmt.Sprintf("%s [%s]", it.Name, it.Category), "", 0, nil)
+		}
 	}
 	if current >= len(ui.filteredEq) {
 		current = len(ui.filteredEq) - 1
@@ -1934,22 +1948,24 @@ func (ui *tviewUI) buildEquipmentItemTypeOptions() []string {
 }
 
 func (ui *tviewUI) buildEquipmentRankOptions() []string {
-	set := map[int]struct{}{}
+	set := map[string]struct{}{}
 	for _, it := range ui.equipment {
-		if it.Rank > 0 {
-			set[it.Rank] = struct{}{}
+		era := strings.TrimSpace(it.Era)
+		if era == "" && it.Rank > 0 {
+			era = strconv.Itoa(it.Rank)
+		}
+		if era != "" {
+			set[era] = struct{}{}
 		}
 	}
-	ints := make([]int, 0, len(set))
+	vals := make([]string, 0, len(set))
 	for r := range set {
-		ints = append(ints, r)
+		vals = append(vals, r)
 	}
-	sort.Ints(ints)
-	opts := make([]string, 0, len(ints)+1)
+	sort.Strings(vals)
+	opts := make([]string, 0, len(vals)+1)
 	opts = append(opts, "Tutti")
-	for _, r := range ints {
-		opts = append(opts, strconv.Itoa(r))
-	}
+	opts = append(opts, vals...)
 	return opts
 }
 
@@ -2145,39 +2161,58 @@ func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
 
 	var b strings.Builder
 	b.WriteString(it.Name + "\n")
-	b.WriteString(fmt.Sprintf("Categoria: %s | Tipo: %s | Rango: %d", it.Category, it.Type, it.Rank))
-	if hasValue(it.Levels) {
-		b.WriteString(fmt.Sprintf(" | Livelli: %s", it.Levels))
+	era := strings.TrimSpace(it.Era)
+	if era == "" && it.Rank > 0 {
+		era = strconv.Itoa(it.Rank)
+	}
+	b.WriteString(fmt.Sprintf("Categoria: %s | Tipo: %s", strings.TrimSpace(it.Category), strings.TrimSpace(it.Type)))
+	if era != "" {
+		b.WriteString(" | Era: " + era)
 	}
 	b.WriteString("\n")
 
-	if strings.EqualFold(strings.TrimSpace(it.Type), "armatura") {
-		if hasValue(it.Trait) {
-			b.WriteString("Soglie base: " + strings.TrimSpace(it.Trait) + "\n")
-		}
-		if hasValue(it.Range) {
-			b.WriteString("Punteggio base: " + strings.TrimSpace(it.Range) + "\n")
-		}
-	} else if strings.EqualFold(strings.TrimSpace(it.Type), "bottino") || strings.EqualFold(strings.TrimSpace(it.Type), "scorte") {
-		if hasValue(it.Trait) {
-			b.WriteString("Tiro: " + strings.TrimSpace(it.Trait) + "\n")
-		}
-	} else {
-		if hasValue(it.Trait) {
-			b.WriteString("Tratto: " + strings.TrimSpace(it.Trait) + "\n")
-		}
-		if hasValue(it.Range) {
-			b.WriteString("Portata: " + strings.TrimSpace(it.Range) + "\n")
-		}
-		if hasValue(it.Damage) {
-			b.WriteString("Danno: " + strings.TrimSpace(it.Damage) + "\n")
-		}
-		if hasValue(it.Grip) {
-			b.WriteString("Impugnatura: " + strings.TrimSpace(it.Grip) + "\n")
-		}
+	if hasValue(it.Cost) {
+		b.WriteString("Costo: " + strings.TrimSpace(it.Cost) + "\n")
 	}
-	if hasValue(it.Characteristic) {
-		b.WriteString("\nCaratteristica:\n" + strings.TrimSpace(it.Characteristic))
+	if hasValue(it.Weight) {
+		b.WriteString("Peso: " + strings.TrimSpace(it.Weight) + "\n")
+	}
+	if hasValue(it.MinStrength) {
+		b.WriteString("Forza Minima: " + strings.TrimSpace(it.MinStrength) + "\n")
+	} else if hasValue(it.Trait) {
+		b.WriteString("Forza Minima: " + strings.TrimSpace(it.Trait) + "\n")
+	}
+	if hasValue(it.Range) {
+		b.WriteString("Gittata: " + strings.TrimSpace(it.Range) + "\n")
+	}
+	if hasValue(it.Damage) {
+		b.WriteString("Danni: " + strings.TrimSpace(it.Damage) + "\n")
+	}
+	if hasValue(it.AP) {
+		b.WriteString("PA: " + strings.TrimSpace(it.AP) + "\n")
+	}
+	if hasValue(it.ROF) {
+		b.WriteString("CdT: " + strings.TrimSpace(it.ROF) + "\n")
+	}
+	if hasValue(it.Shots) {
+		b.WriteString("Colpi: " + strings.TrimSpace(it.Shots) + "\n")
+	}
+	if hasValue(it.Armor) {
+		b.WriteString("Armatura: " + strings.TrimSpace(it.Armor) + "\n")
+	}
+	if hasValue(it.Parry) {
+		b.WriteString("Parata: " + strings.TrimSpace(it.Parry) + "\n")
+	}
+	if hasValue(it.Cover) {
+		b.WriteString("Copertura: " + strings.TrimSpace(it.Cover) + "\n")
+	}
+
+	notes := strings.TrimSpace(it.Note)
+	if notes == "" {
+		notes = strings.TrimSpace(it.Characteristic)
+	}
+	if hasValue(notes) {
+		b.WriteString("\nNote:\n" + notes)
 	}
 	return strings.TrimSpace(b.String())
 }
@@ -4022,8 +4057,8 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList:
 		panel = "Equipaggiamento"
 		panelLines = []string{
-			"- u / t / g: focus filtro Nome / Tipo / Rango (TAB per Categoria)",
-			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Rango)",
+			"- u / t / g: focus filtro Nome / Tipo / Era (TAB per Categoria)",
+			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Era)",
 			"- b: genera bottino (Treasure) da categoria + dadi",
 			"- d: switch Dettagli <-> Treasure",
 		}

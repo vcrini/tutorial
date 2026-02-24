@@ -107,6 +107,17 @@ type EquipmentItem struct {
 	Category       string `yaml:"category"`
 	Type           string `yaml:"type"`
 	Rank           int    `yaml:"rank"`
+	Era            string `yaml:"era"`
+	Cost           string `yaml:"cost"`
+	Weight         string `yaml:"weight"`
+	MinStrength    string `yaml:"min_strength"`
+	AP             string `yaml:"ap"`
+	ROF            string `yaml:"rof"`
+	Shots          string `yaml:"shots"`
+	Armor          string `yaml:"armor"`
+	Parry          string `yaml:"parry"`
+	Cover          string `yaml:"cover"`
+	Note           string `yaml:"note"`
 	Levels         string `yaml:"levels"`
 	Trait          string `yaml:"trait"`
 	Range          string `yaml:"range"`
