@@ -119,23 +119,25 @@ type adventuresDataset struct {
 }
 
 type EncounterEntry struct {
-	MonsterIndex int
-	Ordinal      int
-	Custom       bool
-	CustomName   string
-	CustomInit   int
-	CustomAC     string
-	CustomMeta   string
-	CustomBody   string
-	Conditions   map[string]int
-	BaseHP       int
-	CurrentHP    int
-	HPFormula    string
-	UseRolledHP  bool
-	RolledHP     int
-	HasInitRoll  bool
-	InitRoll     int
-	Character    *CharacterBuild
+	MonsterIndex     int
+	Ordinal          int
+	Custom           bool
+	CustomName       string
+	CustomInit       int
+	CustomAC         string
+	CustomPassive    int
+	HasCustomPassive bool
+	CustomMeta       string
+	CustomBody       string
+	Conditions       map[string]int
+	BaseHP           int
+	CurrentHP        int
+	HPFormula        string
+	UseRolledHP      bool
+	RolledHP         int
+	HasInitRoll      bool
+	InitRoll         int
+	Character        *CharacterBuild
 }
 
 type CharacterBuild struct {
@@ -161,23 +163,25 @@ type PersistedEncounters struct {
 }
 
 type PersistedEncounterItem struct {
-	MonsterID  int             `yaml:"monster_id"`
-	Ordinal    int             `yaml:"ordinal"`
-	Custom     bool            `yaml:"custom,omitempty"`
-	CustomName string          `yaml:"custom_name,omitempty"`
-	CustomInit int             `yaml:"custom_init,omitempty"`
-	CustomAC   string          `yaml:"custom_ac,omitempty"`
-	CustomMeta string          `yaml:"custom_meta,omitempty"`
-	CustomBody string          `yaml:"custom_body,omitempty"`
-	Conditions map[string]int  `yaml:"conditions,omitempty"`
-	BaseHP     int             `yaml:"base_hp"`
-	CurrentHP  int             `yaml:"current_hp"`
-	HPFormula  string          `yaml:"hp_formula,omitempty"`
-	UseRolled  bool            `yaml:"use_rolled,omitempty"`
-	RolledHP   int             `yaml:"rolled_hp,omitempty"`
-	InitRolled bool            `yaml:"init_rolled,omitempty"`
-	InitRoll   int             `yaml:"init_roll,omitempty"`
-	Character  *CharacterBuild `yaml:"character,omitempty"`
+	MonsterID        int             `yaml:"monster_id"`
+	Ordinal          int             `yaml:"ordinal"`
+	Custom           bool            `yaml:"custom,omitempty"`
+	CustomName       string          `yaml:"custom_name,omitempty"`
+	CustomInit       int             `yaml:"custom_init,omitempty"`
+	CustomAC         string          `yaml:"custom_ac,omitempty"`
+	CustomPassive    int             `yaml:"custom_passive,omitempty"`
+	HasCustomPassive bool            `yaml:"has_custom_passive,omitempty"`
+	CustomMeta       string          `yaml:"custom_meta,omitempty"`
+	CustomBody       string          `yaml:"custom_body,omitempty"`
+	Conditions       map[string]int  `yaml:"conditions,omitempty"`
+	BaseHP           int             `yaml:"base_hp"`
+	CurrentHP        int             `yaml:"current_hp"`
+	HPFormula        string          `yaml:"hp_formula,omitempty"`
+	UseRolled        bool            `yaml:"use_rolled,omitempty"`
+	RolledHP         int             `yaml:"rolled_hp,omitempty"`
+	InitRolled       bool            `yaml:"init_rolled,omitempty"`
+	InitRoll         int             `yaml:"init_roll,omitempty"`
+	Character        *CharacterBuild `yaml:"character,omitempty"`
 }
 
 type PersistedDice struct {
@@ -3693,6 +3697,7 @@ func (ui *UI) renderDetailByEncounterIndex(encounterIndex int) {
 		ui.renderDetailByMonsterIndex(entry.MonsterIndex)
 	}
 	ui.applyEncounterConditionsOverlay(entry)
+	ui.detailMeta.SetText(ui.ensureEncounterPassivePerceptionLine(entry, ui.detailMeta.GetText(false)))
 	ui.restoreDescriptionScrollForKey(descKey)
 }
 
@@ -3759,6 +3764,9 @@ func (ui *UI) renderDetailByMonsterIndex(monsterIndex int) {
 		fmt.Fprintf(builder, "[white]Environment:[-] %s\n", strings.Join(m.Environment, ", "))
 	} else {
 		fmt.Fprintf(builder, "[white]Environment:[-] n/a\n")
+	}
+	if passive, ok := extractPassivePerceptionFromMonster(m.Raw); ok {
+		fmt.Fprintf(builder, "[white]Passive Perception:[-] %d\n", passive)
 	}
 	ui.detailMeta.SetText(builder.String())
 	ui.detailMeta.ScrollToBeginning()
@@ -3962,6 +3970,7 @@ func (ui *UI) renderDetailByCustomEntry(entry EncounterEntry) {
 		}
 		meta = builder.String()
 	}
+	meta = ui.ensureEncounterPassivePerceptionLine(entry, meta)
 	ui.detailMeta.SetText(meta)
 	ui.detailMeta.ScrollToBeginning()
 	ui.rawText = buildCustomDescriptionText(entry, maxHP)
@@ -6937,6 +6946,7 @@ func (ui *UI) openAddCustomEncounterForm() {
 	initField := tview.NewInputField().SetLabel("Init (x or x/x): ").SetFieldWidth(16)
 	hpField := tview.NewInputField().SetLabel("HP (z or x/y): ").SetFieldWidth(16)
 	acField := tview.NewInputField().SetLabel("AC (optional): ").SetFieldWidth(8)
+	passiveField := tview.NewInputField().SetLabel("Passive Perception (optional): ").SetFieldWidth(8)
 
 	setFieldStyle := func(f *tview.InputField) {
 		f.SetLabelColor(tcell.ColorGold)
@@ -6948,11 +6958,13 @@ func (ui *UI) openAddCustomEncounterForm() {
 	setFieldStyle(initField)
 	setFieldStyle(hpField)
 	setFieldStyle(acField)
+	setFieldStyle(passiveField)
 
 	form.AddFormItem(nameField)
 	form.AddFormItem(initField)
 	form.AddFormItem(hpField)
 	form.AddFormItem(acField)
+	form.AddFormItem(passiveField)
 
 	form.AddButton("Save", func() {
 		name := strings.TrimSpace(nameField.GetText())
@@ -6980,20 +6992,34 @@ func (ui *UI) openAddCustomEncounterForm() {
 				return
 			}
 		}
+		hasPassive := false
+		passive := 0
+		passiveText := strings.TrimSpace(passiveField.GetText())
+		if passiveText != "" {
+			n, err := strconv.Atoi(passiveText)
+			if err != nil || n < 0 {
+				ui.status.SetText(fmt.Sprintf(" [white:red] Passive Perception non valida[-:-]  %s", helpText))
+				return
+			}
+			hasPassive = true
+			passive = n
+		}
 
 		ui.pushEncounterUndo()
 		ordinal := ui.nextCustomOrdinal(name)
 		ui.encounterItems = append(ui.encounterItems, EncounterEntry{
-			MonsterIndex: -1,
-			Ordinal:      ordinal,
-			Custom:       true,
-			CustomName:   name,
-			CustomInit:   initBase,
-			CustomAC:     ac,
-			BaseHP:       maxHP,
-			CurrentHP:    currentHP,
-			HasInitRoll:  hasRoll,
-			InitRoll:     initRoll,
+			MonsterIndex:     -1,
+			Ordinal:          ordinal,
+			Custom:           true,
+			CustomName:       name,
+			CustomInit:       initBase,
+			CustomAC:         ac,
+			CustomPassive:    passive,
+			HasCustomPassive: hasPassive,
+			BaseHP:           maxHP,
+			CurrentHP:        currentHP,
+			HasInitRoll:      hasRoll,
+			InitRoll:         initRoll,
 		})
 
 		ui.pages.RemovePage("encounter-add-custom")
@@ -7014,7 +7040,7 @@ func (ui *UI) openAddCustomEncounterForm() {
 		AddItem(nil, 0, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
 			AddItem(nil, 0, 1, false).
-			AddItem(form, 12, 0, true).
+			AddItem(form, 14, 0, true).
 			AddItem(nil, 0, 1, false), 74, 0, true).
 		AddItem(nil, 0, 1, false)
 
@@ -7109,6 +7135,174 @@ func (ui *UI) applyCharacterBuildToEncounter(index int, next CharacterBuild) err
 	return nil
 }
 
+func (ui *UI) openEncounterCustomEntryEditForm(index int) {
+	if index < 0 || index >= len(ui.encounterItems) {
+		return
+	}
+	entry := ui.encounterItems[index]
+	if !entry.Custom {
+		return
+	}
+
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Edit Custom Encounter ")
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+
+	closeModal := func() {
+		ui.pages.RemovePage("encounter-edit-custom")
+		ui.encounterEditVisible = false
+		ui.app.SetFocus(ui.encounter)
+	}
+	ui.encounterEditVisible = true
+
+	nameField := tview.NewInputField().SetLabel("Name: ").SetFieldWidth(34)
+	nameField.SetText(strings.TrimSpace(entry.CustomName))
+	initField := tview.NewInputField().SetLabel("Init (x or x/x): ").SetFieldWidth(16)
+	if entry.HasInitRoll {
+		initField.SetText(fmt.Sprintf("%d/%d", entry.InitRoll, entry.CustomInit))
+	} else {
+		initField.SetText(strconv.Itoa(entry.CustomInit))
+	}
+	hpField := tview.NewInputField().SetLabel("HP (z or x/y): ").SetFieldWidth(16)
+	maxHP := ui.encounterMaxHP(entry)
+	if maxHP > 0 {
+		hpField.SetText(fmt.Sprintf("%d/%d", entry.CurrentHP, maxHP))
+	} else {
+		hpField.SetText("0")
+	}
+	acField := tview.NewInputField().SetLabel("AC (optional): ").SetFieldWidth(8)
+	acField.SetText(strings.TrimSpace(entry.CustomAC))
+	passiveField := tview.NewInputField().SetLabel("Passive Perception (optional): ").SetFieldWidth(8)
+	if entry.HasCustomPassive {
+		passiveField.SetText(strconv.Itoa(max(0, entry.CustomPassive)))
+	}
+
+	setFieldStyle := func(f *tview.InputField) {
+		f.SetLabelColor(tcell.ColorGold)
+		f.SetFieldBackgroundColor(tcell.ColorWhite)
+		f.SetFieldTextColor(tcell.ColorBlack)
+		f.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	}
+	setFieldStyle(nameField)
+	setFieldStyle(initField)
+	setFieldStyle(hpField)
+	setFieldStyle(acField)
+	setFieldStyle(passiveField)
+
+	form.AddFormItem(nameField)
+	form.AddFormItem(initField)
+	form.AddFormItem(hpField)
+	form.AddFormItem(acField)
+	form.AddFormItem(passiveField)
+
+	apply := func() {
+		name := strings.TrimSpace(nameField.GetText())
+		if name == "" {
+			ui.status.SetText(fmt.Sprintf(" [white:red] nome non valido[-:-]  %s", helpText))
+			return
+		}
+
+		hasRoll, initRoll, initBase, ok := parseInitInput(initField.GetText())
+		if !ok {
+			ui.status.SetText(fmt.Sprintf(" [white:red] init non valida[-:-]  %s", helpText))
+			return
+		}
+
+		currentHP, baseHP, ok := parseHPInput(hpField.GetText())
+		if !ok {
+			ui.status.SetText(fmt.Sprintf(" [white:red] HP non validi[-:-]  %s", helpText))
+			return
+		}
+
+		ac := strings.TrimSpace(acField.GetText())
+		if ac != "" {
+			if _, err := strconv.Atoi(ac); err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] AC non valida[-:-]  %s", helpText))
+				return
+			}
+		}
+
+		hasPassive := false
+		passive := 0
+		passiveText := strings.TrimSpace(passiveField.GetText())
+		if passiveText != "" {
+			n, err := strconv.Atoi(passiveText)
+			if err != nil || n < 0 {
+				ui.status.SetText(fmt.Sprintf(" [white:red] Passive Perception non valida[-:-]  %s", helpText))
+				return
+			}
+			hasPassive = true
+			passive = n
+		}
+
+		ui.pushEncounterUndo()
+		cur := &ui.encounterItems[index]
+		cur.CustomName = name
+		cur.CustomInit = initBase
+		cur.HasInitRoll = hasRoll
+		cur.InitRoll = initRoll
+		cur.BaseHP = baseHP
+		cur.CurrentHP = currentHP
+		cur.CustomAC = ac
+		cur.HasCustomPassive = hasPassive
+		cur.CustomPassive = passive
+		// Rebuild minimal meta/body for plain custom entries.
+		if cur.Character == nil {
+			cur.CustomMeta = ""
+			cur.CustomBody = ""
+		}
+
+		ui.pages.RemovePage("encounter-edit-custom")
+		ui.encounterEditVisible = false
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(index)
+		ui.renderDetailByEncounterIndex(index)
+		ui.app.SetFocus(ui.encounter)
+		ui.status.SetText(fmt.Sprintf(" [black:gold] custom aggiornata[-:-] %s  %s", cur.CustomName, helpText))
+	}
+
+	form.AddButton("Apply", apply)
+	form.AddButton("Cancel", closeModal)
+	form.SetCancelFunc(closeModal)
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		case tcell.KeyTab:
+			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
+		default:
+			if !isSubmitEvent(event) {
+				return event
+			}
+			formItem, button := form.GetFocusedItemIndex()
+			if button == 1 {
+				closeModal()
+				return nil
+			}
+			if button == 0 || formItem >= form.GetFormItemCount()-1 {
+				apply()
+			} else {
+				form.SetFocus(formItem + 1)
+			}
+			return nil
+		}
+	})
+
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 14, 0, true).
+			AddItem(nil, 0, 1, false), 84, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("encounter-edit-custom", modal, true, true)
+	ui.app.SetFocus(form)
+}
+
 func (ui *UI) openEncounterCharacterEditForm() {
 	if len(ui.encounterItems) == 0 {
 		return
@@ -7123,7 +7317,7 @@ func (ui *UI) openEncounterCharacterEditForm() {
 		return
 	}
 	if entry.Character == nil {
-		ui.status.SetText(fmt.Sprintf(" [white:red] questa entry non ha dati personaggio editabili[-:-]  %s", helpText))
+		ui.openEncounterCustomEntryEditForm(index)
 		return
 	}
 	build := cloneCharacterBuild(entry.Character)
@@ -8478,23 +8672,25 @@ func (ui *UI) loadEncounters() error {
 		}
 
 		entry := EncounterEntry{
-			MonsterIndex: monsterIndex,
-			Ordinal:      ordinal,
-			Custom:       it.Custom,
-			CustomName:   it.CustomName,
-			CustomInit:   it.CustomInit,
-			CustomAC:     it.CustomAC,
-			CustomMeta:   it.CustomMeta,
-			CustomBody:   it.CustomBody,
-			Conditions:   cloneStringIntMap(it.Conditions),
-			BaseHP:       baseHP,
-			CurrentHP:    currentHP,
-			HPFormula:    hpFormula,
-			UseRolledHP:  it.UseRolled,
-			RolledHP:     it.RolledHP,
-			HasInitRoll:  it.InitRolled,
-			InitRoll:     it.InitRoll,
-			Character:    cloneCharacterBuild(it.Character),
+			MonsterIndex:     monsterIndex,
+			Ordinal:          ordinal,
+			Custom:           it.Custom,
+			CustomName:       it.CustomName,
+			CustomInit:       it.CustomInit,
+			CustomAC:         it.CustomAC,
+			CustomPassive:    it.CustomPassive,
+			HasCustomPassive: it.HasCustomPassive,
+			CustomMeta:       it.CustomMeta,
+			CustomBody:       it.CustomBody,
+			Conditions:       cloneStringIntMap(it.Conditions),
+			BaseHP:           baseHP,
+			CurrentHP:        currentHP,
+			HPFormula:        hpFormula,
+			UseRolledHP:      it.UseRolled,
+			RolledHP:         it.RolledHP,
+			HasInitRoll:      it.InitRolled,
+			InitRoll:         it.InitRoll,
+			Character:        cloneCharacterBuild(it.Character),
 		}
 		ui.backfillCustomEncounterDetails(&entry)
 		ui.encounterItems = append(ui.encounterItems, entry)
@@ -8532,6 +8728,9 @@ func (ui *UI) backfillCustomEncounterDetails(entry *EncounterEntry) {
 		}
 		if strings.TrimSpace(entry.CustomAC) != "" {
 			fmt.Fprintf(b, "[white]AC:[-] %s\n", entry.CustomAC)
+		}
+		if entry.HasCustomPassive {
+			fmt.Fprintf(b, "[white]Passive Perception:[-] %d\n", max(0, entry.CustomPassive))
 		}
 		maxHP := ui.encounterMaxHP(*entry)
 		if maxHP > 0 {
@@ -8613,22 +8812,24 @@ func (ui *UI) saveEncounters() error {
 
 	for _, it := range ui.encounterItems {
 		item := PersistedEncounterItem{
-			Ordinal:    it.Ordinal,
-			Custom:     it.Custom,
-			CustomName: it.CustomName,
-			CustomInit: it.CustomInit,
-			CustomAC:   it.CustomAC,
-			CustomMeta: it.CustomMeta,
-			CustomBody: it.CustomBody,
-			Conditions: cloneStringIntMap(it.Conditions),
-			BaseHP:     it.BaseHP,
-			CurrentHP:  it.CurrentHP,
-			HPFormula:  it.HPFormula,
-			UseRolled:  it.UseRolledHP,
-			RolledHP:   it.RolledHP,
-			InitRolled: it.HasInitRoll,
-			InitRoll:   it.InitRoll,
-			Character:  cloneCharacterBuild(it.Character),
+			Ordinal:          it.Ordinal,
+			Custom:           it.Custom,
+			CustomName:       it.CustomName,
+			CustomInit:       it.CustomInit,
+			CustomAC:         it.CustomAC,
+			CustomPassive:    it.CustomPassive,
+			HasCustomPassive: it.HasCustomPassive,
+			CustomMeta:       it.CustomMeta,
+			CustomBody:       it.CustomBody,
+			Conditions:       cloneStringIntMap(it.Conditions),
+			BaseHP:           it.BaseHP,
+			CurrentHP:        it.CurrentHP,
+			HPFormula:        it.HPFormula,
+			UseRolled:        it.UseRolledHP,
+			RolledHP:         it.RolledHP,
+			InitRolled:       it.HasInitRoll,
+			InitRoll:         it.InitRoll,
+			Character:        cloneCharacterBuild(it.Character),
 		}
 		if !it.Custom {
 			if it.MonsterIndex < 0 || it.MonsterIndex >= len(ui.monsters) {
@@ -10824,7 +11025,136 @@ func (ui *UI) encounterMaxHP(entry EncounterEntry) int {
 var (
 	hpFormulaRe   = regexp.MustCompile(`^\s*(\d+)\s*[dD]\s*(\d+)(?:\s*([+-])\s*(\d+))?\s*$`)
 	finalResultRe = regexp.MustCompile(`[-+]?\d+`)
+	ppLineRe      = regexp.MustCompile(`(?mi)^\s*\[?[^\n]*passive perception[^\n]*:\s*([0-9]+)\s*$`)
 )
+
+func extractPassivePerceptionFromMonster(raw map[string]any) (int, bool) {
+	if raw == nil {
+		return 0, false
+	}
+	if v, ok := anyToInt(raw["passive"]); ok {
+		return max(v, 0), true
+	}
+	if skills, ok := raw["skill"].(map[string]any); ok {
+		if p, ok := skills["perception"]; ok {
+			if bonus, ok := signedIntFromAny(p); ok {
+				return max(10+bonus, 0), true
+			}
+		}
+	}
+	if skills, ok := raw["skill"].(map[any]any); ok {
+		if p, ok := skills["perception"]; ok {
+			if bonus, ok := signedIntFromAny(p); ok {
+				return max(10+bonus, 0), true
+			}
+		}
+	}
+	if wis, ok := anyToInt(raw["wis"]); ok {
+		return max(10+abilityMod(wis), 0), true
+	}
+	return 0, false
+}
+
+func signedIntFromAny(v any) (int, bool) {
+	if n, ok := anyToInt(v); ok {
+		return n, true
+	}
+	s := strings.TrimSpace(asString(v))
+	if s == "" {
+		return 0, false
+	}
+	s = strings.ReplaceAll(s, " ", "")
+	s = strings.TrimPrefix(s, "+")
+	n, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, false
+	}
+	return n, true
+}
+
+func passivePerceptionFromText(text string) (int, bool) {
+	m := ppLineRe.FindStringSubmatch(text)
+	if len(m) < 2 {
+		return 0, false
+	}
+	n, err := strconv.Atoi(strings.TrimSpace(m[1]))
+	if err != nil {
+		return 0, false
+	}
+	return max(n, 0), true
+}
+
+func passivePerceptionFromCharacterBuild(build *CharacterBuild) (int, bool) {
+	if build == nil || len(build.BaseScores) < 5 {
+		return 0, false
+	}
+	return max(10+abilityMod(build.BaseScores[4]), 0), true
+}
+
+func setPassivePerceptionLine(meta string, passive int) string {
+	line := fmt.Sprintf("[white]Passive Perception:[-] %d", max(passive, 0))
+	trimmed := strings.TrimRight(meta, "\n")
+	if trimmed == "" {
+		return line
+	}
+	lines := strings.Split(trimmed, "\n")
+	filtered := make([]string, 0, len(lines)+1)
+	for _, ln := range lines {
+		if strings.Contains(strings.ToLower(ln), "passive perception:") {
+			continue
+		}
+		filtered = append(filtered, ln)
+	}
+	filtered = append(filtered, line)
+	return strings.Join(filtered, "\n")
+}
+
+func setPassivePerceptionUnknownLine(meta string) string {
+	trimmed := strings.TrimRight(meta, "\n")
+	line := "[white]Passive Perception:[-] ?"
+	if trimmed == "" {
+		return line
+	}
+	lines := strings.Split(trimmed, "\n")
+	filtered := make([]string, 0, len(lines)+1)
+	for _, ln := range lines {
+		if strings.Contains(strings.ToLower(ln), "passive perception:") {
+			continue
+		}
+		filtered = append(filtered, ln)
+	}
+	filtered = append(filtered, line)
+	return strings.Join(filtered, "\n")
+}
+
+func (ui *UI) encounterPassivePerception(entry EncounterEntry) (int, bool) {
+	if entry.Custom {
+		if entry.HasCustomPassive {
+			return max(entry.CustomPassive, 0), true
+		}
+		if p, ok := passivePerceptionFromCharacterBuild(entry.Character); ok {
+			return p, true
+		}
+		if p, ok := passivePerceptionFromText(entry.CustomMeta); ok {
+			return p, true
+		}
+		if p, ok := passivePerceptionFromText(entry.CustomBody); ok {
+			return p, true
+		}
+		return 0, false
+	}
+	if entry.MonsterIndex < 0 || entry.MonsterIndex >= len(ui.monsters) {
+		return 0, false
+	}
+	return extractPassivePerceptionFromMonster(ui.monsters[entry.MonsterIndex].Raw)
+}
+
+func (ui *UI) ensureEncounterPassivePerceptionLine(entry EncounterEntry, meta string) string {
+	if p, ok := ui.encounterPassivePerception(entry); ok {
+		return setPassivePerceptionLine(meta, p)
+	}
+	return setPassivePerceptionUnknownLine(meta)
+}
 
 func rollHPFormula(formula string) (int, bool) {
 	m := hpFormulaRe.FindStringSubmatch(strings.TrimSpace(formula))

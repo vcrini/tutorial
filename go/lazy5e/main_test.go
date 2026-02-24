@@ -932,7 +932,7 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	ui.encounterItems = []EncounterEntry{
 		{MonsterIndex: 0, Ordinal: 1, BaseHP: 13, CurrentHP: 8, HPFormula: "3d8", UseRolledHP: true, RolledHP: 10, HasInitRoll: true, InitRoll: 15},
 		{MonsterIndex: 1, Ordinal: 1, BaseHP: 20, CurrentHP: 20, HPFormula: "4d8", UseRolledHP: false, RolledHP: 0, HasInitRoll: false, InitRoll: 0},
-		{MonsterIndex: -1, Ordinal: 1, Custom: true, CustomName: "Solum", CustomInit: 2, CustomAC: "13", BaseHP: 10, CurrentHP: 6, HPFormula: "", UseRolledHP: false, RolledHP: 0, HasInitRoll: true, InitRoll: 12},
+		{MonsterIndex: -1, Ordinal: 1, Custom: true, CustomName: "Solum", CustomInit: 2, CustomAC: "13", CustomPassive: 14, HasCustomPassive: true, BaseHP: 10, CurrentHP: 6, HPFormula: "", UseRolledHP: false, RolledHP: 0, HasInitRoll: true, InitRoll: 12},
 	}
 	ui.encounterSerial = map[int]int{0: 1, 1: 1}
 	ui.turnMode = true
@@ -958,6 +958,9 @@ func TestSaveLoadEncountersRoundTrip(t *testing.T) {
 	}
 	if !ui2.encounterItems[2].Custom || ui2.encounterItems[2].CustomName != "Solum" || ui2.encounterItems[2].CustomInit != 2 || ui2.encounterItems[2].CustomAC != "13" {
 		t.Fatalf("custom entry not restored: %#v", ui2.encounterItems[2])
+	}
+	if !ui2.encounterItems[2].HasCustomPassive || ui2.encounterItems[2].CustomPassive != 14 {
+		t.Fatalf("custom passive not restored: %#v", ui2.encounterItems[2])
 	}
 	if !ui2.turnMode || ui2.turnIndex != 2 || ui2.turnRound != 3 {
 		t.Fatalf("turn progress not restored: mode=%v idx=%d round=%d", ui2.turnMode, ui2.turnIndex, ui2.turnRound)
@@ -1085,6 +1088,95 @@ func TestEncounterDetailsIncludeConditionsForCustomEntry(t *testing.T) {
 	}
 	if !strings.Contains(strings.ToLower(meta), "b11 blinded") || !strings.Contains(strings.ToLower(meta), "c13 charmed") {
 		t.Fatalf("expected condition names and rounds in details, got: %q", meta)
+	}
+}
+
+func TestEncounterDetailsIncludePassivePerceptionForMonster(t *testing.T) {
+	mon := mkMonster(1, "Scout", 14, 16, "3d8")
+	mon.Raw["wis"] = 13
+	ui := makeTestUI(t, []Monster{mon})
+	ui.encounterItems = []EncounterEntry{
+		{MonsterIndex: 0, Ordinal: 1, BaseHP: 16, CurrentHP: 16},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(0)
+	ui.renderDetailByEncounterIndex(0)
+
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "Passive Perception:") {
+		t.Fatalf("expected Passive Perception line, got: %q", meta)
+	}
+	if !strings.Contains(meta, "11") { // 10 + WIS mod(13) = 11
+		t.Fatalf("expected passive perception 11, got: %q", meta)
+	}
+}
+
+func TestEncounterDetailsIncludePassivePerceptionForCharacterBuild(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:     true,
+			CustomName: "Wizard PNG",
+			CustomMeta: "Wizard PNG\nAC: 15\nHP: 20\nInit: +2",
+			BaseHP:     20,
+			CurrentHP:  20,
+			Character: &CharacterBuild{
+				BaseScores: []int{8, 14, 12, 16, 15, 10},
+			},
+		},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(0)
+	ui.renderDetailByEncounterIndex(0)
+
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "Passive Perception:") {
+		t.Fatalf("expected Passive Perception line, got: %q", meta)
+	}
+	if !strings.Contains(meta, "12") { // 10 + WIS mod(15) = 12
+		t.Fatalf("expected passive perception 12, got: %q", meta)
+	}
+}
+
+func TestEncounterDetailsIncludeUnknownPassivePerceptionForCustom(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:     true,
+			CustomName: "Custom NPC",
+			BaseHP:     12,
+			CurrentHP:  12,
+		},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(0)
+	ui.renderDetailByEncounterIndex(0)
+
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "Passive Perception:") || !strings.Contains(meta, "?") {
+		t.Fatalf("expected unknown Passive Perception line, got: %q", meta)
+	}
+}
+
+func TestEncounterDetailsIncludeCustomPassivePerceptionInput(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:           true,
+			CustomName:       "Custom NPC",
+			CustomPassive:    17,
+			HasCustomPassive: true,
+			BaseHP:           12,
+			CurrentHP:        12,
+		},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(0)
+	ui.renderDetailByEncounterIndex(0)
+
+	meta := ui.detailMeta.GetText(false)
+	if !strings.Contains(meta, "Passive Perception:") || !strings.Contains(meta, "17") {
+		t.Fatalf("expected custom passive perception 17, got: %q", meta)
 	}
 }
 
