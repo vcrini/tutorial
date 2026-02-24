@@ -3492,6 +3492,7 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 		return
 	}
 	e := &ui.encounter[idx]
+	prevWounds := e.Wounds
 	e.Wounds += delta
 	if e.Wounds < 0 {
 		e.Wounds = 0
@@ -3500,8 +3501,13 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	if base > 0 && e.Wounds > base {
 		e.Wounds = base
 	}
+	appliedShaken := applyShakenOnWoundReduction(prevWounds, e)
 	ui.persistEncounter()
-	ui.message = fmt.Sprintf("Ferite %s: %d/%d", e.Monster.Name, e.Wounds, base)
+	if appliedShaken {
+		ui.message = fmt.Sprintf("Ferite %s: %d/%d | Stato aggiunto: Scosso", e.Monster.Name, e.Wounds, base)
+	} else {
+		ui.message = fmt.Sprintf("Ferite %s: %d/%d", e.Monster.Name, e.Wounds, base)
+	}
 	ui.refreshEncounter()
 	ui.refreshDetail()
 	ui.refreshStatus()

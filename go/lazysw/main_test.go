@@ -174,3 +174,16 @@ func TestEncounterConditionEffectsLong(t *testing.T) {
 		t.Fatalf("unexpected effects text: %q", text)
 	}
 }
+
+func TestApplyShakenOnWoundReduction(t *testing.T) {
+	e := EncounterEntry{Wounds: 2}
+	if !applyShakenOnWoundReduction(1, &e) {
+		t.Fatalf("expected shaken to be applied")
+	}
+	if e.Conditions["S"] != 1 {
+		t.Fatalf("expected S1, got %+v", e.Conditions)
+	}
+	if applyShakenOnWoundReduction(1, &e) {
+		t.Fatalf("expected no-op when already shaken")
+	}
+}

@@ -203,6 +203,23 @@ func encounterConditionEffectsLong(entry EncounterEntry) string {
 	return strings.Join(lines, "\n")
 }
 
+func applyShakenOnWoundReduction(prevWounds int, entry *EncounterEntry) bool {
+	if entry == nil {
+		return false
+	}
+	if entry.Wounds <= prevWounds {
+		return false
+	}
+	if entry.Conditions == nil {
+		entry.Conditions = map[string]int{}
+	}
+	if entry.Conditions["S"] > 0 {
+		return false
+	}
+	entry.Conditions["S"] = 1
+	return true
+}
+
 type encounterPersist struct {
 	Entries []struct {
 		Name             string         `yaml:"name"`

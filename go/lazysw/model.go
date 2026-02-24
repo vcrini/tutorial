@@ -113,6 +113,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.encounterLastAmt = amt
 					if len(m.encounter) > 0 && m.encounterCursor >= 0 && m.encounterCursor < len(m.encounter) {
+						prevWounds := m.encounter[m.encounterCursor].Wounds
 						m.encounter[m.encounterCursor].Wounds += m.encounterDelta * amt
 						if m.encounter[m.encounterCursor].Wounds < 0 {
 							m.encounter[m.encounterCursor].Wounds = 0
@@ -124,15 +125,24 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						if basePF > 0 && m.encounter[m.encounterCursor].Wounds > basePF {
 							m.encounter[m.encounterCursor].Wounds = basePF
 						}
+						appliedShaken := applyShakenOnWoundReduction(prevWounds, &m.encounter[m.encounterCursor])
 						m.persistEncounter()
 						if basePF > 0 {
 							pf := basePF - m.encounter[m.encounterCursor].Wounds
 							if pf < 0 {
 								pf = 0
 							}
-							m.message = fmt.Sprintf("Ferite aggiornate. PF: %d/%d", pf, basePF)
+							if appliedShaken {
+								m.message = fmt.Sprintf("Ferite aggiornate. PF: %d/%d | Stato aggiunto: Scosso", pf, basePF)
+							} else {
+								m.message = fmt.Sprintf("Ferite aggiornate. PF: %d/%d", pf, basePF)
+							}
 						} else {
-							m.message = "Ferite aggiornate."
+							if appliedShaken {
+								m.message = "Ferite aggiornate. Stato aggiunto: Scosso."
+							} else {
+								m.message = "Ferite aggiornate."
+							}
 						}
 					}
 					m.encounterEditing = false
