@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -1096,7 +1096,7 @@ func (ui *tviewUI) catalogLabel(mode string) string {
 	case "carte":
 		return "Carte"
 	case "classe":
-		return "Classe"
+		return "Regole"
 	default:
 		return "Mostri"
 	}
@@ -1150,7 +1150,7 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	} else if next == "carte" {
 		ui.message = "Catalogo: Carte"
 	} else if next == "classe" {
-		ui.message = "Catalogo: Classe"
+		ui.message = "Catalogo: Regole"
 	} else {
 		ui.message = "Catalogo: Mostri"
 	}
@@ -1742,7 +1742,7 @@ func (ui *tviewUI) refreshStatus() {
 	case ui.classSubDrop:
 		focusLabel = "Sottoclasse"
 	case ui.classList:
-		focusLabel = "Classi"
+		focusLabel = "Regole"
 	case ui.detailTreasure:
 		focusLabel = "Treasure"
 	case ui.detail:
@@ -1760,7 +1760,7 @@ func (ui *tviewUI) refreshStatus() {
 	} else if ui.catalogMode == "carte" {
 		catalogLabel = "Carte"
 	} else if ui.catalogMode == "classe" {
-		catalogLabel = "Classe"
+		catalogLabel = "Regole"
 	}
 	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
 }
@@ -2101,7 +2101,7 @@ func (ui *tviewUI) resetClassFilters() {
 	}
 	ui.refreshClasses()
 	ui.refreshDetail()
-	ui.message = "Filtri Classe resettati."
+	ui.message = "Filtri Regole resettati."
 	ui.refreshStatus()
 }
 
@@ -4040,10 +4040,10 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- v: reset filtri Carte (Nome/Classe/Tipo)",
 		}
 	case ui.classSearch, ui.classNameDrop, ui.classSubDrop, ui.classList:
-		panel = "Classe"
+		panel = "Regole"
 		panelLines = []string{
 			"- u / t / g: focus filtro Cerca / Classe / Sottoclasse",
-			"- v: reset filtri Classe (Cerca/Classe/Sottoclasse)",
+			"- v: reset filtri Regole (Cerca/Classe/Sottoclasse)",
 			"- a: genera PNG dalla classe selezionata (con livello)",
 		}
 	default:
