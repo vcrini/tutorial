@@ -1088,6 +1088,9 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			ui.deleteSelectedEncounterEntry()
 			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'D':
+			ui.deleteAllMonsterEncounterEntries()
+			return nil
 		case !focusIsInputField && event.Key() == tcell.KeyRune && event.Rune() == 'd':
 			if focus == ui.list || focus == ui.detailMeta || focus == ui.detailTreasure || focus == ui.detailRaw {
 				ui.toggleDetailsTreasureFocus()
@@ -1338,6 +1341,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"      Enter flow: Name -> Class -> Add Levels -> Apply\n" +
 			"  w / o : salva/carica build personaggio su file separato\n" +
 			"  d : elimina entry selezionata\n" +
+			"  D : elimina tutte le entry mostro (mantiene custom/personaggi)\n" +
 			"  s : salva encounter su file (save as)\n" +
 			"  l : carica encounter da file (load)\n" +
 			"  i : tira iniziativa entry selezionata\n" +
@@ -7306,6 +7310,72 @@ func (ui *UI) deleteSelectedEncounterEntry() {
 		ui.rawText = ""
 	}
 	ui.status.SetText(fmt.Sprintf(" [black:gold] eliminato[-:-] %s  %s", ui.encounterEntryDisplay(entry), helpText))
+}
+
+func (ui *UI) deleteAllMonsterEncounterEntries() {
+	if len(ui.encounterItems) == 0 {
+		return
+	}
+	kept := make([]EncounterEntry, 0, len(ui.encounterItems))
+	oldToNew := map[int]int{}
+	for i, it := range ui.encounterItems {
+		if it.Custom {
+			oldToNew[i] = len(kept)
+			kept = append(kept, it)
+		}
+	}
+	removed := len(ui.encounterItems) - len(kept)
+	if removed <= 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessun mostro da rimuovere (solo custom/personaggi)[-:-]  %s", helpText))
+		return
+	}
+
+	ui.pushEncounterUndo()
+	selectedOld := ui.encounter.GetCurrentItem()
+	turnOld := ui.turnIndex
+	ui.encounterItems = kept
+
+	if len(ui.encounterItems) == 0 {
+		ui.turnMode = false
+		ui.turnIndex = 0
+		ui.turnRound = 0
+		ui.renderEncounterList()
+		ui.encounter.SetCurrentItem(0)
+		ui.detailMeta.SetText("Nessun mostro nell'encounter.")
+		ui.detailRaw.SetText("")
+		ui.rawText = ""
+		ui.status.SetText(fmt.Sprintf(" [black:gold] rimossi[-:-] %d mostri (nessuna entry rimasta)  %s", removed, helpText))
+		return
+	}
+
+	newSelected := 0
+	if idx, ok := oldToNew[selectedOld]; ok {
+		newSelected = idx
+	} else if selectedOld >= len(ui.encounterItems) {
+		newSelected = len(ui.encounterItems) - 1
+	}
+	if newSelected < 0 {
+		newSelected = 0
+	}
+	if newSelected >= len(ui.encounterItems) {
+		newSelected = len(ui.encounterItems) - 1
+	}
+
+	if ui.turnMode {
+		if idx, ok := oldToNew[turnOld]; ok {
+			ui.turnIndex = idx
+		} else {
+			ui.turnIndex = 0
+		}
+		if ui.turnIndex < 0 || ui.turnIndex >= len(ui.encounterItems) {
+			ui.turnIndex = 0
+		}
+	}
+
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(newSelected)
+	ui.renderDetailByEncounterIndex(newSelected)
+	ui.status.SetText(fmt.Sprintf(" [black:gold] rimossi[-:-] %d mostri (custom/personaggi mantenuti)  %s", removed, helpText))
 }
 
 func (ui *UI) toggleEncounterHPMode() {

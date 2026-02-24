@@ -615,6 +615,81 @@ func TestDeleteUndoRedoEncounter(t *testing.T) {
 	}
 }
 
+func TestDeleteAllMonsterEncounterEntriesKeepsCustomAndCharacter(t *testing.T) {
+	ui := makeTestUI(t, []Monster{
+		mkMonster(1, "A", 10, 5, "1d1"),
+		mkMonster(2, "B", 12, 6, "1d1"),
+	})
+	ui.encounterItems = []EncounterEntry{
+		{MonsterIndex: 0, Ordinal: 1, BaseHP: 5, CurrentHP: 5},
+		{
+			Custom:     true,
+			CustomName: "Custom Entry",
+			CustomInit: 2,
+			BaseHP:     10,
+			CurrentHP:  10,
+		},
+		{
+			Custom:     true,
+			CustomName: "Wizard Lv5",
+			CustomInit: 3,
+			BaseHP:     28,
+			CurrentHP:  28,
+			Character: &CharacterBuild{
+				Name: "Wizard Lv5",
+			},
+		},
+		{MonsterIndex: 1, Ordinal: 1, BaseHP: 6, CurrentHP: 6},
+	}
+	ui.renderEncounterList()
+	ui.encounter.SetCurrentItem(3)
+	ui.turnMode = true
+	ui.turnRound = 4
+	ui.turnIndex = 3
+
+	ui.deleteAllMonsterEncounterEntries()
+
+	if len(ui.encounterItems) != 2 {
+		t.Fatalf("expected 2 entries left, got %d", len(ui.encounterItems))
+	}
+	if !ui.encounterItems[0].Custom || ui.encounterItems[0].Character != nil {
+		t.Fatalf("expected first remaining entry to be plain custom, got %#v", ui.encounterItems[0])
+	}
+	if !ui.encounterItems[1].Custom || ui.encounterItems[1].Character == nil {
+		t.Fatalf("expected second remaining entry to be character custom, got %#v", ui.encounterItems[1])
+	}
+	if !ui.turnMode {
+		t.Fatal("expected turn mode to stay enabled when entries remain")
+	}
+	if ui.turnIndex != 0 {
+		t.Fatalf("expected turn index remapped to 0, got %d", ui.turnIndex)
+	}
+}
+
+func TestDeleteAllMonsterEncounterEntriesNoopWhenOnlyCustom(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:     true,
+			CustomName: "Custom One",
+			CustomInit: 1,
+			BaseHP:     7,
+			CurrentHP:  7,
+		},
+	}
+	ui.renderEncounterList()
+	beforeUndo := len(ui.encounterUndo)
+
+	ui.deleteAllMonsterEncounterEntries()
+
+	if len(ui.encounterItems) != 1 || !ui.encounterItems[0].Custom {
+		t.Fatalf("expected custom entry unchanged, got %#v", ui.encounterItems)
+	}
+	if len(ui.encounterUndo) != beforeUndo {
+		t.Fatalf("expected undo stack unchanged, before=%d after=%d", beforeUndo, len(ui.encounterUndo))
+	}
+}
+
 func TestDeleteUndoRedoDice(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
 	ui.diceLog = []DiceResult{
@@ -1318,6 +1393,7 @@ func TestHelpForFocusIncludesPanelShortcuts(t *testing.T) {
 		"i : tira iniziativa entry selezionata",
 		"I : tira iniziativa per tutte le entry",
 		"S : ordina entry per tiro iniziativa",
+		"D : elimina tutte le entry mostro (mantiene custom/personaggi)",
 		"* : attiva/disattiva turn mode",
 		"n / p : turno successivo / precedente",
 	} {
