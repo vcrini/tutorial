@@ -7132,6 +7132,15 @@ func (ui *UI) renderEncounterList() {
 				label = fmt.Sprintf("%s [Init %d]", label, init)
 			}
 		}
+		if item.Custom {
+			if ac := strings.TrimSpace(item.CustomAC); ac != "" {
+				label = fmt.Sprintf("%s [AC %s]", label, ac)
+			}
+		} else if item.MonsterIndex >= 0 && item.MonsterIndex < len(ui.monsters) {
+			if ac := extractAC(ui.monsters[item.MonsterIndex].Raw); ac != "" {
+				label = fmt.Sprintf("%s [AC %s]", label, ac)
+			}
+		}
 		maxHP := ui.encounterMaxHP(item)
 		if maxHP > 0 {
 			if item.CurrentHP <= 0 {

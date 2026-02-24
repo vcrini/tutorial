@@ -211,3 +211,13 @@ func TestSaveLoadDiceHistory(t *testing.T) {
 		}
 	}
 }
+
+func TestRollDiceExpressionUpperDUsesDestiny(t *testing.T) {
+	_, breakdown, err := rollDiceExpression("D2+1")
+	if err != nil {
+		t.Fatalf("unexpected D2+1 error: %v", err)
+	}
+	if !strings.Contains(breakdown, "1d2e(") || !strings.Contains(breakdown, "destino: 1d6e(") {
+		t.Fatalf("unexpected breakdown for D2+1: %q", breakdown)
+	}
+}
