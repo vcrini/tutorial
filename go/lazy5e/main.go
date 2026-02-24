@@ -6935,6 +6935,12 @@ func (ui *UI) openAddCustomEncounterForm() {
 	form.SetBorderColor(tcell.ColorGold)
 	form.SetTitleColor(tcell.ColorGold)
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && event.Rune() == 'q') {
+			ui.pages.RemovePage("encounter-add-custom")
+			ui.addCustomVisible = false
+			ui.app.SetFocus(ui.encounter)
+			return nil
+		}
 		if event.Key() == tcell.KeyTab {
 			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
 		}
@@ -7274,6 +7280,10 @@ func (ui *UI) openEncounterCustomEntryEditForm(index int) {
 		case tcell.KeyTab:
 			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
 		default:
+			if event.Key() == tcell.KeyRune && event.Rune() == 'q' {
+				closeModal()
+				return nil
+			}
 			if !isSubmitEvent(event) {
 				return event
 			}
