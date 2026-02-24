@@ -269,6 +269,25 @@ type encounterConditionDef struct {
 	Name string
 }
 
+type encounterXPThreshold struct {
+	Easy   int
+	Medium int
+	Hard   int
+	Deadly int
+}
+
+type encounterGenerationPreview struct {
+	PartySize   int
+	PartyLevel  int
+	Environment string
+	Count       int
+	Power       int
+	BudgetXP    int
+	TargetXP    int
+	Multiplier  float64
+	MonsterIDs  []int
+}
+
 var encounterConditionDefs = []encounterConditionDef{
 	{Code: "B", Name: "Blinded"},
 	{Code: "C", Name: "Charmed"},
@@ -285,6 +304,66 @@ var encounterConditionDefs = []encounterConditionDef{
 	{Code: "R", Name: "Restrained"},
 	{Code: "S", Name: "Stunned"},
 	{Code: "U", Name: "Unconscious"},
+}
+
+var encounterXPThresholdByLevel = map[int]encounterXPThreshold{
+	1:  {Easy: 25, Medium: 50, Hard: 75, Deadly: 100},
+	2:  {Easy: 50, Medium: 100, Hard: 150, Deadly: 200},
+	3:  {Easy: 75, Medium: 150, Hard: 225, Deadly: 400},
+	4:  {Easy: 125, Medium: 250, Hard: 375, Deadly: 500},
+	5:  {Easy: 250, Medium: 500, Hard: 750, Deadly: 1100},
+	6:  {Easy: 300, Medium: 600, Hard: 900, Deadly: 1400},
+	7:  {Easy: 350, Medium: 750, Hard: 1100, Deadly: 1700},
+	8:  {Easy: 450, Medium: 900, Hard: 1400, Deadly: 2100},
+	9:  {Easy: 550, Medium: 1100, Hard: 1600, Deadly: 2400},
+	10: {Easy: 600, Medium: 1200, Hard: 1900, Deadly: 2800},
+	11: {Easy: 800, Medium: 1600, Hard: 2400, Deadly: 3600},
+	12: {Easy: 1000, Medium: 2000, Hard: 3000, Deadly: 4500},
+	13: {Easy: 1100, Medium: 2200, Hard: 3400, Deadly: 5100},
+	14: {Easy: 1250, Medium: 2500, Hard: 3800, Deadly: 5700},
+	15: {Easy: 1400, Medium: 2800, Hard: 4300, Deadly: 6400},
+	16: {Easy: 1600, Medium: 3200, Hard: 4800, Deadly: 7200},
+	17: {Easy: 2000, Medium: 3900, Hard: 5900, Deadly: 8800},
+	18: {Easy: 2100, Medium: 4200, Hard: 6300, Deadly: 9500},
+	19: {Easy: 2400, Medium: 4900, Hard: 7300, Deadly: 10900},
+	20: {Easy: 2800, Medium: 5700, Hard: 8500, Deadly: 12700},
+}
+
+var encounterXPByCR = map[string]int{
+	"0":   10,
+	"1/8": 25,
+	"1/4": 50,
+	"1/2": 100,
+	"1":   200,
+	"2":   450,
+	"3":   700,
+	"4":   1100,
+	"5":   1800,
+	"6":   2300,
+	"7":   2900,
+	"8":   3900,
+	"9":   5000,
+	"10":  5900,
+	"11":  7200,
+	"12":  8400,
+	"13":  10000,
+	"14":  11500,
+	"15":  13000,
+	"16":  15000,
+	"17":  18000,
+	"18":  20000,
+	"19":  22000,
+	"20":  25000,
+	"21":  33000,
+	"22":  41000,
+	"23":  50000,
+	"24":  62000,
+	"25":  75000,
+	"26":  90000,
+	"27":  105000,
+	"28":  120000,
+	"29":  135000,
+	"30":  155000,
 }
 
 var crBenchmarks = []crBenchmark{
@@ -399,6 +478,7 @@ type UI struct {
 	addCustomVisible     bool
 	charCreateVisible    bool
 	encounterEditVisible bool
+	encounterGenVisible  bool
 	fullscreenActive     bool
 	fullscreenTarget     string
 	spellShortcutAlt     bool
@@ -811,7 +891,7 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 		if ui.addCustomVisible && event.Key() == tcell.KeyTab {
 			return tcell.NewEventKey(tcell.KeyEnter, 0, tcell.ModNone)
 		}
-		if ui.charCreateVisible || ui.encounterEditVisible {
+		if ui.charCreateVisible || ui.encounterEditVisible || ui.encounterGenVisible {
 			// While character creation modal is open, avoid global hotkeys stealing focus.
 			return event
 		}
@@ -1051,6 +1131,9 @@ func newUI(monsters, items, spells, classes, races, feats, books, advs []Monster
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'e':
 			ui.openEncounterCharacterEditForm()
+			return nil
+		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'g':
+			ui.openEncounterAutoGenerateForm()
 			return nil
 		case focus == ui.encounter && event.Key() == tcell.KeyRune && event.Rune() == 'w':
 			ui.openCharacterBuildSaveInput()
@@ -1338,6 +1421,7 @@ func (ui *UI) helpForFocus(focus tview.Primitive) string {
 			"  / : cerca nella Description del mostro selezionato\n" +
 			"  a : aggiungi entry custom\n" +
 			"  e : modifica personaggio custom (nome + level-up/multiclass)\n" +
+			"  g : genera incontro da PNG (preview/edit prima di applicare)\n" +
 			"      Enter flow: Name -> Class -> Add Levels -> Apply\n" +
 			"  w / o : salva/carica build personaggio su file separato\n" +
 			"  d : elimina entry selezionata\n" +
@@ -6239,6 +6323,600 @@ func (ui *UI) scaledMonsterHP(monsterIndex int) (int, bool) {
 		return 0, false
 	}
 	return p.TargetHP, true
+}
+
+func (ui *UI) encounterNPCLevels() []int {
+	levels := make([]int, 0, len(ui.encounterItems))
+	for _, it := range ui.encounterItems {
+		if !it.Custom || it.Character == nil {
+			continue
+		}
+		lv := classLevelsTotal(normalizeClassLevels(it.Character.Classes))
+		if lv <= 0 {
+			lv = 1
+		}
+		if lv > 20 {
+			lv = 20
+		}
+		levels = append(levels, lv)
+	}
+	return levels
+}
+
+func (ui *UI) defaultEncounterPartyLevel(levels []int) int {
+	if len(levels) == 0 {
+		return 1
+	}
+	sum := 0
+	for _, lv := range levels {
+		sum += lv
+	}
+	avg := int(math.Round(float64(sum) / float64(len(levels))))
+	if avg < 1 {
+		return 1
+	}
+	if avg > 20 {
+		return 20
+	}
+	return avg
+}
+
+func encounterMultiplierByCount(count int, partySize int) float64 {
+	if count <= 1 {
+		return 1.0
+	}
+	idx := 0
+	switch {
+	case count == 2:
+		idx = 1
+	case count >= 3 && count <= 6:
+		idx = 2
+	case count >= 7 && count <= 10:
+		idx = 3
+	case count >= 11 && count <= 14:
+		idx = 4
+	default:
+		idx = 5
+	}
+	if partySize < 3 {
+		idx++
+	}
+	if partySize > 5 {
+		idx--
+	}
+	if idx < 0 {
+		idx = 0
+	}
+	if idx > 5 {
+		idx = 5
+	}
+	steps := []float64{1.0, 1.5, 2.0, 2.5, 3.0, 4.0}
+	return steps[idx]
+}
+
+func partyMediumXPBudget(levels []int, forcedLevel int) int {
+	if len(levels) == 0 {
+		return 0
+	}
+	total := 0
+	for _, baseLevel := range levels {
+		lv := forcedLevel
+		if lv <= 0 {
+			lv = baseLevel
+		}
+		if lv < 1 {
+			lv = 1
+		}
+		if lv > 20 {
+			lv = 20
+		}
+		th, ok := encounterXPThresholdByLevel[lv]
+		if !ok {
+			continue
+		}
+		total += th.Medium
+	}
+	return total
+}
+
+func monsterXPFromCR(cr string) (int, bool) {
+	xp, ok := encounterXPByCR[strings.TrimSpace(cr)]
+	return xp, ok
+}
+
+func monsterMatchesEnvironment(m Monster, env string) bool {
+	env = strings.TrimSpace(env)
+	if env == "" || strings.EqualFold(env, "all") {
+		return true
+	}
+	for _, e := range m.Environment {
+		if strings.EqualFold(strings.TrimSpace(e), env) {
+			return true
+		}
+	}
+	return false
+}
+
+func (ui *UI) chooseAutoEncounterMonsters(targetXP int, count int, env string) ([]int, string, error) {
+	if count <= 0 {
+		return nil, "", errors.New("numero mostri non valido")
+	}
+	type candidate struct {
+		index int
+		delta int
+	}
+	buildCandidates := func(strictEnv bool) []candidate {
+		out := make([]candidate, 0, len(ui.monsters))
+		for i, m := range ui.monsters {
+			xp, ok := monsterXPFromCR(m.CR)
+			if !ok || xp <= 0 {
+				continue
+			}
+			if strictEnv && !monsterMatchesEnvironment(m, env) {
+				continue
+			}
+			delta := xp - targetXP
+			if delta < 0 {
+				delta = -delta
+			}
+			out = append(out, candidate{
+				index: i,
+				delta: delta,
+			})
+		}
+		sort.Slice(out, func(i, j int) bool {
+			if out[i].delta == out[j].delta {
+				return strings.ToLower(ui.monsters[out[i].index].Name) < strings.ToLower(ui.monsters[out[j].index].Name)
+			}
+			return out[i].delta < out[j].delta
+		})
+		return out
+	}
+
+	usedEnv := strings.TrimSpace(env)
+	cands := buildCandidates(!strings.EqualFold(env, "all") && strings.TrimSpace(env) != "")
+	if len(cands) == 0 {
+		cands = buildCandidates(false)
+		usedEnv = "All"
+	}
+	if len(cands) == 0 {
+		return nil, "", errors.New("nessun mostro con CR/XP valido trovato")
+	}
+
+	limit := min(16, len(cands))
+	selected := make([]int, 0, count)
+	for range count {
+		totalWeight := (limit * (limit + 1)) / 2
+		r := rand.Intn(totalWeight)
+		pick := 0
+		for i := 0; i < limit; i++ {
+			w := limit - i
+			if r < w {
+				pick = i
+				break
+			}
+			r -= w
+		}
+		selected = append(selected, cands[pick].index)
+	}
+	return selected, usedEnv, nil
+}
+
+func (ui *UI) buildEncounterGenerationPreview(count int, power int, level int, env string) (encounterGenerationPreview, error) {
+	levels := ui.encounterNPCLevels()
+	if len(levels) == 0 {
+		return encounterGenerationPreview{}, errors.New("nessun PNG in Encounters: aggiungi personaggi prima della generazione")
+	}
+	if count < 1 || count > 50 {
+		return encounterGenerationPreview{}, errors.New("numero mostri non valido (1-50)")
+	}
+	if power < -12 || power > 12 {
+		return encounterGenerationPreview{}, errors.New("potenza non valida (-12..12)")
+	}
+	if level < 1 || level > 20 {
+		return encounterGenerationPreview{}, errors.New("livello non valido (1-20)")
+	}
+
+	budget := partyMediumXPBudget(levels, level)
+	if budget <= 0 {
+		return encounterGenerationPreview{}, errors.New("budget XP non valido")
+	}
+	multiplier := encounterMultiplierByCount(count, len(levels))
+	targetXP := int(math.Round(float64(budget) / (float64(count) * multiplier)))
+	if targetXP < 10 {
+		targetXP = 10
+	}
+
+	ids, usedEnv, err := ui.chooseAutoEncounterMonsters(targetXP, count, env)
+	if err != nil {
+		return encounterGenerationPreview{}, err
+	}
+
+	return encounterGenerationPreview{
+		PartySize:   len(levels),
+		PartyLevel:  level,
+		Environment: blankIfEmpty(usedEnv, "All"),
+		Count:       count,
+		Power:       power,
+		BudgetXP:    budget,
+		TargetXP:    targetXP,
+		Multiplier:  multiplier,
+		MonsterIDs:  ids,
+	}, nil
+}
+
+func (ui *UI) renderEncounterGenerationPreview(p encounterGenerationPreview) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "[white]Party PNG:[-] %d   [white]Level:[-] %d   [white]Env:[-] %s\n", p.PartySize, p.PartyLevel, p.Environment)
+	fmt.Fprintf(&b, "[white]Budget XP (Medium):[-] %d   [white]Multiplier:[-] %.1f   [white]Target XP/mostro:[-] %d\n", p.BudgetXP, p.Multiplier, p.TargetXP)
+	fmt.Fprintf(&b, "[white]Mostri:[-] %d   [white]Potenza:[-] %+d\n\n", p.Count, p.Power)
+
+	type row struct {
+		name string
+		cr   string
+		n    int
+	}
+	agg := map[string]*row{}
+	order := make([]string, 0, len(p.MonsterIDs))
+	for _, idx := range p.MonsterIDs {
+		if idx < 0 || idx >= len(ui.monsters) {
+			continue
+		}
+		m := ui.monsters[idx]
+		key := m.Name + "|" + strings.TrimSpace(m.CR)
+		if _, ok := agg[key]; !ok {
+			agg[key] = &row{name: m.Name, cr: strings.TrimSpace(m.CR)}
+			order = append(order, key)
+		}
+		agg[key].n++
+	}
+	if len(order) == 0 {
+		return "[white:red]Nessun mostro generato[-:-]"
+	}
+	sort.Strings(order)
+	for i, key := range order {
+		r := agg[key]
+		xp, _ := monsterXPFromCR(r.cr)
+		line := fmt.Sprintf("%d. %s x%d [CR %s, XP %d]", i+1, r.name, r.n, blankIfEmpty(r.cr, "?"), xp)
+		if p.Power != 0 {
+			if preview, ok := scaleMonsterByCR(Monster{CR: r.cr}, p.Power); ok {
+				line += fmt.Sprintf(" -> scale CR %s", preview.TargetCR)
+			}
+		}
+		b.WriteString(line + "\n")
+	}
+	return strings.TrimRight(b.String(), "\n")
+}
+
+func (ui *UI) applyEncounterGenerationPreview(p encounterGenerationPreview) int {
+	if len(p.MonsterIDs) == 0 {
+		return 0
+	}
+	kept := make([]EncounterEntry, 0, len(ui.encounterItems))
+	for _, it := range ui.encounterItems {
+		if it.Custom {
+			kept = append(kept, it)
+		}
+	}
+	for _, idx := range p.MonsterIDs {
+		if idx < 0 || idx >= len(ui.monsters) {
+			continue
+		}
+		if p.Power == 0 {
+			delete(ui.monsterScale, idx)
+		} else {
+			ui.monsterScale[idx] = p.Power
+		}
+		ui.encounterSerial[idx]++
+		ordinal := ui.encounterSerial[idx]
+		baseHP, ok := extractHPAverageInt(ui.monsters[idx].Raw)
+		if !ok {
+			baseHP = 0
+		}
+		if scaled, ok := ui.scaledMonsterHP(idx); ok {
+			baseHP = scaled
+		}
+		_, hpFormula := extractHP(ui.monsters[idx].Raw)
+		kept = append(kept, EncounterEntry{
+			MonsterIndex: idx,
+			Ordinal:      ordinal,
+			BaseHP:       baseHP,
+			CurrentHP:    baseHP,
+			HPFormula:    hpFormula,
+		})
+	}
+
+	ui.encounterItems = kept
+	if len(ui.encounterItems) == 0 {
+		ui.turnMode = false
+		ui.turnIndex = 0
+		ui.turnRound = 0
+		ui.renderEncounterList()
+		ui.detailMeta.SetText("Nessun mostro nell'encounter.")
+		ui.detailRaw.SetText("")
+		ui.rawText = ""
+		return 0
+	}
+	if ui.turnMode {
+		if ui.turnRound <= 0 {
+			ui.turnRound = 1
+		}
+		ui.turnIndex = 0
+	}
+	ui.renderEncounterList()
+	firstGenerated := max(0, len(ui.encounterItems)-len(p.MonsterIDs))
+	if firstGenerated >= len(ui.encounterItems) {
+		firstGenerated = len(ui.encounterItems) - 1
+	}
+	ui.encounter.SetCurrentItem(firstGenerated)
+	ui.renderDetailByEncounterIndex(firstGenerated)
+	return len(p.MonsterIDs)
+}
+
+func (ui *UI) openEncounterAutoGenerateForm() {
+	levels := ui.encounterNPCLevels()
+	if len(levels) == 0 {
+		ui.status.SetText(fmt.Sprintf(" [white:red] nessun PNG in Encounters: aggiungi prima personaggi[-:-]  %s", helpText))
+		return
+	}
+
+	defaultCount := max(1, len(levels))
+	defaultLevel := ui.defaultEncounterPartyLevel(levels)
+	defaultPower := 0
+	envOptions := append([]string{"All"}, ui.collectMonsterEnvironmentOptions()...)
+
+	form := tview.NewForm()
+	form.SetBorder(true)
+	form.SetTitle(" Generate Encounter from PNG ")
+	form.SetBorderColor(tcell.ColorGold)
+	form.SetTitleColor(tcell.ColorGold)
+	previewBox := tview.NewTextView().
+		SetDynamicColors(true).
+		SetScrollable(true).
+		SetWordWrap(true)
+	previewBox.SetBorder(true)
+	previewBox.SetTitle(" Preview ")
+	previewBox.SetBorderColor(tcell.ColorGold)
+	previewBox.SetTitleColor(tcell.ColorGold)
+	previewBox.SetTextColor(tcell.ColorWhite)
+
+	closeModal := func() {
+		ui.pages.RemovePage("encounter-generate")
+		ui.encounterGenVisible = false
+		ui.app.SetFocus(ui.encounter)
+	}
+	ui.encounterGenVisible = true
+
+	numberField := tview.NewInputField().SetLabel("Number Monsters: ").SetFieldWidth(8)
+	numberField.SetText(strconv.Itoa(defaultCount))
+	powerField := tview.NewInputField().SetLabel("Power (-12..12): ").SetFieldWidth(8)
+	powerField.SetText(strconv.Itoa(defaultPower))
+	levelField := tview.NewInputField().SetLabel("Party Level (1-20): ").SetFieldWidth(8)
+	levelField.SetText(strconv.Itoa(defaultLevel))
+	envDrop := tview.NewDropDown().SetLabel("Environment: ")
+	envDrop.SetOptions(envOptions, nil)
+	envDrop.SetCurrentOption(0)
+
+	styleField := func(f *tview.InputField) {
+		f.SetLabelColor(tcell.ColorGold)
+		f.SetFieldBackgroundColor(tcell.ColorWhite)
+		f.SetFieldTextColor(tcell.ColorBlack)
+		f.SetFieldStyle(tcell.StyleDefault.Background(tcell.ColorWhite).Foreground(tcell.ColorBlack))
+	}
+	styleField(numberField)
+	styleField(powerField)
+	styleField(levelField)
+	envDrop.SetLabelColor(tcell.ColorGold)
+	envDrop.SetFieldBackgroundColor(tcell.ColorDarkSlateGray)
+	envDrop.SetFieldTextColor(tcell.ColorWhite)
+	envDrop.SetListStyles(
+		tcell.StyleDefault.Background(tcell.ColorDarkSlateGray).Foreground(tcell.ColorWhite),
+		tcell.StyleDefault.Background(tcell.ColorGold).Foreground(tcell.ColorBlack),
+	)
+
+	form.AddFormItem(numberField)
+	form.AddFormItem(powerField)
+	form.AddFormItem(levelField)
+	form.AddFormItem(envDrop)
+
+	currentPreview := encounterGenerationPreview{}
+	hasPreview := false
+	buildPreview := func() error {
+		count, err := strconv.Atoi(strings.TrimSpace(numberField.GetText()))
+		if err != nil {
+			return errors.New("numero mostri non valido")
+		}
+		power, err := strconv.Atoi(strings.TrimSpace(powerField.GetText()))
+		if err != nil {
+			return errors.New("potenza non valida")
+		}
+		level, err := strconv.Atoi(strings.TrimSpace(levelField.GetText()))
+		if err != nil {
+			return errors.New("livello non valido")
+		}
+		_, env := envDrop.GetCurrentOption()
+		prev, err := ui.buildEncounterGenerationPreview(count, power, level, env)
+		if err != nil {
+			return err
+		}
+		currentPreview = prev
+		hasPreview = true
+		previewBox.SetText(ui.renderEncounterGenerationPreview(prev))
+		return nil
+	}
+
+	runPreview := func() {
+		if err := buildPreview(); err != nil {
+			hasPreview = false
+			previewBox.SetText(fmt.Sprintf("[white:red]Errore input:[-:-] %v", err))
+			ui.status.SetText(fmt.Sprintf(" [white:red] %v[-:-]  %s", err, helpText))
+			return
+		}
+		ui.status.SetText(fmt.Sprintf(" [black:gold] preview incontro[-:-] %d mostri (lvl %d, env %s, power %+d)  %s",
+			currentPreview.Count,
+			currentPreview.PartyLevel,
+			currentPreview.Environment,
+			currentPreview.Power,
+			helpText,
+		))
+	}
+	runApply := func() {
+		if !hasPreview {
+			if err := buildPreview(); err != nil {
+				ui.status.SetText(fmt.Sprintf(" [white:red] %v[-:-]  %s", err, helpText))
+				return
+			}
+		}
+		ui.pushEncounterUndo()
+		added := ui.applyEncounterGenerationPreview(currentPreview)
+		closeModal()
+		ui.status.SetText(fmt.Sprintf(" [black:gold] incontro generato[-:-] %d mostri aggiunti (custom/PNG mantenuti)  %s", added, helpText))
+	}
+
+	numberField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(1)
+		}
+	})
+	powerField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(2)
+		}
+	})
+	levelField.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(3)
+		}
+	})
+	envDrop.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			closeModal()
+			return
+		}
+		if isSubmitKey(key) {
+			form.SetFocus(4)
+		}
+	})
+	envDrop.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape {
+			closeModal()
+			return nil
+		}
+		return event
+	})
+
+	form.AddButton("Preview", runPreview)
+	form.AddButton("Generate", runApply)
+	form.AddButton("Cancel", closeModal)
+	form.SetCancelFunc(closeModal)
+	focusCount := func() int {
+		return form.GetFormItemCount() + form.GetButtonCount()
+	}
+	currentFocusIndex := func() int {
+		formItem, button := form.GetFocusedItemIndex()
+		if button >= 0 {
+			return form.GetFormItemCount() + button
+		}
+		if formItem >= 0 {
+			return formItem
+		}
+		return 0
+	}
+	moveFocus := func(delta int) {
+		n := focusCount()
+		if n <= 0 {
+			return
+		}
+		cur := currentFocusIndex()
+		next := cur + delta
+		for next < 0 {
+			next += n
+		}
+		next = next % n
+		form.SetFocus(next)
+	}
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		switch event.Key() {
+		case tcell.KeyEscape:
+			closeModal()
+			return nil
+		case tcell.KeyBacktab:
+			if envDrop != nil && envDrop.IsOpen() {
+				return event
+			}
+			moveFocus(-1)
+			return nil
+		case tcell.KeyTab:
+			if envDrop != nil && envDrop.IsOpen() {
+				return event
+			}
+			moveFocus(1)
+			return nil
+		default:
+			if !isSubmitEvent(event) || envDrop.IsOpen() {
+				return event
+			}
+			formItem, button := form.GetFocusedItemIndex()
+			if button == 2 {
+				closeModal()
+				return nil
+			}
+			if button == 0 {
+				runPreview()
+				return nil
+			}
+			if button == 1 {
+				runApply()
+				return nil
+			}
+			if formItem >= 0 && formItem < 3 {
+				form.SetFocus(formItem + 1)
+			} else {
+				form.SetFocus(4)
+			}
+			return nil
+		}
+	})
+
+	runPreview()
+	modal := tview.NewFlex().
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 0, 2, true).
+			AddItem(previewBox, 0, 3, false).
+			AddItem(nil, 0, 1, false), 124, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddPage("encounter-generate", modal, true, true)
+	ui.app.SetFocus(form)
+}
+
+func (ui *UI) collectMonsterEnvironmentOptions() []string {
+	set := map[string]struct{}{}
+	for _, m := range ui.monsters {
+		for _, env := range m.Environment {
+			env = strings.TrimSpace(env)
+			if env == "" {
+				continue
+			}
+			set[env] = struct{}{}
+		}
+	}
+	return keysSorted(set)
 }
 
 func (ui *UI) openAddCustomEncounterForm() {

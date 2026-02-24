@@ -690,6 +690,114 @@ func TestDeleteAllMonsterEncounterEntriesNoopWhenOnlyCustom(t *testing.T) {
 	}
 }
 
+func TestEncounterNPCLevels(t *testing.T) {
+	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
+	ui.encounterItems = []EncounterEntry{
+		{MonsterIndex: 0, Ordinal: 1, BaseHP: 5, CurrentHP: 5},
+		{
+			Custom:     true,
+			CustomName: "Wizard",
+			Character: &CharacterBuild{
+				Classes: []CharacterClassLevel{
+					{Name: "Wizard", Levels: 4},
+				},
+			},
+		},
+		{
+			Custom:     true,
+			CustomName: "Fighter",
+			Character: &CharacterBuild{
+				Classes: []CharacterClassLevel{
+					{Name: "Fighter", Levels: 2},
+					{Name: "Wizard", Levels: 1},
+				},
+			},
+		},
+		{
+			Custom:     true,
+			CustomName: "No Build",
+		},
+	}
+	levels := ui.encounterNPCLevels()
+	if !reflect.DeepEqual(levels, []int{4, 3}) {
+		t.Fatalf("unexpected npc levels: %#v", levels)
+	}
+}
+
+func TestBuildEncounterGenerationPreviewAndApply(t *testing.T) {
+	makeMonster := func(id int, name, cr string, envs []string, hp int) Monster {
+		return Monster{
+			ID:          id,
+			Name:        name,
+			CR:          cr,
+			Environment: envs,
+			Raw: map[string]any{
+				"name": name,
+				"dex":  12,
+				"hp": map[string]any{
+					"average": hp,
+					"formula": "2d8",
+				},
+			},
+		}
+	}
+	monsters := []Monster{
+		makeMonster(1, "Wolf", "1/4", []string{"forest"}, 11),
+		makeMonster(2, "Bandit", "1/8", []string{"urban"}, 11),
+		makeMonster(3, "Goblin", "1/4", []string{"forest"}, 7),
+	}
+	ui := makeTestUI(t, monsters)
+	ui.encounterItems = []EncounterEntry{
+		{
+			Custom:     true,
+			CustomName: "NPC Wizard",
+			BaseHP:     20,
+			CurrentHP:  20,
+			Character: &CharacterBuild{
+				Classes: []CharacterClassLevel{
+					{Name: "Wizard", Levels: 3},
+				},
+			},
+		},
+		{MonsterIndex: 1, Ordinal: 1, BaseHP: 11, CurrentHP: 11},
+	}
+
+	preview, err := ui.buildEncounterGenerationPreview(3, 1, 3, "forest")
+	if err != nil {
+		t.Fatalf("buildEncounterGenerationPreview error: %v", err)
+	}
+	if len(preview.MonsterIDs) != 3 {
+		t.Fatalf("expected 3 generated monsters, got %d", len(preview.MonsterIDs))
+	}
+	for _, idx := range preview.MonsterIDs {
+		if idx < 0 || idx >= len(ui.monsters) {
+			t.Fatalf("invalid generated index: %d", idx)
+		}
+		if !monsterMatchesEnvironment(ui.monsters[idx], "forest") {
+			t.Fatalf("expected forest monster, got %#v", ui.monsters[idx])
+		}
+	}
+
+	added := ui.applyEncounterGenerationPreview(preview)
+	if added != 3 {
+		t.Fatalf("expected added=3, got %d", added)
+	}
+	if len(ui.encounterItems) != 4 {
+		t.Fatalf("expected 4 encounter items after apply, got %d", len(ui.encounterItems))
+	}
+	if !ui.encounterItems[0].Custom || ui.encounterItems[0].Character == nil {
+		t.Fatalf("expected first item to keep existing custom NPC, got %#v", ui.encounterItems[0])
+	}
+	for i := 1; i < len(ui.encounterItems); i++ {
+		if ui.encounterItems[i].Custom {
+			t.Fatalf("expected generated monster at %d, got custom %#v", i, ui.encounterItems[i])
+		}
+		if ui.monsterScale[ui.encounterItems[i].MonsterIndex] != 1 {
+			t.Fatalf("expected monster scale +1 for generated monster, got %d", ui.monsterScale[ui.encounterItems[i].MonsterIndex])
+		}
+	}
+}
+
 func TestDeleteUndoRedoDice(t *testing.T) {
 	ui := makeTestUI(t, []Monster{mkMonster(1, "A", 10, 5, "1d1")})
 	ui.diceLog = []DiceResult{
