@@ -162,3 +162,15 @@ func TestOrderedEncounterConditionsIgnoresNonPositive(t *testing.T) {
 		t.Fatalf("unexpected condition state: %+v", got[0])
 	}
 }
+
+func TestEncounterConditionEffectsLong(t *testing.T) {
+	e := EncounterEntry{
+		Conditions: map[string]int{
+			"T": 1,
+		},
+	}
+	text := encounterConditionEffectsLong(e)
+	if !strings.Contains(text, "Stordito") || !strings.Contains(text, "Vulnerabile") || !strings.Contains(text, "Prono") {
+		t.Fatalf("unexpected effects text: %q", text)
+	}
+}

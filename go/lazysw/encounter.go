@@ -129,7 +129,78 @@ func conditionNameByCode(code string) string {
 			return d.Name
 		}
 	}
+	if c == "P" {
+		return "Prono"
+	}
 	return c
+}
+
+func conditionEffectByCode(code string) string {
+	switch strings.ToUpper(strings.TrimSpace(code)) {
+	case "S":
+		return "Scosso: puo agire solo dopo essere recuperato (Spirit a inizio turno o spendendo Bennie)."
+	case "T":
+		return "Stordito: deve superare Vigore a inizio turno per riprendersi."
+	case "D":
+		return "Distratto: -2 a tutte le prove di Tratto."
+	case "V":
+		return "Vulnerabile: chi lo attacca ha +2 ai tiri di attacco."
+	case "H":
+		return "Impedito: Passo ridotto di 2 e dado di corsa ridotto di un tipo."
+	case "F":
+		return "Affaticato: -1 a prove di Tratto per livello (fino a 2), al terzo livello diventa Incapacitato."
+	case "E":
+		return "Intrappolato: non puo muoversi; bersaglio Vulnerabile; puo liberarsi con prova di Forza."
+	case "B":
+		return "Vincolato: come Intrappolato, ma piu severo; non puo agire se non tentare di liberarsi."
+	case "P":
+		return "Prono: -2 agli attacchi in mischia e ai tiri di tratto collegati al movimento; bersaglio con copertura contro attacchi a distanza."
+	default:
+		return ""
+	}
+}
+
+func conditionDerivedCodes(code string) []string {
+	switch strings.ToUpper(strings.TrimSpace(code)) {
+	case "T":
+		return []string{"V", "P"}
+	default:
+		return nil
+	}
+}
+
+func encounterConditionEffectsLong(entry EncounterEntry) string {
+	ordered := orderedEncounterConditions(entry.Conditions)
+	if len(ordered) == 0 {
+		return ""
+	}
+
+	lines := make([]string, 0, len(ordered)*2)
+	seen := map[string]struct{}{}
+	var appendEffect func(code string)
+	appendEffect = func(code string) {
+		code = strings.ToUpper(strings.TrimSpace(code))
+		if code == "" {
+			return
+		}
+		if _, ok := seen[code]; ok {
+			return
+		}
+		seen[code] = struct{}{}
+		effect := conditionEffectByCode(code)
+		if effect == "" {
+			effect = conditionNameByCode(code) + ": effetto non codificato."
+		}
+		lines = append(lines, "- "+effect)
+		for _, child := range conditionDerivedCodes(code) {
+			appendEffect(child)
+		}
+	}
+
+	for _, p := range ordered {
+		appendEffect(p.Code)
+	}
+	return strings.Join(lines, "\n")
 }
 
 type encounterPersist struct {

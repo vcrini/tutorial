@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -159,6 +159,8 @@ type tviewUI struct {
 	fullscreenActive bool
 	fullscreenTarget string
 	activeBottomPane string
+
+	encounterShowConditionEffects bool
 }
 
 func runTViewUI() error {
@@ -936,6 +938,18 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.sortEncounterByInitiative()
 			return nil
 		}
+	case 'o':
+		if focus == ui.encList {
+			ui.encounterShowConditionEffects = !ui.encounterShowConditionEffects
+			if ui.encounterShowConditionEffects {
+				ui.message = "Dettagli effetti condizioni: ON."
+			} else {
+				ui.message = "Dettagli effetti condizioni: OFF."
+			}
+			ui.refreshDetail()
+			ui.refreshStatus()
+			return nil
+		}
 	}
 	return ev
 }
@@ -1517,6 +1531,11 @@ func (ui *tviewUI) refreshDetail() {
 		extra := fmt.Sprintf("Iniziativa: %s | Stato: %d/%d ferite residue (%s)", initLabel, remaining, base, encounterStateLabel(e))
 		if cond := encounterConditionsLong(e); cond != "" {
 			extra += " | Condizioni: " + cond
+			if ui.encounterShowConditionEffects {
+				if effects := encounterConditionEffectsLong(e); effects != "" {
+					extra += "\nEffetti condizioni:\n" + effects
+				}
+			}
 		}
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
 		ui.renderDetail()
@@ -3962,6 +3981,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- x: rimuovi una condizione dall'entry",
 			"- C: rimuovi tutte le condizioni dall'entry",
 			"- [ / ]: diminuisci/aumenta round condizioni",
+			"- o: toggle effetti estesi condizioni nei dettagli",
 			"- i: tira iniziativa sul selezionato",
 			"- I: tira iniziativa per tutti",
 			"- S: ordina encounter per iniziativa",
