@@ -13,7 +13,8 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]u/r[-:-] undo/redo  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]U/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const historyLimit = 200
 
 const (
 	focusDice = iota
@@ -58,6 +59,12 @@ type classPreset struct {
 	ExtraB    string
 	Abiti     []string
 	Attitude  []string
+}
+
+type uiSnapshot struct {
+	pngs      []PNG
+	encounter []EncounterEntry
+	selected  int
 }
 
 type tviewUI struct {
@@ -159,6 +166,8 @@ type tviewUI struct {
 	fullscreenActive bool
 	fullscreenTarget string
 	activeBottomPane string
+	undoStack        []uiSnapshot
+	redoStack        []uiSnapshot
 }
 
 func runTViewUI() error {
@@ -752,6 +761,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.toggleFullscreenForFocus(focus)
 			return nil
 		}
+	case 'u':
+		if !focusIsInput {
+			ui.undoLastChange()
+			return nil
+		}
+	case 'r':
+		if !focusIsInput {
+			ui.redoLastChange()
+			return nil
+		}
 	case 'q':
 		ui.app.Stop()
 		return nil
@@ -788,7 +807,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'x':
 		ui.openDeletePNGConfirm()
 		return nil
-	case 'r':
+	case 'R':
 		if focus == ui.pngList {
 			ui.openResetTokensConfirm()
 			return nil
@@ -826,7 +845,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openEquipmentTreasureInput()
 			return nil
 		}
-	case 'u':
+	case 'U':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonSearch)
 		} else if ui.catalogMode == "ambienti" {
@@ -2346,13 +2365,18 @@ func (ui *tviewUI) adjustSelectedToken(delta int) {
 		return
 	}
 	p := &ui.pngs[ui.selected]
-	p.Token += delta
-	if p.Token < minToken {
-		p.Token = minToken
+	newToken := p.Token + delta
+	if newToken < minToken {
+		newToken = minToken
 	}
-	if p.Token > maxToken {
-		p.Token = maxToken
+	if newToken > maxToken {
+		newToken = maxToken
 	}
+	if newToken == p.Token {
+		return
+	}
+	ui.beginUndoableChange()
+	p.Token = newToken
 	ui.persistPNGs()
 	ui.message = fmt.Sprintf("Token di %s: %d", p.Name, p.Token)
 	ui.refreshPNGs()
@@ -2439,6 +2463,7 @@ func (ui *tviewUI) openCreatePNGModal() {
 			selectedStress = 0
 		}
 
+		ui.beginUndoableChange()
 		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
@@ -2568,6 +2593,31 @@ func (ui *tviewUI) openEditPNGModal() {
 				return
 			}
 		}
+		before := ui.pngs[ui.selected]
+		afterName := strings.TrimSpace(selectedName)
+		afterToken := selectedToken
+		afterPF := selectedPF
+		afterStress := selectedStress
+		if afterToken < minToken {
+			afterToken = minToken
+		}
+		if afterToken > maxToken {
+			afterToken = maxToken
+		}
+		if afterPF < 0 {
+			afterPF = 0
+		}
+		if afterStress < 0 {
+			afterStress = 0
+		}
+		if before.Name == afterName && before.Token == afterToken && before.PF == afterPF && before.Stress == afterStress {
+			ui.closeModal()
+			ui.focusPanel(focusPNG)
+			ui.message = "Nessuna modifica al PNG."
+			ui.refreshStatus()
+			return
+		}
+		ui.beginUndoableChange()
 		selectedToken = clampStat(selectedToken, maxToken)
 		if selectedToken < minToken {
 			selectedToken = minToken
@@ -2730,6 +2780,7 @@ func (ui *tviewUI) openClassPNGInput() {
 			Look:        look,
 			Inventory:   inv,
 		}
+		ui.beginUndoableChange()
 		ui.pngs = append(ui.pngs, png)
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
@@ -3209,6 +3260,7 @@ func (ui *tviewUI) deleteSelectedPNG() {
 		return
 	}
 	name := ui.pngs[ui.selected].Name
+	ui.beginUndoableChange()
 	ui.pngs = append(ui.pngs[:ui.selected], ui.pngs[ui.selected+1:]...)
 	if len(ui.pngs) == 0 {
 		ui.selected = -1
@@ -3221,6 +3273,17 @@ func (ui *tviewUI) deleteSelectedPNG() {
 }
 
 func (ui *tviewUI) resetTokens() {
+	changed := false
+	for i := range ui.pngs {
+		if ui.pngs[i].Token != defaultToken {
+			changed = true
+			break
+		}
+	}
+	if !changed {
+		return
+	}
+	ui.beginUndoableChange()
 	for i := range ui.pngs {
 		ui.pngs[i].Token = defaultToken
 	}
@@ -3237,6 +3300,7 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 		return
 	}
 	mon := ui.monsters[idx]
+	ui.beginUndoableChange()
 	ui.encounter = append(ui.encounter, EncounterEntry{
 		Monster:    mon,
 		BasePF:     mon.PF,
@@ -3521,6 +3585,7 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int, bu
 	remaining := finalBudget
 	added := 0
 	spent := 0
+	historyCaptured := false
 	for remaining > 0 {
 		affordable := make([]candidate, 0, len(candidates))
 		for _, c := range candidates {
@@ -3535,6 +3600,10 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int, bu
 		qty := 1
 		if isFollowerRole(pick.mon.Role) {
 			qty = pgCount
+		}
+		if !historyCaptured {
+			ui.beginUndoableChange()
+			historyCaptured = true
 		}
 		for i := 0; i < qty; i++ {
 			ui.encounter = append(ui.encounter, EncounterEntry{
@@ -3590,6 +3659,7 @@ func (ui *tviewUI) removeSelectedEncounter() {
 		return
 	}
 	name := ui.encounter[idx].Monster.Name
+	ui.beginUndoableChange()
 	ui.encounter = append(ui.encounter[:idx], ui.encounter[idx+1:]...)
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Rimosso %s da encounter.", name)
@@ -3640,6 +3710,12 @@ func (ui *tviewUI) adjustSelectedPNGVitals(pfDelta, stressDelta int) {
 	}
 	p := &ui.pngs[ui.selected]
 	newPF, newStress := adjustVitalsLikeEncounter(p.PF, p.Stress, 0, 0, pfDelta, stressDelta)
+	if newPF == p.PF && newStress == p.Stress {
+		return
+	}
+	ui.beginUndoableChange()
+	p = &ui.pngs[ui.selected]
+	newPF, newStress = adjustVitalsLikeEncounter(p.PF, p.Stress, 0, 0, pfDelta, stressDelta)
 	p.PF = newPF
 	p.Stress = newStress
 	ui.persistPNGs()
@@ -3670,6 +3746,28 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 		currentPF = 0
 	}
 	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, base, baseStress, -delta, 0)
+	nextWounds := base - currentPF
+	if nextWounds < 0 {
+		nextWounds = 0
+	}
+	if nextWounds == e.Wounds && currentStress == e.Stress {
+		return
+	}
+	ui.beginUndoableChange()
+	e = &ui.encounter[idx]
+	base = e.BasePF
+	if base == 0 {
+		base = e.Monster.PF
+	}
+	baseStress = e.BaseStress
+	if baseStress == 0 {
+		baseStress = e.Monster.Stress
+	}
+	currentPF = base - e.Wounds
+	if currentPF < 0 {
+		currentPF = 0
+	}
+	currentPF, currentStress = adjustVitalsLikeEncounter(currentPF, e.Stress, base, baseStress, -delta, 0)
 	e.Wounds = base - currentPF
 	if e.Wounds < 0 {
 		e.Wounds = 0
@@ -3710,6 +3808,28 @@ func (ui *tviewUI) adjustEncounterStress(delta int) {
 		currentPF = 0
 	}
 	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, basePF, baseStress, 0, delta)
+	nextWounds := basePF - currentPF
+	if nextWounds < 0 {
+		nextWounds = 0
+	}
+	if nextWounds == e.Wounds && currentStress == e.Stress {
+		return
+	}
+	ui.beginUndoableChange()
+	e = &ui.encounter[idx]
+	baseStress = e.BaseStress
+	if baseStress == 0 {
+		baseStress = e.Monster.Stress
+	}
+	basePF = e.BasePF
+	if basePF == 0 {
+		basePF = e.Monster.PF
+	}
+	currentPF = basePF - e.Wounds
+	if currentPF < 0 {
+		currentPF = 0
+	}
+	currentPF, currentStress = adjustVitalsLikeEncounter(currentPF, e.Stress, basePF, baseStress, 0, delta)
 	e.Wounds = basePF - currentPF
 	if e.Wounds < 0 {
 		e.Wounds = 0
@@ -3768,7 +3888,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- c: crea PNG",
 			"- m: modifica PNG selezionato",
 			"- x: elimina PNG selezionato",
-			"- r: reset token di tutti i PNG",
+			"- R: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
 			"- h / l: PF -1 / +1 sul selezionato",
 			"- j / k: stress -1 / +1 sul selezionato",
@@ -3787,19 +3907,19 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- a: aggiungi mostro selezionato a Encounter",
 			"- n: genera Encounter random (Punti Battaglia)",
-			"- u / t / g: focus filtro Nome / Ruolo / Rango",
+			"- U / t / g: focus filtro Nome / Ruolo / Rango",
 			"- v: reset filtri Mostri",
 		}
 	case ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList:
 		panel = "Ambienti"
 		panelLines = []string{
-			"- u / t / g: focus filtro Nome / Tipo / Rango",
+			"- U / t / g: focus filtro Nome / Tipo / Rango",
 			"- v: reset filtri Ambienti (Nome/Tipo/Rango)",
 		}
 	case ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList:
 		panel = "Equipaggiamento"
 		panelLines = []string{
-			"- u / t / g: focus filtro Nome / Tipo / Rango (TAB per Categoria)",
+			"- U / t / g: focus filtro Nome / Tipo / Rango (TAB per Categoria)",
 			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Rango)",
 			"- b: genera bottino (Treasure) da categoria + dadi",
 			"- d: switch Dettagli <-> Treasure",
@@ -3813,13 +3933,13 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.cardSearch, ui.cardClassDrop, ui.cardTypeDrop, ui.cardList:
 		panel = "Carte"
 		panelLines = []string{
-			"- u / t / g: focus filtro Nome / Classe / Tipo",
+			"- U / t / g: focus filtro Nome / Classe / Tipo",
 			"- v: reset filtri Carte (Nome/Classe/Tipo)",
 		}
 	case ui.classSearch, ui.classNameDrop, ui.classSubDrop, ui.classList:
 		panel = "Classe"
 		panelLines = []string{
-			"- u / t / g: focus filtro Cerca / Classe / Sottoclasse",
+			"- U / t / g: focus filtro Cerca / Classe / Sottoclasse",
 			"- v: reset filtri Classe (Cerca/Classe/Sottoclasse)",
 			"- a: genera PNG dalla classe selezionata (con livello)",
 		}
@@ -3838,6 +3958,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
 	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe\n")
+	b.WriteString("- u / r: undo / redo\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
 	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
@@ -3946,6 +4067,91 @@ func (ui *tviewUI) rebuildMainLayout() {
 	ui.pages.RemovePage("main")
 	ui.pages.AddPage("main", root, true, true)
 	ui.pages.SwitchToPage("main")
+}
+
+func clonePNGs(src []PNG) []PNG {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make([]PNG, len(src))
+	copy(dst, src)
+	return dst
+}
+
+func cloneEncounter(src []EncounterEntry) []EncounterEntry {
+	if len(src) == 0 {
+		return nil
+	}
+	dst := make([]EncounterEntry, len(src))
+	copy(dst, src)
+	return dst
+}
+
+func (ui *tviewUI) captureSnapshot() uiSnapshot {
+	return uiSnapshot{
+		pngs:      clonePNGs(ui.pngs),
+		encounter: cloneEncounter(ui.encounter),
+		selected:  ui.selected,
+	}
+}
+
+func (ui *tviewUI) beginUndoableChange() {
+	ui.undoStack = append(ui.undoStack, ui.captureSnapshot())
+	if len(ui.undoStack) > historyLimit {
+		ui.undoStack = ui.undoStack[len(ui.undoStack)-historyLimit:]
+	}
+	ui.redoStack = nil
+}
+
+func (ui *tviewUI) applySnapshot(s uiSnapshot) {
+	ui.pngs = clonePNGs(s.pngs)
+	ui.encounter = cloneEncounter(s.encounter)
+	ui.selected = s.selected
+	if len(ui.pngs) == 0 {
+		ui.selected = -1
+	} else if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.selected = len(ui.pngs) - 1
+	}
+}
+
+func (ui *tviewUI) undoLastChange() {
+	if len(ui.undoStack) == 0 {
+		ui.message = "Undo: nessuna modifica disponibile."
+		ui.refreshStatus()
+		return
+	}
+	current := ui.captureSnapshot()
+	last := ui.undoStack[len(ui.undoStack)-1]
+	ui.undoStack = ui.undoStack[:len(ui.undoStack)-1]
+	ui.redoStack = append(ui.redoStack, current)
+	if len(ui.redoStack) > historyLimit {
+		ui.redoStack = ui.redoStack[len(ui.redoStack)-historyLimit:]
+	}
+	ui.applySnapshot(last)
+	ui.persistPNGs()
+	ui.persistEncounter()
+	ui.message = "Undo eseguito."
+	ui.refreshAll()
+}
+
+func (ui *tviewUI) redoLastChange() {
+	if len(ui.redoStack) == 0 {
+		ui.message = "Redo: nessuna modifica disponibile."
+		ui.refreshStatus()
+		return
+	}
+	current := ui.captureSnapshot()
+	next := ui.redoStack[len(ui.redoStack)-1]
+	ui.redoStack = ui.redoStack[:len(ui.redoStack)-1]
+	ui.undoStack = append(ui.undoStack, current)
+	if len(ui.undoStack) > historyLimit {
+		ui.undoStack = ui.undoStack[len(ui.undoStack)-historyLimit:]
+	}
+	ui.applySnapshot(next)
+	ui.persistPNGs()
+	ui.persistEncounter()
+	ui.message = "Redo eseguito."
+	ui.refreshAll()
 }
 
 func (ui *tviewUI) persistPNGs() {
