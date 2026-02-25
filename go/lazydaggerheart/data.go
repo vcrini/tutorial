@@ -1,9 +1,12 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
+	"fmt"
 	"math/rand/v2"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"gopkg.in/yaml.v3"
@@ -23,6 +26,10 @@ var equipmentFile = "config/equipaggiamento.yaml"
 var cardsFile = "config/carte.yaml"
 var classesFile = "config/classi.yaml"
 var encounterFile = "encounter.yml"
+var appStateDir = ""
+
+//go:embed config/names.yaml config/mostri.yml config/ambienti.yml config/equipaggiamento.yaml config/carte.yaml config/classi.yaml
+var embeddedConfigFS embed.FS
 
 type nameLists struct {
 	First []string `yaml:"first"`
@@ -31,6 +38,31 @@ type nameLists struct {
 
 var namesCache nameLists
 var namesLoaded bool
+
+func initStoragePaths() error {
+	home, err := os.UserHomeDir()
+	if err != nil || strings.TrimSpace(home) == "" {
+		return fmt.Errorf("impossibile risolvere HOME: %w", err)
+	}
+	appStateDir = filepath.Join(home, ".lazydaggerheart")
+	if err := os.MkdirAll(appStateDir, 0o755); err != nil {
+		return fmt.Errorf("impossibile creare dir stato %s: %w", appStateDir, err)
+	}
+	dataFile = filepath.Join(appStateDir, "pngs.yml")
+	encounterFile = filepath.Join(appStateDir, "encounter.yml")
+	return nil
+}
+
+func readData(path string) ([]byte, error) {
+	normalized := filepath.ToSlash(strings.TrimSpace(path))
+	if strings.HasPrefix(normalized, "config/") {
+		data, err := embeddedConfigFS.ReadFile(normalized)
+		if err == nil {
+			return data, nil
+		}
+	}
+	return os.ReadFile(path)
+}
 
 type Thresholds struct {
 	Values []int
@@ -358,7 +390,7 @@ func loadNameLists() ([]string, []string) {
 	}
 	namesLoaded = true
 
-	data, err := os.ReadFile(namesFile)
+	data, err := readData(namesFile)
 	if err != nil {
 		namesCache = defaultNameLists()
 		return namesCache.First, namesCache.Last
@@ -415,7 +447,7 @@ func defaultNameLists() nameLists {
 }
 
 func loadMonsters(path string) ([]Monster, error) {
-	data, err := os.ReadFile(path)
+	data, err := readData(path)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +460,7 @@ func loadMonsters(path string) ([]Monster, error) {
 }
 
 func loadEnvironments(path string) ([]Environment, error) {
-	data, err := os.ReadFile(path)
+	data, err := readData(path)
 	if err != nil {
 		return nil, err
 	}
@@ -441,7 +473,7 @@ func loadEnvironments(path string) ([]Environment, error) {
 }
 
 func loadEquipment(path string) ([]EquipmentItem, error) {
-	data, err := os.ReadFile(path)
+	data, err := readData(path)
 	if err != nil {
 		return nil, err
 	}
@@ -454,7 +486,7 @@ func loadEquipment(path string) ([]EquipmentItem, error) {
 }
 
 func loadCards(path string) ([]CardItem, error) {
-	data, err := os.ReadFile(path)
+	data, err := readData(path)
 	if err != nil {
 		return nil, err
 	}
@@ -467,7 +499,7 @@ func loadCards(path string) ([]CardItem, error) {
 }
 
 func loadClasses(path string) ([]ClassItem, error) {
-	data, err := os.ReadFile(path)
+	data, err := readData(path)
 	if err != nil {
 		return nil, err
 	}
@@ -535,6 +567,9 @@ func savePNGList(path string, pngs []PNG, selected string) error {
 	}
 	data, err := yaml.Marshal(payload)
 	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 	return os.WriteFile(path, data, 0o644)

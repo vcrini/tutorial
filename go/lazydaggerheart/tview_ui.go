@@ -72,9 +72,10 @@ type tviewUI struct {
 	pages  *tview.Pages
 	status *tview.TextView
 
-	dice           *tview.List
-	diceLog        []DiceResult
-	diceRenderLock bool
+	dice            *tview.List
+	diceLog         []DiceResult
+	diceRenderLock  bool
+	diceGotoPending bool
 
 	pngList        *tview.List
 	encList        *tview.List
@@ -171,6 +172,9 @@ type tviewUI struct {
 }
 
 func runTViewUI() error {
+	if err := initStoragePaths(); err != nil {
+		return err
+	}
 	tview.Styles.PrimitiveBackgroundColor = tcell.ColorBlack
 	tview.Styles.ContrastBackgroundColor = tcell.ColorBlack
 	tview.Styles.MoreContrastBackgroundColor = tcell.ColorBlack
@@ -714,6 +718,36 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.refreshStatus()
 		return nil
 	}
+	if ui.diceGotoPending {
+		if ev.Key() == tcell.KeyEscape {
+			ui.diceGotoPending = false
+			ui.message = "Goto dadi annullato."
+			ui.refreshStatus()
+			return nil
+		}
+		if focus != ui.dice {
+			ui.diceGotoPending = false
+		} else if ev.Key() == tcell.KeyRune {
+			r := ev.Rune()
+			switch {
+			case r == '^':
+				ui.diceGotoPending = false
+				ui.jumpToDiceRow(1)
+				return nil
+			case r == '$':
+				ui.diceGotoPending = false
+				ui.jumpToDiceRow(len(ui.diceLog))
+				return nil
+			case r >= '1' && r <= '9':
+				ui.diceGotoPending = false
+				ui.jumpToDiceRow(int(r - '0'))
+				return nil
+			}
+			ui.diceGotoPending = false
+		} else {
+			ui.diceGotoPending = false
+		}
+	}
 
 	switch ev.Key() {
 	case tcell.KeyCtrlC:
@@ -872,6 +906,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		return nil
 	case 'g':
+		if focus == ui.dice {
+			ui.diceGotoPending = true
+			ui.message = "Goto dadi: g# (1-9), g^ (prima), g$ (ultima)."
+			ui.refreshStatus()
+			return nil
+		}
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonRank)
 		} else if ui.catalogMode == "ambienti" {
@@ -3232,6 +3272,27 @@ func (ui *tviewUI) jumpToDiceResult(query string) {
 	ui.message = fmt.Sprintf("Nessun match dadi per '%s'.", query)
 }
 
+func (ui *tviewUI) jumpToDiceRow(oneBased int) {
+	total := len(ui.diceLog)
+	if total == 0 {
+		ui.message = "Nessun tiro in lista."
+		ui.refreshStatus()
+		return
+	}
+	if oneBased < 1 {
+		ui.message = "Riga dadi non valida."
+		ui.refreshStatus()
+		return
+	}
+	if oneBased > total {
+		oneBased = total
+	}
+	ui.dice.SetCurrentItem(oneBased - 1)
+	ui.message = fmt.Sprintf("Riga dadi: %d/%d", oneBased, total)
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
 func (ui *tviewUI) scrollDetailByPage(direction int) {
 	target := ui.detail
 	if ui.app.GetFocus() == ui.detailTreasure {
@@ -3878,9 +3939,14 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- a: nuovo tiro (anche multiplo, es. 1d20+3 x2)",
 			"- Invio: rilancia il tiro selezionato",
+			"- g# / g^ / g$: vai a riga # / prima / ultima",
 			"- e: modifica + rilancia il tiro selezionato",
 			"- d: elimina il tiro selezionato",
 			"- c: svuota storico tiri",
+			"- Sintassi tiro: NdM, NdM+K, NdM-K, dM",
+			"- Batch: expr xN (es. 1d20+5 x3)",
+			"- Multi-espr.: expr,expr (es. d6,d8,1d20+4)",
+			"- Confronto: expr>DC, expr>=DC, expr<DC, expr<=DC",
 		}
 	case ui.pngList:
 		panel = "PNG"
