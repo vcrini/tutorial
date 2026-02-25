@@ -795,7 +795,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 	case 'm':
 		if focus == ui.pngList {
-			ui.openRenamePNGModal()
+			ui.openEditPNGModal()
 			return nil
 		}
 	case 'a':
@@ -2473,40 +2473,87 @@ func (ui *tviewUI) openCreatePNGModal() {
 	ui.app.SetFocus(form.GetFormItem(0))
 }
 
-func (ui *tviewUI) openRenamePNGModal() {
+func (ui *tviewUI) openEditPNGModal() {
 	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
 		ui.message = "Nessun PNG selezionato."
 		ui.refreshStatus()
 		return
 	}
 
-	currentName := ui.pngs[ui.selected].Name
-	input := tview.NewInputField().SetLabel(" Nuovo nome ").SetFieldWidth(28)
-	input.SetText(currentName)
-	input.SetBorder(true).SetTitle("Rinomina PNG")
+	cur := ui.pngs[ui.selected]
+	selectedName := cur.Name
+	selectedToken := cur.Token
+	selectedPF := cur.PF
+	selectedStress := cur.Stress
 	returnFocus := ui.app.GetFocus()
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 48, 0, true).
-			AddItem(nil, 0, 1, false), 5, 0, true).
-		AddItem(nil, 0, 1, false)
-
-	ui.modalVisible = true
-	ui.modalName = "rename_png"
-	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
-	ui.app.SetFocus(input)
-
-	input.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEsc {
-			ui.closeModal()
-			ui.app.SetFocus(returnFocus)
-			return
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Modifica PNG").SetTitleAlign(tview.AlignLeft)
+	advanceToSave := func() {
+		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Salva"))
+	}
+	form.AddInputField("Nome", cur.Name, 28, nil, func(text string) {
+		selectedName = strings.TrimSpace(text)
+	})
+	form.AddInputField("Token", strconv.Itoa(cur.Token), 3, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
 		}
-		newName := strings.TrimSpace(input.GetText())
-		if newName == "" {
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil {
+			selectedToken = v
+		}
+	})
+	form.AddInputField("PF", strconv.Itoa(cur.PF), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedPF = v
+		}
+	})
+	form.AddInputField("Stress", strconv.Itoa(cur.Stress), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedStress = v
+		}
+	})
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() != tcell.KeyEnter {
+			return event
+		}
+		itemIdx, buttonIdx := form.GetFocusedItemIndex()
+		switch {
+		case itemIdx == 0:
+			form.SetFocus(1)
+			return nil
+		case itemIdx == 1:
+			form.SetFocus(2)
+			return nil
+		case itemIdx == 2:
+			form.SetFocus(3)
+			return nil
+		case itemIdx == 3:
+			advanceToSave()
+			return nil
+		case buttonIdx >= 0:
+			return event
+		default:
+			return event
+		}
+	})
+	form.AddButton("Salva", func() {
+		if strings.TrimSpace(selectedName) == "" {
 			ui.message = "Nome PNG non valido."
 			ui.refreshStatus()
 			return
@@ -2515,19 +2562,56 @@ func (ui *tviewUI) openRenamePNGModal() {
 			if i == ui.selected {
 				continue
 			}
-			if strings.EqualFold(strings.TrimSpace(p.Name), newName) {
+			if strings.EqualFold(strings.TrimSpace(p.Name), strings.TrimSpace(selectedName)) {
 				ui.message = "Nome già esistente."
 				ui.refreshStatus()
 				return
 			}
 		}
-		ui.pngs[ui.selected].Name = newName
+		selectedToken = clampStat(selectedToken, maxToken)
+		if selectedToken < minToken {
+			selectedToken = minToken
+		}
+		if selectedPF < 0 {
+			selectedPF = 0
+		}
+		if selectedStress < 0 {
+			selectedStress = 0
+		}
+		ui.pngs[ui.selected].Name = strings.TrimSpace(selectedName)
+		ui.pngs[ui.selected].Token = selectedToken
+		ui.pngs[ui.selected].PF = selectedPF
+		ui.pngs[ui.selected].Stress = selectedStress
 		ui.persistPNGs()
 		ui.closeModal()
 		ui.focusPanel(focusPNG)
-		ui.message = fmt.Sprintf("PNG rinominato in %s.", newName)
+		ui.message = fmt.Sprintf("PNG aggiornato: %s.", ui.pngs[ui.selected].Name)
 		ui.refreshAll()
 	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetButtonsAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 58, 0, true).
+			AddItem(nil, 0, 1, false), 12, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "edit_png"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
 }
 
 func (ui *tviewUI) openClassPNGInput() {
@@ -3682,7 +3766,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panel = "PNG"
 		panelLines = []string{
 			"- c: crea PNG",
-			"- m: rinomina PNG selezionato",
+			"- m: modifica PNG selezionato",
 			"- x: elimina PNG selezionato",
 			"- r: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
