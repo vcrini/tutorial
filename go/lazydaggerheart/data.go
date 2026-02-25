@@ -144,6 +144,8 @@ type ClassItem struct {
 type PNG struct {
 	Name        string `json:"Name" yaml:"name"`
 	Token       int    `json:"Token" yaml:"token"`
+	PF          int    `json:"PF,omitempty" yaml:"pf,omitempty"`
+	Stress      int    `json:"Stress,omitempty" yaml:"stress,omitempty"`
 	Class       string `json:"Class,omitempty" yaml:"class,omitempty"`
 	Subclass    string `json:"Subclass,omitempty" yaml:"subclass,omitempty"`
 	Level       int    `json:"Level,omitempty" yaml:"level,omitempty"`
@@ -166,6 +168,10 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		Counter      *int   `json:"Counter"`
 		TokenLower   *int   `json:"token"`
 		CounterLower *int   `json:"counter"`
+		PF           *int   `json:"PF"`
+		PFLower      *int   `json:"pf"`
+		Stress       *int   `json:"Stress"`
+		StressLower  *int   `json:"stress"`
 		Class        string `json:"Class"`
 		ClassLower   string `json:"class"`
 		Subclass     string `json:"Subclass"`
@@ -208,6 +214,16 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		p.Token = *aux.CounterLower
 	default:
 		p.Token = 0
+	}
+	if aux.PF != nil {
+		p.PF = *aux.PF
+	} else if aux.PFLower != nil {
+		p.PF = *aux.PFLower
+	}
+	if aux.Stress != nil {
+		p.Stress = *aux.Stress
+	} else if aux.StressLower != nil {
+		p.Stress = *aux.StressLower
 	}
 	if strings.TrimSpace(aux.Class) != "" {
 		p.Class = strings.TrimSpace(aux.Class)
@@ -281,6 +297,8 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 	out := struct {
 		Name        string `json:"Name"`
 		Token       int    `json:"Token"`
+		PF          int    `json:"PF,omitempty"`
+		Stress      int    `json:"Stress,omitempty"`
 		Class       string `json:"Class,omitempty"`
 		Subclass    string `json:"Subclass,omitempty"`
 		Level       int    `json:"Level,omitempty"`
@@ -297,6 +315,8 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 	}{
 		Name:        p.Name,
 		Token:       p.Token,
+		PF:          p.PF,
+		Stress:      p.Stress,
 		Class:       strings.TrimSpace(p.Class),
 		Subclass:    strings.TrimSpace(p.Subclass),
 		Level:       p.Level,

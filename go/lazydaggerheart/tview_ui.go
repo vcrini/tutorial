@@ -896,9 +896,17 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.adjustEncounterWounds(1)
 			return nil
 		}
+		if focus == ui.pngList {
+			ui.adjustSelectedPNGVitals(-1, 0)
+			return nil
+		}
 	case 'l':
 		if focus == ui.encList {
 			ui.adjustEncounterWounds(-1)
+			return nil
+		}
+		if focus == ui.pngList {
+			ui.adjustSelectedPNGVitals(1, 0)
 			return nil
 		}
 	case 'j':
@@ -906,9 +914,17 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.adjustEncounterStress(-1)
 			return nil
 		}
+		if focus == ui.pngList {
+			ui.adjustSelectedPNGVitals(0, -1)
+			return nil
+		}
 	case 'k':
 		if focus == ui.encList {
 			ui.adjustEncounterStress(1)
+			return nil
+		}
+		if focus == ui.pngList {
+			ui.adjustSelectedPNGVitals(0, 1)
 			return nil
 		}
 	}
@@ -1141,7 +1157,8 @@ func (ui *tviewUI) refreshPNGs() {
 		if i == ui.selected {
 			prefix = "* "
 		}
-		ui.pngList.AddItem(fmt.Sprintf("%s%s [token %d]", prefix, p.Name, p.Token), "", 0, nil)
+		label := fmt.Sprintf("%s%s [token %d | PF %d | ST %d]", prefix, p.Name, p.Token, p.PF, p.Stress)
+		ui.pngList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.pngs) {
 		current = len(ui.pngs) - 1
@@ -1515,6 +1532,7 @@ func (ui *tviewUI) refreshDetail() {
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("%s\nToken: %d", p.Name, p.Token))
+	b.WriteString(fmt.Sprintf("\nPF: %d | Stress: %d", p.PF, p.Stress))
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -2343,31 +2361,63 @@ func (ui *tviewUI) adjustSelectedToken(delta int) {
 }
 
 func (ui *tviewUI) openCreatePNGModal() {
-	input := tview.NewInputField().SetLabel(" Nome PNG ").SetFieldWidth(24)
-	input.SetText(uniqueRandomPNGName(ui.pngs))
-	input.SetBorder(true).SetTitle("Crea PNG")
 	returnFocus := ui.app.GetFocus()
+	defaultName := uniqueRandomPNGName(ui.pngs)
+	selectedPF := 0
+	selectedStress := 0
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 42, 0, true).
-			AddItem(nil, 0, 1, false), 5, 0, true).
-		AddItem(nil, 0, 1, false)
-
-	ui.modalVisible = true
-	ui.modalName = "create_png"
-	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
-	ui.app.SetFocus(input)
-
-	input.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEsc {
-			ui.closeModal()
-			ui.app.SetFocus(returnFocus)
-			return
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Crea PNG").SetTitleAlign(tview.AlignLeft)
+	advanceToGenerate := func() {
+		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Crea"))
+	}
+	form.AddInputField("Nome PNG", defaultName, 24, nil, nil)
+	form.AddInputField("PF", "0", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
 		}
-		name := strings.TrimSpace(input.GetText())
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedPF = v
+		}
+	})
+	form.AddInputField("Stress", "0", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedStress = v
+		}
+	})
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() != tcell.KeyEnter {
+			return event
+		}
+		itemIdx, buttonIdx := form.GetFocusedItemIndex()
+		switch {
+		case itemIdx == 0:
+			form.SetFocus(1)
+			return nil
+		case itemIdx == 1:
+			form.SetFocus(2)
+			return nil
+		case itemIdx == 2:
+			advanceToGenerate()
+			return nil
+		case buttonIdx >= 0:
+			return event
+		default:
+			return event
+		}
+	})
+
+	form.AddButton("Crea", func() {
+		name := strings.TrimSpace(form.GetFormItem(0).(*tview.InputField).GetText())
 		if name == "" {
 			name = uniqueRandomPNGName(ui.pngs)
 		}
@@ -2378,7 +2428,18 @@ func (ui *tviewUI) openCreatePNGModal() {
 				return
 			}
 		}
-		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken})
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(1).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedPF = v
+		} else {
+			selectedPF = 0
+		}
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(2).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedStress = v
+		} else {
+			selectedStress = 0
+		}
+
+		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
 		ui.closeModal()
@@ -2386,6 +2447,30 @@ func (ui *tviewUI) openCreatePNGModal() {
 		ui.message = fmt.Sprintf("Creato PNG %s.", name)
 		ui.refreshAll()
 	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetButtonsAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 56, 0, true).
+			AddItem(nil, 0, 1, false), 11, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "create_png"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
 }
 
 func (ui *tviewUI) openRenamePNGModal() {
@@ -2460,6 +2545,11 @@ func (ui *tviewUI) openClassPNGInput() {
 		levels = append(levels, strconv.Itoa(i))
 	}
 	selectedLevel := 1
+	selectedPF := c.HP
+	if selectedPF < 0 {
+		selectedPF = 0
+	}
+	selectedStress := 0
 	ready := false
 
 	form := tview.NewForm()
@@ -2475,7 +2565,29 @@ func (ui *tviewUI) openClassPNGInput() {
 			selectedLevel = v
 		}
 		if ready {
-			advanceToGenerate()
+			form.SetFocus(1)
+		}
+	})
+	form.AddInputField("PF", strconv.Itoa(selectedPF), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedPF = v
+		}
+	})
+	form.AddInputField("Stress", strconv.Itoa(selectedStress), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedStress = v
 		}
 	})
 	if item := form.GetFormItem(0); item != nil {
@@ -2486,16 +2598,29 @@ func (ui *tviewUI) openClassPNGInput() {
 				tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
 				tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
 			)
-			dd.SetFinishedFunc(func(key tcell.Key) {
-				switch key {
-				case tcell.KeyEnter, tcell.KeyTab:
-					advanceToGenerate()
-				case tcell.KeyBacktab:
-					form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Annulla"))
-				}
-			})
 		}
 	}
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() != tcell.KeyEnter {
+			return event
+		}
+		itemIdx, buttonIdx := form.GetFocusedItemIndex()
+		switch {
+		case itemIdx == 0:
+			form.SetFocus(1)
+			return nil
+		case itemIdx == 1:
+			form.SetFocus(2)
+			return nil
+		case itemIdx == 2:
+			advanceToGenerate()
+			return nil
+		case buttonIdx >= 0:
+			return event
+		default:
+			return event
+		}
+	})
 
 	form.AddButton("Genera", func() {
 		baseName := uniqueRandomPNGName(ui.pngs)
@@ -2505,6 +2630,8 @@ func (ui *tviewUI) openClassPNGInput() {
 		png := PNG{
 			Name:        fmt.Sprintf("%s (%s | %s L%d)", baseName, c.Subclass, c.Name, selectedLevel),
 			Token:       defaultToken,
+			PF:          selectedPF,
+			Stress:      selectedStress,
 			Class:       strings.TrimSpace(c.Name),
 			Subclass:    strings.TrimSpace(c.Subclass),
 			Level:       selectedLevel,
@@ -3385,6 +3512,59 @@ func (ui *tviewUI) removeSelectedEncounter() {
 	ui.refreshAll()
 }
 
+func clampStat(value int, max int) int {
+	if value < 0 {
+		return 0
+	}
+	if max > 0 && value > max {
+		return max
+	}
+	return value
+}
+
+// adjustVitalsLikeEncounter applies PF and Stress deltas with the same semantics used in Encounter:
+// - stress decrease below zero converts into PF loss (1-to-1)
+// - values are clamped to [0..max] when max > 0, otherwise only lower bound is enforced.
+func adjustVitalsLikeEncounter(currentPF, currentStress, maxPF, maxStress, pfDelta, stressDelta int) (int, int) {
+	currentPF = clampStat(currentPF, maxPF)
+	currentStress = clampStat(currentStress, maxStress)
+
+	if pfDelta != 0 {
+		currentPF = clampStat(currentPF+pfDelta, maxPF)
+	}
+
+	if stressDelta > 0 {
+		currentStress = clampStat(currentStress+stressDelta, maxStress)
+	} else if stressDelta < 0 {
+		steps := -stressDelta
+		for i := 0; i < steps; i++ {
+			if currentStress > 0 {
+				currentStress--
+			} else if currentPF > 0 {
+				currentPF--
+			}
+		}
+	}
+	return clampStat(currentPF, maxPF), clampStat(currentStress, maxStress)
+}
+
+func (ui *tviewUI) adjustSelectedPNGVitals(pfDelta, stressDelta int) {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	p := &ui.pngs[ui.selected]
+	newPF, newStress := adjustVitalsLikeEncounter(p.PF, p.Stress, 0, 0, pfDelta, stressDelta)
+	p.PF = newPF
+	p.Stress = newStress
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("PNG %s: PF %d | ST %d", p.Name, p.PF, p.Stress)
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
 func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	idx := ui.currentEncounterIndex()
 	if idx < 0 {
@@ -3393,17 +3573,24 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 		return
 	}
 	e := &ui.encounter[idx]
-	e.Wounds += delta
-	if e.Wounds < 0 {
-		e.Wounds = 0
-	}
 	base := e.BasePF
 	if base == 0 {
 		base = e.Monster.PF
 	}
-	if base > 0 && e.Wounds > base {
-		e.Wounds = base
+	baseStress := e.BaseStress
+	if baseStress == 0 {
+		baseStress = e.Monster.Stress
 	}
+	currentPF := base - e.Wounds
+	if currentPF < 0 {
+		currentPF = 0
+	}
+	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, base, baseStress, -delta, 0)
+	e.Wounds = base - currentPF
+	if e.Wounds < 0 {
+		e.Wounds = 0
+	}
+	e.Stress = currentStress
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Ferite %s: %d", e.Monster.Name, e.Wounds)
 	ui.refreshEncounter()
@@ -3434,29 +3621,16 @@ func (ui *tviewUI) adjustEncounterStress(delta int) {
 	if basePF == 0 {
 		basePF = e.Monster.PF
 	}
-
-	if delta > 0 {
-		e.Stress += delta
-		if baseStress > 0 && e.Stress > baseStress {
-			e.Stress = baseStress
-		}
-	} else if delta < 0 {
-		steps := -delta
-		for i := 0; i < steps; i++ {
-			if e.Stress > 0 {
-				e.Stress--
-			} else {
-				e.Wounds++
-			}
-		}
+	currentPF := basePF - e.Wounds
+	if currentPF < 0 {
+		currentPF = 0
 	}
-
+	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, basePF, baseStress, 0, delta)
+	e.Wounds = basePF - currentPF
 	if e.Wounds < 0 {
 		e.Wounds = 0
 	}
-	if basePF > 0 && e.Wounds > basePF {
-		e.Wounds = basePF
-	}
+	e.Stress = currentStress
 
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Stress %s: %d/%d", e.Monster.Name, e.Stress, baseStress)
@@ -3512,6 +3686,9 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- x: elimina PNG selezionato",
 			"- r: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
+			"- h / l: PF -1 / +1 sul selezionato",
+			"- j / k: stress -1 / +1 sul selezionato",
+			"- j con stress 0: riduce PF del PNG",
 		}
 	case ui.encList:
 		panel = "Encounter"
