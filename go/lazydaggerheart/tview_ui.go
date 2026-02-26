@@ -836,7 +836,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.clearDiceResults()
 			return nil
 		}
-		ui.openCreatePNGModal()
+		if focus == ui.pngList {
+			ui.openCreatePNGModal()
+			return nil
+		}
 		return nil
 	case 'x':
 		ui.openDeletePNGConfirm()
@@ -847,11 +850,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'm':
+	case 'a':
 		if focus == ui.pngList {
-			ui.openEditPNGModal()
+			ui.openCreatePNGModal()
 			return nil
 		}
-	case 'a':
 		if focus == ui.dice {
 			ui.openDiceRollInput()
 			return nil
@@ -870,6 +873,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'e':
+		if focus == ui.pngList {
+			ui.openEditPNGModal()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.openDiceReRollInput()
 			return nil
@@ -3951,8 +3958,8 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.pngList:
 		panel = "PNG"
 		panelLines = []string{
-			"- c: crea PNG",
-			"- m: modifica PNG selezionato",
+			"- a: crea PNG",
+			"- e: modifica PNG selezionato",
 			"- x: elimina PNG selezionato",
 			"- R: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
