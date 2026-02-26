@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]u/r[-:-] undo/redo  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]U/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]u/r[-:-] undo/redo  [black:gold]G[-:-] vai a pannello  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]U/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 const historyLimit = 200
 
 const (
@@ -192,7 +192,9 @@ func runTViewUI() error {
 		return err
 	}
 	ui.refreshAll()
-	return ui.app.SetRoot(ui.pages, true).EnableMouse(true).Run()
+	ui.app.SetRoot(ui.pages, true).SetFocus(ui.monList).EnableMouse(true)
+	ui.focusIdx = focusMonList
+	return ui.app.Run()
 }
 
 func newTViewUI() (*tviewUI, error) {
@@ -766,12 +768,62 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return nil
 	case tcell.KeyLeft:
 		if focus == ui.pngList {
+			if ev.Modifiers()&tcell.ModAlt != 0 {
+				ui.adjustSelectedPNGArmor(-1)
+				return nil
+			}
+			if ev.Modifiers()&tcell.ModShift != 0 {
+				ui.adjustSelectedPNGVitals(-1, 0)
+				return nil
+			}
 			ui.adjustSelectedToken(-1)
+			return nil
+		}
+		if focus == ui.encList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustEncounterWounds(1)
 			return nil
 		}
 	case tcell.KeyRight:
 		if focus == ui.pngList {
+			if ev.Modifiers()&tcell.ModAlt != 0 {
+				ui.adjustSelectedPNGArmor(1)
+				return nil
+			}
+			if ev.Modifiers()&tcell.ModShift != 0 {
+				ui.adjustSelectedPNGVitals(1, 0)
+				return nil
+			}
 			ui.adjustSelectedToken(1)
+			return nil
+		}
+		if focus == ui.encList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustEncounterWounds(-1)
+			return nil
+		}
+	case tcell.KeyDown:
+		if focus == ui.pngList && ev.Modifiers()&tcell.ModAlt != 0 {
+			ui.adjustSelectedPNGHope(-1)
+			return nil
+		}
+		if focus == ui.pngList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustSelectedPNGVitals(0, -1)
+			return nil
+		}
+		if focus == ui.encList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustEncounterStress(-1)
+			return nil
+		}
+	case tcell.KeyUp:
+		if focus == ui.pngList && ev.Modifiers()&tcell.ModAlt != 0 {
+			ui.adjustSelectedPNGHope(1)
+			return nil
+		}
+		if focus == ui.pngList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustSelectedPNGVitals(0, 1)
+			return nil
+		}
+		if focus == ui.encList && ev.Modifiers()&tcell.ModShift != 0 {
+			ui.adjustEncounterStress(1)
 			return nil
 		}
 	case tcell.KeyPgUp:
@@ -805,6 +857,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.redoLastChange()
 			return nil
 		}
+	case 'G':
+		ui.openGotoPanelModal()
+		return nil
 	case 'q':
 		ui.app.Stop()
 		return nil
@@ -836,20 +891,28 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.clearDiceResults()
 			return nil
 		}
+		return nil
+	case 'x':
 		if focus == ui.pngList {
-			ui.openCreatePNGModal()
+			ui.deleteSelectedPNG()
 			return nil
 		}
 		return nil
-	case 'x':
-		ui.openDeletePNGConfirm()
+	case 'D':
+		if focus == ui.pngList {
+			ui.clearAllPNGs()
+			return nil
+		}
+		if focus == ui.encList {
+			ui.clearAllEncounter()
+			return nil
+		}
 		return nil
 	case 'R':
 		if focus == ui.pngList {
 			ui.openResetTokensConfirm()
 			return nil
 		}
-	case 'm':
 	case 'a':
 		if focus == ui.pngList {
 			ui.openCreatePNGModal()
@@ -949,48 +1012,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.deleteSelectedDiceResult()
 			return nil
 		}
+		if focus == ui.pngList {
+			ui.deleteSelectedPNG()
+			return nil
+		}
 		if focus == ui.encList {
 			ui.removeSelectedEncounter()
 			return nil
 		}
 		if ui.catalogMode == "equipaggiamento" && (focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.detail || focus == ui.detailTreasure) {
 			ui.toggleDetailsTreasureFocus()
-			return nil
-		}
-	case 'h':
-		if focus == ui.encList {
-			ui.adjustEncounterWounds(1)
-			return nil
-		}
-		if focus == ui.pngList {
-			ui.adjustSelectedPNGVitals(-1, 0)
-			return nil
-		}
-	case 'l':
-		if focus == ui.encList {
-			ui.adjustEncounterWounds(-1)
-			return nil
-		}
-		if focus == ui.pngList {
-			ui.adjustSelectedPNGVitals(1, 0)
-			return nil
-		}
-	case 'j':
-		if focus == ui.encList {
-			ui.adjustEncounterStress(-1)
-			return nil
-		}
-		if focus == ui.pngList {
-			ui.adjustSelectedPNGVitals(0, -1)
-			return nil
-		}
-	case 'k':
-		if focus == ui.encList {
-			ui.adjustEncounterStress(1)
-			return nil
-		}
-		if focus == ui.pngList {
-			ui.adjustSelectedPNGVitals(0, 1)
 			return nil
 		}
 	}
@@ -1218,12 +1249,8 @@ func (ui *tviewUI) refreshPNGs() {
 		ui.pngList.AddItem("(nessun PNG)", "", 0, nil)
 		return
 	}
-	for i, p := range ui.pngs {
-		prefix := "  "
-		if i == ui.selected {
-			prefix = "* "
-		}
-		label := fmt.Sprintf("%s%s [token %d | PF %d | ST %d]", prefix, p.Name, p.Token, p.PF, p.Stress)
+	for _, p := range ui.pngs {
+		label := fmt.Sprintf("%s [token %d | PF %d | ST %d | ARM %d | SPE %d]", p.Name, p.Token, p.PF, p.Stress, p.ArmorScore, p.Hope)
 		ui.pngList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.pngs) {
@@ -1598,7 +1625,7 @@ func (ui *tviewUI) refreshDetail() {
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("%s\nToken: %d", p.Name, p.Token))
-	b.WriteString(fmt.Sprintf("\nPF: %d | Stress: %d", p.PF, p.Stress))
+	b.WriteString(fmt.Sprintf("\nPF: %d | Stress: %d | Armatura: %d | Speranza: %d", p.PF, p.Stress, p.ArmorScore, p.Hope))
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -2395,7 +2422,11 @@ func (ui *tviewUI) encounterLabelAt(idx int) string {
 	if idx < 0 || idx >= len(ui.encounter) {
 		return ""
 	}
-	name := ui.encounter[idx].Monster.Name
+	e := ui.encounter[idx]
+	if e.Seq > 0 {
+		return fmt.Sprintf("%s #%d", e.Monster.Name, e.Seq)
+	}
+	name := e.Monster.Name
 	seen := 0
 	for i := 0; i <= idx; i++ {
 		if ui.encounter[i].Monster.Name == name {
@@ -2436,6 +2467,8 @@ func (ui *tviewUI) openCreatePNGModal() {
 	defaultName := uniqueRandomPNGName(ui.pngs)
 	selectedPF := 0
 	selectedStress := 0
+	selectedArmor := 3
+	selectedHope := 2
 
 	form := tview.NewForm()
 	form.SetBorder(true).SetTitle("Crea PNG").SetTitleAlign(tview.AlignLeft)
@@ -2465,6 +2498,28 @@ func (ui *tviewUI) openCreatePNGModal() {
 			selectedStress = v
 		}
 	})
+	form.AddInputField("Armatura", "3", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmor = v
+		}
+	})
+	form.AddInputField("Speranza", "2", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedHope = v
+		}
+	})
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() != tcell.KeyEnter {
 			return event
@@ -2478,6 +2533,12 @@ func (ui *tviewUI) openCreatePNGModal() {
 			form.SetFocus(2)
 			return nil
 		case itemIdx == 2:
+			form.SetFocus(3)
+			return nil
+		case itemIdx == 3:
+			form.SetFocus(4)
+			return nil
+		case itemIdx == 4:
 			advanceToGenerate()
 			return nil
 		case buttonIdx >= 0:
@@ -2509,13 +2570,23 @@ func (ui *tviewUI) openCreatePNGModal() {
 		} else {
 			selectedStress = 0
 		}
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(3).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedArmor = v
+		} else {
+			selectedArmor = 3
+		}
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(4).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedHope = v
+		} else {
+			selectedHope = 2
+		}
 
 		ui.beginUndoableChange()
-		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress})
+		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress, ArmorScore: selectedArmor, Hope: selectedHope})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
 		ui.closeModal()
-		ui.focusPanel(0)
+		ui.focusPanel(focusPNG)
 		ui.message = fmt.Sprintf("Creato PNG %s.", name)
 		ui.refreshAll()
 	})
@@ -2557,6 +2628,8 @@ func (ui *tviewUI) openEditPNGModal() {
 	selectedToken := cur.Token
 	selectedPF := cur.PF
 	selectedStress := cur.Stress
+	selectedArmor := cur.ArmorScore
+	selectedHope := cur.Hope
 	returnFocus := ui.app.GetFocus()
 
 	form := tview.NewForm()
@@ -2600,6 +2673,28 @@ func (ui *tviewUI) openEditPNGModal() {
 			selectedStress = v
 		}
 	})
+	form.AddInputField("Armatura", strconv.Itoa(cur.ArmorScore), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmor = v
+		}
+	})
+	form.AddInputField("Speranza", strconv.Itoa(cur.Hope), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedHope = v
+		}
+	})
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() != tcell.KeyEnter {
 			return event
@@ -2616,6 +2711,12 @@ func (ui *tviewUI) openEditPNGModal() {
 			form.SetFocus(3)
 			return nil
 		case itemIdx == 3:
+			form.SetFocus(4)
+			return nil
+		case itemIdx == 4:
+			form.SetFocus(5)
+			return nil
+		case itemIdx == 5:
 			advanceToSave()
 			return nil
 		case buttonIdx >= 0:
@@ -2645,6 +2746,8 @@ func (ui *tviewUI) openEditPNGModal() {
 		afterToken := selectedToken
 		afterPF := selectedPF
 		afterStress := selectedStress
+		afterArmor := selectedArmor
+		afterHope := selectedHope
 		if afterToken < minToken {
 			afterToken = minToken
 		}
@@ -2657,7 +2760,13 @@ func (ui *tviewUI) openEditPNGModal() {
 		if afterStress < 0 {
 			afterStress = 0
 		}
-		if before.Name == afterName && before.Token == afterToken && before.PF == afterPF && before.Stress == afterStress {
+		if afterArmor < 0 {
+			afterArmor = 0
+		}
+		if afterHope < 0 {
+			afterHope = 0
+		}
+		if before.Name == afterName && before.Token == afterToken && before.PF == afterPF && before.Stress == afterStress && before.ArmorScore == afterArmor && before.Hope == afterHope {
 			ui.closeModal()
 			ui.focusPanel(focusPNG)
 			ui.message = "Nessuna modifica al PNG."
@@ -2675,10 +2784,18 @@ func (ui *tviewUI) openEditPNGModal() {
 		if selectedStress < 0 {
 			selectedStress = 0
 		}
+		if selectedArmor < 0 {
+			selectedArmor = 0
+		}
+		if selectedHope < 0 {
+			selectedHope = 0
+		}
 		ui.pngs[ui.selected].Name = strings.TrimSpace(selectedName)
 		ui.pngs[ui.selected].Token = selectedToken
 		ui.pngs[ui.selected].PF = selectedPF
 		ui.pngs[ui.selected].Stress = selectedStress
+		ui.pngs[ui.selected].ArmorScore = selectedArmor
+		ui.pngs[ui.selected].Hope = selectedHope
 		ui.persistPNGs()
 		ui.closeModal()
 		ui.focusPanel(focusPNG)
@@ -2702,7 +2819,7 @@ func (ui *tviewUI) openEditPNGModal() {
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
 			AddItem(nil, 0, 1, false).
 			AddItem(form, 58, 0, true).
-			AddItem(nil, 0, 1, false), 12, 0, true).
+			AddItem(nil, 0, 1, false), 16, 0, true).
 		AddItem(nil, 0, 1, false)
 
 	ui.modalVisible = true
@@ -2731,6 +2848,8 @@ func (ui *tviewUI) openClassPNGInput() {
 		selectedPF = 0
 	}
 	selectedStress := 0
+	selectedArmor := 3
+	selectedHope := 2
 	ready := false
 
 	form := tview.NewForm()
@@ -2771,6 +2890,28 @@ func (ui *tviewUI) openClassPNGInput() {
 			selectedStress = v
 		}
 	})
+	form.AddInputField("Armatura", strconv.Itoa(selectedArmor), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmor = v
+		}
+	})
+	form.AddInputField("Speranza", strconv.Itoa(selectedHope), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedHope = v
+		}
+	})
 	if item := form.GetFormItem(0); item != nil {
 		if dd, ok := item.(*tview.DropDown); ok {
 			dd.SetFieldBackgroundColor(tcell.ColorBlack)
@@ -2794,6 +2935,12 @@ func (ui *tviewUI) openClassPNGInput() {
 			form.SetFocus(2)
 			return nil
 		case itemIdx == 2:
+			form.SetFocus(3)
+			return nil
+		case itemIdx == 3:
+			form.SetFocus(4)
+			return nil
+		case itemIdx == 4:
 			advanceToGenerate()
 			return nil
 		case buttonIdx >= 0:
@@ -2813,6 +2960,8 @@ func (ui *tviewUI) openClassPNGInput() {
 			Token:       defaultToken,
 			PF:          selectedPF,
 			Stress:      selectedStress,
+			ArmorScore:  selectedArmor,
+			Hope:        selectedHope,
 			Class:       strings.TrimSpace(c.Name),
 			Subclass:    strings.TrimSpace(c.Subclass),
 			Level:       selectedLevel,
@@ -3371,6 +3520,7 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 	ui.beginUndoableChange()
 	ui.encounter = append(ui.encounter, EncounterEntry{
 		Monster:    mon,
+		Seq:        nextEncounterSeq(ui.encounter, mon.Name),
 		BasePF:     mon.PF,
 		Stress:     mon.Stress,
 		BaseStress: mon.Stress,
@@ -3676,6 +3826,7 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int, bu
 		for i := 0; i < qty; i++ {
 			ui.encounter = append(ui.encounter, EncounterEntry{
 				Monster:    pick.mon,
+				Seq:        nextEncounterSeq(ui.encounter, pick.mon.Name),
 				BasePF:     pick.mon.PF,
 				Stress:     pick.mon.Stress,
 				BaseStress: pick.mon.Stress,
@@ -3726,12 +3877,43 @@ func (ui *tviewUI) removeSelectedEncounter() {
 		ui.refreshStatus()
 		return
 	}
-	name := ui.encounter[idx].Monster.Name
+	label := ui.encounterLabelAt(idx)
 	ui.beginUndoableChange()
 	ui.encounter = append(ui.encounter[:idx], ui.encounter[idx+1:]...)
 	ui.persistEncounter()
-	ui.message = fmt.Sprintf("Rimosso %s da encounter.", name)
+	ui.message = fmt.Sprintf("Rimosso %s da encounter.", label)
 	ui.refreshAll()
+}
+
+func (ui *tviewUI) clearAllPNGs() {
+	if len(ui.pngs) == 0 {
+		ui.message = "Nessun PNG da eliminare."
+		ui.refreshStatus()
+		return
+	}
+	count := len(ui.pngs)
+	ui.beginUndoableChange()
+	ui.pngs = []PNG{}
+	ui.selected = -1
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("Eliminati %d PNG.", count)
+	ui.refreshAll()
+	ui.focusPanel(focusPNG)
+}
+
+func (ui *tviewUI) clearAllEncounter() {
+	if len(ui.encounter) == 0 {
+		ui.message = "Encounter già vuoto."
+		ui.refreshStatus()
+		return
+	}
+	count := len(ui.encounter)
+	ui.beginUndoableChange()
+	ui.encounter = []EncounterEntry{}
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Eliminati %d elementi da Encounter.", count)
+	ui.refreshAll()
+	ui.focusPanel(focusEncounter)
 }
 
 func clampStat(value int, max int) int {
@@ -3788,6 +3970,54 @@ func (ui *tviewUI) adjustSelectedPNGVitals(pfDelta, stressDelta int) {
 	p.Stress = newStress
 	ui.persistPNGs()
 	ui.message = fmt.Sprintf("PNG %s: PF %d | ST %d", p.Name, p.PF, p.Stress)
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) adjustSelectedPNGArmor(delta int) {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	p := &ui.pngs[ui.selected]
+	next := p.ArmorScore + delta
+	if next < 0 {
+		next = 0
+	}
+	if next == p.ArmorScore {
+		return
+	}
+	ui.beginUndoableChange()
+	p = &ui.pngs[ui.selected]
+	p.ArmorScore = next
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("PNG %s: Armatura %d", p.Name, p.ArmorScore)
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) adjustSelectedPNGHope(delta int) {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG selezionato."
+		ui.refreshStatus()
+		return
+	}
+	p := &ui.pngs[ui.selected]
+	next := p.Hope + delta
+	if next < 0 {
+		next = 0
+	}
+	if next == p.Hope {
+		return
+	}
+	ui.beginUndoableChange()
+	p = &ui.pngs[ui.selected]
+	p.Hope = next
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("PNG %s: Speranza %d", p.Name, p.Hope)
 	ui.refreshPNGs()
 	ui.refreshDetail()
 	ui.refreshStatus()
@@ -3923,12 +4153,12 @@ func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 	text.SetText(ui.buildHelpContent(focus))
 
 	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
+		AddItem(nil, 1, 0, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
+			AddItem(nil, 2, 0, false).
 			AddItem(text, 0, 1, true).
-			AddItem(nil, 0, 1, false), 0, 1, true).
-		AddItem(nil, 0, 1, false)
+			AddItem(nil, 2, 0, false), 0, 1, true).
+		AddItem(nil, 1, 0, false)
 
 	ui.pages.AddAndSwitchToPage("help", modal, true)
 	ui.app.SetFocus(text)
@@ -3960,20 +4190,24 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- a: crea PNG",
 			"- e: modifica PNG selezionato",
-			"- x: elimina PNG selezionato",
+			"- d: elimina PNG selezionato (senza conferma)",
+			"- D: elimina tutti i PNG (senza conferma)",
 			"- R: reset token di tutti i PNG",
 			"- ← / →: diminuisci/aumenta token selezionato",
-			"- h / l: PF -1 / +1 sul selezionato",
-			"- j / k: stress -1 / +1 sul selezionato",
-			"- j con stress 0: riduce PF del PNG",
+			"- Shift+← / Shift+→: PF -1 / +1 sul selezionato",
+			"- Shift+↓ / Shift+↑: stress -1 / +1 sul selezionato",
+			"- Alt+← / Alt+→: armatura -1 / +1",
+			"- Alt+↓ / Alt+↑: speranza -1 / +1",
+			"- stress a 0: ulteriore riduzione stress riduce PF",
 		}
 	case ui.encList:
 		panel = "Encounter"
 		panelLines = []string{
-			"- d: rimuovi mostro selezionato",
-			"- h / l: ferite +1 / -1 sul selezionato",
-			"- j / k: stress -1 / +1 sul selezionato",
-			"- j con stress 0: riduce PF (ferite +1)",
+			"- d: rimuovi mostro selezionato (senza conferma)",
+			"- D: svuota Encounter (senza conferma)",
+			"- Shift+← / Shift+→: PF -1 / +1 sul selezionato",
+			"- Shift+↓ / Shift+↑: stress -1 / +1 sul selezionato",
+			"- stress a 0: ulteriore riduzione stress riduce PF",
 		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
 		panel = "Mostri"
@@ -4031,12 +4265,106 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
 	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe\n")
+	b.WriteString("- G: apri modal 'Vai a pannello' (scegli con tasto numerico)\n")
 	b.WriteString("- u / r: undo / redo\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
 	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
 	b.WriteString("\nEsc/?/q per chiudere")
 	return b.String()
+}
+
+func (ui *tviewUI) openGotoPanelModal() {
+	if ui.modalVisible {
+		return
+	}
+
+	returnFocus := ui.app.GetFocus()
+	selectPanel := func(label string, focusID int, catalogPage string) {
+		ui.closeModal()
+		if catalogPage != "" {
+			ui.catalogMode = catalogPage
+			ui.catalogPanel.SwitchToPage(catalogPage)
+			ui.refreshCatalogTitles()
+		}
+		ui.focusPanel(focusID)
+		if focusID >= 0 && focusID < len(ui.focus) && ui.focus[focusID] != nil {
+			ui.app.SetFocus(ui.focus[focusID])
+		}
+		ui.message = fmt.Sprintf("Focus: %s", label)
+		ui.refreshDetail()
+		ui.refreshStatus()
+	}
+
+	text := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
+	text.SetBorder(true).SetTitle("Vai a pannello (premi un tasto)")
+	text.SetText(strings.Join([]string{
+		"[yellow]0[-] Dadi",
+		"[yellow]1[-] PNG",
+		"[yellow]2[-] Encounter",
+		"[yellow]3[-] Mostri",
+		"[yellow]4[-] Ambienti",
+		"[yellow]5[-] Equipaggiamento",
+		"[yellow]6[-] Carte",
+		"[yellow]7[-] Classe",
+		"[yellow]8[-] Dettagli",
+		"[yellow]9[-] Treasure",
+		"",
+		"Esc / q per annullare",
+	}, "\n"))
+	text.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyEscape || (event.Key() == tcell.KeyRune && (event.Rune() == 'q' || event.Rune() == 'Q')) {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			ui.refreshStatus()
+			return nil
+		}
+		if event.Key() != tcell.KeyRune {
+			return event
+		}
+		switch event.Rune() {
+		case '0':
+			selectPanel("Dadi", focusDice, "")
+		case '1':
+			selectPanel("PNG", focusPNG, "")
+		case '2':
+			selectPanel("Encounter", focusEncounter, "")
+		case '3':
+			selectPanel("Mostri", focusMonList, "mostri")
+		case '4':
+			selectPanel("Ambienti", focusEnvList, "ambienti")
+		case '5':
+			selectPanel("Equipaggiamento", focusEqList, "equipaggiamento")
+		case '6':
+			selectPanel("Carte", focusCardList, "carte")
+		case '7':
+			selectPanel("Classe", focusClassList, "classe")
+		case '8':
+			ui.activeBottomPane = "details"
+			ui.detailBottom.SwitchToPage("details")
+			selectPanel("Dettagli", focusDetail, "")
+		case '9':
+			ui.activeBottomPane = "treasure"
+			ui.detailBottom.SwitchToPage("treasure")
+			selectPanel("Treasure", focusTreasure, "")
+		default:
+			return event
+		}
+		return nil
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 1, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 8, 0, false).
+			AddItem(text, 0, 1, true).
+			AddItem(nil, 8, 0, false), 13, 0, true).
+		AddItem(nil, 1, 0, false)
+
+	ui.modalVisible = true
+	ui.modalName = "goto_panel"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(text)
 }
 
 func (ui *tviewUI) closeHelpOverlay() {
@@ -4232,13 +4560,7 @@ func (ui *tviewUI) persistPNGs() {
 }
 
 func (ui *tviewUI) persistEncounter() {
-	entries := make([]struct {
-		Name       string `yaml:"name"`
-		Wounds     int    `yaml:"wounds"`
-		PF         int    `yaml:"pf"`
-		Stress     int    `yaml:"stress,omitempty"`
-		BaseStress int    `yaml:"base_stress,omitempty"`
-	}, 0, len(ui.encounter))
+	entries := make([]encounterPersistEntry, 0, len(ui.encounter))
 	for _, e := range ui.encounter {
 		base := e.BasePF
 		if base == 0 {
@@ -4255,13 +4577,7 @@ func (ui *tviewUI) persistEncounter() {
 		if baseStress > 0 && currentStress > baseStress {
 			currentStress = baseStress
 		}
-		entries = append(entries, struct {
-			Name       string `yaml:"name"`
-			Wounds     int    `yaml:"wounds"`
-			PF         int    `yaml:"pf"`
-			Stress     int    `yaml:"stress,omitempty"`
-			BaseStress int    `yaml:"base_stress,omitempty"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, Stress: currentStress, BaseStress: baseStress})
+		entries = append(entries, encounterPersistEntry{Name: e.Monster.Name, Seq: e.Seq, Wounds: e.Wounds, PF: base, Stress: currentStress, BaseStress: baseStress})
 	}
 	_ = saveEncounter(encounterFile, entries)
 }

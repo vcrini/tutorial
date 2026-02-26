@@ -178,6 +178,8 @@ type PNG struct {
 	Token       int    `json:"Token" yaml:"token"`
 	PF          int    `json:"PF,omitempty" yaml:"pf,omitempty"`
 	Stress      int    `json:"Stress,omitempty" yaml:"stress,omitempty"`
+	ArmorScore  int    `json:"ArmorScore,omitempty" yaml:"armor_score,omitempty"`
+	Hope        int    `json:"Hope,omitempty" yaml:"hope,omitempty"`
 	Class       string `json:"Class,omitempty" yaml:"class,omitempty"`
 	Subclass    string `json:"Subclass,omitempty" yaml:"subclass,omitempty"`
 	Level       int    `json:"Level,omitempty" yaml:"level,omitempty"`
@@ -204,6 +206,10 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		PFLower      *int   `json:"pf"`
 		Stress       *int   `json:"Stress"`
 		StressLower  *int   `json:"stress"`
+		ArmorScore   *int   `json:"ArmorScore"`
+		ArmorScoreL  *int   `json:"armor_score"`
+		Hope         *int   `json:"Hope"`
+		HopeLower    *int   `json:"hope"`
 		Class        string `json:"Class"`
 		ClassLower   string `json:"class"`
 		Subclass     string `json:"Subclass"`
@@ -256,6 +262,16 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		p.Stress = *aux.Stress
 	} else if aux.StressLower != nil {
 		p.Stress = *aux.StressLower
+	}
+	if aux.ArmorScore != nil {
+		p.ArmorScore = *aux.ArmorScore
+	} else if aux.ArmorScoreL != nil {
+		p.ArmorScore = *aux.ArmorScoreL
+	}
+	if aux.Hope != nil {
+		p.Hope = *aux.Hope
+	} else if aux.HopeLower != nil {
+		p.Hope = *aux.HopeLower
 	}
 	if strings.TrimSpace(aux.Class) != "" {
 		p.Class = strings.TrimSpace(aux.Class)
@@ -331,6 +347,8 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 		Token       int    `json:"Token"`
 		PF          int    `json:"PF,omitempty"`
 		Stress      int    `json:"Stress,omitempty"`
+		ArmorScore  int    `json:"ArmorScore,omitempty"`
+		Hope        int    `json:"Hope,omitempty"`
 		Class       string `json:"Class,omitempty"`
 		Subclass    string `json:"Subclass,omitempty"`
 		Level       int    `json:"Level,omitempty"`
@@ -349,6 +367,8 @@ func (p PNG) MarshalJSON() ([]byte, error) {
 		Token:       p.Token,
 		PF:          p.PF,
 		Stress:      p.Stress,
+		ArmorScore:  p.ArmorScore,
+		Hope:        p.Hope,
 		Class:       strings.TrimSpace(p.Class),
 		Subclass:    strings.TrimSpace(p.Subclass),
 		Level:       p.Level,
