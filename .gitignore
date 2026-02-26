@@ -20,3 +20,6 @@
 pngs.json
 *gthsdu-lib-sbx-erp-data-importer
 *thsdu-pigini-sbx-erp-whmovement-data-importer
+.aider*
+**/lazy*
+!**/lazy*/
