@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand/v2"
+	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -11,6 +13,7 @@ import (
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"github.com/vcrini/diceroll"
+	"gopkg.in/yaml.v3"
 )
 
 const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]u/r[-:-] undo/redo  [black:gold]G[-:-] vai a pannello  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]U/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
@@ -863,6 +866,36 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'q':
 		ui.app.Stop()
 		return nil
+	case 's':
+		if !focusIsInput {
+			if focus == ui.pngList {
+				ui.openStateFileModal("save", "png")
+				return nil
+			}
+			if focus == ui.encList {
+				ui.openStateFileModal("save", "encounter")
+				return nil
+			}
+			if focus == ui.dice {
+				ui.openStateFileModal("save", "dice")
+				return nil
+			}
+		}
+	case 'l':
+		if !focusIsInput {
+			if focus == ui.pngList {
+				ui.openStateFileModal("load", "png")
+				return nil
+			}
+			if focus == ui.encList {
+				ui.openStateFileModal("load", "encounter")
+				return nil
+			}
+			if focus == ui.dice {
+				ui.openStateFileModal("load", "dice")
+				return nil
+			}
+		}
 	case '1':
 		ui.focusPanel(focusPNG)
 		return nil
@@ -4180,6 +4213,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- e: modifica + rilancia il tiro selezionato",
 			"- d: elimina il tiro selezionato",
 			"- c: svuota storico tiri",
+			"- s / l: salva / carica dadi da file",
 			"- Sintassi tiro: NdM, NdM+K, NdM-K, dM",
 			"- Batch: expr xN (es. 1d20+5 x3)",
 			"- Multi-espr.: expr,expr (es. d6,d8,1d20+4)",
@@ -4190,6 +4224,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panelLines = []string{
 			"- a: crea PNG",
 			"- e: modifica PNG selezionato",
+			"- s / l: salva / carica PNG da file",
 			"- d: elimina PNG selezionato (senza conferma)",
 			"- D: elimina tutti i PNG (senza conferma)",
 			"- R: reset token di tutti i PNG",
@@ -4203,6 +4238,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.encList:
 		panel = "Encounter"
 		panelLines = []string{
+			"- s / l: salva / carica Encounter da file",
 			"- d: rimuovi mostro selezionato (senza conferma)",
 			"- D: svuota Encounter (senza conferma)",
 			"- Shift+← / Shift+→: PF -1 / +1 sul selezionato",
@@ -4272,6 +4308,237 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- PgUp / PgDn: scroll Dettagli\n")
 	b.WriteString("\nEsc/?/q per chiudere")
 	return b.String()
+}
+
+func defaultDiceFilePath() string {
+	if strings.TrimSpace(appStateDir) != "" {
+		return filepath.Join(appStateDir, "dice.yml")
+	}
+	return "dice.yml"
+}
+
+type dicePersist struct {
+	Dice    []DiceResult `yaml:"dice"`
+	Current int          `yaml:"current,omitempty"`
+}
+
+func saveDiceLog(path string, log []DiceResult, current int) error {
+	payload := dicePersist{Dice: log, Current: current}
+	data, err := yaml.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
+	return os.WriteFile(path, data, 0o644)
+}
+
+func loadDiceLog(path string) ([]DiceResult, int, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, 0, err
+	}
+	var payload dicePersist
+	if err := yaml.Unmarshal(data, &payload); err != nil {
+		return nil, 0, err
+	}
+	if payload.Dice == nil {
+		payload.Dice = []DiceResult{}
+	}
+	return payload.Dice, payload.Current, nil
+}
+
+func (ui *tviewUI) buildEncounterPersistEntries() []encounterPersistEntry {
+	entries := make([]encounterPersistEntry, 0, len(ui.encounter))
+	for _, e := range ui.encounter {
+		base := e.BasePF
+		if base == 0 {
+			base = e.Monster.PF
+		}
+		baseStress := e.BaseStress
+		if baseStress == 0 {
+			baseStress = e.Monster.Stress
+		}
+		currentStress := e.Stress
+		if currentStress < 0 {
+			currentStress = 0
+		}
+		if baseStress > 0 && currentStress > baseStress {
+			currentStress = baseStress
+		}
+		entries = append(entries, encounterPersistEntry{
+			Name:       e.Monster.Name,
+			Seq:        e.Seq,
+			Wounds:     e.Wounds,
+			PF:         base,
+			Stress:     currentStress,
+			BaseStress: baseStress,
+		})
+	}
+	return entries
+}
+
+func (ui *tviewUI) openStateFileModal(action, target string) {
+	if ui.modalVisible {
+		return
+	}
+	returnFocus := ui.app.GetFocus()
+
+	targetLabel := map[string]string{
+		"png":       "PNG",
+		"encounter": "Encounter",
+		"dice":      "Dadi",
+	}[target]
+	if targetLabel == "" {
+		targetLabel = target
+	}
+
+	defaultPath := ""
+	switch target {
+	case "png":
+		defaultPath = dataFile
+	case "encounter":
+		defaultPath = encounterFile
+	case "dice":
+		defaultPath = defaultDiceFilePath()
+	}
+
+	form := tview.NewForm()
+	titleVerb := "Salva"
+	btnVerb := "Salva"
+	if action == "load" {
+		titleVerb = "Carica"
+		btnVerb = "Carica"
+	}
+	form.SetBorder(true).SetTitle(fmt.Sprintf("%s %s", titleVerb, targetLabel)).SetTitleAlign(tview.AlignLeft)
+	form.AddInputField("File", defaultPath, 56, nil, nil)
+	form.AddButton(btnVerb, func() {
+		path := strings.TrimSpace(form.GetFormItem(0).(*tview.InputField).GetText())
+		if path == "" {
+			ui.message = "Percorso file non valido."
+			ui.refreshStatus()
+			return
+		}
+
+		switch {
+		case action == "save" && target == "png":
+			if err := savePNGList(path, ui.pngs, selectedPNGName(ui.pngs, ui.selected)); err != nil {
+				ui.message = fmt.Sprintf("Errore salvataggio PNG: %v", err)
+				ui.refreshStatus()
+				return
+			}
+		case action == "load" && target == "png":
+			pngs, selectedName, err := loadPNGList(path)
+			if err != nil {
+				ui.message = fmt.Sprintf("Errore caricamento PNG: %v", err)
+				ui.refreshStatus()
+				return
+			}
+			ui.beginUndoableChange()
+			ui.pngs = pngs
+			ui.selected = -1
+			if selectedName != "" {
+				for i, p := range ui.pngs {
+					if p.Name == selectedName {
+						ui.selected = i
+						break
+					}
+				}
+			}
+			if ui.selected < 0 && len(ui.pngs) > 0 {
+				ui.selected = 0
+			}
+			ui.persistPNGs()
+			ui.refreshPNGs()
+		case action == "save" && target == "encounter":
+			if err := saveEncounter(path, ui.buildEncounterPersistEntries()); err != nil {
+				ui.message = fmt.Sprintf("Errore salvataggio Encounter: %v", err)
+				ui.refreshStatus()
+				return
+			}
+		case action == "load" && target == "encounter":
+			entries, err := loadEncounter(path, ui.monsters)
+			if err != nil {
+				ui.message = fmt.Sprintf("Errore caricamento Encounter: %v", err)
+				ui.refreshStatus()
+				return
+			}
+			ui.beginUndoableChange()
+			ui.encounter = entries
+			ui.persistEncounter()
+			ui.refreshEncounter()
+		case action == "save" && target == "dice":
+			if err := saveDiceLog(path, ui.diceLog, ui.dice.GetCurrentItem()); err != nil {
+				ui.message = fmt.Sprintf("Errore salvataggio Dadi: %v", err)
+				ui.refreshStatus()
+				return
+			}
+		case action == "load" && target == "dice":
+			log, current, err := loadDiceLog(path)
+			if err != nil {
+				ui.message = fmt.Sprintf("Errore caricamento Dadi: %v", err)
+				ui.refreshStatus()
+				return
+			}
+			ui.diceLog = log
+			ui.renderDiceList()
+			if len(ui.diceLog) > 0 {
+				if current < 0 {
+					current = 0
+				}
+				if current >= len(ui.diceLog) {
+					current = len(ui.diceLog) - 1
+				}
+				ui.dice.SetCurrentItem(current)
+			}
+		default:
+			ui.message = "Operazione non supportata."
+			ui.refreshStatus()
+			return
+		}
+
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshDetail()
+		ui.message = fmt.Sprintf("%s %s completato: %s", titleVerb, targetLabel, path)
+		ui.refreshStatus()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetButtonsAlign(tview.AlignLeft)
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() != tcell.KeyEnter {
+			return event
+		}
+		itemIdx, _ := form.GetFocusedItemIndex()
+		if itemIdx == 0 {
+			form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex(btnVerb))
+			return nil
+		}
+		return event
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 78, 0, true).
+			AddItem(nil, 0, 1, false), 8, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "state_file_modal"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
 }
 
 func (ui *tviewUI) openGotoPanelModal() {
@@ -4560,26 +4827,7 @@ func (ui *tviewUI) persistPNGs() {
 }
 
 func (ui *tviewUI) persistEncounter() {
-	entries := make([]encounterPersistEntry, 0, len(ui.encounter))
-	for _, e := range ui.encounter {
-		base := e.BasePF
-		if base == 0 {
-			base = e.Monster.PF
-		}
-		baseStress := e.BaseStress
-		if baseStress == 0 {
-			baseStress = e.Monster.Stress
-		}
-		currentStress := e.Stress
-		if currentStress < 0 {
-			currentStress = 0
-		}
-		if baseStress > 0 && currentStress > baseStress {
-			currentStress = baseStress
-		}
-		entries = append(entries, encounterPersistEntry{Name: e.Monster.Name, Seq: e.Seq, Wounds: e.Wounds, PF: base, Stress: currentStress, BaseStress: baseStress})
-	}
-	_ = saveEncounter(encounterFile, entries)
+	_ = saveEncounter(encounterFile, ui.buildEncounterPersistEntries())
 }
 
 func (ui *tviewUI) toggleDetailsTreasureFocus() {
