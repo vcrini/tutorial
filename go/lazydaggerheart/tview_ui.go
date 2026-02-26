@@ -16,7 +16,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Classe  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]u/r[-:-] undo/redo  [black:gold]G[-:-] vai a pannello  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]U/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]?[-:-] help "
 const historyLimit = 200
 
 const (
@@ -44,6 +44,8 @@ const (
 	focusClassName
 	focusClassSubclass
 	focusClassList
+	focusNotesSearch
+	focusNotesList
 	focusTreasure
 	focusDetail
 )
@@ -103,6 +105,8 @@ type tviewUI struct {
 	classNameDrop  *tview.DropDown
 	classSubDrop   *tview.DropDown
 	classList      *tview.List
+	notesSearch    *tview.InputField
+	notesList      *tview.List
 	detailBottom   *tview.Pages
 	detail         *tview.TextView
 	detailTreasure *tview.TextView
@@ -112,6 +116,7 @@ type tviewUI struct {
 	equipmentPanel    *tview.Flex
 	cardsPanel        *tview.Flex
 	classesPanel      *tview.Flex
+	notesPanel        *tview.Flex
 	catalogPanel      *tview.Pages
 	leftPanel         *tview.Flex
 	mainRow           *tview.Flex
@@ -127,12 +132,14 @@ type tviewUI struct {
 	equipment        []EquipmentItem
 	cards            []CardItem
 	classes          []ClassItem
+	notes            []string
 	encounter        []EncounterEntry
 	filtered         []int
 	filteredEnv      []int
 	filteredEq       []int
 	filteredCards    []int
 	filteredClasses  []int
+	filteredNotes    []int
 	roleOpts         []string
 	rankOpts         []string
 	envTypeOpts      []string
@@ -170,6 +177,7 @@ type tviewUI struct {
 	fullscreenActive bool
 	fullscreenTarget string
 	activeBottomPane string
+	paure            int
 	undoStack        []uiSnapshot
 	redoStack        []uiSnapshot
 }
@@ -229,6 +237,18 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", encounterFile, err)
 	}
+	paure := 0
+	if p, err := loadFearState(fearStateFile); err == nil {
+		paure = p
+	} else if !os.IsNotExist(err) {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", fearStateFile, err)
+	}
+	notes := []string{}
+	if ns, err := loadNotes(notesFile); err == nil {
+		notes = ns
+	} else if !os.IsNotExist(err) {
+		return nil, fmt.Errorf("errore nel caricare %s: %w", notesFile, err)
+	}
 
 	selected := -1
 	if selectedName != "" {
@@ -252,12 +272,29 @@ func newTViewUI() (*tviewUI, error) {
 		equipment:        equipment,
 		cards:            cards,
 		classes:          classes,
+		notes:            notes,
 		encounter:        encounter,
 		message:          "Pronto.",
 		catalogMode:      "mostri",
 		activeBottomPane: "details",
+		paure:            paure,
 	}
 	ui.build()
+	if log, current, err := loadDiceLog(defaultDiceFilePath()); err == nil {
+		ui.diceLog = log
+		ui.renderDiceList()
+		if len(ui.diceLog) > 0 {
+			if current < 0 {
+				current = 0
+			}
+			if current >= len(ui.diceLog) {
+				current = len(ui.diceLog) - 1
+			}
+			ui.dice.SetCurrentItem(current)
+		}
+	} else if !os.IsNotExist(err) {
+		ui.message = fmt.Sprintf("Errore caricamento dadi: %v", err)
+	}
 	return ui, nil
 }
 
@@ -286,6 +323,31 @@ func (ui *tviewUI) build() {
 	ui.encList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
+
+	ui.notesSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("testo nota...")
+	ui.notesSearch.SetChangedFunc(func(_ string) {
+		ui.refreshNotes()
+		ui.refreshDetail()
+	})
+	ui.notesSearch.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEnter {
+			ui.focusActiveCatalogList()
+		}
+	})
+
+	ui.notesList = tview.NewList().ShowSecondaryText(false)
+	ui.notesList.SetBorder(false)
+	ui.notesList.SetChangedFunc(func(int, string, string, rune) {
+		ui.refreshDetail()
+	})
+
+	notesFilters := tview.NewFlex().SetDirection(tview.FlexColumn).
+		AddItem(ui.notesSearch, 0, 1, false)
+
+	ui.notesPanel = tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(notesFilters, 2, 0, false).
+		AddItem(ui.notesList, 0, 1, true)
+	ui.notesPanel.SetBorder(true)
 
 	ui.search = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
 	ui.search.SetChangedFunc(func(_ string) {
@@ -650,7 +712,8 @@ func (ui *tviewUI) build() {
 		AddPage("ambienti", ui.environmentsPanel, true, false).
 		AddPage("equipaggiamento", ui.equipmentPanel, true, false).
 		AddPage("carte", ui.cardsPanel, true, false).
-		AddPage("classe", ui.classesPanel, true, false)
+		AddPage("classe", ui.classesPanel, true, false).
+		AddPage("note", ui.notesPanel, true, false)
 	ui.refreshCatalogTitles()
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
@@ -690,6 +753,7 @@ func (ui *tviewUI) build() {
 		ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList,
 		ui.cardSearch, ui.cardClassDrop, ui.cardTypeDrop, ui.cardList,
 		ui.classSearch, ui.classNameDrop, ui.classSubDrop, ui.classList,
+		ui.notesSearch, ui.notesList,
 		ui.detailTreasure,
 		ui.detail,
 	}
@@ -697,6 +761,7 @@ func (ui *tviewUI) build() {
 	ui.app.SetFocus(ui.monList)
 	ui.app.SetInputCapture(ui.handleGlobalKeys)
 	ui.renderDiceList()
+	ui.refreshNotes()
 }
 
 func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
@@ -830,12 +895,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case tcell.KeyPgUp:
-		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.notesList || focus == ui.notesSearch || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 			ui.scrollDetailByPage(-1)
 			return nil
 		}
 	case tcell.KeyPgDn:
-		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
+		if focus == ui.detail || focus == ui.detailTreasure || focus == ui.dice || focus == ui.pngList || focus == ui.encList || focus == ui.notesList || focus == ui.notesSearch || focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop || focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 			ui.scrollDetailByPage(1)
 			return nil
 		}
@@ -862,6 +927,22 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 	case 'G':
 		ui.openGotoPanelModal()
+		return nil
+	case 'S':
+		if !focusIsInput {
+			ui.openStateFileModal("save", "fear")
+			return nil
+		}
+	case 'L':
+		if !focusIsInput {
+			ui.openStateFileModal("load", "fear")
+			return nil
+		}
+	case 'N':
+		ui.catalogMode = "note"
+		ui.catalogPanel.SwitchToPage("note")
+		ui.refreshCatalogTitles()
+		ui.focusPanel(focusNotesList)
 		return nil
 	case 'q':
 		ui.app.Stop()
@@ -904,6 +985,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return nil
 	case '3':
 		ui.focusPanel(ui.activeCatalogListFocus())
+		return nil
+	case '4':
+		ui.catalogMode = "note"
+		ui.catalogPanel.SwitchToPage("note")
+		ui.refreshCatalogTitles()
+		ui.focusPanel(focusNotesList)
 		return nil
 	case '0':
 		ui.focusPanel(focusDice)
@@ -951,6 +1038,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openCreatePNGModal()
 			return nil
 		}
+		if focus == ui.notesList || focus == ui.notesSearch {
+			ui.openAddNoteModal()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.openDiceRollInput()
 			return nil
@@ -969,6 +1060,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'e':
+		if focus == ui.notesList || focus == ui.notesSearch {
+			ui.openEditNoteModal()
+			return nil
+		}
 		if focus == ui.pngList {
 			ui.openEditPNGModal()
 			return nil
@@ -991,6 +1086,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.focusPanel(focusEqSearch)
 		} else if ui.catalogMode == "carte" {
 			ui.focusPanel(focusCardSearch)
+		} else if ui.catalogMode == "note" {
+			ui.focusPanel(focusNotesSearch)
 		} else {
 			ui.focusPanel(focusClassSearch)
 		}
@@ -1004,6 +1101,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.focusPanel(focusEqItemType)
 		} else if ui.catalogMode == "carte" {
 			ui.focusPanel(focusCardClass)
+		} else if ui.catalogMode == "note" {
+			ui.focusPanel(focusNotesList)
 		} else {
 			ui.focusPanel(focusClassName)
 		}
@@ -1023,6 +1122,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.focusPanel(focusEqRank)
 		} else if ui.catalogMode == "carte" {
 			ui.focusPanel(focusCardType)
+		} else if ui.catalogMode == "note" {
+			ui.focusPanel(focusNotesList)
 		} else {
 			ui.focusPanel(focusClassSubclass)
 		}
@@ -1036,6 +1137,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.resetEquipmentFilters()
 		} else if ui.catalogMode == "carte" {
 			ui.resetCardFilters()
+		} else if ui.catalogMode == "note" {
+			ui.resetNotesFilters()
 		} else {
 			ui.resetClassFilters()
 		}
@@ -1043,6 +1146,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'd':
 		if focus == ui.dice {
 			ui.deleteSelectedDiceResult()
+			return nil
+		}
+		if focus == ui.notesList {
+			ui.deleteSelectedNote()
 			return nil
 		}
 		if focus == ui.pngList {
@@ -1057,6 +1164,12 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.toggleDetailsTreasureFocus()
 			return nil
 		}
+	case '+':
+		ui.adjustPaure(1)
+		return nil
+	case '-':
+		ui.adjustPaure(-1)
+		return nil
 	}
 	return ev
 }
@@ -1137,6 +1250,18 @@ func (ui *tviewUI) focusPanel(panel int) {
 	if panel == focusMonList && ui.catalogMode == "classe" {
 		panel = focusClassList
 	}
+	if panel == focusMonSearch && ui.catalogMode == "note" {
+		panel = focusNotesSearch
+	}
+	if panel == focusMonList && ui.catalogMode == "note" {
+		panel = focusNotesList
+	}
+	if panel == focusMonRole && ui.catalogMode == "note" {
+		panel = focusNotesList
+	}
+	if panel == focusMonRank && ui.catalogMode == "note" {
+		panel = focusNotesList
+	}
 	if panel < 0 || panel >= len(ui.focus) {
 		return
 	}
@@ -1161,6 +1286,8 @@ func (ui *tviewUI) isFocusVisible(idx int) bool {
 		return ui.catalogMode == "carte"
 	case focusClassSearch, focusClassName, focusClassSubclass, focusClassList:
 		return ui.catalogMode == "classe"
+	case focusNotesSearch, focusNotesList:
+		return ui.catalogMode == "note"
 	default:
 		return true
 	}
@@ -1178,6 +1305,9 @@ func (ui *tviewUI) activeCatalogListFocus() int {
 	}
 	if ui.catalogMode == "classe" {
 		return focusClassList
+	}
+	if ui.catalogMode == "note" {
+		return focusNotesList
 	}
 	return focusMonList
 }
@@ -1199,13 +1329,15 @@ func (ui *tviewUI) catalogLabel(mode string) string {
 		return "Carte"
 	case "classe":
 		return "Classe"
+	case "note":
+		return "Note"
 	default:
 		return "Mostri"
 	}
 }
 
 func (ui *tviewUI) refreshCatalogTitles() {
-	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe"}
+	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe", "note"}
 	for i, mode := range order {
 		prev := order[(i-1+len(order))%len(order)]
 		next := order[(i+1)%len(order)]
@@ -1221,6 +1353,8 @@ func (ui *tviewUI) refreshCatalogTitles() {
 			ui.cardsPanel.SetTitle(title)
 		case "classe":
 			ui.classesPanel.SetTitle(title)
+		case "note":
+			ui.notesPanel.SetTitle(title)
 		}
 	}
 }
@@ -1229,7 +1363,7 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	if delta == 0 {
 		return
 	}
-	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe"}
+	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe", "note"}
 	cur := 0
 	for i, name := range order {
 		if name == ui.catalogMode {
@@ -1253,6 +1387,8 @@ func (ui *tviewUI) switchCatalog(delta int) {
 		ui.message = "Catalogo: Carte"
 	} else if next == "classe" {
 		ui.message = "Catalogo: Classe"
+	} else if next == "note" {
+		ui.message = "Catalogo: Note"
 	} else {
 		ui.message = "Catalogo: Mostri"
 	}
@@ -1267,6 +1403,7 @@ func (ui *tviewUI) refreshAll() {
 	ui.refreshEquipment()
 	ui.refreshCards()
 	ui.refreshClasses()
+	ui.refreshNotes()
 	ui.refreshEncounter()
 	ui.refreshDetail()
 	ui.refreshStatus()
@@ -1549,6 +1686,66 @@ func (ui *tviewUI) refreshEncounter() {
 	ui.encList.SetCurrentItem(current)
 }
 
+func (ui *tviewUI) refreshNotes() {
+	if ui.notesList == nil {
+		return
+	}
+	query := ""
+	if ui.notesSearch != nil {
+		query = strings.ToLower(strings.TrimSpace(ui.notesSearch.GetText()))
+	}
+	current := ui.notesList.GetCurrentItem()
+	ui.notesList.Clear()
+	ui.filteredNotes = ui.filteredNotes[:0]
+	for i, note := range ui.notes {
+		if query == "" || strings.Contains(strings.ToLower(note), query) {
+			ui.filteredNotes = append(ui.filteredNotes, i)
+		}
+	}
+	if len(ui.filteredNotes) == 0 {
+		ui.notesList.AddItem("(nessuna nota) premi 'a' per aggiungere", "", 0, nil)
+		ui.notesList.SetCurrentItem(0)
+		return
+	}
+	if len(ui.notes) == 0 {
+		ui.notesList.AddItem("(vuoto) premi 'a' per aggiungere", "", 0, nil)
+		ui.notesList.SetCurrentItem(0)
+		return
+	}
+	for _, idx := range ui.filteredNotes {
+		note := ui.notes[idx]
+		title := strings.TrimSpace(note)
+		if idx := strings.Index(title, "\n"); idx >= 0 {
+			title = strings.TrimSpace(title[:idx])
+		}
+		if title == "" {
+			title = "(nota senza titolo)"
+		}
+		ui.notesList.AddItem(fmt.Sprintf("%d) %s", idx+1, title), "", 0, nil)
+	}
+	if current >= len(ui.filteredNotes) {
+		current = len(ui.filteredNotes) - 1
+	}
+	if current < 0 {
+		current = 0
+	}
+	ui.notesList.SetCurrentItem(current)
+}
+
+func (ui *tviewUI) currentNoteIndex() int {
+	if len(ui.filteredNotes) == 0 {
+		return -1
+	}
+	if ui.notesList == nil {
+		return -1
+	}
+	cur := ui.notesList.GetCurrentItem()
+	if cur < 0 || cur >= len(ui.filteredNotes) {
+		return -1
+	}
+	return ui.filteredNotes[cur]
+}
+
 func (ui *tviewUI) refreshDetail() {
 	if ui.detail == nil {
 		return
@@ -1647,6 +1844,17 @@ func (ui *tviewUI) refreshDetail() {
 		}
 		extra := fmt.Sprintf("PF correnti: %d/%d | Ferite: %d | Stress: %d/%d", remaining, base, e.Wounds, currentStress, baseStress)
 		ui.detailRaw = ui.buildMonsterDetails(e.Monster, ui.encounterLabelAt(idx), extra)
+		ui.renderDetail()
+		return
+	}
+	if focus == ui.notesList || focus == ui.notesSearch {
+		idx := ui.currentNoteIndex()
+		if idx < 0 || idx >= len(ui.notes) {
+			ui.detailRaw = "Nessuna nota."
+			ui.renderDetail()
+			return
+		}
+		ui.detailRaw = fmt.Sprintf("Nota %d\n\n%s", idx+1, strings.TrimSpace(ui.notes[idx]))
 		ui.renderDetail()
 		return
 	}
@@ -1800,74 +2008,7 @@ func highlightMatches(text, query string) string {
 }
 
 func (ui *tviewUI) refreshStatus() {
-	focusLabel := "PNG"
-	switch ui.app.GetFocus() {
-	case ui.dice:
-		focusLabel = "Dadi"
-	case ui.encList:
-		focusLabel = "Encounter"
-	case ui.search:
-		focusLabel = "Nome Mostri"
-	case ui.roleDrop:
-		focusLabel = "Ruolo Mostri"
-	case ui.rankDrop:
-		focusLabel = "Rango Mostri"
-	case ui.monList:
-		focusLabel = "Mostri"
-	case ui.envSearch:
-		focusLabel = "Nome Ambienti"
-	case ui.envTypeDrop:
-		focusLabel = "Tipo Ambienti"
-	case ui.envRankDrop:
-		focusLabel = "Rango Ambienti"
-	case ui.envList:
-		focusLabel = "Ambienti"
-	case ui.eqSearch:
-		focusLabel = "Nome Equip."
-	case ui.eqTypeDrop:
-		focusLabel = "Categoria Equip."
-	case ui.eqItemTypeDrop:
-		focusLabel = "Tipo Equip."
-	case ui.eqRankDrop:
-		focusLabel = "Rango Equip."
-	case ui.eqList:
-		focusLabel = "Equipaggiamento"
-	case ui.cardSearch:
-		focusLabel = "Nome Carte"
-	case ui.cardClassDrop:
-		focusLabel = "Classe Carte"
-	case ui.cardTypeDrop:
-		focusLabel = "Tipo Carte"
-	case ui.cardList:
-		focusLabel = "Carte"
-	case ui.classSearch:
-		focusLabel = "Nome Classe"
-	case ui.classNameDrop:
-		focusLabel = "Classe"
-	case ui.classSubDrop:
-		focusLabel = "Sottoclasse"
-	case ui.classList:
-		focusLabel = "Classi"
-	case ui.detailTreasure:
-		focusLabel = "Treasure"
-	case ui.detail:
-		focusLabel = "Dettagli"
-	}
-	msg := ui.message
-	if msg == "" {
-		msg = "Pronto."
-	}
-	catalogLabel := "Mostri"
-	if ui.catalogMode == "ambienti" {
-		catalogLabel = "Ambienti"
-	} else if ui.catalogMode == "equipaggiamento" {
-		catalogLabel = "Equipaggiamento"
-	} else if ui.catalogMode == "carte" {
-		catalogLabel = "Carte"
-	} else if ui.catalogMode == "classe" {
-		catalogLabel = "Classe"
-	}
-	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
+	ui.status.SetText(fmt.Sprintf("%s | Paure [black:gold]%d/12[-:-]", helpText, clampFear(ui.paure)))
 }
 
 func (ui *tviewUI) currentMonsterIndex() int {
@@ -2207,6 +2348,16 @@ func (ui *tviewUI) resetClassFilters() {
 	ui.refreshClasses()
 	ui.refreshDetail()
 	ui.message = "Filtri Classe resettati."
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) resetNotesFilters() {
+	if ui.notesSearch != nil {
+		ui.notesSearch.SetText("")
+	}
+	ui.refreshNotes()
+	ui.refreshDetail()
+	ui.message = "Filtro Note resettato."
 	ui.refreshStatus()
 }
 
@@ -3340,10 +3491,16 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	if focus == ui.classSearch || focus == ui.classList || focus == ui.classNameDrop || focus == ui.classSubDrop {
 		input.SetText(ui.classSearch.GetText())
 	}
+	if focus == ui.notesSearch || focus == ui.notesList {
+		input.SetText(ui.notesSearch.GetText())
+	}
 	if focus == ui.detail {
 		input.SetText(ui.detailQuery)
 	}
 	if focus == ui.detailTreasure {
+		input.SetText(ui.detailQuery)
+	}
+	if focus == ui.notesList {
 		input.SetText(ui.detailQuery)
 	}
 
@@ -3397,6 +3554,11 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 			ui.refreshClasses()
 			ui.focusPanel(focusClassList)
 			ui.message = "Filtro classi aggiornato."
+		case ui.notesSearch, ui.notesList:
+			ui.notesSearch.SetText(query)
+			ui.refreshNotes()
+			ui.focusPanel(focusNotesList)
+			ui.message = "Filtro note aggiornato."
 		case ui.encList:
 			ui.jumpToEncounter(query)
 		case ui.detail:
@@ -3414,6 +3576,14 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 				ui.message = "Highlight treasure rimosso."
 			} else {
 				ui.message = fmt.Sprintf("Highlight treasure: %s", query)
+			}
+		case ui.notesList:
+			ui.detailQuery = query
+			ui.refreshDetail()
+			if query == "" {
+				ui.message = "Highlight note rimosso."
+			} else {
+				ui.message = fmt.Sprintf("Highlight note: %s", query)
 			}
 		default:
 			ui.search.SetText(query)
@@ -4245,6 +4415,15 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- Shift+↓ / Shift+↑: stress -1 / +1 sul selezionato",
 			"- stress a 0: ulteriore riduzione stress riduce PF",
 		}
+	case ui.notesSearch, ui.notesList:
+		panel = "Note"
+		panelLines = []string{
+			"- a: nuova nota (editor, Ctrl+S salva / Esc annulla)",
+			"- e: modifica nota selezionata",
+			"- d: elimina nota selezionata",
+			"- U: focus filtro Nome",
+			"- v: reset filtro Note",
+		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
 		panel = "Mostri"
 		panelLines = []string{
@@ -4299,9 +4478,13 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- q: esci\n")
 	b.WriteString("- ?: apri/chiudi help\n")
 	b.WriteString("- tab / shift+tab: cambia focus\n")
-	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
-	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe\n")
-	b.WriteString("- G: apri modal 'Vai a pannello' (scegli con tasto numerico)\n")
+	b.WriteString("- 0 / 1 / 2 / 3 / 4: focus Dadi / PNG / Encounter / Catalogo / Note\n")
+	b.WriteString("- + / -: aumenta / diminuisce Paure (0..12)\n")
+	b.WriteString("- Shift+S: salva Paure su file\n")
+	b.WriteString("- Shift+L: carica Paure da file\n")
+	b.WriteString("- [ / ]: alterna Mostri / Ambienti / Equipaggiamento / Carte / Classe / Note\n")
+	b.WriteString("- G: apri modal 'Vai a pannello' (include Note)\n")
+	b.WriteString("- N: focus diretto su Note\n")
 	b.WriteString("- u / r: undo / redo\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
@@ -4389,6 +4572,7 @@ func (ui *tviewUI) openStateFileModal(action, target string) {
 		"png":       "PNG",
 		"encounter": "Encounter",
 		"dice":      "Dadi",
+		"fear":      "Paure",
 	}[target]
 	if targetLabel == "" {
 		targetLabel = target
@@ -4402,6 +4586,8 @@ func (ui *tviewUI) openStateFileModal(action, target string) {
 		defaultPath = encounterFile
 	case "dice":
 		defaultPath = defaultDiceFilePath()
+	case "fear":
+		defaultPath = fearStateFile
 	}
 
 	form := tview.NewForm()
@@ -4492,6 +4678,21 @@ func (ui *tviewUI) openStateFileModal(action, target string) {
 				}
 				ui.dice.SetCurrentItem(current)
 			}
+		case action == "save" && target == "fear":
+			if err := saveFearState(path, ui.paure); err != nil {
+				ui.message = fmt.Sprintf("Errore salvataggio Paure: %v", err)
+				ui.refreshStatus()
+				return
+			}
+		case action == "load" && target == "fear":
+			paure, err := loadFearState(path)
+			if err != nil {
+				ui.message = fmt.Sprintf("Errore caricamento Paure: %v", err)
+				ui.refreshStatus()
+				return
+			}
+			ui.paure = clampFear(paure)
+			ui.persistPaure()
 		default:
 			ui.message = "Operazione non supportata."
 			ui.refreshStatus()
@@ -4574,6 +4775,7 @@ func (ui *tviewUI) openGotoPanelModal() {
 		"[yellow]5[-] Equipaggiamento",
 		"[yellow]6[-] Carte",
 		"[yellow]7[-] Classe",
+		"[yellow]N[-] Note",
 		"[yellow]8[-] Dettagli",
 		"[yellow]9[-] Treasure",
 		"",
@@ -4606,6 +4808,8 @@ func (ui *tviewUI) openGotoPanelModal() {
 			selectPanel("Carte", focusCardList, "carte")
 		case '7':
 			selectPanel("Classe", focusClassList, "classe")
+		case 'n', 'N':
+			selectPanel("Note", focusNotesList, "note")
 		case '8':
 			ui.activeBottomPane = "details"
 			ui.detailBottom.SwitchToPage("details")
@@ -4664,6 +4868,8 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 		return "png"
 	case ui.encList:
 		return "encounter"
+	case ui.notesSearch, ui.notesList:
+		return "note"
 	case ui.search, ui.monList, ui.roleDrop, ui.rankDrop:
 		return "monsters"
 	case ui.envSearch, ui.envList, ui.envTypeDrop, ui.envRankDrop:
@@ -4713,6 +4919,8 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.pngList
 		case "encounter":
 			content = ui.encList
+		case "note":
+			content = ui.notesList
 		case "monsters":
 			content = ui.monstersPanel
 		case "ambienti":
@@ -4828,6 +5036,173 @@ func (ui *tviewUI) persistPNGs() {
 
 func (ui *tviewUI) persistEncounter() {
 	_ = saveEncounter(encounterFile, ui.buildEncounterPersistEntries())
+}
+
+func (ui *tviewUI) persistPaure() {
+	_ = saveFearState(fearStateFile, ui.paure)
+}
+
+func (ui *tviewUI) persistNotes() {
+	_ = saveNotes(notesFile, ui.notes)
+}
+
+func (ui *tviewUI) adjustPaure(delta int) {
+	next := clampFear(ui.paure + delta)
+	if next == ui.paure {
+		return
+	}
+	ui.paure = next
+	ui.persistPaure()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) openAddNoteModal() {
+	if ui.modalVisible {
+		return
+	}
+	returnFocus := ui.app.GetFocus()
+	editor := tview.NewTextArea()
+	editor.SetBorder(true).SetTitle("Nuova Nota (Ctrl+S salva, Esc annulla)")
+
+	editor.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
+		if ev.Key() == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			ui.refreshStatus()
+			return nil
+		}
+		if ev.Key() == tcell.KeyCtrlS {
+			text := strings.TrimSpace(editor.GetText())
+			if text == "" {
+				ui.message = "Nota vuota: annullata."
+				ui.closeModal()
+				ui.app.SetFocus(returnFocus)
+				ui.refreshStatus()
+				return nil
+			}
+			ui.notes = append(ui.notes, text)
+			ui.persistNotes()
+			ui.refreshNotes()
+			ui.notesList.SetCurrentItem(len(ui.notes) - 1)
+			ui.closeModal()
+			ui.catalogMode = "note"
+			ui.catalogPanel.SwitchToPage("note")
+			ui.refreshCatalogTitles()
+			ui.focusPanel(focusNotesList)
+			ui.message = "Nota aggiunta."
+			ui.refreshDetail()
+			ui.refreshStatus()
+			return nil
+		}
+		return ev
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 1, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 8, 0, false).
+			AddItem(editor, 0, 1, true).
+			AddItem(nil, 8, 0, false), 0, 1, true).
+		AddItem(nil, 1, 0, false)
+
+	ui.modalVisible = true
+	ui.modalName = "add_note"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(editor)
+}
+
+func (ui *tviewUI) openEditNoteModal() {
+	idx := ui.currentNoteIndex()
+	if idx < 0 || idx >= len(ui.notes) {
+		ui.message = "Nessuna nota da modificare."
+		ui.refreshStatus()
+		return
+	}
+	if ui.modalVisible {
+		return
+	}
+	returnFocus := ui.app.GetFocus()
+	editor := tview.NewTextArea()
+	editor.SetBorder(true).SetTitle("Modifica Nota (Ctrl+S salva, Esc annulla)")
+	editor.SetText(ui.notes[idx], true)
+
+	editor.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
+		if ev.Key() == tcell.KeyEsc {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			ui.refreshStatus()
+			return nil
+		}
+		if ev.Key() == tcell.KeyCtrlS {
+			text := strings.TrimSpace(editor.GetText())
+			if text == "" {
+				ui.message = "Nota vuota: modifica annullata."
+				ui.closeModal()
+				ui.app.SetFocus(returnFocus)
+				ui.refreshStatus()
+				return nil
+			}
+			ui.notes[idx] = text
+			ui.persistNotes()
+			ui.refreshNotes()
+			// Reseleziona l'elemento modificato nel filtro corrente.
+			for li, ni := range ui.filteredNotes {
+				if ni == idx {
+					ui.notesList.SetCurrentItem(li)
+					break
+				}
+			}
+			ui.closeModal()
+			ui.catalogMode = "note"
+			ui.catalogPanel.SwitchToPage("note")
+			ui.refreshCatalogTitles()
+			ui.focusPanel(focusNotesList)
+			ui.message = "Nota aggiornata."
+			ui.refreshDetail()
+			ui.refreshStatus()
+			return nil
+		}
+		return ev
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 1, 0, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 8, 0, false).
+			AddItem(editor, 0, 1, true).
+			AddItem(nil, 8, 0, false), 0, 1, true).
+		AddItem(nil, 1, 0, false)
+
+	ui.modalVisible = true
+	ui.modalName = "edit_note"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(editor)
+}
+
+func (ui *tviewUI) deleteSelectedNote() {
+	idx := ui.currentNoteIndex()
+	if idx < 0 || idx >= len(ui.notes) {
+		ui.message = "Nessuna nota da eliminare."
+		ui.refreshStatus()
+		return
+	}
+	ui.notes = append(ui.notes[:idx], ui.notes[idx+1:]...)
+	ui.persistNotes()
+	ui.refreshNotes()
+	if len(ui.filteredNotes) > 0 {
+		next := 0
+		for li, ni := range ui.filteredNotes {
+			if ni >= idx {
+				next = li
+				break
+			}
+			next = li
+		}
+		ui.notesList.SetCurrentItem(next)
+	}
+	ui.message = "Nota eliminata."
+	ui.refreshDetail()
+	ui.refreshStatus()
 }
 
 func (ui *tviewUI) toggleDetailsTreasureFocus() {

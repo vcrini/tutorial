@@ -595,14 +595,14 @@
     "traits":
       [
         {
-          "name": "Seguace(4)",
+          "name": "Seguace (4)",
           "kind": "Passivo",
-          "text": "IlGrovigliovienesconfittoquandosubisceunqualsiasi danno.Perogni4danniinflittidaunPGalGroviglioAvviluppante,viene sconfittounGroviglioSeguaceaggiuntivoentroportatadell’attaccoriuscito.",
+          "text": "Il Groviglio viene sconfitto quando subisce un qualsiasi danno. Per ogni 4 danni inflitti da un PG al Groviglio Avviluppante, viene sconfitto un Groviglio Seguace aggiuntivo entro portata dell’attacco riuscito.",
         },
         {
-          "name": "AttaccoinMassa",
+          "name": "Attacco in Massa",
           "kind": "Azione",
-          "text": "SpendeteunaPaura perscegliere un bersaglio e rendere protagonistitutti i GrovigliAvviluppanti entro distanza Ravvicinata da esso. Quei Grovigli si portano a distanza di Mischia dal bersaglio ed effettuano untiro attacco condiviso. In caso di successo, infliggono 2 dannifisici ciascuno. Sommate questi danni.",
+          "text": "Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Grovigli Avviluppanti entro distanza Ravvicinata da esso. Quei Grovigli si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo, infliggono 2 danni fisici ciascuno. Sommate questi danni.",
         },
         {
           "name": "Prosciugare e Moltiplicarsi",
@@ -1043,7 +1043,7 @@
           "text": "Quando il Cavaliere effettua un attacco con successo, tutti i PG entro distanza Ravvicinata perdono una Speranza e voi guadagnate Paura.",
         },
         {
-          "name": "TagliarefinoalleOssa",
+          "name": "Tagliare fino alle Ossa",
           "kind": "Azione",
           "text": "MarcateunoStress pereffettuare un attacco contro tutti i bersagli entro distanza Prossima. I bersagli colpiti subiscono 1d8+2 danni fisici e devono marcare uno Stress.",
         },
@@ -3226,7 +3226,7 @@
     "traits":
       [
         {
-          "name": "AMorte!",
+          "name": "A Morte!",
           "kind": "Azione",
           "text": "Spendete una Paura per ogni PG nel gruppo per far condannare il gruppo per crimini reali o immaginari. Un PG che supera un Tiro Presenza può chiedere di dimostrare la sua innocenza in duello o un’altra forma speciale di processo.",
         },
@@ -3253,12 +3253,7 @@
     "pf": 1,
     "stress": 1,
     "attack":
-      {
-        "bonus": "+0",
-        "name": "Rami",
-        "range": "Mischia",
-        "damage": "8 fis",
-      },
+      { "bonus": "+0", "name": "Rami", "range": "Mischia", "damage": "8 fis" },
     "traits":
       [
         {
