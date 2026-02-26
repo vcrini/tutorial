@@ -16,8 +16,10 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-const helpText = " [black:gold]?[-:-] help "
-const historyLimit = 200
+const (
+	helpText     = " [black:gold]?[-:-] help "
+	historyLimit = 200
+)
 
 const (
 	focusDice = iota
@@ -1078,32 +1080,34 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'U':
-		if ui.catalogMode == "mostri" {
+		switch ui.catalogMode {
+		case "mostri":
 			ui.focusPanel(focusMonSearch)
-		} else if ui.catalogMode == "ambienti" {
+		case "ambienti":
 			ui.focusPanel(focusEnvSearch)
-		} else if ui.catalogMode == "equipaggiamento" {
+		case "equipaggiamento":
 			ui.focusPanel(focusEqSearch)
-		} else if ui.catalogMode == "carte" {
+		case "carte":
 			ui.focusPanel(focusCardSearch)
-		} else if ui.catalogMode == "note" {
+		case "note":
 			ui.focusPanel(focusNotesSearch)
-		} else {
+		default:
 			ui.focusPanel(focusClassSearch)
 		}
 		return nil
 	case 't':
-		if ui.catalogMode == "mostri" {
+		switch ui.catalogMode {
+		case "mostri":
 			ui.focusPanel(focusMonRole)
-		} else if ui.catalogMode == "ambienti" {
+		case "ambienti":
 			ui.focusPanel(focusEnvType)
-		} else if ui.catalogMode == "equipaggiamento" {
+		case "equipaggiamento":
 			ui.focusPanel(focusEqItemType)
-		} else if ui.catalogMode == "carte" {
+		case "carte":
 			ui.focusPanel(focusCardClass)
-		} else if ui.catalogMode == "note" {
+		case "note":
 			ui.focusPanel(focusNotesList)
-		} else {
+		default:
 			ui.focusPanel(focusClassName)
 		}
 		return nil
@@ -1114,32 +1118,34 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.refreshStatus()
 			return nil
 		}
-		if ui.catalogMode == "mostri" {
+		switch ui.catalogMode {
+		case "mostri":
 			ui.focusPanel(focusMonRank)
-		} else if ui.catalogMode == "ambienti" {
+		case "ambienti":
 			ui.focusPanel(focusEnvRank)
-		} else if ui.catalogMode == "equipaggiamento" {
+		case "equipaggiamento":
 			ui.focusPanel(focusEqRank)
-		} else if ui.catalogMode == "carte" {
+		case "carte":
 			ui.focusPanel(focusCardType)
-		} else if ui.catalogMode == "note" {
+		case "note":
 			ui.focusPanel(focusNotesList)
-		} else {
+		default:
 			ui.focusPanel(focusClassSubclass)
 		}
 		return nil
 	case 'v':
-		if ui.catalogMode == "mostri" {
+		switch ui.catalogMode {
+		case "mostri":
 			ui.resetMonsterFilters()
-		} else if ui.catalogMode == "ambienti" {
+		case "ambienti":
 			ui.resetEnvironmentFilters()
-		} else if ui.catalogMode == "equipaggiamento" {
+		case "equipaggiamento":
 			ui.resetEquipmentFilters()
-		} else if ui.catalogMode == "carte" {
+		case "carte":
 			ui.resetCardFilters()
-		} else if ui.catalogMode == "note" {
+		case "note":
 			ui.resetNotesFilters()
-		} else {
+		default:
 			ui.resetClassFilters()
 		}
 		return nil
@@ -1379,17 +1385,18 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	ui.catalogMode = next
 	ui.catalogPanel.SwitchToPage(next)
 	ui.refreshCatalogTitles()
-	if next == "ambienti" {
+	switch next {
+	case "ambienti":
 		ui.message = "Catalogo: Ambienti"
-	} else if next == "equipaggiamento" {
+	case "equipaggiamento":
 		ui.message = "Catalogo: Equipaggiamento"
-	} else if next == "carte" {
+	case "carte":
 		ui.message = "Catalogo: Carte"
-	} else if next == "classe" {
+	case "classe":
 		ui.message = "Catalogo: Classe"
-	} else if next == "note" {
+	case "note":
 		ui.message = "Catalogo: Note"
-	} else {
+	default:
 		ui.message = "Catalogo: Mostri"
 	}
 	ui.focusPanel(ui.activeCatalogListFocus())
@@ -1663,17 +1670,11 @@ func (ui *tviewUI) refreshEncounter() {
 		if baseStress == 0 {
 			baseStress = e.Monster.Stress
 		}
-		currentStress := e.Stress
-		if currentStress < 0 {
-			currentStress = 0
-		}
+		currentStress := max(e.Stress, 0)
 		if baseStress > 0 && currentStress > baseStress {
 			currentStress = baseStress
 		}
-		remaining := base - e.Wounds
-		if remaining < 0 {
-			remaining = 0
-		}
+		remaining := max(base-e.Wounds, 0)
 		label := ui.encounterLabelAt(i)
 		ui.encList.AddItem(fmt.Sprintf("%s [PF %d/%d | ST %d/%d]", label, remaining, base, currentStress, baseStress), "", 0, nil)
 	}
@@ -1827,18 +1828,12 @@ func (ui *tviewUI) refreshDetail() {
 		if base == 0 {
 			base = e.Monster.PF
 		}
-		remaining := base - e.Wounds
-		if remaining < 0 {
-			remaining = 0
-		}
+		remaining := max(base-e.Wounds, 0)
 		baseStress := e.BaseStress
 		if baseStress == 0 {
 			baseStress = e.Monster.Stress
 		}
-		currentStress := e.Stress
-		if currentStress < 0 {
-			currentStress = 0
-		}
+		currentStress := max(e.Stress, 0)
 		if baseStress > 0 && currentStress > baseStress {
 			currentStress = baseStress
 		}
@@ -1865,8 +1860,8 @@ func (ui *tviewUI) refreshDetail() {
 	}
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s\nToken: %d", p.Name, p.Token))
-	b.WriteString(fmt.Sprintf("\nPF: %d | Stress: %d | Armatura: %d | Speranza: %d", p.PF, p.Stress, p.ArmorScore, p.Hope))
+	fmt.Fprintf(&b, "%s\nToken: %d", p.Name, p.Token)
+	fmt.Fprintf(&b, "\nPF: %d | Stress: %d | Armatura: %d | Speranza: %d", p.PF, p.Stress, p.ArmorScore, p.Hope)
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -1901,16 +1896,16 @@ func (ui *tviewUI) refreshDetail() {
 		if expBonus == 0 && p.Level > 1 {
 			expBonus = progressionBonusAtLevel(p.Level)
 		}
-		b.WriteString(fmt.Sprintf("\nLivello: %d | Rango: %d", p.Level, rank))
-		b.WriteString(fmt.Sprintf("\nBonus Competenza (livello): +%d", compBonus))
-		b.WriteString(fmt.Sprintf("\nEsperienze aggiuntive (livello): +%d", expBonus))
+		fmt.Fprintf(&b, "\nLivello: %d | Rango: %d", p.Level, rank)
+		fmt.Fprintf(&b, "\nBonus Competenza (livello): +%d", compBonus)
+		fmt.Fprintf(&b, "\nEsperienze aggiuntive (livello): +%d", expBonus)
 	}
 	if def := ui.findClassDefinition(p.Class, p.Subclass); def != nil {
 		if def.Evasion > 0 {
-			b.WriteString(fmt.Sprintf("\nEvasione iniziale: %d", def.Evasion))
+			fmt.Fprintf(&b, "\nEvasione iniziale: %d", def.Evasion)
 		}
 		if def.HP > 0 {
-			b.WriteString(fmt.Sprintf("\nPF iniziali: %d", def.HP))
+			fmt.Fprintf(&b, "\nPF iniziali: %d", def.HP)
 		}
 		if p.Level > 0 {
 			b.WriteString("\nRegola soglie: aggiungi il livello attuale alle soglie base dell'armatura.")
@@ -2364,7 +2359,7 @@ func (ui *tviewUI) resetNotesFilters() {
 func (ui *tviewUI) buildEnvironmentDetails(e Environment) string {
 	var b strings.Builder
 	b.WriteString(e.Name + "\n")
-	b.WriteString(fmt.Sprintf("Tipo: %s | Rango: %d\n", e.Kind, e.Rank))
+	fmt.Fprintf(&b, "Tipo: %s | Rango: %d\n", e.Kind, e.Rank)
 	if strings.TrimSpace(e.Difficulty) != "" {
 		b.WriteString("Difficoltà: " + strings.TrimSpace(e.Difficulty) + "\n")
 	}
@@ -2401,9 +2396,9 @@ func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
 
 	var b strings.Builder
 	b.WriteString(it.Name + "\n")
-	b.WriteString(fmt.Sprintf("Categoria: %s | Tipo: %s | Rango: %d", it.Category, it.Type, it.Rank))
+	fmt.Fprintf(&b, "Categoria: %s | Tipo: %s | Rango: %d", it.Category, it.Type, it.Rank)
 	if hasValue(it.Levels) {
-		b.WriteString(fmt.Sprintf(" | Livelli: %s", it.Levels))
+		fmt.Fprintf(&b, " | Livelli: %s", it.Levels)
 	}
 	b.WriteString("\n")
 
@@ -2441,7 +2436,7 @@ func (ui *tviewUI) buildEquipmentDetails(it EquipmentItem) string {
 func (ui *tviewUI) buildCardDetails(c CardItem) string {
 	var b strings.Builder
 	b.WriteString(c.Name + "\n")
-	b.WriteString(fmt.Sprintf("Classe: %s | Tipo: %s\n", strings.TrimSpace(c.Class), strings.TrimSpace(c.Type)))
+	fmt.Fprintf(&b, "Classe: %s | Tipo: %s\n", strings.TrimSpace(c.Class), strings.TrimSpace(c.Type))
 	if strings.TrimSpace(c.CasterTrait) != "" {
 		b.WriteString("Tratto da Incantatore: " + strings.TrimSpace(c.CasterTrait) + "\n")
 	}
@@ -2462,16 +2457,16 @@ func (ui *tviewUI) buildCardDetails(c CardItem) string {
 
 func (ui *tviewUI) buildClassDetails(c ClassItem) string {
 	var b strings.Builder
-	b.WriteString(fmt.Sprintf("%s - %s\n", c.Name, c.Subclass))
-	b.WriteString(fmt.Sprintf("Rango: %d\n", c.Rank))
+	fmt.Fprintf(&b, "%s - %s\n", c.Name, c.Subclass)
+	fmt.Fprintf(&b, "Rango: %d\n", c.Rank)
 	if strings.TrimSpace(c.Domains) != "" {
 		b.WriteString("Domini: " + strings.TrimSpace(c.Domains) + "\n")
 	}
 	if c.Evasion > 0 {
-		b.WriteString(fmt.Sprintf("Evasione iniziale: %d\n", c.Evasion))
+		fmt.Fprintf(&b, "Evasione iniziale: %d\n", c.Evasion)
 	}
 	if c.HP > 0 {
-		b.WriteString(fmt.Sprintf("Punti Ferita iniziali: %d\n", c.HP))
+		fmt.Fprintf(&b, "Punti Ferita iniziali: %d\n", c.HP)
 	}
 	if strings.TrimSpace(c.ClassItem) != "" {
 		b.WriteString("Oggetti di classe: " + strings.TrimSpace(c.ClassItem) + "\n")
@@ -2548,11 +2543,11 @@ func (ui *tviewUI) currentEncounterIndex() int {
 func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string) string {
 	var b strings.Builder
 	b.WriteString(title + "\n")
-	b.WriteString(fmt.Sprintf("Ruolo: %s | Rango: %d\n", m.Role, m.Rank))
+	fmt.Fprintf(&b, "Ruolo: %s | Rango: %d\n", m.Role, m.Rank)
 	if extraLine != "" {
 		b.WriteString(extraLine + "\n")
 	}
-	b.WriteString(fmt.Sprintf("PF: %d | Stress: %d | Difficoltà: %d\n", m.PF, m.Stress, m.Difficulty))
+	fmt.Fprintf(&b, "PF: %d | Stress: %d | Difficoltà: %d\n", m.PF, m.Stress, m.Difficulty)
 	if th := formatThresholds(m.Thresholds); th != "" {
 		b.WriteString("Soglie: " + th + "\n")
 	}
@@ -2564,9 +2559,9 @@ func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string
 			bonus = "+" + bonus
 		}
 		if bonus != "" {
-			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType, bonus))
+			fmt.Fprintf(&b, "Attacco: %s (%s) %s %s (%s)\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType, bonus)
 		} else {
-			b.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType))
+			fmt.Fprintf(&b, "Attacco: %s (%s) %s %s\n", m.Attack.Name, m.Attack.Range, m.Attack.Damage, m.Attack.DamageType)
 		}
 	}
 	if strings.TrimSpace(m.MotivationsTactics) != "" {
@@ -2627,13 +2622,7 @@ func (ui *tviewUI) adjustSelectedToken(delta int) {
 		return
 	}
 	p := &ui.pngs[ui.selected]
-	newToken := p.Token + delta
-	if newToken < minToken {
-		newToken = minToken
-	}
-	if newToken > maxToken {
-		newToken = maxToken
-	}
+	newToken := min(max(p.Token+delta, minToken), maxToken)
 	if newToken == p.Token {
 		return
 	}
@@ -2958,10 +2947,7 @@ func (ui *tviewUI) openEditPNGModal() {
 			return
 		}
 		ui.beginUndoableChange()
-		selectedToken = clampStat(selectedToken, maxToken)
-		if selectedToken < minToken {
-			selectedToken = minToken
-		}
+		selectedToken = max(clampStat(selectedToken, maxToken), minToken)
 		if selectedPF < 0 {
 			selectedPF = 0
 		}
@@ -3027,10 +3013,7 @@ func (ui *tviewUI) openClassPNGInput() {
 		levels = append(levels, strconv.Itoa(i))
 	}
 	selectedLevel := 1
-	selectedPF := c.HP
-	if selectedPF < 0 {
-		selectedPF = 0
-	}
+	selectedPF := max(c.HP, 0)
 	selectedStress := 0
 	selectedArmor := 3
 	selectedHope := 2
@@ -3408,18 +3391,6 @@ func (ui *tviewUI) findClassDefinition(className, subclass string) *ClassItem {
 	return nil
 }
 
-func (ui *tviewUI) openDeletePNGConfirm() {
-	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
-		ui.message = "Nessun PNG selezionato."
-		ui.refreshStatus()
-		return
-	}
-	name := ui.pngs[ui.selected].Name
-	ui.openConfirmModal("Conferma", fmt.Sprintf("Eliminare PNG '%s'?", name), func() {
-		ui.deleteSelectedPNG()
-	})
-}
-
 func (ui *tviewUI) openResetTokensConfirm() {
 	if len(ui.pngs) == 0 {
 		ui.message = "Nessun PNG disponibile."
@@ -3662,10 +3633,7 @@ func (ui *tviewUI) scrollDetailByPage(direction int) {
 	if h <= 0 {
 		h = 24
 	}
-	step := h / 2
-	if step < 1 {
-		step = 1
-	}
+	step := max(h/2, 1)
 	row += direction * step
 	if row < 0 {
 		row = 0
@@ -3805,10 +3773,7 @@ func (ui *tviewUI) openRandomEncounterFromMonstersInput() {
 		return
 	}
 
-	defaultPG := len(ui.pngs)
-	if defaultPG < 1 {
-		defaultPG = 1
-	}
+	defaultPG := max(len(ui.pngs), 1)
 	selectedRank, _ := strconv.Atoi(rankOptions[defaultRankIdx])
 	if selectedRank <= 0 {
 		selectedRank = 1
@@ -3977,10 +3942,7 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int, bu
 	if pgCount < 1 {
 		return summary
 	}
-	finalBudget := summary.BaseBudget + budgetMod
-	if finalBudget < 1 {
-		finalBudget = 1
-	}
+	finalBudget := max(summary.BaseBudget+budgetMod, 1)
 	summary.FinalBudget = finalBudget
 
 	type candidate struct {
@@ -4053,10 +4015,10 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(rank int, pgCount int, bu
 func buildGeneratedEncounterDetails(s generatedEncounterSummary) string {
 	var b strings.Builder
 	b.WriteString("Encounter random generato\n")
-	b.WriteString(fmt.Sprintf("Rango gruppo: %d | PG: %d\n", s.Rank, s.PGCount))
-	b.WriteString(fmt.Sprintf("Punti Battaglia: %d %+d = %d\n", s.BaseBudget, s.BudgetMod, s.FinalBudget))
-	b.WriteString(fmt.Sprintf("Spesi: %d | Residui: %d\n", s.Spent, s.Remaining))
-	b.WriteString(fmt.Sprintf("Nemici aggiunti: %d (gruppi estratti: %d)\n", s.AddedEntries, s.AddedGroups))
+	fmt.Fprintf(&b, "Rango gruppo: %d | PG: %d\n", s.Rank, s.PGCount)
+	fmt.Fprintf(&b, "Punti Battaglia: %d %+d = %d\n", s.BaseBudget, s.BudgetMod, s.FinalBudget)
+	fmt.Fprintf(&b, "Spesi: %d | Residui: %d\n", s.Spent, s.Remaining)
+	fmt.Fprintf(&b, "Nemici aggiunti: %d (gruppi estratti: %d)\n", s.AddedEntries, s.AddedGroups)
 	b.WriteString("\nDettaglio:\n")
 	if len(s.ByMonsterName) == 0 {
 		b.WriteString("- Nessun mostro aggiunto.\n")
@@ -4068,7 +4030,7 @@ func buildGeneratedEncounterDetails(s generatedEncounterSummary) string {
 	}
 	sort.Strings(names)
 	for _, name := range names {
-		b.WriteString(fmt.Sprintf("- %s x%d\n", name, s.ByMonsterName[name]))
+		fmt.Fprintf(&b, "- %s x%d\n", name, s.ByMonsterName[name])
 	}
 	return strings.TrimSpace(b.String())
 }
@@ -4144,7 +4106,7 @@ func adjustVitalsLikeEncounter(currentPF, currentStress, maxPF, maxStress, pfDel
 		currentStress = clampStat(currentStress+stressDelta, maxStress)
 	} else if stressDelta < 0 {
 		steps := -stressDelta
-		for i := 0; i < steps; i++ {
+		for range steps {
 			if currentStress > 0 {
 				currentStress--
 			} else if currentPF > 0 {
@@ -4185,10 +4147,7 @@ func (ui *tviewUI) adjustSelectedPNGArmor(delta int) {
 		return
 	}
 	p := &ui.pngs[ui.selected]
-	next := p.ArmorScore + delta
-	if next < 0 {
-		next = 0
-	}
+	next := max(p.ArmorScore+delta, 0)
 	if next == p.ArmorScore {
 		return
 	}
@@ -4209,10 +4168,7 @@ func (ui *tviewUI) adjustSelectedPNGHope(delta int) {
 		return
 	}
 	p := &ui.pngs[ui.selected]
-	next := p.Hope + delta
-	if next < 0 {
-		next = 0
-	}
+	next := max(p.Hope+delta, 0)
 	if next == p.Hope {
 		return
 	}
@@ -4242,15 +4198,9 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	if baseStress == 0 {
 		baseStress = e.Monster.Stress
 	}
-	currentPF := base - e.Wounds
-	if currentPF < 0 {
-		currentPF = 0
-	}
+	currentPF := max(base-e.Wounds, 0)
 	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, base, baseStress, -delta, 0)
-	nextWounds := base - currentPF
-	if nextWounds < 0 {
-		nextWounds = 0
-	}
+	nextWounds := max(base-currentPF, 0)
 	if nextWounds == e.Wounds && currentStress == e.Stress {
 		return
 	}
@@ -4264,15 +4214,9 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 	if baseStress == 0 {
 		baseStress = e.Monster.Stress
 	}
-	currentPF = base - e.Wounds
-	if currentPF < 0 {
-		currentPF = 0
-	}
+	currentPF = max(base-e.Wounds, 0)
 	currentPF, currentStress = adjustVitalsLikeEncounter(currentPF, e.Stress, base, baseStress, -delta, 0)
-	e.Wounds = base - currentPF
-	if e.Wounds < 0 {
-		e.Wounds = 0
-	}
+	e.Wounds = max(base-currentPF, 0)
 	e.Stress = currentStress
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Ferite %s: %d", e.Monster.Name, e.Wounds)
@@ -4304,15 +4248,9 @@ func (ui *tviewUI) adjustEncounterStress(delta int) {
 	if basePF == 0 {
 		basePF = e.Monster.PF
 	}
-	currentPF := basePF - e.Wounds
-	if currentPF < 0 {
-		currentPF = 0
-	}
+	currentPF := max(basePF-e.Wounds, 0)
 	currentPF, currentStress := adjustVitalsLikeEncounter(currentPF, e.Stress, basePF, baseStress, 0, delta)
-	nextWounds := basePF - currentPF
-	if nextWounds < 0 {
-		nextWounds = 0
-	}
+	nextWounds := max(basePF-currentPF, 0)
 	if nextWounds == e.Wounds && currentStress == e.Stress {
 		return
 	}
@@ -4326,15 +4264,9 @@ func (ui *tviewUI) adjustEncounterStress(delta int) {
 	if basePF == 0 {
 		basePF = e.Monster.PF
 	}
-	currentPF = basePF - e.Wounds
-	if currentPF < 0 {
-		currentPF = 0
-	}
+	currentPF = max(basePF-e.Wounds, 0)
 	currentPF, currentStress = adjustVitalsLikeEncounter(currentPF, e.Stress, basePF, baseStress, 0, delta)
-	e.Wounds = basePF - currentPF
-	if e.Wounds < 0 {
-		e.Wounds = 0
-	}
+	e.Wounds = max(basePF-currentPF, 0)
 	e.Stress = currentStress
 
 	ui.persistEncounter()
@@ -4543,10 +4475,7 @@ func (ui *tviewUI) buildEncounterPersistEntries() []encounterPersistEntry {
 		if baseStress == 0 {
 			baseStress = e.Monster.Stress
 		}
-		currentStress := e.Stress
-		if currentStress < 0 {
-			currentStress = 0
-		}
+		currentStress := max(e.Stress, 0)
 		if baseStress > 0 && currentStress > baseStress {
 			currentStress = baseStress
 		}
@@ -5397,15 +5326,15 @@ func (ui *tviewUI) matchBottinoByTiro(total int) []EquipmentItem {
 func (ui *tviewUI) renderEquipmentTreasure(category, dice string, total int, breakdown string, matches []EquipmentItem) {
 	var b strings.Builder
 	b.WriteString("Treasure Equipaggiamento\n")
-	b.WriteString(fmt.Sprintf("Categoria: %s\n", category))
-	b.WriteString(fmt.Sprintf("Tiro: %s => %s\n", dice, breakdown))
-	b.WriteString(fmt.Sprintf("Valore Tiro: %02d\n", total))
+	fmt.Fprintf(&b, "Categoria: %s\n", category)
+	fmt.Fprintf(&b, "Tiro: %s => %s\n", dice, breakdown)
+	fmt.Fprintf(&b, "Valore Tiro: %02d\n", total)
 	b.WriteString("\nRisultati:\n")
 	if len(matches) == 0 {
 		b.WriteString("- Nessun bottino con Tiro corrispondente.\n")
 	} else {
 		for _, it := range matches {
-			b.WriteString(fmt.Sprintf("- %s (Tiro %02d)\n", it.Name, total))
+			fmt.Fprintf(&b, "- %s (Tiro %02d)\n", it.Name, total)
 			if strings.TrimSpace(it.Characteristic) != "" && strings.TrimSpace(it.Characteristic) != "—" && strings.TrimSpace(it.Characteristic) != "-" {
 				b.WriteString("  " + strings.TrimSpace(it.Characteristic) + "\n")
 			}
@@ -5435,10 +5364,10 @@ func (ui *tviewUI) buildDiceDetail() string {
 		cur = len(ui.diceLog) - 1
 	}
 	entry := ui.diceLog[cur]
-	b.WriteString(fmt.Sprintf("Tiro #%d\n", cur+1))
+	fmt.Fprintf(&b, "Tiro #%d\n", cur+1)
 	b.WriteString("Espressione: " + entry.Expression + "\n")
 	b.WriteString("Risultato: " + entry.Output + "\n")
-	b.WriteString(fmt.Sprintf("\nTotale tiri: %d", len(ui.diceLog)))
+	fmt.Fprintf(&b, "\nTotale tiri: %d", len(ui.diceLog))
 	return strings.TrimSpace(b.String())
 }
 

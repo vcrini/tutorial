@@ -84,10 +84,7 @@ func (m *model) persistEncounter() {
 		if baseStress == 0 {
 			baseStress = e.Monster.Stress
 		}
-		currentStress := e.Stress
-		if currentStress < 0 {
-			currentStress = 0
-		}
+		currentStress := max(e.Stress, 0)
 		if baseStress > 0 && currentStress > baseStress {
 			currentStress = baseStress
 		}

@@ -126,10 +126,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 						m.persistEncounter()
 						if basePF > 0 {
-							pf := basePF - m.encounter[m.encounterCursor].Wounds
-							if pf < 0 {
-								pf = 0
-							}
+							pf := max(basePF-m.encounter[m.encounterCursor].Wounds, 0)
 							m.message = fmt.Sprintf("Ferite aggiornate. PF: %d/%d", pf, basePF)
 						} else {
 							m.message = "Ferite aggiornate."
@@ -180,13 +177,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.monsterSearch.Focus()
 				handled = true
 			case "tab":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.focusedPanel = 1
 					m.monsterSearch.Blur()
-				} else if m.focusedPanel == 1 {
+				case 1:
 					m.focusedPanel = 2
 					m.monsterSearch.Focus()
-				} else {
+				default:
 					m.focusedPanel = 0
 					m.monsterSearch.Blur()
 				}
@@ -196,9 +194,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				handled = true
 
 			case "up", "k":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.selectPrevPNG()
-				} else if m.focusedPanel == 1 {
+				case 1:
 					if len(m.encounter) > 0 {
 						if m.encounterCursor > 0 {
 							m.encounterCursor--
@@ -206,7 +205,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.encounterCursor = len(m.encounter) - 1
 						}
 					}
-				} else {
+				default:
 					list := m.filteredMonsters()
 					if len(list) > 0 {
 						if m.monsterCursor > 0 {
@@ -220,9 +219,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case "down", "j":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.selectNextPNG()
-				} else if m.focusedPanel == 1 {
+				case 1:
 					if len(m.encounter) > 0 {
 						if m.encounterCursor < len(m.encounter)-1 {
 							m.encounterCursor++
@@ -230,7 +230,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 							m.encounterCursor = 0
 						}
 					}
-				} else {
+				default:
 					list := m.filteredMonsters()
 					if len(list) > 0 {
 						if m.monsterCursor < len(list)-1 {
@@ -244,9 +244,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 
 			case "left", "h":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.decrementSelectedToken()
-				} else if m.focusedPanel == 1 {
+				case 1:
 					m.encounterEditing = true
 					m.encounterDelta = 1
 					m.encounterInput.SetValue(strconv.Itoa(m.encounterLastAmt))
@@ -256,9 +257,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				handled = true
 
 			case "right", "l":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.incrementSelectedToken()
-				} else if m.focusedPanel == 1 {
+				case 1:
 					m.encounterEditing = true
 					m.encounterDelta = -1
 					m.encounterInput.SetValue(strconv.Itoa(m.encounterLastAmt))
@@ -268,10 +270,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				handled = true
 
 			case "d", "x", "backspace", "delete":
-				if m.focusedPanel == 0 {
+				switch m.focusedPanel {
+				case 0:
 					m.deleteSelectedPNG()
 					handled = true
-				} else if m.focusedPanel == 1 {
+				case 1:
 					if len(m.encounter) > 0 {
 						m.removeEncounterAt(m.encounterCursor)
 						m.message = "Mostro rimosso dall'incontro."

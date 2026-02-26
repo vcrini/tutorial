@@ -21,10 +21,7 @@ func (m model) currentMonster() (Monster, bool) {
 	if len(list) == 0 {
 		return Monster{}, false
 	}
-	idx := m.monsterCursor
-	if idx < 0 {
-		idx = 0
-	}
+	idx := max(m.monsterCursor, 0)
 	if idx >= len(list) {
 		idx = len(list) - 1
 	}

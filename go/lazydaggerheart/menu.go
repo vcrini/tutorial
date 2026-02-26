@@ -7,12 +7,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var menuChoices = []string{
-	"Crea PNG",
-	"Resetta Tutti i Token PNG",
-	"Esci",
-}
-
 func (m model) handleMenuChoice(choice string) (model, tea.Cmd) {
 	switch choice {
 	case "Crea PNG":

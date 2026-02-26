@@ -19,13 +19,6 @@ func limitLines(s string, max int) string {
 	return strings.Join(lines[:max], "\n")
 }
 
-func maxInt(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 func fitWidth(s string, width int) string {
 	if width <= 0 {
 		return ""
@@ -36,13 +29,6 @@ func fitWidth(s string, width int) string {
 		lines[i] = lipgloss.NewStyle().Width(width).MaxWidth(width).Render(trimmed)
 	}
 	return strings.Join(lines, "\n")
-}
-
-func clampWidth(s string, width int) string {
-	if width <= 0 {
-		return ""
-	}
-	return lipgloss.NewStyle().Width(width).MaxWidth(width).Render(s)
 }
 
 func clampFinalWidth(s string, width int) string {
@@ -69,17 +55,11 @@ func windowLines(lines []string, selected int, height int) []string {
 	if selected >= len(lines) {
 		selected = len(lines) - 1
 	}
-	start := selected - height/2
-	if start < 0 {
-		start = 0
-	}
+	start := max(selected-height/2, 0)
 	end := start + height
 	if end > len(lines) {
 		end = len(lines)
-		start = end - height
-		if start < 0 {
-			start = 0
-		}
+		start = max(end-height, 0)
 	}
 	return lines[start:end]
 }
@@ -130,24 +110,15 @@ func (m model) View() string {
 	detailWidth := totalWidth - listWidth
 	if detailWidth < minPane {
 		if totalWidth < minPane*2 {
-			listWidth = totalWidth / 2
-			if listWidth < 1 {
-				listWidth = 1
-			}
+			listWidth = max(totalWidth/2, 1)
 			detailWidth = totalWidth - listWidth
 		} else {
 			detailWidth = minPane
 			listWidth = totalWidth - detailWidth
 		}
 	}
-	listContentWidth := listWidth - 2
-	if listContentWidth < 1 {
-		listContentWidth = 1
-	}
-	detailContentWidth := detailWidth - 2
-	if detailContentWidth < 1 {
-		detailContentWidth = 1
-	}
+	listContentWidth := max(listWidth-2, 1)
+	detailContentWidth := max(detailWidth-2, 1)
 
 	totalHeight := m.height
 	if totalHeight <= 0 {
@@ -164,10 +135,7 @@ func (m model) View() string {
 	}
 	messageBar := panel.Width(listWidth + detailWidth - 2).Render(fitWidth(highlight.Render(" Msg ")+" "+message+"  "+dim.Render("?: help"), listWidth+detailWidth-2))
 
-	bodyHeight := totalHeight - lipgloss.Height(headerBar) - lipgloss.Height(messageBar)
-	if bodyHeight < 3 {
-		bodyHeight = 3
-	}
+	bodyHeight := max(totalHeight-lipgloss.Height(headerBar)-lipgloss.Height(messageBar), 3)
 
 	leftBoxTotal1 := bodyHeight / 3
 	leftBoxTotal2 := bodyHeight / 3
@@ -218,10 +186,7 @@ func (m model) View() string {
 			}
 		}
 		lines := headerLines
-		remaining := leftContent1 - len(headerLines)
-		if remaining < 0 {
-			remaining = 0
-		}
+		remaining := max(leftContent1-len(headerLines), 0)
 		lines = append(lines, windowLines(items, m.selectedPNGIndex, remaining)...)
 		listPanel.WriteString(strings.Join(lines, "\n"))
 	}
@@ -264,44 +229,39 @@ func (m model) View() string {
 				maxLine = w
 			}
 		}
-		modalWidth := maxLine + 4
-		if modalWidth < 20 {
-			modalWidth = 20
-		}
+		modalWidth := max(maxLine+4, 20)
 		modalBox := helpPanel.Width(modalWidth).Render(strings.TrimRight(modal.String(), "\n"))
 		details.WriteString(modalBox + "\n\n")
 	}
-	if m.focusedPanel == 2 {
+	switch m.focusedPanel {
+	case 2:
 		filtered := m.filteredMonsters()
 		if len(filtered) == 0 {
 			details.WriteString(dim.Render("Nessun mostro trovato."))
 		} else {
-			idx := m.monsterCursor
-			if idx < 0 {
-				idx = 0
-			}
+			idx := max(m.monsterCursor, 0)
 			if idx >= len(filtered) {
 				idx = len(filtered) - 1
 			}
 			mon := filtered[idx]
-			details.WriteString(fmt.Sprintf("Nome:  %s\n", mon.Name))
-			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
-			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
+			fmt.Fprintf(&details, "Nome:  %s\n", mon.Name)
+			fmt.Fprintf(&details, "Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank)
+			fmt.Fprintf(&details, "Difficoltà: %d\n", mon.Difficulty)
 			if len(mon.Thresholds.Values) > 0 {
-				details.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
+				fmt.Fprintf(&details, "Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1])
 			} else if mon.Thresholds.Text != "" {
-				details.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
+				fmt.Fprintf(&details, "Soglie: %s\n", mon.Thresholds.Text)
 			}
-			details.WriteString(fmt.Sprintf("PF: %d  Stress: %d\n", mon.PF, mon.Stress))
+			fmt.Fprintf(&details, "PF: %d  Stress: %d\n", mon.PF, mon.Stress)
 			if mon.Attack.Name != "" {
 				bonus := strings.TrimSpace(mon.Attack.Bonus)
 				if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
 					bonus = "+" + bonus
 				}
 				if bonus != "" {
-					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
+					fmt.Fprintf(&details, "Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus)
 				} else {
-					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+					fmt.Fprintf(&details, "Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType)
 				}
 			}
 			if !m.detailsCompact {
@@ -314,19 +274,16 @@ func (m model) View() string {
 				if len(mon.Traits) > 0 {
 					details.WriteString("\nTratti:\n")
 					for _, t := range mon.Traits {
-						details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+						fmt.Fprintf(&details, "- %s (%s): %s\n", t.Name, t.Kind, t.Text)
 					}
 				}
 			}
 		}
-	} else if m.focusedPanel == 1 {
+	case 1:
 		if len(m.encounter) == 0 {
 			details.WriteString(dim.Render("Nessun mostro in incontro."))
 		} else {
-			idx := m.encounterCursor
-			if idx < 0 {
-				idx = 0
-			}
+			idx := max(m.encounterCursor, 0)
 			if idx >= len(m.encounter) {
 				idx = len(m.encounter) - 1
 			}
@@ -342,28 +299,25 @@ func (m model) View() string {
 			if basePF == 0 {
 				basePF = mon.PF
 			}
-			details.WriteString(fmt.Sprintf("Nome:  %s #%d\n", mon.Name, seen))
-			details.WriteString(fmt.Sprintf("Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank))
-			details.WriteString(fmt.Sprintf("Difficoltà: %d\n", mon.Difficulty))
+			fmt.Fprintf(&details, "Nome:  %s #%d\n", mon.Name, seen)
+			fmt.Fprintf(&details, "Ruolo: %s  Rango: %d\n", mon.Role, mon.Rank)
+			fmt.Fprintf(&details, "Difficoltà: %d\n", mon.Difficulty)
 			if len(mon.Thresholds.Values) > 0 {
-				details.WriteString(fmt.Sprintf("Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1]))
+				fmt.Fprintf(&details, "Soglie: %d/%d\n", mon.Thresholds.Values[0], mon.Thresholds.Values[len(mon.Thresholds.Values)-1])
 			} else if mon.Thresholds.Text != "" {
-				details.WriteString(fmt.Sprintf("Soglie: %s\n", mon.Thresholds.Text))
+				fmt.Fprintf(&details, "Soglie: %s\n", mon.Thresholds.Text)
 			}
-			pf := basePF - e.Wounds
-			if pf < 0 {
-				pf = 0
-			}
-			details.WriteString(fmt.Sprintf("PF: %d/%d  Stress: %d\n", pf, basePF, mon.Stress))
+			pf := max(basePF-e.Wounds, 0)
+			fmt.Fprintf(&details, "PF: %d/%d  Stress: %d\n", pf, basePF, mon.Stress)
 			if mon.Attack.Name != "" {
 				bonus := strings.TrimSpace(mon.Attack.Bonus)
 				if bonus != "" && !strings.HasPrefix(bonus, "+") && !strings.HasPrefix(bonus, "-") {
 					bonus = "+" + bonus
 				}
 				if bonus != "" {
-					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus))
+					fmt.Fprintf(&details, "Attacco: %s (%s) %s %s (%s)\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType, bonus)
 				} else {
-					details.WriteString(fmt.Sprintf("Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType))
+					fmt.Fprintf(&details, "Attacco: %s (%s) %s %s\n", mon.Attack.Name, mon.Attack.Range, mon.Attack.Damage, mon.Attack.DamageType)
 				}
 			}
 			if !m.detailsCompact {
@@ -376,17 +330,17 @@ func (m model) View() string {
 				if len(mon.Traits) > 0 {
 					details.WriteString("\nTratti:\n")
 					for _, t := range mon.Traits {
-						details.WriteString(fmt.Sprintf("- %s (%s): %s\n", t.Name, t.Kind, t.Text))
+						fmt.Fprintf(&details, "- %s (%s): %s\n", t.Name, t.Kind, t.Text)
 					}
 				}
 			}
 		}
-	} else {
+	default:
 		if m.selectedPNGIndex >= 0 && m.selectedPNGIndex < len(m.pngs) {
 			png := m.pngs[m.selectedPNGIndex]
-			details.WriteString(fmt.Sprintf("Nome:  %s\n", png.Name))
-			details.WriteString(fmt.Sprintf("Token: %d\n", png.Token))
-			details.WriteString(fmt.Sprintf("Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs)))
+			fmt.Fprintf(&details, "Nome:  %s\n", png.Name)
+			fmt.Fprintf(&details, "Token: %d\n", png.Token)
+			fmt.Fprintf(&details, "Index: %d/%d\n", m.selectedPNGIndex+1, len(m.pngs))
 		} else {
 			details.WriteString(dim.Render("Seleziona un PNG per vedere i dettagli."))
 		}
@@ -412,20 +366,14 @@ func (m model) View() string {
 				basePF = e.Monster.PF
 			}
 			if basePF > 0 {
-				pf := basePF - e.Wounds
-				if pf < 0 {
-					pf = 0
-				}
+				pf := max(basePF-e.Wounds, 0)
 				line += fmt.Sprintf(" [%d/%d]", pf, basePF)
 			}
 			encounterItems = append(encounterItems, prefix+line)
 		}
 	}
 	encounterLines := encounterHeader
-	remainingEncounter := leftContent2 - len(encounterHeader)
-	if remainingEncounter < 0 {
-		remainingEncounter = 0
-	}
+	remainingEncounter := max(leftContent2-len(encounterHeader), 0)
 	encounterLines = append(encounterLines, windowLines(encounterItems, m.encounterCursor, remainingEncounter)...)
 	encounter.WriteString(strings.Join(encounterLines, "\n"))
 	encounterBox := panel.Width(listContentWidth).Height(leftContent2).Render(limitLines(fitWidth(encounter.String(), listContentWidth), leftContent2))
@@ -447,19 +395,13 @@ func (m model) View() string {
 		}
 	}
 	monsterLines := monsterHeader
-	remainingMonster := leftContent3 - len(monsterHeader)
-	if remainingMonster < 0 {
-		remainingMonster = 0
-	}
+	remainingMonster := max(leftContent3-len(monsterHeader), 0)
 	monsterLines = append(monsterLines, windowLines(monsterItems, m.monsterCursor, remainingMonster)...)
 	monsters.WriteString(strings.Join(monsterLines, "\n"))
 	monstersBox := panel.Width(listContentWidth).Height(leftContent3).Render(limitLines(fitWidth(monsters.String(), listContentWidth), leftContent3))
 
 	listStack := lipgloss.JoinVertical(lipgloss.Left, listBox, encounterBox, monstersBox)
-	detailsContentHeight := bodyHeight - 2
-	if detailsContentHeight < 1 {
-		detailsContentHeight = 1
-	}
+	detailsContentHeight := max(bodyHeight-2, 1)
 	detailsBox := panel.Width(detailContentWidth).Height(detailsContentHeight).Render(limitLines(fitWidth(details.String(), detailContentWidth), detailsContentHeight))
 
 	// Layout finale
