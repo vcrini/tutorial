@@ -173,3 +173,138 @@
     - "Come reagì la tua comunità al tuo potere?"
   bonds:
     - "Chi ti aiuta a restare lucido quando perdi il controllo?"
+
+- source: carta
+  name: Combattimento
+  subclass: Colpo Mirato
+  domains: Regola
+  caster_trait: ""
+  description: "Attacco mirato a una parte specifica del bersaglio con penalità al tiro."
+  base_privileges:
+    - "Permette effetti tattici aggiuntivi oltre al danno."
+
+- source: carta
+  name: Combattimento
+  subclass: Attacco Selvaggio
+  domains: Regola
+  caster_trait: ""
+  description: "Approccio aggressivo: più pressione offensiva a costo di esposizione difensiva."
+  base_privileges:
+    - "Utile per chiudere rapidamente uno scontro ravvicinato."
+
+- source: carta
+  name: Combattimento
+  subclass: Soppressione
+  domains: Regola
+  caster_trait: ""
+  description: "Fuoco di copertura per limitare movimenti nemici."
+  base_privileges:
+    - "Costringe avversari a cercare riparo o rallentare."
+
+- source: carta
+  name: Condizioni
+  subclass: Paura
+  domains: Regola
+  caster_trait: Spirito
+  description: "Creature o eventi terrificanti impongono prove di coraggio."
+  base_privileges:
+    - "Fallimenti possono imporre penalità o comportamenti difensivi."
+
+- source: carta
+  name: Pericoli
+  subclass: Veleno
+  domains: Regola
+  caster_trait: Vigore
+  description: "Effetti tossici da morso, arma o ambiente contaminato."
+  base_privileges:
+    - "Richiede prove di resistenza per evitarne le conseguenze."
+
+- source: carta
+  name: Movimento
+  subclass: Inseguimento
+  domains: Regola
+  caster_trait: Agilità
+  description: "Sequenza dinamica con distanza variabile tra inseguitori e fuggitivi."
+  base_privileges:
+    - "Gestisce manovre, ostacoli e cambi di ritmo."
+
+- source: carta
+  name: Capacità Speciali
+  subclass: Scavatore
+  domains: Mostri
+  caster_trait: ""
+  description: "La creatura si muove nel sottosuolo e può emergere per colpire."
+  base_privileges:
+    - "Consente attacchi a sorpresa e riposizionamento occulto."
+
+- source: carta
+  name: Capacità Speciali
+  subclass: Etereo
+  domains: Mostri
+  caster_trait: ""
+  description: "Entità immateriale che attraversa ostacoli e ignora attacchi non adatti."
+  base_privileges:
+    - "Richiede contromisure specifiche per essere danneggiata."
+
+- source: carta
+  name: Capacità Speciali
+  subclass: Rigenerazione
+  domains: Mostri
+  caster_trait: Vigore
+  description: "Recupero accelerato dei danni, lento o rapido a seconda della creatura."
+  base_privileges:
+    - "Alcuni tipi di danno possono impedirla."
+
+- source: carta
+  name: Capacità Speciali
+  subclass: Invulnerabilità
+  domains: Mostri
+  caster_trait: ""
+  description: "La creatura può essere neutralizzata solo tramite un punto debole specifico."
+  base_privileges:
+    - "Riduce l'efficacia degli attacchi convenzionali."
+
+- source: carta
+  name: Arcani
+  subclass: Background Arcano (Magia)
+  domains: Background
+  caster_trait: Intelligenza
+  description: "Accesso ai poteri tramite studio arcano e formule."
+  base_privileges:
+    - "Poteri iniziali e riserva punti potere definiti dal regolamento base."
+
+- source: carta
+  name: Arcani
+  subclass: Background Arcano (Miracoli)
+  domains: Background
+  caster_trait: Spirito
+  description: "Poteri concessi da fede, culto o forza spirituale."
+  base_privileges:
+    - "Manifestazione tramite preghiere, rituali o simboli sacri."
+
+- source: carta
+  name: Arcani
+  subclass: Background Arcano (Arti Psioniche)
+  domains: Background
+  caster_trait: Intelligenza
+  description: "Disciplina mentale per manipolare materia e percezione."
+  base_privileges:
+    - "Attivazione con controllo psichico e concentrazione."
+
+- source: carta
+  name: Arcani
+  subclass: Background Arcano (Scienza Folle)
+  domains: Background
+  caster_trait: Intelligenza
+  description: "Poteri mediati da dispositivi sperimentali e prototipi."
+  base_privileges:
+    - "Richiede strumenti, componenti e gestione dei malfunzionamenti."
+
+- source: carta
+  name: Arcani
+  subclass: Background Arcano (Dono)
+  domains: Background
+  caster_trait: Spirito
+  description: "Talento innato raro, non legato a scuole formali."
+  base_privileges:
+    - "Manifestazione personale e spesso unica nel setting."

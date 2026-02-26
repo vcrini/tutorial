@@ -13,9 +13,7 @@ import (
 var dataFile = persistentPath("pngs.yml")
 var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
-var environmentsFile = "config/ambienti.yml"
 var equipmentFile = "config/equipaggiamento.yaml"
-var cardsFile = "config/carte.yaml"
 var classesFile = "config/classi.yaml"
 var encounterFile = persistentPath("encounter.yml")
 var diceHistoryFile = persistentPath("dice_history.yml")
@@ -136,6 +134,7 @@ type CardItem struct {
 }
 
 type ClassItem struct {
+	Source          string   `yaml:"source,omitempty"`
 	Name            string   `yaml:"name"`
 	Subclass        string   `yaml:"subclass"`
 	Rank            int      `yaml:"rank"`

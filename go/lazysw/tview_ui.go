@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Ambienti/Equip./Carte/Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -193,17 +193,9 @@ func newTViewUI() (*tviewUI, error) {
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", monstersFile, err)
 	}
-	environments, err := loadEnvironments(environmentsFile)
-	if err != nil {
-		return nil, fmt.Errorf("errore nel caricare %s: %w", environmentsFile, err)
-	}
 	equipment, err := loadEquipment(equipmentFile)
 	if err != nil {
 		return nil, fmt.Errorf("errore nel caricare %s: %w", equipmentFile, err)
-	}
-	cards, err := loadCards(cardsFile)
-	if err != nil {
-		return nil, fmt.Errorf("errore nel caricare %s: %w", cardsFile, err)
 	}
 	classes, err := loadClasses(classesFile)
 	if err != nil {
@@ -236,9 +228,7 @@ func newTViewUI() (*tviewUI, error) {
 		pngs:             pngs,
 		selected:         selected,
 		monsters:         monsters,
-		environments:     environments,
 		equipment:        equipment,
-		cards:            cards,
 		classes:          classes,
 		encounter:        encounter,
 		diceLog:          diceLog,
@@ -567,7 +557,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.cardList, 0, 1, true)
 	ui.cardsPanel.SetBorder(true)
 
-	ui.classSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome classe/sottoclasse...")
+	ui.classSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("categoria/voce...")
 	ui.classSearch.SetChangedFunc(func(_ string) {
 		ui.refreshClasses()
 		ui.refreshDetail()
@@ -583,7 +573,7 @@ func (ui *tviewUI) build() {
 	ui.classNameOpts = ui.buildClassNameOptions()
 	ui.classSubOpts = ui.buildClassSubclassOptions()
 
-	ui.classNameDrop = tview.NewDropDown().SetLabel(" Classe ")
+	ui.classNameDrop = tview.NewDropDown().SetLabel(" Categoria ")
 	ui.classNameDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classNameDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classNameDrop.SetListStyles(
@@ -601,7 +591,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.classNameDrop.SetCurrentOption(0)
 
-	ui.classSubDrop = tview.NewDropDown().SetLabel(" Sottoclasse ")
+	ui.classSubDrop = tview.NewDropDown().SetLabel(" Voce ")
 	ui.classSubDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classSubDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classSubDrop.SetListStyles(
@@ -636,10 +626,8 @@ func (ui *tviewUI) build() {
 
 	ui.catalogPanel = tview.NewPages().
 		AddPage("mostri", ui.monstersPanel, true, true).
-		AddPage("ambienti", ui.environmentsPanel, true, false).
 		AddPage("equipaggiamento", ui.equipmentPanel, true, false).
-		AddPage("carte", ui.cardsPanel, true, false).
-		AddPage("classe", ui.classesPanel, true, false)
+		AddPage("regole", ui.classesPanel, true, false)
 	ui.refreshCatalogTitles()
 
 	ui.leftPanel = tview.NewFlex().SetDirection(tview.FlexRow).
@@ -824,7 +812,7 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.addSelectedMonsterToEncounter()
 			return nil
 		}
-		if ui.catalogMode == "classe" && (focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop) {
+		if ui.catalogMode == "regole" && (focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop) {
 			ui.openClassPNGInput()
 			return nil
 		}
@@ -846,12 +834,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'u':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonSearch)
-		} else if ui.catalogMode == "ambienti" {
-			ui.focusPanel(focusEnvSearch)
 		} else if ui.catalogMode == "equipaggiamento" {
 			ui.focusPanel(focusEqSearch)
-		} else if ui.catalogMode == "carte" {
-			ui.focusPanel(focusCardSearch)
 		} else {
 			ui.focusPanel(focusClassSearch)
 		}
@@ -859,12 +843,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 't':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonRole)
-		} else if ui.catalogMode == "ambienti" {
-			ui.focusPanel(focusEnvType)
 		} else if ui.catalogMode == "equipaggiamento" {
 			ui.focusPanel(focusEqItemType)
-		} else if ui.catalogMode == "carte" {
-			ui.focusPanel(focusCardClass)
 		} else {
 			ui.focusPanel(focusClassName)
 		}
@@ -872,12 +852,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'g':
 		if ui.catalogMode == "mostri" {
 			ui.focusPanel(focusMonRank)
-		} else if ui.catalogMode == "ambienti" {
-			ui.focusPanel(focusEnvRank)
 		} else if ui.catalogMode == "equipaggiamento" {
 			ui.focusPanel(focusEqRank)
-		} else if ui.catalogMode == "carte" {
-			ui.focusPanel(focusCardType)
 		} else {
 			ui.focusPanel(focusClassSubclass)
 		}
@@ -885,12 +861,8 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'v':
 		if ui.catalogMode == "mostri" {
 			ui.resetMonsterFilters()
-		} else if ui.catalogMode == "ambienti" {
-			ui.resetEnvironmentFilters()
 		} else if ui.catalogMode == "equipaggiamento" {
 			ui.resetEquipmentFilters()
-		} else if ui.catalogMode == "carte" {
-			ui.resetCardFilters()
 		} else {
 			ui.resetClassFilters()
 		}
@@ -1023,16 +995,16 @@ func (ui *tviewUI) focusPanel(panel int) {
 	if panel == focusMonList && ui.catalogMode == "carte" {
 		panel = focusCardList
 	}
-	if panel == focusMonRole && ui.catalogMode == "classe" {
+	if panel == focusMonRole && ui.catalogMode == "regole" {
 		panel = focusClassName
 	}
-	if panel == focusMonSearch && ui.catalogMode == "classe" {
+	if panel == focusMonSearch && ui.catalogMode == "regole" {
 		panel = focusClassSearch
 	}
-	if panel == focusMonRank && ui.catalogMode == "classe" {
+	if panel == focusMonRank && ui.catalogMode == "regole" {
 		panel = focusClassSubclass
 	}
-	if panel == focusMonList && ui.catalogMode == "classe" {
+	if panel == focusMonList && ui.catalogMode == "regole" {
 		panel = focusClassList
 	}
 	if panel < 0 || panel >= len(ui.focus) {
@@ -1058,23 +1030,17 @@ func (ui *tviewUI) isFocusVisible(idx int) bool {
 	case focusCardSearch, focusCardClass, focusCardType, focusCardList:
 		return ui.catalogMode == "carte"
 	case focusClassSearch, focusClassName, focusClassSubclass, focusClassList:
-		return ui.catalogMode == "classe"
+		return ui.catalogMode == "regole"
 	default:
 		return true
 	}
 }
 
 func (ui *tviewUI) activeCatalogListFocus() int {
-	if ui.catalogMode == "ambienti" {
-		return focusEnvList
-	}
 	if ui.catalogMode == "equipaggiamento" {
 		return focusEqList
 	}
-	if ui.catalogMode == "carte" {
-		return focusCardList
-	}
-	if ui.catalogMode == "classe" {
+	if ui.catalogMode == "regole" {
 		return focusClassList
 	}
 	return focusMonList
@@ -1089,13 +1055,9 @@ func (ui *tviewUI) focusActiveCatalogList() {
 
 func (ui *tviewUI) catalogLabel(mode string) string {
 	switch mode {
-	case "ambienti":
-		return "Ambienti"
 	case "equipaggiamento":
 		return "Equipaggiamento"
-	case "carte":
-		return "Carte"
-	case "classe":
+	case "regole":
 		return "Regole"
 	default:
 		return "Mostri"
@@ -1103,7 +1065,7 @@ func (ui *tviewUI) catalogLabel(mode string) string {
 }
 
 func (ui *tviewUI) refreshCatalogTitles() {
-	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe"}
+	order := []string{"mostri", "equipaggiamento", "regole"}
 	for i, mode := range order {
 		prev := order[(i-1+len(order))%len(order)]
 		next := order[(i+1)%len(order)]
@@ -1111,13 +1073,9 @@ func (ui *tviewUI) refreshCatalogTitles() {
 		switch mode {
 		case "mostri":
 			ui.monstersPanel.SetTitle(title)
-		case "ambienti":
-			ui.environmentsPanel.SetTitle(title)
 		case "equipaggiamento":
 			ui.equipmentPanel.SetTitle(title)
-		case "carte":
-			ui.cardsPanel.SetTitle(title)
-		case "classe":
+		case "regole":
 			ui.classesPanel.SetTitle(title)
 		}
 	}
@@ -1127,7 +1085,7 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	if delta == 0 {
 		return
 	}
-	order := []string{"mostri", "ambienti", "equipaggiamento", "carte", "classe"}
+	order := []string{"mostri", "equipaggiamento", "regole"}
 	cur := 0
 	for i, name := range order {
 		if name == ui.catalogMode {
@@ -1143,13 +1101,9 @@ func (ui *tviewUI) switchCatalog(delta int) {
 	ui.catalogMode = next
 	ui.catalogPanel.SwitchToPage(next)
 	ui.refreshCatalogTitles()
-	if next == "ambienti" {
-		ui.message = "Catalogo: Ambienti"
-	} else if next == "equipaggiamento" {
+	if next == "equipaggiamento" {
 		ui.message = "Catalogo: Equipaggiamento"
-	} else if next == "carte" {
-		ui.message = "Catalogo: Carte"
-	} else if next == "classe" {
+	} else if next == "regole" {
 		ui.message = "Catalogo: Regole"
 	} else {
 		ui.message = "Catalogo: Mostri"
@@ -1161,9 +1115,7 @@ func (ui *tviewUI) switchCatalog(delta int) {
 func (ui *tviewUI) refreshAll() {
 	ui.refreshPNGs()
 	ui.refreshMonsters()
-	ui.refreshEnvironments()
 	ui.refreshEquipment()
-	ui.refreshCards()
 	ui.refreshClasses()
 	ui.refreshEncounter()
 	ui.refreshDetail()
@@ -1402,12 +1354,20 @@ func (ui *tviewUI) refreshClasses() {
 	current := ui.classList.GetCurrentItem()
 	ui.classList.Clear()
 	if len(ui.filteredClasses) == 0 {
-		ui.classList.AddItem("(nessuna classe)", "", 0, nil)
+		ui.classList.AddItem("(nessuna regola)", "", 0, nil)
 		return
 	}
 	for _, idx := range ui.filteredClasses {
 		c := ui.classes[idx]
-		ui.classList.AddItem(fmt.Sprintf("%s | %s", c.Subclass, c.Name), "", 0, nil)
+		if c.Source == "carta" {
+			itemType := strings.TrimSpace(c.Domains)
+			if itemType == "" {
+				itemType = "Regola"
+			}
+			ui.classList.AddItem(fmt.Sprintf("%s | %s [%s]", c.Subclass, c.Name, itemType), "", 0, nil)
+		} else {
+			ui.classList.AddItem(fmt.Sprintf("%s | %s", c.Subclass, c.Name), "", 0, nil)
+		}
 	}
 	if current >= len(ui.filteredClasses) {
 		current = len(ui.filteredClasses) - 1
@@ -1486,17 +1446,6 @@ func (ui *tviewUI) refreshDetail() {
 		ui.renderDetail()
 		return
 	}
-	if focus == ui.envList || focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop {
-		idx := ui.currentEnvironmentIndex()
-		if idx < 0 {
-			ui.detailRaw = "Nessun ambiente selezionato."
-			ui.renderDetail()
-			return
-		}
-		ui.detailRaw = ui.buildEnvironmentDetails(ui.environments[idx])
-		ui.renderDetail()
-		return
-	}
 	if focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop {
 		idx := ui.currentEquipmentIndex()
 		if idx < 0 {
@@ -1508,21 +1457,10 @@ func (ui *tviewUI) refreshDetail() {
 		ui.renderDetail()
 		return
 	}
-	if focus == ui.cardList || focus == ui.cardSearch || focus == ui.cardClassDrop || focus == ui.cardTypeDrop {
-		idx := ui.currentCardIndex()
-		if idx < 0 {
-			ui.detailRaw = "Nessuna carta selezionata."
-			ui.renderDetail()
-			return
-		}
-		ui.detailRaw = ui.buildCardDetails(ui.cards[idx])
-		ui.renderDetail()
-		return
-	}
 	if focus == ui.classList || focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop {
 		idx := ui.currentClassIndex()
 		if idx < 0 {
-			ui.detailRaw = "Nessuna classe selezionata."
+			ui.detailRaw = "Nessuna regola selezionata."
 			ui.renderDetail()
 			return
 		}
@@ -1750,11 +1688,11 @@ func (ui *tviewUI) refreshStatus() {
 	case ui.cardList:
 		focusLabel = "Carte"
 	case ui.classSearch:
-		focusLabel = "Nome Classe"
+		focusLabel = "Cerca Regole"
 	case ui.classNameDrop:
-		focusLabel = "Classe"
+		focusLabel = "Categoria"
 	case ui.classSubDrop:
-		focusLabel = "Sottoclasse"
+		focusLabel = "Voce"
 	case ui.classList:
 		focusLabel = "Regole"
 	case ui.detailTreasure:
@@ -1767,13 +1705,9 @@ func (ui *tviewUI) refreshStatus() {
 		msg = "Pronto."
 	}
 	catalogLabel := "Mostri"
-	if ui.catalogMode == "ambienti" {
-		catalogLabel = "Ambienti"
-	} else if ui.catalogMode == "equipaggiamento" {
+	if ui.catalogMode == "equipaggiamento" {
 		catalogLabel = "Equipaggiamento"
-	} else if ui.catalogMode == "carte" {
-		catalogLabel = "Carte"
-	} else if ui.catalogMode == "classe" {
+	} else if ui.catalogMode == "regole" {
 		catalogLabel = "Regole"
 	}
 	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
@@ -2240,6 +2174,33 @@ func (ui *tviewUI) buildCardDetails(c CardItem) string {
 }
 
 func (ui *tviewUI) buildClassDetails(c ClassItem) string {
+	if c.Source == "carta" {
+		var b strings.Builder
+		b.WriteString(c.Subclass + "\n")
+		b.WriteString(fmt.Sprintf("Categoria: %s", strings.TrimSpace(c.Name)))
+		if strings.TrimSpace(c.Domains) != "" {
+			b.WriteString(" | Tipo: " + strings.TrimSpace(c.Domains))
+		}
+		b.WriteString("\n")
+		if strings.TrimSpace(c.CasterTrait) != "" {
+			b.WriteString("Tratto: " + strings.TrimSpace(c.CasterTrait) + "\n")
+		}
+		if strings.TrimSpace(c.Description) != "" {
+			b.WriteString("\n" + strings.TrimSpace(c.Description) + "\n")
+		}
+		if len(c.BasePrivileges) > 0 {
+			b.WriteString("\nEffetti:\n")
+			for _, p := range c.BasePrivileges {
+				p = strings.TrimSpace(p)
+				if p == "" {
+					continue
+				}
+				b.WriteString("- " + p + "\n")
+			}
+		}
+		return strings.TrimSpace(b.String())
+	}
+
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf("%s - %s\n", c.Name, c.Subclass))
 	b.WriteString(fmt.Sprintf("Rango: %d\n", c.Rank))
@@ -2544,11 +2505,16 @@ func (ui *tviewUI) openRenamePNGModal() {
 func (ui *tviewUI) openClassPNGInput() {
 	idx := ui.currentClassIndex()
 	if idx < 0 || idx >= len(ui.classes) {
-		ui.message = "Nessuna classe selezionata."
+		ui.message = "Nessuna regola selezionata."
 		ui.refreshStatus()
 		return
 	}
 	c := ui.classes[idx]
+	if strings.EqualFold(strings.TrimSpace(c.Source), "carta") {
+		ui.message = "Seleziona una classe per generare un PNG."
+		ui.refreshStatus()
+		return
+	}
 	returnFocus := ui.app.GetFocus()
 
 	levels := make([]string, 0, 10)
@@ -2559,7 +2525,7 @@ func (ui *tviewUI) openClassPNGInput() {
 	ready := false
 
 	form := tview.NewForm()
-	form.SetBorder(true).SetTitle("Crea PNG da Classe").SetTitleAlign(tview.AlignLeft)
+	form.SetBorder(true).SetTitle("Crea PNG da Regole").SetTitleAlign(tview.AlignLeft)
 	advanceToGenerate := func() {
 		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
 	}
@@ -2619,7 +2585,7 @@ func (ui *tviewUI) openClassPNGInput() {
 		ui.persistPNGs()
 		ui.closeModal()
 		ui.focusPanel(focusPNG)
-		ui.message = fmt.Sprintf("Creato PNG da classe: %s | %s L%d", c.Subclass, c.Name, selectedLevel)
+		ui.message = fmt.Sprintf("Creato PNG da regole: %s | %s L%d", c.Subclass, c.Name, selectedLevel)
 		ui.refreshAll()
 	})
 	form.AddButton("Annulla", func() {
@@ -2853,6 +2819,9 @@ func progressionBonusAtLevel(level int) int {
 func (ui *tviewUI) findClassDefinition(className, subclass string) *ClassItem {
 	for i := range ui.classes {
 		c := &ui.classes[i]
+		if strings.EqualFold(strings.TrimSpace(c.Source), "carta") {
+			continue
+		}
 		if strings.EqualFold(strings.TrimSpace(c.Name), strings.TrimSpace(className)) &&
 			strings.EqualFold(strings.TrimSpace(c.Subclass), strings.TrimSpace(subclass)) {
 			return c
@@ -2989,7 +2958,7 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 			ui.classSearch.SetText(query)
 			ui.refreshClasses()
 			ui.focusPanel(focusClassList)
-			ui.message = "Filtro classi aggiornato."
+			ui.message = "Filtro regole aggiornato."
 		case ui.encList:
 			ui.jumpToEncounter(query)
 		case ui.detail:
@@ -4077,9 +4046,9 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.classSearch, ui.classNameDrop, ui.classSubDrop, ui.classList:
 		panel = "Regole"
 		panelLines = []string{
-			"- u / t / g: focus filtro Cerca / Classe / Sottoclasse",
-			"- v: reset filtri Regole (Cerca/Classe/Sottoclasse)",
-			"- a: genera PNG dalla classe selezionata (con livello)",
+			"- u / t / g: focus filtro Cerca / Categoria / Voce",
+			"- v: reset filtri Regole (Cerca/Categoria/Voce)",
+			"- a: genera PNG dalla classe selezionata (solo voci classe)",
 		}
 	default:
 		panelLines = []string{"- /: evidenzia testo nei dettagli"}
@@ -4143,7 +4112,7 @@ func (ui *tviewUI) fullscreenTargetForFocus(focus tview.Primitive) string {
 	case ui.cardSearch, ui.cardList, ui.cardClassDrop, ui.cardTypeDrop:
 		return "carte"
 	case ui.classSearch, ui.classList, ui.classNameDrop, ui.classSubDrop:
-		return "classe"
+		return "regole"
 	case ui.detailTreasure:
 		return "treasure"
 	case ui.detail:
@@ -4191,7 +4160,7 @@ func (ui *tviewUI) rebuildMainLayout() {
 			content = ui.equipmentPanel
 		case "carte":
 			content = ui.cardsPanel
-		case "classe":
+		case "regole":
 			content = ui.classesPanel
 		case "treasure":
 			content = ui.detailTreasure
