@@ -241,7 +241,7 @@ func newTViewUI() (*tviewUI, error) {
 }
 
 func (ui *tviewUI) build() {
-	ui.dice = tview.NewList().ShowSecondaryText(false)
+	ui.dice = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.dice.SetBorder(true).SetTitle(" [0]-Dadi ")
 	ui.dice.SetChangedFunc(func(int, string, string, rune) {
 		if ui.diceRenderLock {
@@ -250,7 +250,7 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
-	ui.pngList = tview.NewList().ShowSecondaryText(false)
+	ui.pngList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.pngList.SetBorder(true).SetTitle(" [1]-PNG ")
 	ui.pngList.SetChangedFunc(func(index int, _, _ string, _ rune) {
 		if index >= 0 && index < len(ui.pngs) {
@@ -260,7 +260,7 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
-	ui.encList = tview.NewList().ShowSecondaryText(false)
+	ui.encList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.encList.SetBorder(true).SetTitle(" [2]-Encounter ")
 	ui.encList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
@@ -317,7 +317,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.rankDrop.SetCurrentOption(0)
 
-	ui.monList = tview.NewList().ShowSecondaryText(false)
+	ui.monList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.monList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
@@ -387,7 +387,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.envRankDrop.SetCurrentOption(0)
 
-	ui.envList = tview.NewList().ShowSecondaryText(false)
+	ui.envList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.envList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
@@ -474,7 +474,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqRankDrop.SetCurrentOption(0)
 
-	ui.eqList = tview.NewList().ShowSecondaryText(false)
+	ui.eqList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.eqList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
@@ -542,7 +542,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.cardTypeDrop.SetCurrentOption(0)
 
-	ui.cardList = tview.NewList().ShowSecondaryText(false)
+	ui.cardList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.cardList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
@@ -609,7 +609,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.classSubDrop.SetCurrentOption(0)
 
-	ui.classList = tview.NewList().ShowSecondaryText(false)
+	ui.classList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.classList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
 	})
