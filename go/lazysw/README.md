@@ -40,9 +40,25 @@ go run .
 
 Se il programma termina subito con un errore tipo `terminal not cursor addressable`, significa che l'ambiente non espone un vero TTY interattivo (es. esecuzione da IDE/sandbox). In questo caso avvialo da un terminale di sistema (macOS, Linux, ecc.).
 
+## Modalità CLI / headless
+
+Per usare LazySW senza interfaccia TUI (ad esempio in un terminale non "cursor addressable" o da script), puoi usare la modalità CLI:
+
+```bash
+./lazysw cli dice "2d6+1"
+./lazysw cli monsters
+./lazysw cli monsters drago
+```
+
+Comandi disponibili:
+
+- **`cli dice <espressione>`**: esegue un tiro di dadi con la stessa notazione supportata dal pannello dadi (incluso `D6` stile Savage Worlds) e stampa totale e dettaglio.
+- **`cli monsters [filtro]`**: stampa l'elenco dei mostri dal file `config/mostri.yml`; se passi un filtro, viene usato come substring case-insensitive sul nome del mostro.
+
 ## Struttura principale
 
 - `main.go`: entrypoint, avvia la TUI (`runTViewUI`).
+- `cli.go`: entrypoint per la modalità CLI/headless (`runCLI`).
 - `tview_ui.go`: definisce l'interfaccia utente (liste, pannelli, scorciatoie da tastiera, help contestuale).
 - `data.go`: tipi e funzioni per caricare/salvare:
   - PNG (`pngs.yml`, JSON legacy),
