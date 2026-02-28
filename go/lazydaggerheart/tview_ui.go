@@ -1102,11 +1102,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		case "ambienti":
 			ui.focusPanel(focusEnvType)
 		case "equipaggiamento":
-			ui.focusPanel(focusEqItemType)
+			ui.focusPanel(focusEqType)
 		case "carte":
 			ui.focusPanel(focusCardClass)
 		case "note":
-			ui.focusPanel(focusNotesList)
+			ui.focusPanel(focusNotesSearch)
 		default:
 			ui.focusPanel(focusClassName)
 		}
@@ -1128,11 +1128,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		case "carte":
 			ui.focusPanel(focusCardType)
 		case "note":
-			ui.focusPanel(focusNotesList)
+			ui.focusPanel(focusNotesSearch)
 		default:
 			ui.focusPanel(focusClassSubclass)
 		}
 		return nil
+	case 'y':
+		if ui.catalogMode == "equipaggiamento" {
+			ui.focusPanel(focusEqItemType)
+			return nil
+		}
 	case 'v':
 		switch ui.catalogMode {
 		case "mostri":
@@ -1263,10 +1268,10 @@ func (ui *tviewUI) focusPanel(panel int) {
 		panel = focusNotesList
 	}
 	if panel == focusMonRole && ui.catalogMode == "note" {
-		panel = focusNotesList
+		panel = focusNotesSearch
 	}
 	if panel == focusMonRank && ui.catalogMode == "note" {
-		panel = focusNotesList
+		panel = focusNotesSearch
 	}
 	if panel < 0 || panel >= len(ui.focus) {
 		return
@@ -4353,7 +4358,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- a: nuova nota (editor, Ctrl+S salva / Esc annulla)",
 			"- e: modifica nota selezionata",
 			"- d: elimina nota selezionata",
-			"- U: focus filtro Nome",
+			"- U / t / g: focus filtro Nome",
 			"- v: reset filtro Note",
 		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
@@ -4373,7 +4378,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	case ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList:
 		panel = "Equipaggiamento"
 		panelLines = []string{
-			"- U / t / g: focus filtro Nome / Tipo / Rango (TAB per Categoria)",
+			"- U / t / g / y: focus filtro Nome / Categoria / Rango / Tipo",
 			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Rango)",
 			"- b: genera bottino (Treasure) da categoria + dadi",
 			"- d: switch Dettagli <-> Treasure",
