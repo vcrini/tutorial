@@ -221,3 +221,58 @@ func TestRollDiceExpressionUpperDUsesDestiny(t *testing.T) {
 		t.Fatalf("unexpected breakdown for D2+1: %q", breakdown)
 	}
 }
+
+func TestParseDiceJumpIndex(t *testing.T) {
+	tests := []struct {
+		query   string
+		total   int
+		wantIdx int
+		wantOK  bool
+	}{
+		{query: "1", total: 10, wantIdx: 0, wantOK: true},
+		{query: "10", total: 10, wantIdx: 9, wantOK: true},
+		{query: "#3", total: 10, wantIdx: 2, wantOK: true},
+		{query: "  #4  ", total: 10, wantIdx: 3, wantOK: true},
+		{query: "0", total: 10, wantIdx: 0, wantOK: false},
+		{query: "11", total: 10, wantIdx: 0, wantOK: false},
+		{query: "abc", total: 10, wantIdx: 0, wantOK: false},
+		{query: "", total: 10, wantIdx: 0, wantOK: false},
+		{query: "5", total: 0, wantIdx: 0, wantOK: false},
+	}
+
+	for _, tt := range tests {
+		gotIdx, gotOK := parseDiceJumpIndex(tt.query, tt.total)
+		if gotOK != tt.wantOK {
+			t.Fatalf("query=%q total=%d: got ok=%v want %v", tt.query, tt.total, gotOK, tt.wantOK)
+		}
+		if gotOK && gotIdx != tt.wantIdx {
+			t.Fatalf("query=%q total=%d: got idx=%d want %d", tt.query, tt.total, gotIdx, tt.wantIdx)
+		}
+	}
+}
+
+func TestDiceGotoIndexFromRune(t *testing.T) {
+	tests := []struct {
+		r       rune
+		total   int
+		wantIdx int
+		wantOK  bool
+	}{
+		{r: '^', total: 7, wantIdx: 0, wantOK: true},
+		{r: '$', total: 7, wantIdx: 6, wantOK: true},
+		{r: '2', total: 7, wantIdx: 1, wantOK: true},
+		{r: '0', total: 7, wantIdx: 0, wantOK: false},
+		{r: 'x', total: 7, wantIdx: 0, wantOK: false},
+		{r: '$', total: 0, wantIdx: 0, wantOK: false},
+	}
+
+	for _, tt := range tests {
+		gotIdx, gotOK := diceGotoIndexFromRune(tt.r, tt.total)
+		if gotOK != tt.wantOK {
+			t.Fatalf("r=%q total=%d: got ok=%v want %v", string(tt.r), tt.total, gotOK, tt.wantOK)
+		}
+		if gotOK && gotIdx != tt.wantIdx {
+			t.Fatalf("r=%q total=%d: got idx=%d want %d", string(tt.r), tt.total, gotIdx, tt.wantIdx)
+		}
+	}
+}

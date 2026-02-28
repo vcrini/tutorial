@@ -65,9 +65,10 @@ type tviewUI struct {
 	pages  *tview.Pages
 	status *tview.TextView
 
-	dice           *tview.List
-	diceLog        []DiceResult
-	diceRenderLock bool
+	dice            *tview.List
+	diceLog         []DiceResult
+	diceRenderLock  bool
+	diceGotoPending bool
 
 	pngList        *tview.List
 	encList        *tview.List
@@ -695,6 +696,31 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return ev
 	}
 
+	if ui.diceGotoPending {
+		if ev.Key() == tcell.KeyEscape {
+			ui.diceGotoPending = false
+			ui.message = "Jump dadi annullato."
+			ui.refreshStatus()
+			return nil
+		}
+		if ev.Key() == tcell.KeyRune {
+			ui.diceGotoPending = false
+			if idx, ok := diceGotoIndexFromRune(ev.Rune(), len(ui.diceLog)); ok {
+				ui.dice.SetCurrentItem(idx)
+				ui.message = fmt.Sprintf("Jump dadi: #%d", idx+1)
+				ui.refreshDetail()
+			} else {
+				ui.message = fmt.Sprintf("Riga dadi non valida: %q", string(ev.Rune()))
+			}
+			ui.refreshStatus()
+			return nil
+		}
+		ui.diceGotoPending = false
+		ui.message = "Jump dadi annullato."
+		ui.refreshStatus()
+		return nil
+	}
+
 	if focusIsInput && ev.Key() == tcell.KeyEsc {
 		ui.focusPanel(ui.activeCatalogListFocus())
 		ui.refreshStatus()
@@ -832,41 +858,63 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'u':
-		if ui.catalogMode == "mostri" {
+		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonSearch)
-		} else if ui.catalogMode == "equipaggiamento" {
+			return nil
+		}
+		if ui.isEquipmentPanelFocus(focus) {
 			ui.focusPanel(focusEqSearch)
-		} else {
+			return nil
+		}
+		if ui.isClassPanelFocus(focus) {
 			ui.focusPanel(focusClassSearch)
+			return nil
 		}
-		return nil
 	case 't':
-		if ui.catalogMode == "mostri" {
+		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonRole)
-		} else if ui.catalogMode == "equipaggiamento" {
+			return nil
+		}
+		if ui.isEquipmentPanelFocus(focus) {
 			ui.focusPanel(focusEqItemType)
-		} else {
+			return nil
+		}
+		if ui.isClassPanelFocus(focus) {
 			ui.focusPanel(focusClassName)
+			return nil
 		}
-		return nil
 	case 'g':
-		if ui.catalogMode == "mostri" {
+		if focus == ui.dice {
+			ui.diceGotoPending = true
+			ui.message = "Jump dadi: premi 1-9, ^ (prima), $ (ultima)."
+			ui.refreshStatus()
+			return nil
+		}
+		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonRank)
-		} else if ui.catalogMode == "equipaggiamento" {
+			return nil
+		}
+		if ui.isEquipmentPanelFocus(focus) {
 			ui.focusPanel(focusEqRank)
-		} else {
+			return nil
+		}
+		if ui.isClassPanelFocus(focus) {
 			ui.focusPanel(focusClassSubclass)
+			return nil
 		}
-		return nil
 	case 'v':
-		if ui.catalogMode == "mostri" {
+		if ui.isMonsterPanelFocus(focus) {
 			ui.resetMonsterFilters()
-		} else if ui.catalogMode == "equipaggiamento" {
-			ui.resetEquipmentFilters()
-		} else {
-			ui.resetClassFilters()
+			return nil
 		}
-		return nil
+		if ui.isEquipmentPanelFocus(focus) {
+			ui.resetEquipmentFilters()
+			return nil
+		}
+		if ui.isClassPanelFocus(focus) {
+			ui.resetClassFilters()
+			return nil
+		}
 	case 'd':
 		if focus == ui.dice {
 			ui.deleteSelectedDiceResult()
@@ -929,6 +977,18 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 	}
 	return ev
+}
+
+func (ui *tviewUI) isMonsterPanelFocus(focus tview.Primitive) bool {
+	return focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.monList
+}
+
+func (ui *tviewUI) isEquipmentPanelFocus(focus tview.Primitive) bool {
+	return focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.eqList
+}
+
+func (ui *tviewUI) isClassPanelFocus(focus tview.Primitive) bool {
+	return focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop || focus == ui.classList
 }
 
 func (ui *tviewUI) focusNext() {
@@ -3010,6 +3070,12 @@ func (ui *tviewUI) jumpToDiceResult(query string) {
 		ui.message = "Ricerca dadi vuota."
 		return
 	}
+	if idx, ok := parseDiceJumpIndex(query, len(ui.diceLog)); ok {
+		ui.dice.SetCurrentItem(idx)
+		ui.message = fmt.Sprintf("Jump dadi: #%d", idx+1)
+		ui.refreshDetail()
+		return
+	}
 	q := strings.ToLower(query)
 	for i, e := range ui.diceLog {
 		line := strings.ToLower(e.Expression + " " + e.Output)
@@ -3021,6 +3087,48 @@ func (ui *tviewUI) jumpToDiceResult(query string) {
 		}
 	}
 	ui.message = fmt.Sprintf("Nessun match dadi per '%s'.", query)
+}
+
+func parseDiceJumpIndex(query string, total int) (int, bool) {
+	if total <= 0 {
+		return 0, false
+	}
+	q := strings.TrimSpace(query)
+	if q == "" {
+		return 0, false
+	}
+	if strings.HasPrefix(q, "#") {
+		q = strings.TrimSpace(strings.TrimPrefix(q, "#"))
+	}
+	if q == "" {
+		return 0, false
+	}
+	for _, r := range q {
+		if r < '0' || r > '9' {
+			return 0, false
+		}
+	}
+	n, err := strconv.Atoi(q)
+	if err != nil || n < 1 || n > total {
+		return 0, false
+	}
+	return n - 1, true
+}
+
+func diceGotoIndexFromRune(r rune, total int) (int, bool) {
+	if total <= 0 {
+		return 0, false
+	}
+	if r == '^' {
+		return 0, true
+	}
+	if r == '$' {
+		return total - 1, true
+	}
+	if r < '0' || r > '9' {
+		return 0, false
+	}
+	return parseDiceJumpIndex(string(r), total)
 }
 
 func (ui *tviewUI) scrollDetailByPage(direction int) {
