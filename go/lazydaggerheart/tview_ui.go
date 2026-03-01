@@ -2780,13 +2780,7 @@ func (ui *tviewUI) openCreatePNGModal() {
 	})
 	form.SetButtonsAlign(tview.AlignLeft)
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(form, 56, 0, true).
-			AddItem(nil, 0, 1, false), 11, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(form)
 
 	ui.modalVisible = true
 	ui.modalName = "create_png"
@@ -2989,13 +2983,7 @@ func (ui *tviewUI) openEditPNGModal() {
 	})
 	form.SetButtonsAlign(tview.AlignLeft)
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(form, 58, 0, true).
-			AddItem(nil, 0, 1, false), 16, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(form)
 
 	ui.modalVisible = true
 	ui.modalName = "edit_png"
@@ -3174,16 +3162,10 @@ func (ui *tviewUI) openClassPNGInput() {
 	info.SetText(fmt.Sprintf("[yellow]%s | %s[-]\nScegli il livello e genera un PNG.", c.Subclass, c.Name))
 
 	container := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(info, 2, 0, false).
+		AddItem(info, 8, 0, false).
 		AddItem(form, 0, 1, true)
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(container, 66, 0, true).
-			AddItem(nil, 0, 1, false), 11, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(container)
 
 	ui.modalVisible = true
 	ui.modalName = "class_png"
@@ -3427,13 +3409,7 @@ func (ui *tviewUI) openConfirmModal(title, message string, onConfirm func()) {
 		return ev
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(text, 56, 0, true).
-			AddItem(nil, 0, 1, false), 8, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(text)
 
 	ui.modalVisible = true
 	ui.modalName = "confirm"
@@ -3481,13 +3457,7 @@ func (ui *tviewUI) openRawSearch(focus tview.Primitive) {
 	}
 
 	returnFocus := focus
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 48, 0, true).
-			AddItem(nil, 0, 1, false), 5, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(input)
 
 	ui.modalVisible = true
 	ui.modalName = "raw_search"
@@ -3921,13 +3891,7 @@ func (ui *tviewUI) openRandomEncounterFromMonstersInput() {
 		AddItem(info, 4, 0, false).
 		AddItem(form, 0, 1, true)
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(container, 80, 0, true).
-			AddItem(nil, 0, 1, false), 13, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(container)
 
 	ui.modalVisible = true
 	ui.modalName = "monster_random_encounter"
@@ -4292,13 +4256,7 @@ func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
 	text.SetBorder(true).SetTitle("Help")
 	text.SetText(ui.buildHelpContent(focus))
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 2, 0, false).
-			AddItem(text, 0, 1, true).
-			AddItem(nil, 2, 0, false), 0, 1, true).
-		AddItem(nil, 1, 0, false)
+	modal := ui.fullscreenModal(text)
 
 	ui.pages.AddAndSwitchToPage("help", modal, true)
 	ui.app.SetFocus(text)
@@ -4662,13 +4620,7 @@ func (ui *tviewUI) openStateFileModal(action, target string) {
 		return event
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(form, 78, 0, true).
-			AddItem(nil, 0, 1, false), 8, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(form)
 
 	ui.modalVisible = true
 	ui.modalName = "state_file_modal"
@@ -4758,13 +4710,7 @@ func (ui *tviewUI) openGotoPanelModal() {
 		return nil
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 8, 0, false).
-			AddItem(text, 0, 1, true).
-			AddItem(nil, 8, 0, false), 13, 0, true).
-		AddItem(nil, 1, 0, false)
+	modal := ui.fullscreenModal(text)
 
 	ui.modalVisible = true
 	ui.modalName = "goto_panel"
@@ -4781,6 +4727,11 @@ func (ui *tviewUI) closeHelpOverlay() {
 	if ui.helpReturnFocus != nil {
 		ui.app.SetFocus(ui.helpReturnFocus)
 	}
+}
+
+func (ui *tviewUI) fullscreenModal(content tview.Primitive) tview.Primitive {
+	return tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(content, 0, 1, true)
 }
 
 func (ui *tviewUI) closeModal() {
@@ -5031,13 +4982,7 @@ func (ui *tviewUI) openAddNoteModal() {
 		return ev
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 8, 0, false).
-			AddItem(editor, 0, 1, true).
-			AddItem(nil, 8, 0, false), 0, 1, true).
-		AddItem(nil, 1, 0, false)
+	modal := ui.fullscreenModal(editor)
 
 	ui.modalVisible = true
 	ui.modalName = "add_note"
@@ -5099,13 +5044,7 @@ func (ui *tviewUI) openEditNoteModal() {
 		return ev
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 1, 0, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 8, 0, false).
-			AddItem(editor, 0, 1, true).
-			AddItem(nil, 8, 0, false), 0, 1, true).
-		AddItem(nil, 1, 0, false)
+	modal := ui.fullscreenModal(editor)
 
 	ui.modalVisible = true
 	ui.modalName = "edit_note"
@@ -5296,13 +5235,7 @@ func (ui *tviewUI) openEquipmentTreasureInput() {
 		ui.refreshStatus()
 	})
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(form, 72, 0, true).
-			AddItem(nil, 0, 1, false), 13, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(form)
 
 	ui.modalVisible = true
 	ui.modalName = "equip_treasure"
@@ -5381,13 +5314,7 @@ func (ui *tviewUI) openDiceRollInput() {
 	input.SetBorder(true).SetTitle("Dadi (es. 2d6+3, 1d20+5>15, d6,d8, 1d20+4 x3)")
 	returnFocus := ui.app.GetFocus()
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 72, 0, true).
-			AddItem(nil, 0, 1, false), 5, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(input)
 
 	ui.modalVisible = true
 	ui.modalName = "dice_roll"
@@ -5446,13 +5373,7 @@ func (ui *tviewUI) openDiceReRollInput() {
 	input.SetText(ui.diceLog[cur].Expression)
 	returnFocus := ui.app.GetFocus()
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 64, 0, true).
-			AddItem(nil, 0, 1, false), 5, 0, true).
-		AddItem(nil, 0, 1, false)
+	modal := ui.fullscreenModal(input)
 
 	ui.modalVisible = true
 	ui.modalName = "dice_reroll"
