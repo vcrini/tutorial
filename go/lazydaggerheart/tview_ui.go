@@ -994,6 +994,34 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.refreshCatalogTitles()
 		ui.focusPanel(focusNotesList)
 		return nil
+	case '5':
+		ui.catalogMode = "equipaggiamento"
+		ui.catalogPanel.SwitchToPage("equipaggiamento")
+		ui.refreshCatalogTitles()
+		ui.focusPanel(focusEqList)
+		return nil
+	case '6':
+		ui.catalogMode = "carte"
+		ui.catalogPanel.SwitchToPage("carte")
+		ui.refreshCatalogTitles()
+		ui.focusPanel(focusCardList)
+		return nil
+	case '7':
+		ui.catalogMode = "classe"
+		ui.catalogPanel.SwitchToPage("classe")
+		ui.refreshCatalogTitles()
+		ui.focusPanel(focusClassList)
+		return nil
+	case '8':
+		ui.activeBottomPane = "details"
+		ui.detailBottom.SwitchToPage("details")
+		ui.focusPanel(focusDetail)
+		return nil
+	case '9':
+		ui.activeBottomPane = "treasure"
+		ui.detailBottom.SwitchToPage("treasure")
+		ui.focusPanel(focusTreasure)
+		return nil
 	case '0':
 		ui.focusPanel(focusDice)
 		return nil
