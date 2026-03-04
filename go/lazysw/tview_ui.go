@@ -4293,37 +4293,28 @@ func (ui *tviewUI) openEncounterInitiativeEditModal() {
 	entry := ui.encounter[idx]
 	returnFocus := ui.app.GetFocus()
 
-	input := tview.NewInputField().SetLabel(" Iniziativa ").SetFieldWidth(8)
-	input.SetBorder(true).SetTitle("Modifica Iniziativa (es. J♦, A♠, 10♥)")
+	defaultRank := ""
+	defaultSuitIdx := 0
 	if entry.HasInit {
-		input.SetText(strings.TrimSpace(entry.InitiativeCard))
+		if rankIdx, suitIdx, ok := parseInitiativeCard(entry.InitiativeCard); ok {
+			defaultRank = initiativeRanks[rankIdx]
+			defaultSuitIdx = suitIdx
+		}
 	}
+	selectedSuit := defaultSuitIdx
 
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).
-		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(nil, 0, 1, false).
-			AddItem(input, 54, 0, true).
-			AddItem(nil, 0, 1, false), 6, 0, true).
-		AddItem(nil, 0, 1, false)
-
-	ui.modalVisible = true
-	ui.modalName = "encounter_init_edit"
-	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
-	ui.app.SetFocus(input)
-
-	input.SetDoneFunc(func(key tcell.Key) {
-		if key == tcell.KeyEscape {
-			ui.closeModal()
-			ui.app.SetFocus(returnFocus)
-			ui.refreshStatus()
-			return
+	form := tview.NewForm()
+	form.SetBorder(true).SetTitle("Modifica Iniziativa").SetTitleAlign(tview.AlignLeft)
+	form.AddInputField("Rank", defaultRank, 4, nil, nil)
+	form.AddDropDown("Seme", initiativeSuits, defaultSuitIdx, func(_ string, index int) {
+		if index >= 0 && index < len(initiativeSuits) {
+			selectedSuit = index
 		}
-		if key != tcell.KeyEnter {
-			return
-		}
-		text := strings.TrimSpace(input.GetText())
-		if text == "" {
+	})
+
+	save := func() {
+		rankText := strings.ToUpper(strings.TrimSpace(form.GetFormItem(0).(*tview.InputField).GetText()))
+		if rankText == "" {
 			ui.encounter[idx].HasInit = false
 			ui.encounter[idx].InitiativeCard = ""
 			ui.clearEncounterInitTracking()
@@ -4337,12 +4328,18 @@ func (ui *tviewUI) openEncounterInitiativeEditModal() {
 			ui.refreshStatus()
 			return
 		}
-		card, ok := normalizeInitiativeCard(text)
+
+		cardText := rankText
+		if _, _, ok := parseInitiativeCard(rankText); !ok {
+			cardText = rankText + initiativeSuits[selectedSuit]
+		}
+		card, ok := normalizeInitiativeCard(cardText)
 		if !ok {
-			ui.message = "Carta iniziativa non valida. Usa formato tipo J♦, A♠, 10♥."
+			ui.message = "Carta iniziativa non valida. Usa rank (A,K,Q,J,10..2) + seme."
 			ui.refreshStatus()
 			return
 		}
+
 		ui.encounter[idx].HasInit = true
 		ui.encounter[idx].InitiativeCard = card
 		ui.clearEncounterInitTracking()
@@ -4354,7 +4351,43 @@ func (ui *tviewUI) openEncounterInitiativeEditModal() {
 		ui.refreshDetail()
 		ui.message = fmt.Sprintf("Iniziativa aggiornata: %s.", card)
 		ui.refreshStatus()
+	}
+
+	form.AddButton("Salva", save)
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
 	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		ui.refreshStatus()
+	})
+
+	if item := form.GetFormItem(1); item != nil {
+		if dd, ok := item.(*tview.DropDown); ok {
+			dd.SetFieldBackgroundColor(tcell.ColorBlack)
+			dd.SetFieldTextColor(tcell.ColorWhite)
+			dd.SetListStyles(
+				tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+				tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+			)
+		}
+	}
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 62, 0, true).
+			AddItem(nil, 0, 1, false), 9, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "encounter_init_edit"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
 }
 
 func (ui *tviewUI) openEncounterConditionModal() {
