@@ -68,6 +68,41 @@ type classPreset struct {
 	Attitude  []string
 }
 
+// Liste di esperienze casuali per la creazione del personaggio.
+var (
+	experienceBackground = []string{
+		"Alta Sacerdotessa", "Artista da Circo", "Artista della Truffa", "Assassino",
+		"Cacciatore di Taglie", "Cantastorie", "Cuoco della Famiglia Reale",
+		"Fabbro", "Giramondo", "Guardia del Corpo", "Ladro", "Medico da Campo",
+		"Mercante", "Monarca Caduto", "Nobile", "Pirata", "Politico",
+		"Scappato di Casa", "Soldato", "Spadaccino", "Studioso",
+	}
+	experiencePeculiarity = []string{
+		"Affabile", "Affascinante", "Amico di Tutti", "Burlone", "Codardo",
+		"Dita Appiccicose", "Giovane e Ingenuo", "Leader", "Leale", "Lingua d’Argento",
+		"Lupo Solitario", "Osservatore", "Presenza Intimidatoria", "Sopravvissuto",
+		"Temprato dalla Battaglia", "Testardo all’Inverosimile", "Topo di Biblioteca", "Utile",
+	}
+	experienceSpeciality = []string{
+		"Acrobata", "Cartografo", "Giocatore d’Azzardo", "Guaritore", "Inventore",
+		"Maestro del Travestimento", "Navigatore", "Sopravvissuto", "Spadaccino",
+		"Storico Magico", "Tattico", "Tiratore Scelto",
+	}
+	experienceSkill = []string{
+		"Affinità Animale", "Baratto", "Bugiardo", "Forza Incredibile", "Impara Velocemente",
+		"Mani Veloci", "Memoria Fotografica", "Mira Micidiale", "Negoziatore",
+		"Piedi Leggeri", "Riparare", "Saccheggiatore", "Segugio",
+	}
+	experienceMotto = []string{
+		"Amico della Natura", "Ci Sarò Sempre", "Fingo Finché non Posso Fingere",
+		"Conoscenza è Potere", "La Prima Volta non si Scorda mai",
+		"Lo Spettacolo Deve Continuare", "Lupo Vestito da Pecora", "Mai Più",
+		"Mantengo la Posizione", "Non Lascio Nessuno Indietro", "Non ti Lascerò da Solo",
+		"Prenditela con Qualcuno della tua Taglia", "Prova a Prendermi",
+		"Questa non è una Negoziazione", "Ti Guardo le Spalle",
+	}
+)
+
 type uiSnapshot struct {
 	pngs      []PNG
 	encounter []EncounterEntry
@@ -3027,6 +3062,7 @@ func (ui *tviewUI) openClassPNGInput() {
 		return
 	}
 	c := ui.classes[idx]
+	preset := classPresetFor(c.Name)
 	returnFocus := ui.app.GetFocus()
 
 	levels := make([]string, 0, 10)
@@ -3035,15 +3071,45 @@ func (ui *tviewUI) openClassPNGInput() {
 	}
 	selectedLevel := 1
 	selectedPF := max(c.HP, 0)
-	selectedStress := 0
-	selectedArmor := 3
+	selectedStress := 6
+	baseArmorText := strings.TrimSpace(preset.Armor)
+	selectedArmor := armorScoreFromText(baseArmorText)
 	selectedHope := 2
-	ready := false
-
+	// Origine e Comunità: scelte da carte dedicate, con default casuale
+	originOptions := ui.cardNamesByClassAndType("Origine", "Origine")
+	communityOptions := ui.cardNamesByClassAndType("Comunità", "Comunità")
+	selectedOrigin := ""
+	selectedCommunity := ""
+	initialOriginIdx := -1
+	initialCommunityIdx := -1
+	if len(originOptions) > 0 {
+		initialOriginIdx = rand.IntN(len(originOptions))
+		selectedOrigin = originOptions[initialOriginIdx]
+	}
+	if len(communityOptions) > 0 {
+		initialCommunityIdx = rand.IntN(len(communityOptions))
+		selectedCommunity = communityOptions[initialCommunityIdx]
+	}
 	form := tview.NewForm()
 	form.SetBorder(true).SetTitle("Crea PNG da Classe").SetTitleAlign(tview.AlignLeft)
 	advanceToGenerate := func() {
 		form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Genera"))
+	}
+	focusNextItem := func(current int) {
+		next := current + 1
+		if next >= form.GetFormItemCount() {
+			advanceToGenerate()
+			return
+		}
+		form.SetFocus(next)
+	}
+	focusPrevItem := func(current int) {
+		prev := current - 1
+		if prev < 0 {
+			form.SetFocus(form.GetFormItemCount() + form.GetButtonIndex("Annulla"))
+			return
+		}
+		form.SetFocus(prev)
 	}
 	form.AddDropDown("Livello", levels, 0, func(option string, _ int) {
 		if option == "" {
@@ -3051,9 +3117,6 @@ func (ui *tviewUI) openClassPNGInput() {
 		}
 		if v, err := strconv.Atoi(option); err == nil && v > 0 {
 			selectedLevel = v
-		}
-		if ready {
-			form.SetFocus(1)
 		}
 	})
 	form.AddInputField("PF", strconv.Itoa(selectedPF), 4, func(textToCheck string, lastChar rune) bool {
@@ -3100,6 +3163,16 @@ func (ui *tviewUI) openClassPNGInput() {
 			selectedHope = v
 		}
 	})
+	if len(originOptions) > 0 {
+		form.AddDropDown("Origine", originOptions, initialOriginIdx, func(option string, _ int) {
+			selectedOrigin = strings.TrimSpace(option)
+		})
+	}
+	if len(communityOptions) > 0 {
+		form.AddDropDown("Comunità", communityOptions, initialCommunityIdx, func(option string, _ int) {
+			selectedCommunity = strings.TrimSpace(option)
+		})
+	}
 	if item := form.GetFormItem(0); item != nil {
 		if dd, ok := item.(*tview.DropDown); ok {
 			dd.SetFieldBackgroundColor(tcell.ColorBlack)
@@ -3108,41 +3181,113 @@ func (ui *tviewUI) openClassPNGInput() {
 				tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
 				tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
 			)
+			dd.SetFinishedFunc(func(key tcell.Key) {
+				switch key {
+				case tcell.KeyEnter, tcell.KeyTab:
+					focusNextItem(0)
+				case tcell.KeyBacktab:
+					focusPrevItem(0)
+				}
+			})
+		}
+	}
+	for idx := 1; idx < form.GetFormItemCount(); idx++ {
+		if item := form.GetFormItem(idx); item != nil {
+			switch w := item.(type) {
+			case *tview.InputField:
+				w.SetFieldBackgroundColor(tcell.ColorBlack)
+				w.SetFieldTextColor(tcell.ColorWhite)
+				current := idx
+				w.SetDoneFunc(func(key tcell.Key) {
+					switch key {
+					case tcell.KeyEnter, tcell.KeyTab:
+						focusNextItem(current)
+					case tcell.KeyBacktab:
+						focusPrevItem(current)
+					}
+				})
+			case *tview.DropDown:
+				w.SetFieldBackgroundColor(tcell.ColorBlack)
+				w.SetFieldTextColor(tcell.ColorWhite)
+				w.SetListStyles(
+					tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+					tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+				)
+				current := idx
+				w.SetFinishedFunc(func(key tcell.Key) {
+					switch key {
+					case tcell.KeyEnter, tcell.KeyTab:
+						focusNextItem(current)
+					case tcell.KeyBacktab:
+						focusPrevItem(current)
+					}
+				})
+			}
 		}
 	}
 	form.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() != tcell.KeyEnter {
-			return event
-		}
-		itemIdx, buttonIdx := form.GetFocusedItemIndex()
-		switch {
-		case itemIdx == 0:
-			form.SetFocus(1)
-			return nil
-		case itemIdx == 1:
-			form.SetFocus(2)
-			return nil
-		case itemIdx == 2:
-			form.SetFocus(3)
-			return nil
-		case itemIdx == 3:
-			form.SetFocus(4)
-			return nil
-		case itemIdx == 4:
-			advanceToGenerate()
-			return nil
-		case buttonIdx >= 0:
-			return event
+		switch event.Key() {
+		case tcell.KeyEnter, tcell.KeyTab, tcell.KeyBacktab:
 		default:
 			return event
 		}
+		itemIdx, buttonIdx := form.GetFocusedItemIndex()
+		if buttonIdx >= 0 || itemIdx < 0 || itemIdx >= form.GetFormItemCount() {
+			return event
+		}
+		if _, ok := form.GetFormItem(itemIdx).(*tview.InputField); !ok {
+			return event
+		}
+		if event.Key() == tcell.KeyBacktab {
+			focusPrevItem(itemIdx)
+			return nil
+		}
+		focusNextItem(itemIdx)
+		return nil
 	})
 
 	form.AddButton("Genera", func() {
 		baseName := uniqueRandomPNGName(ui.pngs)
-		preset := classPresetFor(c.Name)
 		inv := buildSuggestedInventory(preset)
+		if strings.TrimSpace(c.ClassItem) != "" {
+			if inv == "" {
+				inv = strings.TrimSpace(c.ClassItem)
+			} else {
+				inv = strings.TrimSpace(c.ClassItem) + ", " + inv
+			}
+		}
 		look := buildSuggestedLook(preset)
+		armorText := armorWithLevel(baseArmorText, selectedLevel)
+
+		// Esperienze di partenza: 2 casuali dalle liste fornite
+		chosenExperiences := randomExperiences(2)
+
+		// Carte dominio per la classe (consideriamo gli incantesimi di classe)
+		domainCards := ui.domainCardNamesForClass(c.Name)
+
+		// Costruzione descrizione estesa
+		var descParts []string
+		if strings.TrimSpace(c.Description) != "" {
+			descParts = append(descParts, strings.TrimSpace(c.Description))
+		}
+		if selectedOrigin != "" {
+			descParts = append(descParts, "Origine: "+selectedOrigin)
+		}
+		if selectedCommunity != "" {
+			descParts = append(descParts, "Comunità: "+selectedCommunity)
+		}
+		if len(chosenExperiences) > 0 {
+			descParts = append(descParts, "Esperienze: "+strings.Join(chosenExperiences, ", "))
+		}
+		if len(domainCards) > 0 {
+			if strings.TrimSpace(c.Domains) != "" {
+				descParts = append(descParts, "Carte dominio ("+strings.TrimSpace(c.Domains)+"): "+strings.Join(domainCards, ", "))
+			} else {
+				descParts = append(descParts, "Carte dominio: "+strings.Join(domainCards, ", "))
+			}
+		}
+		description := strings.Join(descParts, "\n\n")
+
 		png := PNG{
 			Name:        fmt.Sprintf("%s (%s | %s L%d)", baseName, c.Subclass, c.Name, selectedLevel),
 			Token:       defaultToken,
@@ -3156,11 +3301,11 @@ func (ui *tviewUI) openClassPNGInput() {
 			Rank:        rankFromLevel(selectedLevel),
 			CompBonus:   progressionBonusAtLevel(selectedLevel),
 			ExpBonus:    progressionBonusAtLevel(selectedLevel),
-			Description: strings.TrimSpace(c.Description),
+			Description: description,
 			Traits:      strings.TrimSpace(preset.Traits),
 			Primary:     strings.TrimSpace(preset.Primary),
 			Secondary:   strings.TrimSpace(preset.Secondary),
-			Armor:       strings.TrimSpace(preset.Armor),
+			Armor:       armorText,
 			Look:        look,
 			Inventory:   inv,
 		}
@@ -3184,7 +3329,6 @@ func (ui *tviewUI) openClassPNGInput() {
 		ui.refreshStatus()
 	})
 	form.SetButtonsAlign(tview.AlignLeft)
-	ready = true
 
 	info := tview.NewTextView().SetDynamicColors(true).SetWrap(true)
 	info.SetText(fmt.Sprintf("[yellow]%s | %s[-]\nScegli il livello e genera un PNG.", c.Subclass, c.Name))
@@ -3206,6 +3350,45 @@ func chooseOne(items []string) string {
 		return ""
 	}
 	return strings.TrimSpace(items[rand.IntN(len(items))])
+}
+
+// randomExperiences restituisce n esperienze casuali senza ripetizioni
+// dalle liste predefinite.
+func randomExperiences(n int) []string {
+	if n <= 0 {
+		return nil
+	}
+	pool := make([]string, 0,
+		len(experienceBackground)+len(experiencePeculiarity)+len(experienceSpeciality)+len(experienceSkill)+len(experienceMotto),
+	)
+	pool = append(pool, experienceBackground...)
+	pool = append(pool, experiencePeculiarity...)
+	pool = append(pool, experienceSpeciality...)
+	pool = append(pool, experienceSkill...)
+	pool = append(pool, experienceMotto...)
+	if len(pool) == 0 {
+		return nil
+	}
+	if n >= len(pool) {
+		// Restituisce tutte le esperienze in ordine casuale.
+		out := make([]string, len(pool))
+		copy(out, pool)
+		rand.Shuffle(len(out), func(i, j int) {
+			out[i], out[j] = out[j], out[i]
+		})
+		return out
+	}
+	used := make(map[int]struct{}, n)
+	out := make([]string, 0, n)
+	for len(out) < n {
+		idx := rand.IntN(len(pool))
+		if _, ok := used[idx]; ok {
+			continue
+		}
+		used[idx] = struct{}{}
+		out = append(out, pool[idx])
+	}
+	return out
 }
 
 func buildSuggestedInventory(p classPreset) string {
@@ -3260,6 +3443,83 @@ func buildSuggestedLook(p classPreset) string {
 		parts = append(parts, "Atteggiamento: "+atteggiamento)
 	}
 	return strings.Join(parts, " | ")
+}
+
+// armorScoreFromText estrae il "Punteggio Base" dalla descrizione
+// dell'armatura, se presente. In caso di fallimento restituisce 3.
+func armorScoreFromText(armor string) int {
+	re := regexp.MustCompile(`Punteggio Base\s+(\d+)`)
+	m := re.FindStringSubmatch(armor)
+	if len(m) != 2 {
+		return 3
+	}
+	v, err := strconv.Atoi(m[1])
+	if err != nil {
+		return 3
+	}
+	return v
+}
+
+// armorWithLevel somma il livello alle soglie di danno presenti
+// nel testo dell'armatura (es. "Soglie 5/11" -> "Soglie 7/13" a L2).
+func armorWithLevel(armor string, level int) string {
+	if level <= 0 {
+		return armor
+	}
+	re := regexp.MustCompile(`Soglie\s+(\d+)\s*/\s*(\d+)`)
+	return re.ReplaceAllStringFunc(armor, func(s string) string {
+		m := re.FindStringSubmatch(s)
+		if len(m) != 3 {
+			return s
+		}
+		low, err1 := strconv.Atoi(m[1])
+		high, err2 := strconv.Atoi(m[2])
+		if err1 != nil || err2 != nil {
+			return s
+		}
+		low += level
+		high += level
+		return fmt.Sprintf("Soglie %d/%d", low, high)
+	})
+}
+
+// cardNamesByClassAndType restituisce i nomi unici delle carte il cui
+// campo Class e Type corrispondono (case-insensitive) ai parametri.
+// Se cardType è vuoto, viene ignorato.
+func (ui *tviewUI) cardNamesByClassAndType(className, cardType string) []string {
+	className = strings.TrimSpace(className)
+	cardType = strings.TrimSpace(cardType)
+	if className == "" {
+		return nil
+	}
+	seen := make(map[string]struct{})
+	var out []string
+	for _, c := range ui.cards {
+		if !strings.EqualFold(strings.TrimSpace(c.Class), className) {
+			continue
+		}
+		if cardType != "" && !strings.EqualFold(strings.TrimSpace(c.Type), cardType) {
+			continue
+		}
+		name := strings.TrimSpace(c.Name)
+		if name == "" {
+			continue
+		}
+		if _, ok := seen[name]; ok {
+			continue
+		}
+		seen[name] = struct{}{}
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// domainCardNamesForClass restituisce i nomi delle carte dominio
+// per una data classe. In questa implementazione consideriamo gli
+// incantesimi di classe come carte dominio.
+func (ui *tviewUI) domainCardNamesForClass(className string) []string {
+	return ui.cardNamesByClassAndType(className, "Incantesimo")
 }
 
 func classPresetFor(className string) classPreset {
