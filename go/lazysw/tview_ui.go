@@ -676,6 +676,7 @@ func (ui *tviewUI) build() {
 	ui.suppressClassSourceCallback = true
 	ui.classSourceDrop.SetCurrentOption(0)
 	ui.suppressClassSourceCallback = false
+	ui.updateSourceDropLabels()
 
 	ui.classList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.classList.SetChangedFunc(func(int, string, string, rune) {
@@ -819,6 +820,43 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if focus == ui.monSourceDrop || focus == ui.eqSourceDrop || focus == ui.classSourceDrop {
 			return tcell.NewEventKey(tcell.KeyEnter, 0, ev.Modifiers())
+		}
+	}
+
+	// While a source dropdown is open: A selects all, N deselects all.
+	if ev.Key() == tcell.KeyRune {
+		var openDrop *tview.DropDown
+		switch {
+		case ui.monSourceDrop != nil && ui.monSourceDrop.IsOpen():
+			openDrop = ui.monSourceDrop
+		case ui.eqSourceDrop != nil && ui.eqSourceDrop.IsOpen():
+			openDrop = ui.eqSourceDrop
+		case ui.classSourceDrop != nil && ui.classSourceDrop.IsOpen():
+			openDrop = ui.classSourceDrop
+		}
+		if openDrop != nil {
+			switch ev.Rune() {
+			case 'a', 'A':
+				if openDrop == ui.monSourceDrop {
+					ui.setMonsterSourceAll(true)
+				} else if openDrop == ui.eqSourceDrop {
+					ui.setEquipmentSourceAll(true)
+				} else {
+					ui.setClassSourceAll(true)
+				}
+				ui.openDropDown(openDrop)
+				return nil
+			case 'n', 'N':
+				if openDrop == ui.monSourceDrop {
+					ui.setMonsterSourceAll(false)
+				} else if openDrop == ui.eqSourceDrop {
+					ui.setEquipmentSourceAll(false)
+				} else {
+					ui.setClassSourceAll(false)
+				}
+				ui.openDropDown(openDrop)
+				return nil
+			}
 		}
 	}
 
@@ -2100,6 +2138,16 @@ func sourceMenuOptions(values []string, selected map[string]bool) []string {
 	return opts
 }
 
+func sourceSelectedCount(values []string, selected map[string]bool) int {
+	n := 0
+	for _, v := range values {
+		if selected[v] {
+			n++
+		}
+	}
+	return n
+}
+
 func sourceMatches(source string, selected map[string]bool) bool {
 	if len(selected) == 0 {
 		return false
@@ -2278,6 +2326,24 @@ func toggleSourceSelection(text string, values []string, selected map[string]boo
 	}
 }
 
+func setAllSourceSelection(values []string, selected map[string]bool, enabled bool) {
+	for _, v := range values {
+		selected[v] = enabled
+	}
+}
+
+func (ui *tviewUI) updateSourceDropLabels() {
+	if ui.monSourceDrop != nil {
+		ui.monSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.monSourceValues, ui.monSourceSelected), len(ui.monSourceValues)))
+	}
+	if ui.eqSourceDrop != nil {
+		ui.eqSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.eqSourceValues, ui.eqSourceSelected), len(ui.eqSourceValues)))
+	}
+	if ui.classSourceDrop != nil {
+		ui.classSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.classSourceValues, ui.classSourceSelected), len(ui.classSourceValues)))
+	}
+}
+
 func (ui *tviewUI) toggleMonsterSourceOption(text string, index int) {
 	if ui.suppressMonSourceCallback {
 		return
@@ -2291,6 +2357,7 @@ func (ui *tviewUI) toggleMonsterSourceOption(text string, index int) {
 	}
 	ui.monSourceDrop.SetCurrentOption(index)
 	ui.suppressMonSourceCallback = false
+	ui.updateSourceDropLabels()
 	ui.refreshMonsters()
 	ui.refreshDetail()
 	if !ui.sourceSpaceToggleActive {
@@ -2311,6 +2378,7 @@ func (ui *tviewUI) toggleEquipmentSourceOption(text string, index int) {
 	}
 	ui.eqSourceDrop.SetCurrentOption(index)
 	ui.suppressEqSourceCallback = false
+	ui.updateSourceDropLabels()
 	ui.refreshEquipment()
 	ui.refreshDetail()
 	if !ui.sourceSpaceToggleActive {
@@ -2331,11 +2399,48 @@ func (ui *tviewUI) toggleClassSourceOption(text string, index int) {
 	}
 	ui.classSourceDrop.SetCurrentOption(index)
 	ui.suppressClassSourceCallback = false
+	ui.updateSourceDropLabels()
 	ui.refreshClasses()
 	ui.refreshDetail()
 	if !ui.sourceSpaceToggleActive {
 		ui.focusActiveCatalogList()
 	}
+}
+
+func (ui *tviewUI) setMonsterSourceAll(enabled bool) {
+	setAllSourceSelection(ui.monSourceValues, ui.monSourceSelected, enabled)
+	ui.monSourceOpts = sourceMenuOptions(ui.monSourceValues, ui.monSourceSelected)
+	ui.suppressMonSourceCallback = true
+	ui.monSourceDrop.SetOptions(ui.monSourceOpts, func(t string, i int) { ui.toggleMonsterSourceOption(t, i) })
+	ui.monSourceDrop.SetCurrentOption(0)
+	ui.suppressMonSourceCallback = false
+	ui.updateSourceDropLabels()
+	ui.refreshMonsters()
+	ui.refreshDetail()
+}
+
+func (ui *tviewUI) setEquipmentSourceAll(enabled bool) {
+	setAllSourceSelection(ui.eqSourceValues, ui.eqSourceSelected, enabled)
+	ui.eqSourceOpts = sourceMenuOptions(ui.eqSourceValues, ui.eqSourceSelected)
+	ui.suppressEqSourceCallback = true
+	ui.eqSourceDrop.SetOptions(ui.eqSourceOpts, func(t string, i int) { ui.toggleEquipmentSourceOption(t, i) })
+	ui.eqSourceDrop.SetCurrentOption(0)
+	ui.suppressEqSourceCallback = false
+	ui.updateSourceDropLabels()
+	ui.refreshEquipment()
+	ui.refreshDetail()
+}
+
+func (ui *tviewUI) setClassSourceAll(enabled bool) {
+	setAllSourceSelection(ui.classSourceValues, ui.classSourceSelected, enabled)
+	ui.classSourceOpts = sourceMenuOptions(ui.classSourceValues, ui.classSourceSelected)
+	ui.suppressClassSourceCallback = true
+	ui.classSourceDrop.SetOptions(ui.classSourceOpts, func(t string, i int) { ui.toggleClassSourceOption(t, i) })
+	ui.classSourceDrop.SetCurrentOption(0)
+	ui.suppressClassSourceCallback = false
+	ui.updateSourceDropLabels()
+	ui.refreshClasses()
+	ui.refreshDetail()
 }
 
 func (ui *tviewUI) resetMonsterFilters() {
@@ -2356,6 +2461,7 @@ func (ui *tviewUI) resetMonsterFilters() {
 		ui.monSourceDrop.SetCurrentOption(0)
 		ui.suppressMonSourceCallback = false
 	}
+	ui.updateSourceDropLabels()
 	ui.refreshMonsters()
 	ui.refreshDetail()
 	ui.message = "Filtri Mostri resettati."
@@ -2400,6 +2506,7 @@ func (ui *tviewUI) resetEquipmentFilters() {
 		ui.eqSourceDrop.SetCurrentOption(0)
 		ui.suppressEqSourceCallback = false
 	}
+	ui.updateSourceDropLabels()
 	ui.refreshEquipment()
 	ui.refreshDetail()
 	ui.message = "Filtri Equipaggiamento resettati."
@@ -2440,6 +2547,7 @@ func (ui *tviewUI) resetClassFilters() {
 		ui.classSourceDrop.SetCurrentOption(0)
 		ui.suppressClassSourceCallback = false
 	}
+	ui.updateSourceDropLabels()
 	ui.refreshClasses()
 	ui.refreshDetail()
 	ui.message = "Filtri Regole resettati."
@@ -4466,6 +4574,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- a: aggiungi mostro selezionato a Encounter",
 			"- n: genera Encounter random (Punti Battaglia)",
 			"- u / t / g / y: focus filtro Nome / Ruolo / Taglia / Source",
+			"- nel menu Source aperto: Space/Enter toggle, A tutti, N nessuno",
 			"- v: reset filtri Mostri (Nome/Ruolo/Taglia/Source)",
 		}
 	case ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList:
@@ -4478,6 +4587,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panel = "Equipaggiamento"
 		panelLines = []string{
 			"- u / t / g / y: focus filtro Nome / Tipo / Era / Source",
+			"- nel menu Source aperto: Space/Enter toggle, A tutti, N nessuno",
 			"- v: reset filtri Equipaggiamento (Nome/Categoria/Tipo/Era/Source)",
 			"- b: genera bottino (Treasure) da categoria + dadi",
 			"- d: switch Dettagli <-> Treasure",
@@ -4498,6 +4608,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 		panel = "Regole"
 		panelLines = []string{
 			"- u / t / g / y: focus filtro Cerca / Categoria / Voce / Source",
+			"- nel menu Source aperto: Space/Enter toggle, A tutti, N nessuno",
 			"- v: reset filtri Regole (Cerca/Categoria/Voce/Source)",
 			"- a: genera PNG dalla classe selezionata (solo voci classe)",
 		}
