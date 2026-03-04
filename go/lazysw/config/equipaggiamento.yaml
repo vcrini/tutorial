@@ -8,7 +8,7 @@
   min_strength: d4
   armor: "+1"
   note: "Tronco, braccia"
-
+  source: core
 - name: Veste di cuoio
   category: Armature
   type: Cuoio/Tessuto
@@ -19,7 +19,7 @@
   min_strength: d4
   armor: "+1"
   note: "Tronco, braccia, gambe"
-
+  source: core
 - name: Giacca in kevlar
   category: Armature
   type: Cuoio/Tessuto
@@ -30,7 +30,7 @@
   min_strength: d4
   armor: "+2"
   note: "Tronco, braccia"
-
+  source: core
 - name: Veste in kevlar
   category: Armature
   type: Protezioni
@@ -41,7 +41,7 @@
   min_strength: d6
   armor: "+2*"
   note: "Riduce di 4 i danni da armi da fuoco"
-
+  source: core
 - name: Veste kevlar con ceramica
   category: Armature
   type: Protezioni
@@ -52,7 +52,7 @@
   min_strength: d8
   armor: "+4*"
   note: "Tronco"
-
+  source: core
 - name: Tuta anti-esplosivi
   category: Armature
   type: Protezioni
@@ -63,7 +63,7 @@
   min_strength: d12
   armor: "+10"
   note: "Passo -2, Agilita limitata al d6"
-
+  source: core
 - name: Corazza da fanteria
   category: Armature
   type: Militare
@@ -74,7 +74,7 @@
   min_strength: d6
   armor: "+6*"
   note: "Tronco, braccia, gambe"
-
+  source: core
 - name: Elmo da battaglia (chiuso)
   category: Armature
   type: Militare
@@ -84,7 +84,7 @@
   weight: "1"
   min_strength: d6
   armor: "+6*"
-
+  source: core
 - name: Scudo piccolo
   category: Scudi
   type: Antico/Medievale
@@ -95,7 +95,7 @@
   min_strength: d4
   parry: "+1"
   cover: "-"
-
+  source: core
 - name: Scudo medio
   category: Scudi
   type: Antico/Medievale
@@ -106,7 +106,7 @@
   min_strength: d6
   parry: "+2"
   cover: "-2"
-
+  source: core
 - name: Scudo grande
   category: Scudi
   type: Antico/Medievale
@@ -117,7 +117,7 @@
   min_strength: d8
   parry: "+3"
   cover: "-4"
-
+  source: core
 - name: Scudo antisommossa
   category: Scudi
   type: Moderno
@@ -128,7 +128,7 @@
   min_strength: d4
   parry: "+3"
   cover: "-4"
-
+  source: core
 - name: Scudo antiproiettile
   category: Scudi
   type: Moderno
@@ -140,7 +140,7 @@
   parry: "+3"
   cover: "-4"
   note: "Riduce di 4 i danni da armi da fuoco dal fronte/lato"
-
+  source: core
 - name: Ascia
   category: Armi da Mischia
   type: Antica/Medievale
@@ -150,7 +150,7 @@
   weight: "1"
   min_strength: d6
   damage: For+d6
-
+  source: core
 - name: Ascia da battaglia
   category: Armi da Mischia
   type: Antica/Medievale
@@ -160,7 +160,7 @@
   weight: "2"
   min_strength: d8
   damage: For+d8
-
+  source: core
 - name: Ascia a due mani
   category: Armi da Mischia
   type: Antica/Medievale
@@ -172,7 +172,7 @@
   damage: For+d10
   ap: "2"
   note: "Parata -1, due mani"
-
+  source: core
 - name: Bastone
   category: Armi da Mischia
   type: Antica/Medievale
@@ -183,7 +183,7 @@
   min_strength: d4
   damage: For+d4
   note: "Parata +1, Portata 1, due mani"
-
+  source: core
 - name: Lancia
   category: Armi da Mischia
   type: Antica/Medievale
@@ -194,7 +194,7 @@
   min_strength: d6
   damage: For+d6
   note: "Portata 1; Parata +1 se a due mani"
-
+  source: core
 - name: Martello da guerra
   category: Armi da Mischia
   type: Antica/Medievale
@@ -206,7 +206,7 @@
   damage: For+d6
   ap: "1"
   note: "Becco di corvo"
-
+  source: core
 - name: Spada lunga
   category: Armi da Mischia
   type: Antica/Medievale
@@ -216,7 +216,7 @@
   weight: "1.5"
   min_strength: d8
   damage: For+d8
-
+  source: core
 - name: Spadone
   category: Armi da Mischia
   type: Antica/Medievale
@@ -227,7 +227,7 @@
   min_strength: d10
   damage: For+d10
   note: "Due mani"
-
+  source: core
 - name: Pugnale/Coltello
   category: Armi da Mischia
   type: Antica/Medievale
@@ -237,7 +237,7 @@
   weight: "0.5"
   min_strength: d4
   damage: For+d4
-
+  source: core
 - name: Manganello
   category: Armi da Mischia
   type: Moderna
@@ -247,7 +247,7 @@
   weight: "0.5"
   min_strength: d4
   damage: For+d4
-
+  source: core
 - name: Motosega
   category: Armi da Mischia
   type: Moderna
@@ -258,7 +258,7 @@
   min_strength: d6
   damage: 2d6+4
   note: "Con Fallimento Critico colpisce l'attaccante"
-
+  source: core
 - name: Tirapugni
   category: Armi da Mischia
   type: Moderna
@@ -269,7 +269,7 @@
   min_strength: d4
   damage: For+d4
   note: "Non conta come arma per Difensore senza Armi"
-
+  source: core
 - name: Spada laser
   category: Armi da Mischia
   type: Futuristica
@@ -280,7 +280,7 @@
   min_strength: d4
   damage: For+d6+8
   ap: "12"
-
+  source: core
 - name: Arco
   category: Armi a Distanza
   type: Antica/Medievale
@@ -292,7 +292,7 @@
   range: 12/24/48
   damage: 2d6
   rof: "1"
-
+  source: core
 - name: Arco lungo
   category: Armi a Distanza
   type: Antica/Medievale
@@ -305,7 +305,7 @@
   damage: 2d6
   ap: "1"
   rof: "1"
-
+  source: core
 - name: Balestra
   category: Armi a Distanza
   type: Antica/Medievale
@@ -319,7 +319,7 @@
   ap: "2"
   rof: "1"
   note: "Ricarica a mano"
-
+  source: core
 - name: Balestra pesante
   category: Armi a Distanza
   type: Antica/Medievale
@@ -333,7 +333,7 @@
   ap: "2"
   rof: "1"
   note: "Ricarica 2 (argano)"
-
+  source: core
 - name: Pistola ad acciarino
   category: Armi da Fuoco
   type: Polvere nera
@@ -347,7 +347,7 @@
   rof: "1"
   shots: "-"
   note: "Ricarica 3"
-
+  source: core
 - name: Brown Bess
   category: Armi da Fuoco
   type: Polvere nera
@@ -361,7 +361,7 @@
   rof: "1"
   shots: "-"
   note: "Ricarica 3"
-
+  source: core
 - name: Colt Peacemaker (.45)
   category: Armi da Fuoco
   type: Revolver
@@ -375,7 +375,7 @@
   ap: "1"
   rof: "1"
   shots: "6"
-
+  source: core
 - name: Derringer (.41)
   category: Armi da Fuoco
   type: Revolver
@@ -389,7 +389,7 @@
   rof: "1"
   shots: "2"
   note: "-2 Percezione se nascosta"
-
+  source: core
 - name: Revolver da polizia (.38)
   category: Armi da Fuoco
   type: Revolver
@@ -402,7 +402,7 @@
   damage: 2d6
   rof: "1"
   shots: "6"
-
+  source: core
 - name: Colt 1911 (.45)
   category: Armi da Fuoco
   type: Semiautomatica
@@ -416,7 +416,7 @@
   ap: "1"
   rof: "1"
   shots: "7"
-
+  source: core
 - name: Desert Eagle (.50)
   category: Armi da Fuoco
   type: Semiautomatica
@@ -430,7 +430,7 @@
   ap: "2"
   rof: "1"
   shots: "7"
-
+  source: core
 - name: Glock (9mm)
   category: Armi da Fuoco
   type: Semiautomatica
@@ -444,7 +444,7 @@
   ap: "1"
   rof: "1"
   shots: "17"
-
+  source: core
 - name: H&K MP5 (9mm)
   category: Armi da Fuoco
   type: Mitra
@@ -458,7 +458,7 @@
   ap: "1"
   rof: "3"
   shots: "30"
-
+  source: core
 - name: Thompson (.45)
   category: Armi da Fuoco
   type: Mitra
@@ -472,7 +472,7 @@
   ap: "1"
   rof: "3"
   shots: "20"
-
+  source: core
 - name: Uzi (9mm)
   category: Armi da Fuoco
   type: Mitra
@@ -486,7 +486,7 @@
   ap: "1"
   rof: "3"
   shots: "32"
-
+  source: core
 - name: Frecce/dardi (10)
   category: Munizioni
   type: Arco/Balestra
@@ -495,7 +495,7 @@
   cost: "5"
   weight: "1"
   note: "Per archi/balestre"
-
+  source: core
 - name: Proiettili piccoli (50)
   category: Munizioni
   type: Pistola/Fucile leggero
@@ -503,7 +503,7 @@
   era: Moderna
   cost: "10"
   weight: "0.5"
-
+  source: core
 - name: Proiettili medi (50)
   category: Munizioni
   type: Pistola/Fucile medio
@@ -511,7 +511,7 @@
   era: Moderna
   cost: "20"
   weight: "1"
-
+  source: core
 - name: Proiettili grandi (50)
   category: Munizioni
   type: Calibro .50+
@@ -519,7 +519,7 @@
   era: Moderna
   cost: "50"
   weight: "7"
-
+  source: core
 - name: Cartucce shotgun pallettoni (50)
   category: Munizioni
   type: Shotgun
@@ -527,7 +527,7 @@
   era: Moderna
   cost: "30"
   weight: "1.5"
-
+  source: core
 - name: Cartucce shotgun proiettile (50)
   category: Munizioni
   type: Shotgun
@@ -536,7 +536,7 @@
   cost: "40"
   weight: "1.5"
   note: "Vedi regole shotgun"
-
+  source: core
 - name: Razioni da viaggio
   category: Generi
   type: Cibo
@@ -545,7 +545,7 @@
   cost: "10"
   weight: "2.5"
   note: "5 pasti, si conservano per 1 settimana"
-
+  source: core
 - name: Razioni militari (MRE)
   category: Generi
   type: Cibo
@@ -553,7 +553,7 @@
   era: Moderna
   cost: "10"
   weight: "0.5"
-
+  source: core
 - name: Visore notturno
   category: Attrezzatura
   type: Elettronica
@@ -562,6 +562,7 @@
   cost: "500"
   weight: "1.5"
   note: "Annulla penalita da Illuminazione Fioca/Buio"
+  source: core
 - name: A pompa
   category: Armi da Fuoco
   type: Shotgun
@@ -574,7 +575,7 @@
   damage: 1-3d6
   rof: "1"
   shots: "6"
-
+  source: core
 - name: Doppietta
   category: Armi da Fuoco
   type: Shotgun
@@ -587,7 +588,7 @@
   damage: 1-3d6
   rof: "1"
   shots: "2"
-
+  source: core
 - name: Doppietta canne mozze
   category: Armi da Fuoco
   type: Shotgun
@@ -600,7 +601,7 @@
   damage: 1-3d6
   rof: "1"
   shots: "2"
-
+  source: core
 - name: Streetsweeper (Armsel Striker)
   category: Armi da Fuoco
   type: Shotgun
@@ -613,7 +614,7 @@
   damage: 1-3d6
   rof: "1"
   shots: "12"
-
+  source: core
 - name: Barrett (.50)
   category: Armi da Fuoco
   type: Fucile
@@ -628,7 +629,7 @@
   rof: "1"
   shots: "10"
   note: "Arma Pesante, Bruciapelo"
-
+  source: core
 - name: Carabina Spencer (.52)
   category: Armi da Fuoco
   type: Fucile
@@ -642,7 +643,7 @@
   ap: "2"
   rof: "1"
   shots: "7"
-
+  source: core
 - name: Fucile da caccia (.308)
   category: Armi da Fuoco
   type: Fucile
@@ -657,7 +658,7 @@
   rof: "1"
   shots: "5"
   note: "Bruciapelo"
-
+  source: core
 - name: M1 Garand (.30-06)
   category: Armi da Fuoco
   type: Fucile
@@ -671,7 +672,7 @@
   ap: "2"
   rof: "1"
   shots: "8"
-
+  source: core
 - name: Sharps Big 50 (.50)
   category: Armi da Fuoco
   type: Fucile
@@ -686,7 +687,7 @@
   rof: "1"
   shots: "1"
   note: "Bruciapelo"
-
+  source: core
 - name: Winchester '73 (.44-40)
   category: Armi da Fuoco
   type: Fucile
@@ -700,7 +701,7 @@
   ap: "2"
   rof: "1"
   shots: "15"
-
+  source: core
 - name: AK47 (7.62mm)
   category: Armi da Fuoco
   type: Fucile d'assalto
@@ -714,7 +715,7 @@
   ap: "2"
   rof: "3"
   shots: "30"
-
+  source: core
 - name: M-16 (5.56mm)
   category: Armi da Fuoco
   type: Fucile d'assalto
@@ -729,7 +730,7 @@
   rof: "3"
   shots: "20/30"
   note: "A-2: anche Raffica da Tre Colpi"
-
+  source: core
 - name: Steyr AUG (5.56mm)
   category: Armi da Fuoco
   type: Fucile d'assalto
@@ -744,7 +745,7 @@
   rof: "3"
   shots: "30"
   note: "Anche Raffica da Tre Colpi"
-
+  source: core
 - name: Browning Automatic Rifle (BAR)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -759,7 +760,7 @@
   rof: "3"
   shots: "20"
   note: "CdT 1-3, Ricarica 1"
-
+  source: core
 - name: Gatling (.45)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -773,7 +774,7 @@
   ap: "2"
   rof: "3"
   shots: "100"
-
+  source: core
 - name: Minigun (7.62mm)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -788,7 +789,7 @@
   rof: "5"
   shots: "4000"
   note: "CdT minima 3; zaino munizioni +42.5kg"
-
+  source: core
 - name: M2 Browning (.50)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -803,7 +804,7 @@
   rof: "3"
   shots: "200"
   note: "Arma Pesante"
-
+  source: core
 - name: M60 (7.62mm)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -817,7 +818,7 @@
   ap: "2"
   rof: "3"
   shots: "100"
-
+  source: core
 - name: MG42 (7.62mm)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -831,7 +832,7 @@
   ap: "2"
   rof: "4"
   shots: "200"
-
+  source: core
 - name: SAW (5.56mm)
   category: Armi da Fuoco
   type: Mitragliatrice
@@ -845,7 +846,7 @@
   ap: "2"
   rof: "4"
   shots: "200"
-
+  source: core
 - name: Pistola laser
   category: Armi da Fuoco
   type: Laser
@@ -860,7 +861,7 @@
   rof: "1"
   shots: "50"
   note: "+2 Vigore contro Dissanguamento; opzione sovraccarico +1d6"
-
+  source: core
 - name: Mitra laser
   category: Armi da Fuoco
   type: Laser
@@ -874,7 +875,7 @@
   ap: "2"
   rof: "4"
   shots: "100"
-
+  source: core
 - name: Fucile laser
   category: Armi da Fuoco
   type: Laser
@@ -888,7 +889,7 @@
   ap: "2"
   rof: "3"
   shots: "100"
-
+  source: core
 - name: Gatling laser
   category: Armi da Fuoco
   type: Laser
@@ -902,7 +903,7 @@
   ap: "2"
   rof: "4"
   shots: "800"
-
+  source: core
 - name: Lanciafiamme
   category: Armi Speciali
   type: Lanciafiamme
@@ -916,7 +917,7 @@
   rof: "1"
   shots: "10"
   note: "Arma Pesante"
-
+  source: core
 - name: Mk II "ananas"
   category: Armi Speciali
   type: Granata
@@ -928,7 +929,7 @@
   damage: 3d6
   rof: "-"
   note: "Modello Esplosione Media; Arma Pesante"
-
+  source: core
 - name: "Schiacciapatate (2a Guerra)"
   category: Armi Speciali
   type: Granata
@@ -940,7 +941,7 @@
   damage: 3d6-2
   rof: "-"
   note: "Modello Esplosione Media; Arma Pesante"
-
+  source: core
 - name: Mk67 (moderna)
   category: Armi Speciali
   type: Granata
@@ -952,7 +953,7 @@
   damage: 3d6
   rof: "-"
   note: "Modello Esplosione Media; Arma Pesante"
-
+  source: core
 - name: Granata fumogena
   category: Armi Speciali
   type: Granata
@@ -964,7 +965,7 @@
   damage: "-"
   rof: "-"
   note: "Crea area fumo (MEG), -4 ai tiri attraverso"
-
+  source: core
 - name: Granata stordente
   category: Armi Speciali
   type: Granata
@@ -976,7 +977,7 @@
   damage: "-"
   rof: "-"
   note: "Vigore o Stordito (a -2 con incremento)"
-
+  source: core
 - name: Mina antiuomo
   category: Armi Speciali
   type: Mina
@@ -988,7 +989,7 @@
   damage: 2d6+2
   rof: "-"
   note: "Arma Pesante; MEP"
-
+  source: core
 - name: Mina anticarro
   category: Armi Speciali
   type: Mina
@@ -1001,7 +1002,7 @@
   ap: "5"
   rof: "-"
   note: "Arma Pesante; contro armatura piu bassa del veicolo"
-
+  source: core
 - name: Hellfire
   category: Armi Speciali
   type: Missile
@@ -1014,7 +1015,7 @@
   ap: "40"
   rof: "-"
   note: "Arma Pesante, guida laser, MEM"
-
+  source: core
 - name: Sidewinder
   category: Armi Speciali
   type: Missile
@@ -1027,7 +1028,7 @@
   ap: "6"
   rof: "-"
   note: "Arma Pesante, ricerca calore, MEP"
-
+  source: core
 - name: Sparrow
   category: Armi Speciali
   type: Missile
@@ -1040,7 +1041,7 @@
   ap: "6"
   rof: "-"
   note: "Arma Pesante, guida radar, MEP"
-
+  source: core
 - name: TOW
   category: Armi Speciali
   type: Missile
@@ -1053,7 +1054,7 @@
   ap: "34"
   rof: "1"
   note: "Arma Pesante, filoguidato, MEM"
-
+  source: core
 - name: AT-4
   category: Armi Speciali
   type: Lanciarazzi
@@ -1066,7 +1067,7 @@
   ap: "24"
   rof: "1"
   note: "Anticarro, MEM"
-
+  source: core
 - name: Bazooka
   category: Armi Speciali
   type: Lanciarazzi
@@ -1079,7 +1080,7 @@
   ap: "8"
   rof: "1"
   note: "Bruciapelo, MEM"
-
+  source: core
 - name: M72 LAW
   category: Armi Speciali
   type: Lanciarazzi
@@ -1092,7 +1093,7 @@
   ap: "22"
   rof: "1"
   note: "Arma Pesante, Bruciapelo, MEM"
-
+  source: core
 - name: Panzerschreck
   category: Armi Speciali
   type: Lanciarazzi
@@ -1105,7 +1106,7 @@
   ap: "12"
   rof: "1"
   note: "Bruciapelo, MEM"
-
+  source: core
 - name: Cannone 12 libbre
   category: Armi Speciali
   type: Cannone
@@ -1117,7 +1118,7 @@
   damage: In base alle munizioni
   rof: "1"
   note: "Ricarica 8"
-
+  source: core
 - name: Catapulta
   category: Armi Speciali
   type: Artiglieria
@@ -1129,7 +1130,7 @@
   ap: "4"
   rof: Speciale
   note: "Arma Pesante, MEM, ricarica 5 minuti"
-
+  source: core
 - name: Trabucco
   category: Armi Speciali
   type: Artiglieria
@@ -1141,3 +1142,4 @@
   ap: "4"
   rof: Speciale
   note: "Arma Pesante, MEM, ricarica 5 minuti"
+  source: core

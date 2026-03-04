@@ -19,7 +19,7 @@
     - "In quale campagna militare ti sei formato?"
   bonds:
     - "Chi del gruppo copri quando la situazione peggiora?"
-
+  source: core
 - name: Ranger
   subclass: Cacciatore
   rank: 1
@@ -41,7 +41,7 @@
     - "Quale preda ti ha quasi ucciso?"
   bonds:
     - "Chi nel gruppo segue sempre le tue tracce?"
-
+  source: core
 - name: Ladro
   subclass: Infiltratore
   rank: 1
@@ -63,7 +63,7 @@
     - "Qual è il colpo più rischioso che hai tentato?"
   bonds:
     - "Chi ti copre mentre lavori su una serratura?"
-
+  source: core
 - name: Mistico
   subclass: Chierico da Campo
   rank: 1
@@ -85,7 +85,7 @@
     - "Quale voto ti vincola ancora oggi?"
   bonds:
     - "Chi nel gruppo difendi a ogni costo?"
-
+  source: core
 - name: Mago
   subclass: Arcanista
   rank: 1
@@ -107,7 +107,7 @@
     - "Chi ha insegnato la tua prima formula?"
   bonds:
     - "Chi nel gruppo teme i tuoi esperimenti?"
-
+  source: core
 - name: Psionico
   subclass: Telepate
   rank: 1
@@ -129,7 +129,7 @@
     - "Quando si è manifestato il tuo potere?"
   bonds:
     - "Chi accetta senza paura le tue intrusioni mentali?"
-
+  source: core
 - name: Scienziato Folle
   subclass: Tecnomante
   rank: 1
@@ -151,7 +151,7 @@
     - "Quale prototipo è esploso per primo?"
   bonds:
     - "Chi nel gruppo testa i tuoi dispositivi?"
-
+  source: core
 - name: Dotato
   subclass: Fenomeno Innato
   rank: 1
@@ -173,7 +173,7 @@
     - "Come reagì la tua comunità al tuo potere?"
   bonds:
     - "Chi ti aiuta a restare lucido quando perdi il controllo?"
-
+  source: core
 - source: carta
   name: Combattimento
   subclass: Colpo Mirato
@@ -182,7 +182,6 @@
   description: "Attacco mirato a una parte specifica del bersaglio con penalità al tiro."
   base_privileges:
     - "Permette effetti tattici aggiuntivi oltre al danno."
-
 - source: carta
   name: Combattimento
   subclass: Attacco Selvaggio
@@ -191,7 +190,6 @@
   description: "Approccio aggressivo: più pressione offensiva a costo di esposizione difensiva."
   base_privileges:
     - "Utile per chiudere rapidamente uno scontro ravvicinato."
-
 - source: carta
   name: Combattimento
   subclass: Soppressione
@@ -200,7 +198,6 @@
   description: "Fuoco di copertura per limitare movimenti nemici."
   base_privileges:
     - "Costringe avversari a cercare riparo o rallentare."
-
 - source: carta
   name: Condizioni
   subclass: Paura
@@ -209,7 +206,6 @@
   description: "Creature o eventi terrificanti impongono prove di coraggio."
   base_privileges:
     - "Fallimenti possono imporre penalità o comportamenti difensivi."
-
 - source: carta
   name: Pericoli
   subclass: Veleno
@@ -218,7 +214,6 @@
   description: "Effetti tossici da morso, arma o ambiente contaminato."
   base_privileges:
     - "Richiede prove di resistenza per evitarne le conseguenze."
-
 - source: carta
   name: Movimento
   subclass: Inseguimento
@@ -227,7 +222,6 @@
   description: "Sequenza dinamica con distanza variabile tra inseguitori e fuggitivi."
   base_privileges:
     - "Gestisce manovre, ostacoli e cambi di ritmo."
-
 - source: carta
   name: Capacità Speciali
   subclass: Scavatore
@@ -236,7 +230,6 @@
   description: "La creatura si muove nel sottosuolo e può emergere per colpire."
   base_privileges:
     - "Consente attacchi a sorpresa e riposizionamento occulto."
-
 - source: carta
   name: Capacità Speciali
   subclass: Etereo
@@ -245,7 +238,6 @@
   description: "Entità immateriale che attraversa ostacoli e ignora attacchi non adatti."
   base_privileges:
     - "Richiede contromisure specifiche per essere danneggiata."
-
 - source: carta
   name: Capacità Speciali
   subclass: Rigenerazione
@@ -254,7 +246,6 @@
   description: "Recupero accelerato dei danni, lento o rapido a seconda della creatura."
   base_privileges:
     - "Alcuni tipi di danno possono impedirla."
-
 - source: carta
   name: Capacità Speciali
   subclass: Invulnerabilità
@@ -263,7 +254,6 @@
   description: "La creatura può essere neutralizzata solo tramite un punto debole specifico."
   base_privileges:
     - "Riduce l'efficacia degli attacchi convenzionali."
-
 - source: carta
   name: Arcani
   subclass: Background Arcano (Magia)
@@ -272,7 +262,6 @@
   description: "Accesso ai poteri tramite studio arcano e formule."
   base_privileges:
     - "Poteri iniziali e riserva punti potere definiti dal regolamento base."
-
 - source: carta
   name: Arcani
   subclass: Background Arcano (Miracoli)
@@ -281,7 +270,6 @@
   description: "Poteri concessi da fede, culto o forza spirituale."
   base_privileges:
     - "Manifestazione tramite preghiere, rituali o simboli sacri."
-
 - source: carta
   name: Arcani
   subclass: Background Arcano (Arti Psioniche)
@@ -290,7 +278,6 @@
   description: "Disciplina mentale per manipolare materia e percezione."
   base_privileges:
     - "Attivazione con controllo psichico e concentrazione."
-
 - source: carta
   name: Arcani
   subclass: Background Arcano (Scienza Folle)
@@ -299,7 +286,6 @@
   description: "Poteri mediati da dispositivi sperimentali e prototipi."
   base_privileges:
     - "Richiede strumenti, componenti e gestione dei malfunzionamenti."
-
 - source: carta
   name: Arcani
   subclass: Background Arcano (Dono)
