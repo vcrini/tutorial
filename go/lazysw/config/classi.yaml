@@ -294,3 +294,263 @@
   description: "Talento innato raro, non legato a scuole formali."
   base_privileges:
     - "Manifestazione personale e spesso unica nel setting."
+- source: iz
+  name: Archetipi IZ
+  subclass: Sector Cop
+  rank: 1
+  domains: "Interface Zero"
+  evasion: 6
+  hp: 7
+  class_item: "Lawmaker pistol, truncheon, armor di servizio"
+  hope_privilege: "Backup tattico o autorità operativa in scena critica"
+  class_privileges:
+    - "Procedure di pattuglia, arresto e contenimento urbano."
+    - "Coordinamento con centrale e supporto rapido."
+  description: "Agente di sicurezza/polizia addestrato al controllo del territorio urbano."
+  caster_trait: Spirito
+  base_privileges:
+    - "Conoscenza del protocollo e gestione escalation."
+  specialization: "Investigatore, pattuglia o risposta rapida."
+  mastery: "Comando operativo su crisi metropolitane."
+  background_questions:
+    - "Quale intervento ti ha segnato come agente?"
+  bonds:
+    - "Chi nel team copre il tuo fianco nelle operazioni?"
+- source: iz
+  name: Archetipi IZ
+  subclass: Federal Agent
+  rank: 1
+  domains: "Interface Zero"
+  evasion: 6
+  hp: 6
+  class_item: "Credenziali federali e kit investigativo"
+  hope_privilege: "Mandato lampo o accesso prioritario a risorse"
+  class_privileges:
+    - "Indagini multilivello su reti criminali e corporate."
+    - "Accesso a canali informativi sovra‑giurisdizionali."
+  description: "Investigatore ad ampio mandato, orientato a minacce transnazionali."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Analisi forense e triangolazione dati."
+  specialization: "Controspionaggio o anticrimine tecnologico."
+  mastery: "Operatore strategico inter‑agenzia."
+  background_questions:
+    - "Quale caso federale non hai mai chiuso?"
+  bonds:
+    - "Chi del gruppo accetta i tuoi metodi non ortodossi?"
+- source: iz
+  name: Archetipi IZ
+  subclass: Cyber Punk
+  rank: 1
+  domains: "Interface Zero"
+  evasion: 7
+  hp: 5
+  class_item: "Cyberdeck, exploit package, contatti black market"
+  hope_privilege: "Finestra di intrusione pulita su sistema ostile"
+  class_privileges:
+    - "Infiltrazione digitale e sabotaggio infrastrutturale."
+    - "Mobilità elevata in ambiente urbano ad alta sorveglianza."
+  description: "Operatore di strada tech‑savvy che combina hacking e azione diretta."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Bypass rapido di sicurezza standard."
+  specialization: "Netrunner offensivo o infiltratore stealth."
+  mastery: "Dominio tattico del campo digitale e fisico."
+  background_questions:
+    - "Quale corporazione ti ha messo una taglia?"
+  bonds:
+    - "Chi protegge il tuo corpo mentre sei in rete?"
+- source: iz
+  name: Archetipi IZ
+  subclass: Bounty Hunter
+  rank: 1
+  domains: "Interface Zero"
+  evasion: 6
+  hp: 7
+  class_item: "Tracker, binders, armamento modulare"
+  hope_privilege: "Individuazione bersaglio in scena complessa"
+  class_privileges:
+    - "Caccia al bersaglio vivo o morto in zone ostili."
+    - "Lettura di tracce sociali e comportamentali."
+  description: "Cacciatore professionista orientato a cattura e neutralizzazione."
+  caster_trait: Astuzia
+  base_privileges:
+    - "Ricerca taglie e gestione informatori."
+  specialization: "Recupero ostaggi o eliminazione high‑risk."
+  mastery: "Predatore urbano di massima efficacia."
+  background_questions:
+    - "Chi è la tua preda mai catturata?"
+  bonds:
+    - "Chi ti riporta in linea quando superi il limite?"
+- source: iz
+  name: Archetipi IZ
+  subclass: Mad Scientist
+  rank: 1
+  domains: "Scienza Folle"
+  evasion: 5
+  hp: 5
+  class_item: "Lab kit portatile, prototipi instabili"
+  hope_privilege: "Overclock controllato con effetto extra"
+  class_privileges:
+    - "Prototipazione rapida di gadget e bio‑tool."
+    - "Analisi tecnica avanzata su minacce anomale."
+  description: "Inventore radicale che traduce teoria estrema in vantaggi tattici."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Riparazione e reverse engineering sul campo."
+  specialization: "Armi sperimentali o supporto tecnico."
+  mastery: "Genio imprevedibile ad alto impatto."
+  background_questions:
+    - "Quale esperimento ti è sfuggito di mano?"
+  bonds:
+    - "Chi continua a fidarsi delle tue invenzioni?"
+- source: iz
+  name: Archetipi IZ
+  subclass: Corporate Geneticist
+  rank: 1
+  domains: "Biotech"
+  evasion: 5
+  hp: 5
+  class_item: "Bio‑scanner, kit campioni, accesso laboratorio"
+  hope_privilege: "Contromisura biotech improvvisata"
+  class_privileges:
+    - "Lettura profili genetici e comportamento biohorror."
+    - "Protocollo contenimento e mitigazione outbreak."
+  description: "Specialista biotech spesso legato a interessi corporate."
+  caster_trait: Intelligenza
+  base_privileges:
+    - "Diagnosi rapida di mutazioni e contaminazioni."
+  specialization: "Ricerca clinica o weaponized biotech."
+  mastery: "Controllo avanzato di scenari biologici complessi."
+  background_questions:
+    - "Quale progetto corporate hai deciso di sabotare?"
+  bonds:
+    - "Chi nel gruppo dubita delle tue reali motivazioni?"
+- source: iz
+  name: Campagne IZ
+  subclass: Protect & Serve
+  rank: 1
+  domains: "Tema"
+  evasion: 6
+  hp: 6
+  class_item: "Veicolo di pattuglia, canale dispatch, kit procedurale"
+  hope_privilege: "Catena di comando favorevole in emergenza"
+  class_privileges:
+    - "Gestione scena del crimine e ordine pubblico."
+    - "Risposta rapida a escalation civili e armate."
+  description: "Tema campagne centrato su law enforcement urbano e procedure operative."
+  caster_trait: Spirito
+  base_privileges:
+    - "Accesso a infrastruttura e protocolli di reparto."
+  specialization: "Investigazione o unità d’assalto."
+  mastery: "Leadership tattica su scenari ad alta pressione."
+  background_questions:
+    - "Quale compromesso hai accettato per indossare il distintivo?"
+  bonds:
+    - "Chi nel gruppo ti copre quando la procedura fallisce?"
+- source: iz
+  name: Campagne IZ
+  subclass: Bio-Hunters
+  rank: 1
+  domains: "Tema"
+  evasion: 6
+  hp: 7
+  class_item: "Kit caccia biohorror, munizioni speciali, sensori"
+  hope_privilege: "Finestra di vantaggio contro minaccia mostruosa"
+  class_privileges:
+    - "Tracciamento e neutralizzazione bio‑horrors."
+    - "Contenimento e bonifica post‑ingaggio."
+  description: "Tema campagne orientato alla caccia e contenimento di mutanti e bio‑orrori."
+  caster_trait: Vigore
+  base_privileges:
+    - "Conoscenza pattern predatori e nidi."
+  specialization: "Cattura viva o eliminazione totale."
+  mastery: "Veterano anti‑biohorror di riferimento."
+  background_questions:
+    - "Quale creatura ti ha quasi ucciso?"
+  bonds:
+    - "Chi del gruppo resta al tuo fianco durante la caccia?"
+- source: iz
+  name: Equipaggiamento IZ
+  subclass: Entangler Net Gun
+  rank: 1
+  domains: "Regola"
+  evasion: 0
+  hp: 0
+  class_item: "Net gun, bombole aria compressa"
+  hope_privilege: "Vincolo immediato su bersaglio prioritario"
+  class_privileges:
+    - "Su colpo: bersaglio Entangled; con raise: Bound."
+  description: "Arma non letale per cattura usata in campagne Bio‑Hunters."
+  caster_trait: ""
+  base_privileges:
+    - "Supporta catture vive e controllo area."
+  specialization: "Taglie e contenimento."
+  mastery: "Neutralizzazione non letale sistematica."
+  background_questions:
+    - "Quando hai scelto di catturare invece di uccidere?"
+  bonds:
+    - "Chi copre la tua ricarica sotto pressione?"
+- source: iz
+  name: Equipaggiamento IZ
+  subclass: Retroviral DNA Ammunition
+  rank: 1
+  domains: "Regola"
+  evasion: 0
+  hp: 0
+  class_item: "Munizioni enzimatiche"
+  hope_privilege: "Debuff biologico su target alterato"
+  class_privileges:
+    - "Su colpo: target Distracted; con raise: anche Vulnerable."
+  description: "Munizioni speciali contro creature geneticamente alterate (non danno diretto)."
+  caster_trait: ""
+  base_privileges:
+    - "Riduce pressione offensiva dei biohorrors."
+  specialization: "Contenimento tattico."
+  mastery: "Soppressione biotech mirata."
+  background_questions:
+    - "Su quale creatura hai testato per primo queste munizioni?"
+  bonds:
+    - "Chi decide quando passare a munizioni letali?"
+- source: iz
+  name: Equipaggiamento IZ
+  subclass: Silver Rounds
+  rank: 1
+  domains: "Regola"
+  evasion: 0
+  hp: 0
+  class_item: "Munizioni argentate"
+  hope_privilege: "Interruzione rigenerazione su bersaglio debole all’argento"
+  class_privileges:
+    - "Blocca rigenerazione in creature vulnerabili all’argento."
+  description: "Munizioni specialistiche contro minacce con weakness all’argento."
+  caster_trait: ""
+  base_privileges:
+    - "Migliora affidabilità contro target rigeneranti."
+  specialization: "Caccia licantropi e simili."
+  mastery: "Counter hard-target rigeneranti."
+  background_questions:
+    - "Chi ti ha insegnato a riconoscere una weakness vera da una leggenda?"
+  bonds:
+    - "Chi del gruppo trasporta sempre il tuo secondo caricatore d’argento?"
+- source: iz
+  name: Equipaggiamento IZ
+  subclass: UV Rounds
+  rank: 1
+  domains: "Regola"
+  evasion: 0
+  hp: 0
+  class_item: "Munizioni UV"
+  hope_privilege: "Impulso UV potenziato su bersaglio fotosensibile"
+  class_privileges:
+    - "Impatto UV efficace su minacce vulnerabili alla luce solare."
+  description: "Munizioni speciali ad emissione UV per creature fotosensibili."
+  caster_trait: ""
+  base_privileges:
+    - "Opzione dedicata in loadout anti‑mostro."
+  specialization: "Counter vampirici e notturni."
+  mastery: "Gestione completa minacce fotosensibili."
+  background_questions:
+    - "Quale ingaggio notturno ti ha convinto a portare UV rounds?"
+  bonds:
+    - "Chi nel gruppo ti segnala per primo i target fotosensibili?"

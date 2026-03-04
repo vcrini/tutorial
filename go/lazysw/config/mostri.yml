@@ -334,3 +334,1318 @@
       kind: Passiva
       text: "Ignora penalita da illuminazione."
   source: core
+- name: Arachound
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "6"
+  skills:
+    - Athletics d10
+    - Fighting d8
+    - Intimidation d6
+    - Notice d8
+    - Shooting d8
+    - Stealth d10
+  parry: "6"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d4"
+    - name: Paralyzing Poison -1
+      kind: Passiva
+      text: "Any victim who suffers a Shaken or Wound from an Arachound bite must pass a Vigor roll at -1 or become Incapacitated for 2d6 minutes."
+    - name: Size -3
+      kind: Passiva
+      text: "Arachounds are about the size of a small dog, such as a toy poodle. The arachound’s Toughness reflects its size."
+    - name: Speed
+      kind: Passiva
+      text: "d8 running die."
+    - name: Wall Crawling
+      kind: Passiva
+      text: "Arachounds can climb on walls and ceilings at their full Pace."
+    - name: Web Spinners
+      kind: Passiva
+      text: "Arachounds can spray webs from their anal glands, into an area the size of a Small Blast Template to a 6” Range. On a successful Shooting roll, a target is Entangled or Bound with a raise. Bestiary natural canine intelli"
+  source: iz
+- name: Basp
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "2"
+  skills:
+    - Athletics d8
+    - Fighting d6
+    - Intimidation d4
+    - Notice d6
+    - Stealth d8
+  parry: "5"
+  toughness: "5"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d4"
+    - name: Echolocation
+      kind: Passiva
+      text: "Basps use sound to navigate. They suffer no penalties due to lighting conditions."
+    - name: Flight
+      kind: Passiva
+      text: "Basps have a Flying Pace of 10”."
+    - name: Immunity
+      kind: Passiva
+      text: "A basp’s paralytic venom has no effect on itself or other basps."
+    - name: Paralytic Venom
+      kind: Passiva
+      text: "Any victim who suffers a Shaken or Wound from a basp bite must pass a Vigor roll at or become Incapacitated for 2d6 rounds."
+    - name: Size -2
+      kind: Passiva
+      text: "A basp is the size of a medium dog, such as a collie. Human sized opponents suffer -2 on attacks against a basp. The basp’s Toughness reflects its Size."
+  source: iz
+- name: Beastperson
+  role: Biohorror
+  wild_card: false
+  size: 1
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Common Knowledge d8
+    - Fighting d12+2
+    - Intimidation d10
+    - Notice d12
+    - Stealth d10
+    - Survival d10
+  parry: "9"
+  toughness: "8"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d12+2"
+    name: Bite/ Claws
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Bite/ Claws
+      kind: Passiva
+      text: "Str +d8"
+    - name: Infection
+      kind: Passiva
+      text: "Anyone injured by the beast person’s claws or teeth might become infected with the same retrovirus that created it. The character must make a Vigor-2 roll to stave off the infection, and if it fails it begins a slow tran"
+    - name: Size 1
+      kind: Passiva
+      text: "Size 1"
+    - name: Weakness
+      kind: Passiva
+      text: "The beastperson has an adverse reaction to silver and any damage caused by silver gains a +4 bonus. R ats are hardy scavengers. They dwell in the shadows and hidden areas of civilization, surviving largely upon waste. Ho"
+  source: iz
+- name: Beetle Rat
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Fighting d6
+    - Intimidation d4
+    - Notice d10
+    - Stealth d8
+    - Tracking d6
+  parry: "5"
+  toughness: "6 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6"
+    - name: Chitinous Shell
+      kind: Passiva
+      text: "The beetle rat’s hardened shell gives +2 Armor."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Beetle rats ignore penalties for dim and dark lighting."
+    - name: Resilient Breed
+      kind: Passiva
+      text: "Beetle rats gain +2 to Vigor rolls to resist disease and poison."
+    - name: Size -2
+      kind: Passiva
+      text: "A beetle rat is the size of a medium dog, such as a collie. Human sized opponents suffer -2 on attacks against a beetle rat. The beetle rat’s Toughness reflects its Size. Bestiary"
+  source: iz
+- name: Blood Jacker
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Common Knowledge d6
+    - Fighting d8
+    - Intimidation d8
+    - Notice d6
+    - Persuasion d8
+    - Shooting d8
+    - Stealth d8
+  parry: "6"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str +d4"
+    - name: Drain Blood
+      kind: Passiva
+      text: "When a bloodjacker successfully uses its bite on a living creature it has grappled, it drains blood from the creature, inflicting 2d8 damage and healing one of its own Wounds."
+  source: iz
+- name: Concrete Mole
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Fighting d4
+    - Intimidation d4
+    - Notice d6
+    - Stealth d12
+  parry: "4"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d4"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6"
+    - name: Corrosive Saliva
+      kind: Passiva
+      text: "Any time a character suffers a wound or shaken from a concrete mole bite, the acidic spit continues to burn their flesh. On the following turn, they suffer a Str+d4 attack."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Concrete moles ignore penalties for dim and dark lighting."
+    - name: Size -3
+      kind: Passiva
+      text: "Concrete moles are about the size of a small dog, such as a toy poodle. The concrete mole’s Toughness reflects its size."
+  source: iz
+- name: Crocosquirrel
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "8"
+  skills:
+    - Athletics d12
+    - Fighting d8
+    - Intimidation d6
+    - Notice d6
+    - Stealth d12
+  parry: "6"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Arboreal
+      kind: Passiva
+      text: "Crocosquirrels can climb walls and sheer surfaces at their standard pace."
+    - name: Bite
+      kind: Passiva
+      text: "Str+d8"
+    - name: Pack Hunters
+      kind: Passiva
+      text: "When ganging up on an opponent, Crocosquirrels do not reduce their gang up bonus due to the presence of the defender’s allies."
+    - name: Size -3
+      kind: Passiva
+      text: "Crocosquirrels are about the size of a small dog, such as a toy poodle. The crocosquirrel’s Toughness reflects its size."
+  source: iz
+- name: Cyberhound
+  role: Biohorror
+  wild_card: false
+  size: -1
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d8
+  parry: "6"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Cyber hounds ignore penalties for Dim and Dark Illumination."
+    - name: Speed
+      kind: Passiva
+      text: "d10 running die."
+    - name: Go for the Throat
+      kind: Passiva
+      text: "Dogs instinctively go for an opponent’s soft spots. With a raise on its attack roll, it hits the target’s most weaklyarmored location."
+    - name: Targeting Computer
+      kind: Passiva
+      text: "The cyberhound has a +2 bonus to Notice rolls to detect living creatures and a +2 bonus to Fighting rolls."
+    - name: Size -1
+      kind: Passiva
+      text: "Dogs are relatively small."
+  source: iz
+- name: Double Snaketopus
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "4"
+  skills:
+    - Athletics d6
+    - Fighting d8
+    - Notice d12
+    - Stealth d8
+  parry: "6"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+2
+    damage_type: fisico
+  traits:
+    - name: Multi-attack
+      kind: Passiva
+      text: "The snaketopus has two heads and may make an attack with each without suffering Multi-Actions penalties."
+    - name: Bite
+      kind: Passiva
+      text: "Str+2"
+    - name: Poison (-2)
+      kind: Passiva
+      text: "Lethal"
+    - name: Size -2 (Small)
+      kind: Passiva
+      text: "Size -2 (Small)"
+    - name: Tentacles (2)
+      kind: Passiva
+      text: "The snaketopus has two ‘heads’ that are little more than lengths of scale covered muscle. It may make an attack with each without suffering Multi-Action penalties. These tentacles inflict d4 damage and gain a +2 bonus to"
+  source: iz
+- name: Electric Rat
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "4"
+  skills:
+    - Athletics d6
+    - Fighting d4
+    - Notice d6
+    - Stealth d8
+    - Survival d6
+  parry: "4"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d4"
+    name: Electric Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Electric Bite
+      kind: Passiva
+      text: "Str+d4. Victims roll Vigor (-2 if hit with a raise) or be Stunned."
+    - name: Electric Field
+      kind: Passiva
+      text: "Electric rats can use their entire turn to unleash an electric blast that deals 2d4 damage to all adjacent creatures. Victims Shaken or worse must roll Vigor or be Stunned."
+    - name: Electric Resistance
+      kind: Passiva
+      text: "Electric rats get +4 armor against electrical attacks and to resist electrical shocks and stuns. This protection relies upon skin properties and is bypassed by implants."
+    - name: Size -3 (Very Small)
+      kind: Passiva
+      text: "About eight inches long and five pounds."
+  source: iz
+- name: Fire Snake
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "4"
+  skills:
+    - Athletics d6
+    - Fighting d8
+    - Notice d10
+    - Stealth d8
+  parry: "6"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Attack
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+  source: iz
+- name: Glow Roach
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "10"
+  skills:
+    - Athletics d6
+    - Fighting d6
+    - Notice d6
+    - Stealth d8
+  parry: "6"
+  toughness: "12 (6)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Armor +6 Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Armor +6 Bite
+      kind: Passiva
+      text: "Str+d4 Night Vision: Ignores penalties for Illumination."
+  source: iz
+- name: Hawk Lizard
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "3"
+  skills:
+    - Athletics d8
+    - Fighting d6
+    - Notice d10
+    - Stealth d8
+  parry: "5"
+  toughness: "6"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bestiary Special Abilities
+      kind: Passiva
+      text: "Bestiary Special Abilities"
+    - name: Bite
+      kind: Passiva
+      text: "Str"
+    - name: Fiery Breath
+      kind: Passiva
+      text: "Fire snakes breathe exhale fire for 2d6 damage (see Breath Weapons in Savage Worlds)."
+    - name: Size -3 (Very Small)
+      kind: Passiva
+      text: "About five feet long, but less than two inches thick."
+    - name: Acidic Spittle
+      kind: Passiva
+      text: "Hawkizards can spit out a cone of acid that inflicts 3d6 damage as a Breath Weapon attack."
+    - name: Bite/ Claw
+      kind: Passiva
+      text: "Str +d8"
+    - name: Flight
+      kind: Passiva
+      text: "Raptors flay at a Pace of 48”"
+    - name: Multi-Attack
+      kind: Passiva
+      text: "The hawkizard is amazingly fast and may make a claw attack and an acidic spittle attack without suffering MultiActions penalties."
+  source: iz
+- name: J-Dog
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Fighting d8
+    - Notice d8
+  parry: "6"
+  toughness: "4"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str +d4"
+    - name: Low Light Vision
+      kind: Passiva
+      text: "J-Dogs ignore penalties for Dim and Dark Illumination."
+    - name: Paralytic Poison (-2)
+      kind: Passiva
+      text: "Victim is Incapacitated for 2d6 minutes, twice that with a critical failure."
+    - name: Size -2 (Small)
+      kind: Passiva
+      text: "Size -2 (Small)"
+    - name: Tentacles (4)
+      kind: Passiva
+      text: "The J-Dog has four tentacles on its shoulders. It may make an attack with each without suffering Multi-Action penalties. These tentacles inflict d4-1 damage and gain a +2 bonus to grappling rolls."
+  source: iz
+- name: Mindless
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Fighting d6
+    - Intimidation d6
+    - Notice d4
+    - Stealth d4
+  parry: "6"
+  toughness: "6"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str. Infection."
+    - name: Fearless
+      kind: Passiva
+      text: "Mindless do not have the rational ability to feel Fear or Intimidation."
+    - name: Infection
+      kind: Passiva
+      text: "Any character Shaken or Wounded by a mindless’ bite must make a Vigor roll or be likewise infected by the virus. Lethal disease, Vigor once per week (see Hazards in Savage Worlds)."
+    - name: Resilient
+      kind: Passiva
+      text: "The mindless can take one Wound before they’re Incapacitated."
+  source: iz
+- name: Nuke Rats
+  role: Biohorror
+  wild_card: false
+  size: -1
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d8
+    - Intimidation d8
+    - Notice d6
+    - Stealth d8
+  parry: "6"
+  toughness: "6"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6"
+    - name: Night Vision
+      kind: Passiva
+      text: "Ignores penalties for Illumination."
+    - name: Size -1
+      kind: Passiva
+      text: "Pretty damn big for a rat."
+  source: iz
+- name: Octorat
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "5"
+  skills:
+    - Notice d6
+  parry: "4"
+  toughness: "7"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Amphibious
+      kind: Passiva
+      text: "Octorats can breathe both air and water. In the water they swim at Pace 10 and their run die us a d8."
+    - name: Bite
+      kind: Passiva
+      text: "Octorats act in a swarm that inflicts 2d6 damage to everyone in the template. Damage is applied to the least armored location (victims in completely sealed suits are immune)."
+    - name: Split
+      kind: Passiva
+      text: "When wounded octorat swarms split in to two smaller swarms. Reduce the Blast Template one size after a wound. Small swarms are destroyed."
+    - name: Swarm
+      kind: Passiva
+      text: "Parry +2. Because the swarm is composed of hundreds of octorats, cutting and piercing damage do no real damage. Area effects weapons work normally. Characters may stomp to inflict Strength damage each round. Bestiary"
+  source: iz
+- name: Jelly Pigeon
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "2"
+  skills:
+    - Athletics d8
+    - Fighting d4
+    - Intimidation d4
+    - Notice d4
+    - Stealth d4
+  parry: "4"
+  toughness: "1"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d4"
+    name: Attack
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Venomous defecation -2
+      kind: Passiva
+      text: "Jellypigeons defecate as a reflexive defensive measure, and this includes powerful neurotoxin. This counts as a throwing attack. Victims of this attack must pass a Vigor -2 roll or immediately suffer a wound and perish i"
+    - name: Size -3
+      kind: Passiva
+      text: "Jellypigeons are about the size of a small dog, such as a toy poodle. The jellypigeon’s Toughness reflects its size."
+  source: iz
+- name: Octogator
+  role: Biohorror
+  wild_card: false
+  size: 3
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Notice d6
+    - Stealth d10
+  parry: "7"
+  toughness: "12 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Aquatic
+      kind: Passiva
+      text: "Pace 8."
+    - name: Armor +2
+      kind: Passiva
+      text: "Scaly hide."
+    - name: Bite
+      kind: Passiva
+      text: "Str + d8."
+    - name: Grappling Tentacles
+      kind: Passiva
+      text: "Each of the Octogators four tentacles receive +2 to Athletics and Strength rolls made to grapple."
+    - name: Independent Tentacles
+      kind: Passiva
+      text: "Each of the Octogator’s four tentacles may make a grapple attack in addition to the creature’s normal action without incurring a multiaction penalty."
+    - name: Size 3
+      kind: Passiva
+      text: "Octogators weigh nearly 1,500 pounds, and their tentacles can stretch to a length of three meters."
+  source: iz
+- name: Patrol Lion
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "4"
+  skills:
+    - Athletics d10
+    - Fighting d10
+    - Notice d8
+    - Stealth d10
+  parry: "6"
+  toughness: "7"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite/ Claws
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Slow (Minor)
+      kind: Passiva
+      text: "On land Patrol Lions have the Slow (Minor) Hindrance and may not pounce."
+    - name: Amphibious
+      kind: Passiva
+      text: "Patrol lions can breathe both air and water. In the water they swim at Pace 10 and their run die us a d8."
+    - name: Echolocation
+      kind: Passiva
+      text: "In the water patrol lions emit ultrasonic pulses that allow them to ‘see’. They do not suffer any penalties for illumination while in the water."
+    - name: Bite/ Claws
+      kind: Passiva
+      text: "Str +d6. A Wound caused by a patrol lion is likely to cause an infection. The target must make a Vigor -2 roll or contract H8N1. Treat this as a debilitating disease."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Patrol lions ignore penalties for Dim and Dark Illumination."
+    - name: Pounce
+      kind: Passiva
+      text: "Patrol lions may pounce on their prey. If a patrol lion can leap at least a few feet (1” on the table) and makes a Wild Attack, it adds +4 instead of +2 to the damage."
+  source: iz
+- name: Poliraptor
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Intimidation d6
+    - Notice d8
+    - Stealth d6
+  parry: "7"
+  toughness: "7 (1)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Armor +1
+      kind: Passiva
+      text: "Scaly Hide"
+    - name: Bite
+      kind: Passiva
+      text: "Str+d8"
+    - name: Hopper
+      kind: Passiva
+      text: "Poliraptors hop instead of walking or running. They may move up to their full pace (or running pace) with a single jump, enabling them to ignore some difficult terrain conditions."
+    - name: Prehensile Tongue
+      kind: Passiva
+      text: "Instead of using its bite, a poliraptor may grapple prey at a +2 bonus with its prehensile tongue."
+  source: iz
+- name: Polvostism
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d8
+    - Intimidation d8
+    - Notice d6
+    - Stealth d8
+    - Survival d4
+  parry: "6"
+  toughness: "7"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6."
+    - name: Semi-Aquatic
+      kind: Passiva
+      text: "Can stay underwater for 15 minutes without risk of drowning."
+  source: iz
+- name: Procyopod
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "8"
+  skills:
+    - Athletics d12
+    - Fighting d4
+    - Intimidation d4
+    - Notice d8
+    - Stealth d12
+    - Thievery d8
+  parry: "4"
+  toughness: "3"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d4"
+    name: Grappling Tentacles
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Grappling Tentacles
+      kind: Passiva
+      text: "The procyopod’s two tentacles receive +2 to Athletics and Strength rolls made to grapple."
+    - name: Independent Tentacles
+      kind: Passiva
+      text: "both of the procyopods tentacles may make a grapple attack in addition to the creature’s normal action without incurring a multi-action penalty."
+    - name: Ink Cloud
+      kind: Passiva
+      text: "Twice per day, a procyopod may take an action to spray a cloud of black ink into an area the size of a Large Blast Template, making the area Dark for 1d6 minutes. The ink settles to the ground at the end of the duration,"
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Procyopods ignore penalties for dim and dark lighting."
+    - name: Size -2
+      kind: Passiva
+      text: "A procyopod is the size of a medium dog, such as a collie. Human sized opponents suffer -2 on attacks against a procyopod. The procyopod’s Toughness reflects its Size."
+    - name: Wall Walker
+      kind: Passiva
+      text: "Procyopods can climb walls and sheer surfaces at their standard pace."
+  source: iz
+- name: Rabigeddon
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Fighting d4
+    - Intimidation d4
+    - Notice d6
+    - Stealth d6
+  parry: "2"
+  toughness: "1"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d4"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d4."
+    - name: Consumption
+      kind: Passiva
+      text: "Rabbigeddons can consume any carbon-based matter as a food source. This includes complex hydrocarbons such as plastics or gasoline. Further, rabbigeddons are immune to Poison. Bestiary numbered well into the hundreds of "
+    - name: Size -3
+      kind: Passiva
+      text: "Rabbigeddon are about the size of a small dog, such as a toy poodle. The rabbigeddon’s Toughness reflects its size."
+  source: iz
+- name: Raptor Hound
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Intimidation d4
+    - Notice d6
+    - Stealth d6
+  parry: "6"
+  toughness: "8 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Armor +2
+      kind: Passiva
+      text: "Scales"
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6"
+    - name: Infravision
+      kind: Passiva
+      text: "Halve penalties for Illumination when attacking warm targets."
+    - name: Poison
+      kind: Passiva
+      text: "Lethal (the victim is Stunned, takes a Wound (two with a Critical Failure), and perishes in 2d6 rounds.)"
+    - name: Size -2
+      kind: Passiva
+      text: "Size -2"
+  source: iz
+- name: Scared-y Cat
+  role: Biohorror
+  wild_card: false
+  size: -1
+  pace: "8"
+  skills:
+    - Athletics d10
+    - Fighting d8
+    - Notice d8
+    - Stealth d10
+  parry: "6"
+  toughness: "7 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite/Claws
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Armor +2
+      kind: Passiva
+      text: "Cartilaginous plating."
+    - name: Bite/Claws
+      kind: Passiva
+      text: "Str+d6."
+    - name: Fear (-2)
+      kind: Passiva
+      text: "A pheromone package triggers flight responses, forcing Fear checks at -2."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Ignore penalties for Dim and Dark illumination."
+    - name: Size -1
+      kind: Passiva
+      text: "Averaging 50 pounds, scared-y cats are larger than most lynx species."
+  source: iz
+- name: Screaming Gibbons
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "4"
+  skills:
+    - Athletics d10
+    - Fighting d8
+    - Intimidation d10
+    - Notice d6
+    - Shooting d8
+    - Stealth d8
+  parry: "6"
+  toughness: "4"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite/Claws
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite/Claws
+      kind: Passiva
+      text: "Str+d4."
+    - name: Brachiation
+      kind: Passiva
+      text: "Swing between projections, Pace 10."
+    - name: Leaper
+      kind: Passiva
+      text: "Double jumping distances (2” free action, +2” with successful Athletics)."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Ignore penalties for Dim and Dark illumination."
+    - name: Size -2 (Small)
+      kind: Passiva
+      text: "About 20 pounds of vigorous primate, screaming gibbons are frustratingly small."
+  source: iz
+- name: Sewer Dragon
+  role: Biohorror
+  wild_card: false
+  size: 1
+  pace: "3"
+  skills:
+    - Athletics d6
+    - Fighting d8
+    - Notice d6
+    - Stealth d10
+  parry: "6"
+  toughness: "10 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Acidic Spittle
+    range: Mischia
+    damage: 3d6
+    damage_type: fisico
+  traits:
+    - name: Acidic Spittle
+      kind: Passiva
+      text: "Sewer dragons can spit out a cone of acid that inflicts 3d6 damage as a Breath Weapon attack."
+    - name: Armor +2
+      kind: Passiva
+      text: "Thick skin"
+    - name: Aquatic
+      kind: Passiva
+      text: "Pace 5"
+    - name: Bite
+      kind: Passiva
+      text: "Str +d6"
+    - name: Hardy
+      kind: Passiva
+      text: "If Shaken, a second Shaken result does not cause a wound."
+    - name: Multi-Attack
+      kind: Passiva
+      text: "The sewer dragon is very fast and may make two bite attacks without suffering Multi-Actions penalties."
+    - name: Resilient
+      kind: Passiva
+      text: "Sewer dragons take one Wound before they become Incapacitated."
+    - name: Rollover
+      kind: Passiva
+      text: "The sewer dragon grasps its prey in their vice-like jaws and rolls with them. If one of these large reptiles hits with a raise, its bonus damage is a d10 instead of a d6."
+  source: iz
+- name: Spider Cat
+  role: Biohorror
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Notice d6
+    - Stealth d8
+  parry: "2"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite/ Claw
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite/ Claw
+      kind: Passiva
+      text: "Str."
+    - name: Infravision
+      kind: Passiva
+      text: "Spidercats can ‘see’ by detecting heat, halving penalties for poor lighting when attacking targets that radiate warmth."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Spidercats ignore penalties for Dim and Dark Illumination."
+    - name: Multi-Attack
+      kind: Passiva
+      text: "The spidercat is very fast and may make two bite/ claw attacks without suffering Multi-Actions penalties."
+    - name: Resilient
+      kind: Passiva
+      text: "Spidercats take one Wound before they become Incapacitated."
+  source: iz
+- name: Strangling Fern
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "-"
+  skills:
+    - Fighting d8
+    - Notice d8
+    - Stealth d8
+  parry: "6"
+  toughness: "10 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Tentacles (4)
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Camouflage
+      kind: Passiva
+      text: "In an office environment the strangling fern looks like any other decorative plant. Attempts to determine its nature suffer a -2 penalty."
+    - name: Dormancy
+      kind: Passiva
+      text: "Each strangling fern has a specific dormancy chemical that can be sprayed on it, rendering it Incapacitated for 2d6 hours."
+    - name: Immobile
+      kind: Passiva
+      text: "The strangling fern cannot move from its pot."
+    - name: Soporific Spores
+      kind: Passiva
+      text: "The strangling fern releases a MBT sized cloud of spores, all creatures within the burst must make a Vigor roll or gain 1 Fatigue."
+    - name: Tentacles (4)
+      kind: Passiva
+      text: "The strangling fern has four tentacle-like fronds. It may make an attack Bestiary"
+    - name: Size -3
+      kind: Passiva
+      text: "(Very Small)"
+    - name: Weakness
+      kind: Passiva
+      text: "The spidercat has an adverse reaction to silver and any damage caused by silver gains a +4 bonus. with each without suffering Multi-Action penalties. These tentacles inflict d10 damage and gain a +2 bonus to grappling ro"
+    - name: Woody Armor (2)
+      kind: Passiva
+      text: "Woody Armor (2)"
+  source: iz
+- name: Tiburon 2.0
+  role: Biohorror
+  wild_card: false
+  size: 5
+  pace: "-"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Notice d12
+    - Stealth d12
+  parry: "7"
+  toughness: "15"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Aquatic
+      kind: Passiva
+      text: "Pace 5"
+    - name: Bite
+      kind: Passiva
+      text: "Str +d8"
+    - name: Fear (0)
+      kind: Passiva
+      text: "Fear (0)"
+    - name: Hardy
+      kind: Passiva
+      text: "Ti 2.0 does not suffer a Wound from being Shaken twice."
+    - name: Size
+      kind: Passiva
+      text: "5 (Large)"
+  source: iz
+- name: Toro 2.0
+  role: Biohorror
+  wild_card: false
+  size: 3
+  pace: "7"
+  skills:
+    - Athletics d8
+    - Fighting d8
+    - Notice d6
+  parry: "4"
+  toughness: "13 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Horns
+    range: Mischia
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Scales (2)
+      kind: Passiva
+      text: "Scales (2)"
+    - name: Horns
+      kind: Passiva
+      text: "Str +d8"
+    - name: Size
+      kind: Passiva
+      text: "3"
+    - name: Weakness
+      kind: Passiva
+      text: "The Toro 2.0 has an adverse reaction to plastic and any damage caused by plastics gains a +4 bonus."
+  source: iz
+- name: Toxic Roach
+  role: Biohorror
+  wild_card: false
+  size: -2
+  pace: "5"
+  skills:
+    - Athletics d10
+    - Fighting d8
+    - Intimidation d4
+    - Notice d6
+    - Stealth d8
+  parry: "6"
+  toughness: "5(2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d8"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Armor +2
+      kind: Passiva
+      text: "The toxic roach has a hardened outer shell."
+    - name: Bite
+      kind: Passiva
+      text: "Str+d4"
+    - name: Immunity
+      kind: Passiva
+      text: "The toxic roach is immune poison, including the effects of its Toxic Vomit and Toxic Death (see below)."
+    - name: Size -2
+      kind: Passiva
+      text: "A toxic roach is the size of a medium dog, such as a collie. Human sized opponents suffer -2 on attacks against a toxic roach. The toxic roach’s Toughness reflects its Size."
+    - name: Toxic Death
+      kind: Passiva
+      text: "A toxic roach explodes when it dies. All adjacent characters must make an Agility roll or suffer 2d6 damage."
+    - name: Toxic Vomit
+      kind: Passiva
+      text: "The toxic roach can spew a stream of highly acidic vomit (range 3/6/12). Anyone struck must make a -2 Vigor roll. On failure, victims suffer 2d6 damage every round until the goo is removed. Removing the goo takes a full "
+    - name: Wall Walker
+      kind: Passiva
+      text: "Toxic Roaches can climb walls and sheer surfaces at their standard pace. V iper hounds are canines that have been genetically altered with the DNA of Snakes to create a clever and fierce hybrid that is highly lethal."
+  source: iz
+- name: Viper Hound
+  role: Biohorror
+  wild_card: false
+  size: -1
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Intimidation d4
+    - Notice d6
+    - Stealth d6
+  parry: "7"
+  toughness: "6 (2)"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d10"
+    name: Bite
+    range: Mischia
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Armor +2
+      kind: Passiva
+      text: "Thick scales."
+    - name: Bite
+      kind: Passiva
+      text: "Str+d6, Poison if Shaken or worse."
+    - name: Infravision
+      kind: Passiva
+      text: "Halve penalties for Illumination when attacking warm targets."
+    - name: Poison
+      kind: Passiva
+      text: "Lethal (Distracted; failure, Stunned and takes a Wound (two on Critical Failure), and dies in 2d6 rounds)."
+    - name: Size -1
+      kind: Passiva
+      text: "The size of a typical coyote."
+  source: iz
+- name: Vampire Moth
+  role: Biohorror
+  wild_card: false
+  size: -3
+  pace: "2"
+  skills:
+    - Athletics d8
+    - Fighting d6
+    - Intimidation d4
+    - Notice d6
+    - Stealth d8
+  parry: "5"
+  toughness: "2"
+  wounds_max: 1
+  description: "Creatura di Interface Zero 3.0."
+  motivations_tactics: "Agguato e attacco predatorio."
+  attack:
+    bonus: "Fighting d6"
+    name: Bite
+    range: Mischia
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Bite
+      kind: Passiva
+      text: "Str+d4."
+    - name: Flight
+      kind: Passiva
+      text: "Vampire moths have a Flying Pace of 8”."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Vampire moths ignore penalties for dim and dark lighting."
+    - name: Paralytic Venom
+      kind: Passiva
+      text: "Any victim who suffers a Shaken or Wound from a vampire moth bite must pass a Vigor roll at or become Incapacitated for 2d6 rounds."
+    - name: Size -3
+      kind: Passiva
+      text: "Vampire moths are about the size of a small dog, such as a toy poodle. The rabbigeddon’s Toughness reflects its size."
+    - name: Wall Walker
+      kind: Passiva
+      text: "Vampire moths climb ceilings, walls, and sheer surfaces at their standard pace."
+  source: iz

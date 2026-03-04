@@ -1143,3 +1143,375 @@
   rof: Speciale
   note: "Arma Pesante, MEM, ricarica 5 minuti"
   source: core
+- name: ED Boardroom Suit
+  category: Armature
+  type: Interface Zero
+  rank: 1
+  era: Futuristica
+  cost: "900"
+  weight: "4"
+  min_strength: d4
+  armor: "+2"
+  note: "Torso, arms, legs"
+  source: iz
+- name: ED The Guardian
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "675"
+  weight: "8"
+  min_strength: d6
+  armor: "+3"
+  note: "Torso, arms, legs"
+  source: iz
+- name: UP Street Jacket
+  category: Armature
+  type: Interface Zero
+  rank: 1
+  era: Futuristica
+  cost: "425"
+  weight: "5"
+  min_strength: d4
+  armor: "+2"
+  note: "Torso, arms"
+  source: iz
+- name: WT Gecko Suit
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "2750"
+  weight: "7"
+  min_strength: d4
+  armor: "+2"
+  note: "Torso, arms, legs"
+  source: iz
+- name: BKI Combat Fatigues
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "525"
+  weight: "8"
+  min_strength: d6
+  armor: "+4"
+  note: "Torso, arms, legs"
+  source: iz
+- name: BKI Heavy Vest
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "645"
+  weight: "10"
+  min_strength: d6
+  armor: "+6"
+  note: "Torso"
+  source: iz
+- name: PD Outlaw Duster
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "525"
+  weight: "8"
+  min_strength: d6
+  armor: "+4"
+  note: "Torso, arms"
+  source: iz
+- name: RT Tactical Security Suit
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "825"
+  weight: "12"
+  min_strength: d8
+  armor: "+4"
+  note: "Torso, arms, legs, head"
+  source: iz
+- name: UP Crash Suit
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "600"
+  weight: "10"
+  min_strength: d6
+  armor: "+4"
+  note: "Torso, arms, legs"
+  source: iz
+- name: WT Brawler Gear
+  category: Armature
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "575"
+  weight: "11"
+  min_strength: d6
+  armor: "+4"
+  note: "Torso, arms, legs"
+  source: iz
+- name: BKI Fortress Riot Armor
+  category: Armature
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "1025"
+  weight: "29"
+  min_strength: d10
+  armor: "+6"
+  note: "Torso, arms, legs, head"
+  source: iz
+- name: ME Enviro Suit
+  category: Armature
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "825"
+  weight: "20"
+  min_strength: d8
+  armor: "+6"
+  note: "Torso, arms, legs, head"
+  source: iz
+- name: SO Kabuta Combat Armor
+  category: Armature
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "975"
+  weight: "33"
+  min_strength: d10
+  armor: "+6"
+  note: "Torso, arms, legs, head"
+  source: iz
+- name: Assorted Knives
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 1
+  era: Futuristica
+  cost: "100"
+  weight: "1"
+  min_strength: d4
+  damage: Str+d4
+  source: iz
+- name: BKI Grace Cestus
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "600"
+  weight: "1.5"
+  min_strength: d4
+  damage: Str+d4
+  note: "Battery Pack"
+  source: iz
+- name: ED Monofilament Knife
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "1000"
+  weight: "1"
+  min_strength: d4
+  damage: Str+d4+2
+  ap: "2"
+  source: iz
+- name: RS C6 Stun Baton
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "275"
+  weight: "1.5"
+  min_strength: d4
+  damage: Str+d4
+  note: "Battery Pack"
+  source: iz
+- name: SO Monofilament Katana
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "1645"
+  weight: "3"
+  min_strength: d6
+  damage: Str+d6+3
+  ap: "4"
+  source: iz
+- name: SO Skysplitter Naginata
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "1350"
+  weight: "8"
+  min_strength: d6
+  damage: Str+d6+2
+  ap: "3"
+  note: "Due mani"
+  source: iz
+- name: UP Millions Razor Glove
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "920"
+  weight: "2"
+  min_strength: d4
+  damage: Str+d4+2
+  ap: "2"
+  source: iz
+- name: UP Razor Whip
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "675"
+  weight: "5"
+  min_strength: d6
+  damage: Str+d6
+  ap: "2"
+  source: iz
+- name: UP Wastelander Chain Blade
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "430"
+  weight: "4"
+  min_strength: d6
+  damage: Str+d6+2
+  ap: "2"
+  source: iz
+- name: WT Madman Patta
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "350"
+  weight: "3"
+  min_strength: d6
+  damage: Str+d6+1
+  ap: "1"
+  source: iz
+- name: WT Pulverizer
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "875"
+  weight: "2"
+  min_strength: d4
+  damage: Str+d8
+  ap: "2"
+  source: iz
+- name: WT Roaring Sledge
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "1400"
+  weight: "14"
+  min_strength: d10
+  damage: Str+d10+2
+  ap: "2"
+  note: "Heavy Weapon, due mani"
+  source: iz
+- name: Striker Crossbow
+  category: Armi da Tiro
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "400"
+  weight: "6"
+  min_strength: d6
+  range: 10/20/40
+  damage: 2d6
+  ap: "1"
+  rof: "2"
+  shots: "5"
+  note: "Laser Sight"
+  source: iz
+- name: Hood Bow-Cuff
+  category: Armi da Tiro
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "520"
+  weight: "3"
+  min_strength: d6
+  range: 12/24/48
+  damage: Str+d6
+  rof: "1"
+  shots: "-"
+  note: "Collapsible, Non-Ferrous"
+  source: iz
+- name: Security Truncheon
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 1
+  era: Futuristica
+  cost: "125"
+  weight: "1.25"
+  min_strength: d6
+  damage: Str+d6
+  parry: "+1"
+  source: iz
+- name: Shock Truncheon
+  category: Armi da Mischia
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "250"
+  weight: "1.25"
+  min_strength: d6
+  damage: Str+d6
+  parry: "+1"
+  note: "Stun, Requires Battery"
+  source: iz
+- name: RS Lawmaker Pistol (9mm)
+  category: Armi da Tiro
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "375"
+  weight: "2"
+  min_strength: d6
+  range: 12/24/48
+  damage: 2d6
+  ap: "1"
+  rof: "1"
+  shots: "17"
+  note: "Biometric Safety, Tactical Rails"
+  source: iz
+- name: RS Riot Cop Shotgun (12G)
+  category: Armi da Tiro
+  type: Interface Zero
+  rank: 2
+  era: Futuristica
+  cost: "175"
+  weight: "6"
+  min_strength: d6
+  range: 12/24/48
+  damage: 1-3d6
+  rof: "1"
+  shots: "10"
+  note: "Biometric Safety, Tactical Rails"
+  source: iz
+- name: RS Long Arm Rifle (6mm)
+  category: Armi da Tiro
+  type: Interface Zero
+  rank: 3
+  era: Futuristica
+  cost: "550"
+  weight: "8"
+  min_strength: d6
+  range: 24/48/96
+  damage: 2d8
+  ap: "2"
+  rof: "1"
+  shots: "8"
+  note: "Biometric Safety, Tactical Rails, Medium Range Scope, Snapfire"
+  source: iz

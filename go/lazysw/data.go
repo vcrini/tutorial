@@ -55,6 +55,7 @@ func (t *Thresholds) UnmarshalYAML(value *yaml.Node) error {
 }
 
 type Monster struct {
+	Source             string     `yaml:"source,omitempty"`
 	Name               string     `yaml:"name"`
 	Role               string     `yaml:"role"`
 	WildCard           bool       `yaml:"wild_card"`
@@ -101,6 +102,7 @@ type Environment struct {
 }
 
 type EquipmentItem struct {
+	Source         string `yaml:"source,omitempty"`
 	Name           string `yaml:"name"`
 	Category       string `yaml:"category"`
 	Type           string `yaml:"type"`
