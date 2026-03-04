@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]* / n / e[-:-] init mode / next / edit card  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -182,6 +182,11 @@ type tviewUI struct {
 	suppressEqSourceCallback    bool
 	suppressClassSourceCallback bool
 	sourceSpaceToggleActive     bool
+
+	encInitModeActive bool
+	encInitTurnIndex  int
+	encInitRound      int
+	encInitSorted     bool
 }
 
 func runTViewUI() error {
@@ -245,17 +250,18 @@ func newTViewUI() (*tviewUI, error) {
 	}
 
 	ui := &tviewUI{
-		app:              tview.NewApplication(),
-		pngs:             pngs,
-		selected:         selected,
-		monsters:         monsters,
-		equipment:        equipment,
-		classes:          classes,
-		encounter:        encounter,
-		diceLog:          diceLog,
-		message:          "Pronto.",
-		catalogMode:      "mostri",
-		activeBottomPane: "details",
+		app:                           tview.NewApplication(),
+		pngs:                          pngs,
+		selected:                      selected,
+		monsters:                      monsters,
+		equipment:                     equipment,
+		classes:                       classes,
+		encounter:                     encounter,
+		diceLog:                       diceLog,
+		message:                       "Pronto.",
+		catalogMode:                   "mostri",
+		activeBottomPane:              "details",
+		encounterShowConditionEffects: true,
 	}
 	ui.build()
 	return ui, nil
@@ -976,11 +982,19 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'n':
+		if focus == ui.encList && ui.encInitModeActive {
+			ui.advanceEncounterInitiativeTurn()
+			return nil
+		}
 		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.monSourceDrop) {
 			ui.openRandomEncounterFromMonstersInput()
 			return nil
 		}
 	case 'e':
+		if focus == ui.encList {
+			ui.openEncounterInitiativeEditModal()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.openDiceReRollInput()
 			return nil
@@ -1107,6 +1121,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case 'S':
 		if focus == ui.encList {
 			ui.sortEncounterByInitiative()
+			return nil
+		}
+	case '*':
+		if focus == ui.encList {
+			ui.enterEncounterInitiativeMode()
 			return nil
 		}
 	case 'o':
@@ -1620,14 +1639,30 @@ func (ui *tviewUI) refreshEncounter() {
 	current := ui.encList.GetCurrentItem()
 	ui.encList.Clear()
 	if len(ui.encounter) == 0 {
+		ui.encInitModeActive = false
+		ui.encInitTurnIndex = 0
+		ui.encInitRound = 1
 		ui.encList.AddItem("(vuoto)", "", 0, nil)
 		return
+	}
+	if ui.encInitTurnIndex < 0 || ui.encInitTurnIndex >= len(ui.encounter) {
+		ui.encInitTurnIndex = 0
+	}
+	if ui.encInitRound < 1 {
+		ui.encInitRound = 1
 	}
 	for i, e := range ui.encounter {
 		base := encounterWoundsCap(e)
 		label := ui.encounterLabelAt(i)
 		if badge := encounterConditionsBadge(e); badge != "" {
 			label = badge + " " + label
+		}
+		if ui.encInitModeActive && i == ui.encInitTurnIndex {
+			round := ui.encInitRound
+			if round < 1 {
+				round = 1
+			}
+			label = fmt.Sprintf("*[%d] %s", round, label)
 		}
 		remaining := base - e.Wounds
 		if remaining < 0 {
@@ -3637,6 +3672,7 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 		Stress:     0,
 		BaseStress: 0,
 	})
+	ui.clearEncounterInitTracking()
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Aggiunto %s a encounter.", mon.Name)
 	ui.refreshEncounter()
@@ -3697,6 +3733,7 @@ func (ui *tviewUI) addSelectedPNGToEncounter() {
 		Stress:     0,
 		BaseStress: 0,
 	})
+	ui.clearEncounterInitTracking()
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Aggiunto PNG %s a encounter.", name)
 	ui.refreshEncounter()
@@ -4007,6 +4044,7 @@ func (ui *tviewUI) generateRandomEncounterFromMonsters(size int, pgCount int, bu
 		spent += pick.cost
 	}
 	if added > 0 {
+		ui.clearEncounterInitTracking()
 		ui.persistEncounter()
 	}
 	summary.AddedEntries = added
@@ -4047,6 +4085,7 @@ func (ui *tviewUI) removeSelectedEncounter() {
 	}
 	name := ui.encounter[idx].Monster.Name
 	ui.encounter = append(ui.encounter[:idx], ui.encounter[idx+1:]...)
+	ui.clearEncounterInitTracking()
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Rimosso %s da encounter.", name)
 	ui.refreshAll()
@@ -4097,6 +4136,7 @@ func (ui *tviewUI) rollEncounterInitiativeSelected() {
 	}
 	e.InitiativeCard = card
 	e.HasInit = true
+	ui.clearEncounterInitTracking()
 	ui.persistEncounter()
 	ui.message = fmt.Sprintf("Iniziativa %s: %s", e.Monster.Name, e.InitiativeCard)
 	ui.refreshEncounter()
@@ -4121,6 +4161,7 @@ func (ui *tviewUI) rollEncounterInitiativeAll() {
 		ui.encounter[i].InitiativeCard = ""
 		ui.encounter[i].HasInit = false
 	}
+	ui.clearEncounterInitTracking()
 	ui.persistEncounter()
 	if len(ui.encounter) > len(deck) {
 		ui.message = "Iniziativa tirata per i primi 52; mazzo esaurito."
@@ -4153,6 +4194,10 @@ func (ui *tviewUI) sortEncounterByInitiative() {
 		return ai.Monster.Name < aj.Monster.Name
 	})
 	ui.persistEncounter()
+	ui.encInitSorted = true
+	ui.encInitModeActive = false
+	ui.encInitTurnIndex = 0
+	ui.encInitRound = 1
 	ui.refreshEncounter()
 	if currentLabel != "" {
 		for i := range ui.encounter {
@@ -4165,6 +4210,151 @@ func (ui *tviewUI) sortEncounterByInitiative() {
 	ui.refreshDetail()
 	ui.message = "Encounter ordinato per iniziativa."
 	ui.refreshStatus()
+}
+
+func (ui *tviewUI) clearEncounterInitTracking() {
+	ui.encInitSorted = false
+	ui.encInitModeActive = false
+	ui.encInitTurnIndex = 0
+	ui.encInitRound = 1
+}
+
+func (ui *tviewUI) enterEncounterInitiativeMode() {
+	if len(ui.encounter) == 0 {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	if !ui.encInitSorted {
+		ui.message = "Ordina prima con S per attivare la modalita iniziativa."
+		ui.refreshStatus()
+		return
+	}
+	ui.encInitModeActive = true
+	ui.encInitTurnIndex = 0
+	ui.encInitRound = 1
+	ui.encList.SetCurrentItem(0)
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	ui.message = "Modalita iniziativa: ON (n = prossimo turno)."
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) advanceEncounterInitiativeTurn() {
+	if len(ui.encounter) == 0 || !ui.encInitModeActive {
+		return
+	}
+	ui.encInitTurnIndex++
+	wrapped := false
+	if ui.encInitTurnIndex >= len(ui.encounter) {
+		ui.encInitTurnIndex = 0
+		ui.encInitRound++
+		if ui.encInitRound < 1 {
+			ui.encInitRound = 1
+		}
+		wrapped = true
+	}
+	ui.incrementEncounterConditionRoundsAt(ui.encInitTurnIndex)
+	ui.encList.SetCurrentItem(ui.encInitTurnIndex)
+	ui.refreshEncounter()
+	ui.refreshDetail()
+	if wrapped {
+		ui.message = fmt.Sprintf("Round %d: nuovo giro iniziativa.", ui.encInitRound)
+	} else {
+		ui.message = fmt.Sprintf("Turno %d/%d.", ui.encInitTurnIndex+1, len(ui.encounter))
+	}
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) incrementEncounterConditionRoundsAt(idx int) {
+	if idx < 0 || idx >= len(ui.encounter) {
+		return
+	}
+	if len(ui.encounter[idx].Conditions) == 0 {
+		return
+	}
+	for code, rounds := range ui.encounter[idx].Conditions {
+		if rounds <= 0 {
+			ui.encounter[idx].Conditions[code] = 1
+			continue
+		}
+		ui.encounter[idx].Conditions[code] = rounds + 1
+	}
+	ui.persistEncounter()
+}
+
+func (ui *tviewUI) openEncounterInitiativeEditModal() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 || idx >= len(ui.encounter) {
+		ui.message = "Encounter vuoto."
+		ui.refreshStatus()
+		return
+	}
+	entry := ui.encounter[idx]
+	returnFocus := ui.app.GetFocus()
+
+	input := tview.NewInputField().SetLabel(" Iniziativa ").SetFieldWidth(8)
+	input.SetBorder(true).SetTitle("Modifica Iniziativa (es. J♦, A♠, 10♥)")
+	if entry.HasInit {
+		input.SetText(strings.TrimSpace(entry.InitiativeCard))
+	}
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(input, 54, 0, true).
+			AddItem(nil, 0, 1, false), 6, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "encounter_init_edit"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(input)
+
+	input.SetDoneFunc(func(key tcell.Key) {
+		if key == tcell.KeyEscape {
+			ui.closeModal()
+			ui.app.SetFocus(returnFocus)
+			ui.refreshStatus()
+			return
+		}
+		if key != tcell.KeyEnter {
+			return
+		}
+		text := strings.TrimSpace(input.GetText())
+		if text == "" {
+			ui.encounter[idx].HasInit = false
+			ui.encounter[idx].InitiativeCard = ""
+			ui.clearEncounterInitTracking()
+			ui.persistEncounter()
+			ui.closeModal()
+			ui.app.SetFocus(ui.encList)
+			ui.refreshEncounter()
+			ui.encList.SetCurrentItem(idx)
+			ui.refreshDetail()
+			ui.message = "Iniziativa rimossa."
+			ui.refreshStatus()
+			return
+		}
+		card, ok := normalizeInitiativeCard(text)
+		if !ok {
+			ui.message = "Carta iniziativa non valida. Usa formato tipo J♦, A♠, 10♥."
+			ui.refreshStatus()
+			return
+		}
+		ui.encounter[idx].HasInit = true
+		ui.encounter[idx].InitiativeCard = card
+		ui.clearEncounterInitTracking()
+		ui.persistEncounter()
+		ui.closeModal()
+		ui.app.SetFocus(ui.encList)
+		ui.refreshEncounter()
+		ui.encList.SetCurrentItem(idx)
+		ui.refreshDetail()
+		ui.message = fmt.Sprintf("Iniziativa aggiornata: %s.", card)
+		ui.refreshStatus()
+	})
 }
 
 func (ui *tviewUI) openEncounterConditionModal() {
@@ -4418,6 +4608,10 @@ func (ui *tviewUI) adjustEncounterConditionRounds(delta int) {
 		ui.encounter[idx].Conditions = nil
 	}
 	ui.persistEncounter()
+	ui.encInitSorted = true
+	ui.encInitModeActive = false
+	ui.encInitTurnIndex = 0
+	ui.encInitRound = 1
 	ui.refreshEncounter()
 	ui.encList.SetCurrentItem(idx)
 	ui.refreshDetail()
@@ -4484,7 +4678,7 @@ func compareInitiativeCards(a, b string) int {
 }
 
 func parseInitiativeCard(card string) (rankIdx int, suitIdx int, ok bool) {
-	card = strings.TrimSpace(card)
+	card = strings.ToUpper(strings.TrimSpace(card))
 	if card == "" {
 		return 0, 0, false
 	}
@@ -4496,6 +4690,17 @@ func parseInitiativeCard(card string) (rankIdx int, suitIdx int, ok bool) {
 		}
 	}
 	return 0, 0, false
+}
+
+func normalizeInitiativeCard(card string) (string, bool) {
+	rankIdx, suitIdx, ok := parseInitiativeCard(card)
+	if !ok {
+		return "", false
+	}
+	if rankIdx < 0 || rankIdx >= len(initiativeRanks) || suitIdx < 0 || suitIdx >= len(initiativeSuits) {
+		return "", false
+	}
+	return initiativeRanks[rankIdx] + initiativeSuits[suitIdx], true
 }
 
 func (ui *tviewUI) openHelpOverlay(focus tview.Primitive) {
@@ -4567,6 +4772,9 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- i: tira iniziativa sul selezionato",
 			"- I: tira iniziativa per tutti",
 			"- S: ordina encounter per iniziativa",
+			"- *: entra in modalita iniziativa (solo dopo S)",
+			"- n: prossimo turno (in modalita iniziativa)",
+			"- e: modifica carta iniziativa selezionata",
 		}
 	case ui.search, ui.roleDrop, ui.rankDrop, ui.monSourceDrop, ui.monList:
 		panel = "Mostri"
@@ -4627,6 +4835,7 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 	b.WriteString("- tab / shift+tab: cambia focus\n")
 	b.WriteString("- 0 / 1 / 2 / 3: focus Dadi / PNG / Encounter / Catalogo\n")
 	b.WriteString("- i / I / S (su Encounter): iniziativa selezionato/tutti/ordina\n")
+	b.WriteString("- * / n / e (su Encounter): init mode / next turn / edit card\n")
 	b.WriteString("- [ / ]: alterna Catalogo (oppure round condizioni su Encounter)\n")
 	b.WriteString("- /: ricerca rapida sul pannello corrente\n")
 	b.WriteString("- f: fullscreen pannello corrente\n")
