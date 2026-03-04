@@ -48,12 +48,13 @@ Per usare LazySW senza interfaccia TUI (ad esempio in un terminale non "cursor a
 ./lazysw cli dice "2d6+1"
 ./lazysw cli monsters
 ./lazysw cli monsters drago
+./lazysw cli monsters --source core,iz
 ```
 
 Comandi disponibili:
 
 - **`cli dice <espressione>`**: esegue un tiro di dadi con la stessa notazione supportata dal pannello dadi (incluso `D6` stile Savage Worlds) e stampa totale e dettaglio.
-- **`cli monsters [filtro]`**: stampa l'elenco dei mostri dal file `config/mostri.yml`; se passi un filtro, viene usato come substring case-insensitive sul nome del mostro.
+- **`cli monsters [filtro] [--source core,iz]`**: stampa l'elenco dei mostri dal file `config/mostri.yml`; puoi filtrare per nome e per una o più sorgenti (`--source` o `-s`, valori separati da virgola).
 
 ## Struttura principale
 
@@ -139,4 +140,3 @@ LazySW è uno strumento **non ufficiale** pensato per facilitare il gioco con Sa
 - **Savage Worlds**, **SWADE** e tutti i relativi loghi e marchi sono proprietà di **Pinnacle Entertainment Group**.
 - Questo progetto non è affiliato, approvato o sponsorizzato da Pinnacle Entertainment Group.
 - Verifica sempre la licenza ufficiale (SRD / Fan License / Community License) prima di distribuire pubblicamente materiale derivato e adatta i contenuti YAML (descrizioni, nomi, ecc.) in modo coerente con i termini previsti.
-
