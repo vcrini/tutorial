@@ -802,6 +802,14 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return nil
 	}
 
+	if ev.Key() == tcell.KeyEsc {
+		if drop, ok := focus.(*tview.DropDown); ok && !drop.IsOpen() {
+			ui.focusPanel(ui.activeCatalogListFocus())
+			ui.refreshStatus()
+			return nil
+		}
+	}
+
 	// On source filters, let Space toggle without forcing the user to close the menu.
 	if ev.Key() == tcell.KeyRune && ev.Rune() == ' ' {
 		var openDrop *tview.DropDown
