@@ -48,51 +48,6 @@ func nextEncounterSeq(entries []EncounterEntry, name string) int {
 	return fallbackCount + 1
 }
 
-func (m *model) addMonsterToEncounter(mon Monster) {
-	m.encounter = append(m.encounter, EncounterEntry{
-		Monster:    mon,
-		Seq:        nextEncounterSeq(m.encounter, mon.Name),
-		BasePF:     mon.PF,
-		Stress:     mon.Stress,
-		BaseStress: mon.Stress,
-	})
-	m.persistEncounter()
-}
-
-func (m *model) removeEncounterAt(idx int) {
-	if idx < 0 || idx >= len(m.encounter) {
-		return
-	}
-	m.encounter = append(m.encounter[:idx], m.encounter[idx+1:]...)
-	if m.encounterCursor >= len(m.encounter) {
-		m.encounterCursor = len(m.encounter) - 1
-	}
-	if m.encounterCursor < 0 {
-		m.encounterCursor = 0
-	}
-	m.persistEncounter()
-}
-
-func (m *model) persistEncounter() {
-	var entries []encounterPersistEntry
-	for _, e := range m.encounter {
-		basePF := e.BasePF
-		if basePF == 0 {
-			basePF = e.Monster.PF
-		}
-		baseStress := e.BaseStress
-		if baseStress == 0 {
-			baseStress = e.Monster.Stress
-		}
-		currentStress := max(e.Stress, 0)
-		if baseStress > 0 && currentStress > baseStress {
-			currentStress = baseStress
-		}
-		entries = append(entries, encounterPersistEntry{Name: e.Monster.Name, Seq: e.Seq, Wounds: e.Wounds, PF: basePF, Stress: currentStress, BaseStress: baseStress})
-	}
-	_ = saveEncounter(encounterFile, entries)
-}
-
 func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 	rawEntries, err := readEncounter(path)
 	if err != nil {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -69,66 +68,5 @@ func TestSaveLoadPNGList(t *testing.T) {
 		if got[i] != input[i] {
 			t.Fatalf("mismatch at %d: got %+v, want %+v", i, got[i], input[i])
 		}
-	}
-}
-
-func TestLoadLegacyPNGList(t *testing.T) {
-	dir := t.TempDir()
-	path := filepath.Join(dir, "pngs.json")
-
-	legacy := `[
-  {"Name":"Jack","Counter":1},
-  {"Name":"John","Counter":3}
-]`
-	if err := os.WriteFile(path, []byte(legacy), 0o644); err != nil {
-		t.Fatalf("write failed: %v", err)
-	}
-
-	got, selected, err := loadPNGList(path)
-	if err != nil {
-		t.Fatalf("load failed: %v", err)
-	}
-	if selected != "" {
-		t.Fatalf("expected empty selected, got %q", selected)
-	}
-	if len(got) != 2 {
-		t.Fatalf("expected 2 items, got %d", len(got))
-	}
-	if got[0].Name != "Jack" || got[1].Name != "John" {
-		t.Fatalf("unexpected names: %+v", got)
-	}
-}
-
-func TestSelectionHelpers(t *testing.T) {
-	dir := t.TempDir()
-	old := dataFile
-	dataFile = filepath.Join(dir, "pngs.json")
-	t.Cleanup(func() { dataFile = old })
-
-	m := model{
-		pngs: []PNG{
-			{Name: "Arcano Drago Dor", Token: 2},
-			{Name: "Mistico Vento Mir", Token: 1},
-		},
-		selectedPNGIndex: -1,
-	}
-
-	m.selectNextPNG()
-	if m.selectedPNGIndex != 0 {
-		t.Fatalf("expected selected index 0, got %d", m.selectedPNGIndex)
-	}
-
-	m.selectNextPNG()
-	if m.selectedPNGIndex != 1 {
-		t.Fatalf("expected selected index 1, got %d", m.selectedPNGIndex)
-	}
-
-	m.selectPrevPNG()
-	if m.selectedPNGIndex != 0 {
-		t.Fatalf("expected selected index 0 after prev, got %d", m.selectedPNGIndex)
-	}
-
-	if _, err := os.Stat(dataFile); err != nil {
-		t.Fatalf("expected save file to exist: %v", err)
 	}
 }

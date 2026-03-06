@@ -2,7 +2,6 @@ package main
 
 import (
 	"embed"
-	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 	"os"
@@ -178,216 +177,25 @@ type ClassItem struct {
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
-	Name        string `json:"Name" yaml:"name"`
-	Token       int    `json:"Token" yaml:"token"`
-	PF          int    `json:"PF,omitempty" yaml:"pf,omitempty"`
-	Stress      int    `json:"Stress,omitempty" yaml:"stress,omitempty"`
-	ArmorScore  int    `json:"ArmorScore,omitempty" yaml:"armor_score,omitempty"`
-	Hope        int    `json:"Hope,omitempty" yaml:"hope,omitempty"`
-	Class       string `json:"Class,omitempty" yaml:"class,omitempty"`
-	Subclass    string `json:"Subclass,omitempty" yaml:"subclass,omitempty"`
-	Level       int    `json:"Level,omitempty" yaml:"level,omitempty"`
-	Rank        int    `json:"Rank,omitempty" yaml:"rank,omitempty"`
-	CompBonus   int    `json:"CompBonus,omitempty" yaml:"comp_bonus,omitempty"`
-	ExpBonus    int    `json:"ExpBonus,omitempty" yaml:"exp_bonus,omitempty"`
-	Description string `json:"Description,omitempty" yaml:"description,omitempty"`
-	Traits      string `json:"Traits,omitempty" yaml:"traits,omitempty"`
-	Primary     string `json:"Primary,omitempty" yaml:"primary,omitempty"`
-	Secondary   string `json:"Secondary,omitempty" yaml:"secondary,omitempty"`
-	Armor       string `json:"Armor,omitempty" yaml:"armor,omitempty"`
-	Look        string `json:"Look,omitempty" yaml:"look,omitempty"`
-	Inventory   string `json:"Inventory,omitempty" yaml:"inventory,omitempty"`
-}
-
-func (p *PNG) UnmarshalJSON(data []byte) error {
-	var aux struct {
-		Name         string `json:"Name"`
-		Token        *int   `json:"Token"`
-		Counter      *int   `json:"Counter"`
-		TokenLower   *int   `json:"token"`
-		CounterLower *int   `json:"counter"`
-		PF           *int   `json:"PF"`
-		PFLower      *int   `json:"pf"`
-		Stress       *int   `json:"Stress"`
-		StressLower  *int   `json:"stress"`
-		ArmorScore   *int   `json:"ArmorScore"`
-		ArmorScoreL  *int   `json:"armor_score"`
-		Hope         *int   `json:"Hope"`
-		HopeLower    *int   `json:"hope"`
-		Class        string `json:"Class"`
-		ClassLower   string `json:"class"`
-		Subclass     string `json:"Subclass"`
-		SubclassLow  string `json:"subclass"`
-		Level        *int   `json:"Level"`
-		LevelLower   *int   `json:"level"`
-		Rank         *int   `json:"Rank"`
-		RankLower    *int   `json:"rank"`
-		CompBonus    *int   `json:"CompBonus"`
-		CompBonusLow *int   `json:"comp_bonus"`
-		ExpBonus     *int   `json:"ExpBonus"`
-		ExpBonusLow  *int   `json:"exp_bonus"`
-		Description  string `json:"Description"`
-		DescLower    string `json:"description"`
-		Traits       string `json:"Traits"`
-		TraitsLower  string `json:"traits"`
-		Primary      string `json:"Primary"`
-		PrimaryLower string `json:"primary"`
-		Secondary    string `json:"Secondary"`
-		SecondLower  string `json:"secondary"`
-		Armor        string `json:"Armor"`
-		ArmorLower   string `json:"armor"`
-		Look         string `json:"Look"`
-		LookLower    string `json:"look"`
-		Inventory    string `json:"Inventory"`
-		InvLower     string `json:"inventory"`
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	p.Name = aux.Name
-	switch {
-	case aux.Token != nil:
-		p.Token = *aux.Token
-	case aux.TokenLower != nil:
-		p.Token = *aux.TokenLower
-	case aux.Counter != nil:
-		p.Token = *aux.Counter
-	case aux.CounterLower != nil:
-		p.Token = *aux.CounterLower
-	default:
-		p.Token = 0
-	}
-	if aux.PF != nil {
-		p.PF = *aux.PF
-	} else if aux.PFLower != nil {
-		p.PF = *aux.PFLower
-	}
-	if aux.Stress != nil {
-		p.Stress = *aux.Stress
-	} else if aux.StressLower != nil {
-		p.Stress = *aux.StressLower
-	}
-	if aux.ArmorScore != nil {
-		p.ArmorScore = *aux.ArmorScore
-	} else if aux.ArmorScoreL != nil {
-		p.ArmorScore = *aux.ArmorScoreL
-	}
-	if aux.Hope != nil {
-		p.Hope = *aux.Hope
-	} else if aux.HopeLower != nil {
-		p.Hope = *aux.HopeLower
-	}
-	if strings.TrimSpace(aux.Class) != "" {
-		p.Class = strings.TrimSpace(aux.Class)
-	} else {
-		p.Class = strings.TrimSpace(aux.ClassLower)
-	}
-	if strings.TrimSpace(aux.Subclass) != "" {
-		p.Subclass = strings.TrimSpace(aux.Subclass)
-	} else {
-		p.Subclass = strings.TrimSpace(aux.SubclassLow)
-	}
-	if aux.Level != nil {
-		p.Level = *aux.Level
-	} else if aux.LevelLower != nil {
-		p.Level = *aux.LevelLower
-	}
-	if aux.Rank != nil {
-		p.Rank = *aux.Rank
-	} else if aux.RankLower != nil {
-		p.Rank = *aux.RankLower
-	}
-	if aux.CompBonus != nil {
-		p.CompBonus = *aux.CompBonus
-	} else if aux.CompBonusLow != nil {
-		p.CompBonus = *aux.CompBonusLow
-	}
-	if aux.ExpBonus != nil {
-		p.ExpBonus = *aux.ExpBonus
-	} else if aux.ExpBonusLow != nil {
-		p.ExpBonus = *aux.ExpBonusLow
-	}
-	if strings.TrimSpace(aux.Description) != "" {
-		p.Description = strings.TrimSpace(aux.Description)
-	} else {
-		p.Description = strings.TrimSpace(aux.DescLower)
-	}
-	if strings.TrimSpace(aux.Traits) != "" {
-		p.Traits = strings.TrimSpace(aux.Traits)
-	} else {
-		p.Traits = strings.TrimSpace(aux.TraitsLower)
-	}
-	if strings.TrimSpace(aux.Primary) != "" {
-		p.Primary = strings.TrimSpace(aux.Primary)
-	} else {
-		p.Primary = strings.TrimSpace(aux.PrimaryLower)
-	}
-	if strings.TrimSpace(aux.Secondary) != "" {
-		p.Secondary = strings.TrimSpace(aux.Secondary)
-	} else {
-		p.Secondary = strings.TrimSpace(aux.SecondLower)
-	}
-	if strings.TrimSpace(aux.Armor) != "" {
-		p.Armor = strings.TrimSpace(aux.Armor)
-	} else {
-		p.Armor = strings.TrimSpace(aux.ArmorLower)
-	}
-	if strings.TrimSpace(aux.Look) != "" {
-		p.Look = strings.TrimSpace(aux.Look)
-	} else {
-		p.Look = strings.TrimSpace(aux.LookLower)
-	}
-	if strings.TrimSpace(aux.Inventory) != "" {
-		p.Inventory = strings.TrimSpace(aux.Inventory)
-	} else {
-		p.Inventory = strings.TrimSpace(aux.InvLower)
-	}
-	return nil
-}
-
-func (p PNG) MarshalJSON() ([]byte, error) {
-	out := struct {
-		Name        string `json:"Name"`
-		Token       int    `json:"Token"`
-		PF          int    `json:"PF,omitempty"`
-		Stress      int    `json:"Stress,omitempty"`
-		ArmorScore  int    `json:"ArmorScore,omitempty"`
-		Hope        int    `json:"Hope,omitempty"`
-		Class       string `json:"Class,omitempty"`
-		Subclass    string `json:"Subclass,omitempty"`
-		Level       int    `json:"Level,omitempty"`
-		Rank        int    `json:"Rank,omitempty"`
-		CompBonus   int    `json:"CompBonus,omitempty"`
-		ExpBonus    int    `json:"ExpBonus,omitempty"`
-		Description string `json:"Description,omitempty"`
-		Traits      string `json:"Traits,omitempty"`
-		Primary     string `json:"Primary,omitempty"`
-		Secondary   string `json:"Secondary,omitempty"`
-		Armor       string `json:"Armor,omitempty"`
-		Look        string `json:"Look,omitempty"`
-		Inventory   string `json:"Inventory,omitempty"`
-	}{
-		Name:        p.Name,
-		Token:       p.Token,
-		PF:          p.PF,
-		Stress:      p.Stress,
-		ArmorScore:  p.ArmorScore,
-		Hope:        p.Hope,
-		Class:       strings.TrimSpace(p.Class),
-		Subclass:    strings.TrimSpace(p.Subclass),
-		Level:       p.Level,
-		Rank:        p.Rank,
-		CompBonus:   p.CompBonus,
-		ExpBonus:    p.ExpBonus,
-		Description: strings.TrimSpace(p.Description),
-		Traits:      strings.TrimSpace(p.Traits),
-		Primary:     strings.TrimSpace(p.Primary),
-		Secondary:   strings.TrimSpace(p.Secondary),
-		Armor:       strings.TrimSpace(p.Armor),
-		Look:        strings.TrimSpace(p.Look),
-		Inventory:   strings.TrimSpace(p.Inventory),
-	}
-	return json.Marshal(out)
+	Name        string `yaml:"name"`
+	Token       int    `yaml:"token"`
+	PF          int    `yaml:"pf,omitempty"`
+	Stress      int    `yaml:"stress,omitempty"`
+	ArmorScore  int    `yaml:"armor_score,omitempty"`
+	Hope        int    `yaml:"hope,omitempty"`
+	Class       string `yaml:"class,omitempty"`
+	Subclass    string `yaml:"subclass,omitempty"`
+	Level       int    `yaml:"level,omitempty"`
+	Rank        int    `yaml:"rank,omitempty"`
+	CompBonus   int    `yaml:"comp_bonus,omitempty"`
+	ExpBonus    int    `yaml:"exp_bonus,omitempty"`
+	Description string `yaml:"description,omitempty"`
+	Traits      string `yaml:"traits,omitempty"`
+	Primary     string `yaml:"primary,omitempty"`
+	Secondary   string `yaml:"secondary,omitempty"`
+	Armor       string `yaml:"armor,omitempty"`
+	Look        string `yaml:"look,omitempty"`
+	Inventory   string `yaml:"inventory,omitempty"`
 }
 
 func randomPNGName() string {
@@ -667,24 +475,10 @@ func loadPNGList(path string) ([]PNG, string, error) {
 		PNGs     []PNG  `yaml:"pngs"`
 		Selected string `yaml:"selected"`
 	}
-	if err := yaml.Unmarshal(data, &wrapper); err == nil && wrapper.PNGs != nil {
-		return wrapper.PNGs, wrapper.Selected, nil
-	}
-
-	// Legacy JSON support
-	var legacyWrapper struct {
-		PNGs     []PNG  `json:"pngs"`
-		Selected string `json:"selected"`
-	}
-	if err := json.Unmarshal(data, &legacyWrapper); err == nil && legacyWrapper.PNGs != nil {
-		return legacyWrapper.PNGs, legacyWrapper.Selected, nil
-	}
-
-	var legacy []PNG
-	if err := json.Unmarshal(data, &legacy); err != nil {
+	if err := yaml.Unmarshal(data, &wrapper); err != nil {
 		return nil, "", err
 	}
-	return legacy, "", nil
+	return wrapper.PNGs, wrapper.Selected, nil
 }
 
 func savePNGList(path string, pngs []PNG, selected string) error {
