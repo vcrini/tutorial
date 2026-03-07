@@ -23,24 +23,18 @@ go test ./...
 
 This is a terminal application for managing **Savage Worlds Adventure Edition (SWADE)** tabletop RPG sessions. It has two UI modes:
 
-- **TUI mode** (default): built with `tview` (rivo/tview). Entry point: `runTViewUI()` in `view.go`.
+- **TUI mode** (default): built with `tview` (rivo/tview). Entry point: `runTViewUI()` in `tview_ui.go`.
 - **CLI/headless mode**: activated via `./lazysw cli ...`. Entry point: `runCLI()` in `cli.go`.
-- There is also a legacy `bubbletea`-based model in `model.go` (not the active TUI path).
 
 ### Key files
 
 | File | Purpose |
 |---|---|
 | `main.go` | Entrypoint; routes to TUI or CLI mode |
-| `view.go` | Active TUI (tview): panels, keybindings, layout |
+| `tview_ui.go` | Active TUI (tview): panels, keybindings, layout, all UI logic |
 | `cli.go` | Headless CLI mode (dice rolls, monster listing) |
-| `model.go` | Legacy bubbletea model (still compiled, not the active UI) |
 | `data.go` | All data types (`Monster`, `PNG`, `EquipmentItem`, `ClassItem`, etc.) and load/save functions |
-| `encounter.go` | Encounter logic (wounds, conditions, initiative) |
-| `selection.go` | Filter/selection helpers |
-| `menu.go` | Menu helpers |
-| `monsters.go` | Monster-related helpers |
-| `monster_history.go` | Navigation history for monster list |
+| `encounter.go` | Encounter domain logic (wounds, conditions, initiative, persistence) |
 | `main_test.go` | Unit tests |
 
 ### Data & persistence

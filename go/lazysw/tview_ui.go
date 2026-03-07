@@ -1025,6 +1025,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.focusPanel(focusClassSearch)
 			return nil
 		}
+		if ui.isEnvironmentPanelFocus(focus) {
+			ui.focusPanel(focusEnvSearch)
+			return nil
+		}
 	case 't':
 		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonRole)
@@ -1036,6 +1040,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if ui.isClassPanelFocus(focus) {
 			ui.focusPanel(focusClassName)
+			return nil
+		}
+		if ui.isEnvironmentPanelFocus(focus) {
+			ui.focusPanel(focusEnvType)
 			return nil
 		}
 	case 'g':
@@ -1055,6 +1063,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if ui.isClassPanelFocus(focus) {
 			ui.focusPanel(focusClassSubclass)
+			return nil
+		}
+		if ui.isEnvironmentPanelFocus(focus) {
+			ui.focusPanel(focusEnvRank)
 			return nil
 		}
 	case 'y':
@@ -1081,6 +1093,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		if ui.isClassPanelFocus(focus) {
 			ui.resetClassFilters()
+			return nil
+		}
+		if ui.isEnvironmentPanelFocus(focus) {
+			ui.resetEnvironmentFilters()
 			return nil
 		}
 	case 'd':
@@ -1162,6 +1178,10 @@ func (ui *tviewUI) isEquipmentPanelFocus(focus tview.Primitive) bool {
 
 func (ui *tviewUI) isClassPanelFocus(focus tview.Primitive) bool {
 	return focus == ui.classSearch || focus == ui.classNameDrop || focus == ui.classSubDrop || focus == ui.classSourceDrop || focus == ui.classList
+}
+
+func (ui *tviewUI) isEnvironmentPanelFocus(focus tview.Primitive) bool {
+	return focus == ui.envSearch || focus == ui.envTypeDrop || focus == ui.envRankDrop || focus == ui.envList
 }
 
 func (ui *tviewUI) focusNext() {
@@ -1270,11 +1290,13 @@ func (ui *tviewUI) isFocusVisible(idx int) bool {
 }
 
 func (ui *tviewUI) activeCatalogListFocus() int {
-	if ui.catalogMode == "equipaggiamento" {
+	switch ui.catalogMode {
+	case "equipaggiamento":
 		return focusEqList
-	}
-	if ui.catalogMode == "regole" {
+	case "regole":
 		return focusClassList
+	case "ambienti":
+		return focusEnvList
 	}
 	return focusMonList
 }

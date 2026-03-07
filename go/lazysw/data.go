@@ -411,19 +411,6 @@ func loadMonsters(path string) ([]Monster, error) {
 	return monsters, nil
 }
 
-func loadEnvironments(path string) ([]Environment, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var environments []Environment
-	if err := yaml.Unmarshal(data, &environments); err != nil {
-		return nil, err
-	}
-	return environments, nil
-}
-
 func loadEquipment(path string) ([]EquipmentItem, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -435,19 +422,6 @@ func loadEquipment(path string) ([]EquipmentItem, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-func loadCards(path string) ([]CardItem, error) {
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var cards []CardItem
-	if err := yaml.Unmarshal(data, &cards); err != nil {
-		return nil, err
-	}
-	return cards, nil
 }
 
 func loadClasses(path string) ([]ClassItem, error) {

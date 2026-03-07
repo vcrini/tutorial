@@ -234,61 +234,6 @@ type encounterPersist struct {
 	} `yaml:"entries"`
 }
 
-func (m *model) addMonsterToEncounter(mon Monster) {
-	woundsMax := monsterWoundsMax(mon)
-	m.encounter = append(m.encounter, EncounterEntry{
-		Monster:    mon,
-		WoundsMax:  woundsMax,
-		BasePF:     woundsMax,
-		Stress:     0,
-		BaseStress: 0,
-	})
-	m.persistEncounter()
-}
-
-func (m *model) removeEncounterAt(idx int) {
-	if idx < 0 || idx >= len(m.encounter) {
-		return
-	}
-	m.encounter = append(m.encounter[:idx], m.encounter[idx+1:]...)
-	if m.encounterCursor >= len(m.encounter) {
-		m.encounterCursor = len(m.encounter) - 1
-	}
-	if m.encounterCursor < 0 {
-		m.encounterCursor = 0
-	}
-	m.persistEncounter()
-}
-
-func (m *model) persistEncounter() {
-	var entries []struct {
-		Name             string         `yaml:"name"`
-		Wounds           int            `yaml:"wounds"`
-		PF               int            `yaml:"pf"`
-		InitiativeCard   string         `yaml:"initiative_card,omitempty"`
-		LegacyInitiative int            `yaml:"initiative,omitempty"`
-		HasInit          bool           `yaml:"has_initiative,omitempty"`
-		Conditions       map[string]int `yaml:"conditions,omitempty"`
-		Stress           int            `yaml:"stress,omitempty"`
-		BaseStress       int            `yaml:"base_stress,omitempty"`
-	}
-	for _, e := range m.encounter {
-		basePF := encounterMaxWounds(e)
-		entries = append(entries, struct {
-			Name             string         `yaml:"name"`
-			Wounds           int            `yaml:"wounds"`
-			PF               int            `yaml:"pf"`
-			InitiativeCard   string         `yaml:"initiative_card,omitempty"`
-			LegacyInitiative int            `yaml:"initiative,omitempty"`
-			HasInit          bool           `yaml:"has_initiative,omitempty"`
-			Conditions       map[string]int `yaml:"conditions,omitempty"`
-			Stress           int            `yaml:"stress,omitempty"`
-			BaseStress       int            `yaml:"base_stress,omitempty"`
-		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: basePF, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit, Conditions: cloneStringIntMap(e.Conditions)})
-	}
-	_ = saveEncounter(encounterFile, entries)
-}
-
 func loadEncounter(path string, monsters []Monster) ([]EncounterEntry, error) {
 	rawEntries, err := readEncounter(path)
 	if err != nil {
