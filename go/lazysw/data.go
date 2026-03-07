@@ -15,6 +15,12 @@ var namesFile = "config/names.yaml"
 var monstersFile = "config/mostri.yml"
 var equipmentFile = "config/equipaggiamento.yaml"
 var classesFile = "config/classi.yaml"
+var swadeRulesFiles = []string{
+	"config/razze.yaml",
+	"config/svantaggi.yaml",
+	"config/vantaggi.yaml",
+	"config/tratti.yaml",
+}
 var encounterFile = persistentPath("encounter.yml")
 var diceHistoryFile = persistentPath("dice_history.yml")
 
@@ -433,6 +439,17 @@ func loadClasses(path string) ([]ClassItem, error) {
 	var classes []ClassItem
 	if err := yaml.Unmarshal(data, &classes); err != nil {
 		return nil, err
+	}
+	for _, extra := range swadeRulesFiles {
+		extraData, err := os.ReadFile(extra)
+		if err != nil {
+			continue
+		}
+		var extraItems []ClassItem
+		if err := yaml.Unmarshal(extraData, &extraItems); err != nil {
+			continue
+		}
+		classes = append(classes, extraItems...)
 	}
 	return classes, nil
 }

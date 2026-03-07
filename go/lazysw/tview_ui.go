@@ -2740,7 +2740,42 @@ func (ui *tviewUI) buildCardDetails(c CardItem) string {
 	return strings.TrimSpace(b.String())
 }
 
+func isSWADERuleEntry(name string) bool {
+	n := strings.ToLower(strings.TrimSpace(name))
+	return strings.HasPrefix(n, "razza") ||
+		strings.HasPrefix(n, "svantaggio") ||
+		strings.HasPrefix(n, "vantaggio") ||
+		strings.HasPrefix(n, "attributo") ||
+		strings.HasPrefix(n, "abilit")
+}
+
 func (ui *tviewUI) buildClassDetails(c ClassItem) string {
+	if c.Source == "swade" || isSWADERuleEntry(c.Name) {
+		var b strings.Builder
+		b.WriteString(c.Subclass + "\n")
+		b.WriteString("Tipo: " + c.Name + "\n")
+		if strings.TrimSpace(c.Domains) != "" {
+			b.WriteString("Requisiti: " + strings.TrimSpace(c.Domains) + "\n")
+		}
+		if strings.TrimSpace(c.Description) != "" {
+			b.WriteString("\n" + strings.TrimSpace(c.Description) + "\n")
+		}
+		if len(c.ClassPrivileges) > 0 {
+			label := "Capacità"
+			if strings.HasPrefix(strings.ToLower(strings.TrimSpace(c.Name)), "razza") {
+				label = "Capacità Razziali"
+			}
+			b.WriteString("\n" + label + ":\n")
+			for _, p := range c.ClassPrivileges {
+				p = strings.TrimSpace(p)
+				if p == "" {
+					continue
+				}
+				b.WriteString("- " + p + "\n")
+			}
+		}
+		return strings.TrimSpace(b.String())
+	}
 	if c.Source == "carta" {
 		var b strings.Builder
 		b.WriteString(c.Subclass + "\n")
