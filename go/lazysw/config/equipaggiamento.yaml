@@ -1515,3 +1515,1646 @@
   shots: "8"
   note: "Biometric Safety, Tactical Rails, Medium Range Scope, Snapfire"
   source: iz
+# --- OGGETTI COMUNI ---
+- name: Cavallo
+  category: Oggetti Comuni
+  type: Animali
+  rank: 1
+  era: Antica
+  cost: "300"
+  weight: "-"
+  source: core
+- name: Cavallo da guerra
+  category: Oggetti Comuni
+  type: Animali
+  rank: 2
+  era: Antica
+  cost: "750"
+  weight: "-"
+  source: core
+- name: Sella
+  category: Oggetti Comuni
+  type: Animali
+  rank: 1
+  era: Antica
+  cost: "10"
+  weight: "5"
+  source: core
+- name: Sella elaborata
+  category: Oggetti Comuni
+  type: Animali
+  rank: 1
+  era: Antica
+  cost: "50"
+  weight: "5"
+  source: core
+- name: Accendino
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Moderna
+  cost: "2"
+  weight: "-"
+  source: core
+- name: Acciarino e pietra focaia
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "3"
+  weight: "0.5"
+  source: core
+- name: Ampolla ceramica
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "5"
+  weight: "0.5"
+  source: core
+- name: Attrezzi da scasso
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "200"
+  weight: "0.5"
+  source: core
+- name: Badile
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "5"
+  weight: "2.5"
+  source: core
+- name: Borraccia / Otre
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "5"
+  weight: "0.5"
+  source: core
+- name: Candela (1 ora, raggio 2")
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "1"
+  weight: "0.1"
+  source: core
+- name: Coperta
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "10"
+  weight: "2"
+  source: core
+- name: Corda di canapa (10"/20 metri)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "10"
+  weight: "7.5"
+  source: core
+- name: Corda di nylon (10"/20 metri)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "10"
+  weight: "1.5"
+  source: core
+- name: Cote
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "5"
+  weight: "0.5"
+  source: core
+- name: Faretra (20 frecce/dardi)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "25"
+  weight: "1"
+  source: core
+- name: Fischietto
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "2"
+  weight: "-"
+  source: core
+- name: Kit attrezzi
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "200"
+  weight: "2.5"
+  source: core
+- name: Kit primo soccorso
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Moderna
+  cost: "10"
+  weight: "0.5"
+  note: "3 usi; vedi regole Guarigione"
+  source: core
+- name: Kit medico
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "100"
+  weight: "2"
+  note: "5 usi; +1 ai tiri di Guarigione; $25 per rifornirlo"
+  source: core
+- name: Lanterna (4 ore, raggio 4")
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "25"
+  weight: "1.5"
+  source: core
+- name: Macchina fotografica (usa e getta)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "10"
+  weight: "0.5"
+  source: core
+- name: Macchina fotografica (tradizionale)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "75"
+  weight: "1"
+  source: core
+- name: Macchina fotografica (digitale)
+  category: Oggetti Comuni
+  type: Elettronica
+  rank: 3
+  era: Moderna
+  cost: "300"
+  weight: "0.5"
+  source: core
+- name: Manette
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "15"
+  weight: "1"
+  source: core
+- name: Martello
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "10"
+  weight: "0.5"
+  source: core
+- name: Occhialini protettivi
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "20"
+  weight: "0.5"
+  source: core
+- name: Olio (mezzo litro)
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "2"
+  weight: "0.5"
+  note: "Per lanterna"
+  source: core
+- name: Ombrello
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Moderna
+  cost: "5"
+  weight: "1"
+  source: core
+- name: Piede di porco
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Moderna
+  cost: "10"
+  weight: "1"
+  source: core
+- name: Rampino
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "100"
+  weight: "1"
+  source: core
+- name: Sacco a pelo
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "25"
+  weight: "2"
+  source: core
+- name: Sapone
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "1"
+  weight: "0.1"
+  source: core
+- name: Torcia (1 ora, raggio 4")
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "5"
+  weight: "0.5"
+  source: core
+- name: Torcia elettrica (fascio fino a 10")
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 2
+  era: Moderna
+  cost: "20"
+  weight: "1.5"
+  source: core
+- name: Zaino
+  category: Oggetti Comuni
+  type: Avventura
+  rank: 1
+  era: Generica
+  cost: "50"
+  weight: "1"
+  source: core
+- name: Abiti comuni
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 1
+  era: Generica
+  cost: "20"
+  weight: "1"
+  source: core
+- name: Abiti formali
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 1
+  era: Moderna
+  cost: "200"
+  weight: "1.5"
+  source: core
+- name: Abiti invernali (mantello/parka)
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 1
+  era: Generica
+  cost: "200"
+  weight: "1.5"
+  source: core
+- name: Scarpe da montagna/trekking
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 2
+  era: Moderna
+  cost: "100"
+  weight: "1"
+  source: core
+- name: Stivali invernali
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 1
+  era: Generica
+  cost: "100"
+  weight: "0.5"
+  source: core
+- name: Tuta mimetica
+  category: Oggetti Comuni
+  type: Abbigliamento
+  rank: 2
+  era: Moderna
+  cost: "20"
+  weight: "1.5"
+  source: core
+- name: Computer fisso
+  category: Oggetti Comuni
+  type: Elettronica
+  rank: 3
+  era: Moderna
+  cost: "800"
+  weight: "10"
+  source: core
+- name: Computer portatile
+  category: Oggetti Comuni
+  type: Elettronica
+  rank: 3
+  era: Moderna
+  cost: "1200"
+  weight: "2.5"
+  source: core
+- name: Dispositivo GPS
+  category: Oggetti Comuni
+  type: Elettronica
+  rank: 3
+  era: Moderna
+  cost: "250"
+  weight: "0.5"
+  source: core
+- name: Tablet
+  category: Oggetti Comuni
+  type: Elettronica
+  rank: 3
+  era: Moderna
+  cost: "250"
+  weight: "0.5"
+  source: core
+- name: Bipiede/treppiede
+  category: Oggetti Comuni
+  type: Accessori Armi
+  rank: 2
+  era: Moderna
+  cost: "100"
+  weight: "1"
+  note: "1 azione per posizionarlo; annulla penalita da Rinculo e For Min"
+  source: core
+- name: Mirino laser
+  category: Oggetti Comuni
+  type: Accessori Armi
+  rank: 2
+  era: Moderna
+  cost: "150"
+  weight: "0.5"
+  note: "+1 a Sparare a Gittata Corta e Media"
+  source: core
+- name: Mirino telescopico
+  category: Oggetti Comuni
+  type: Accessori Armi
+  rank: 2
+  era: Moderna
+  cost: "100"
+  weight: "1"
+  note: "Annulla 2 penalita di Mira"
+  source: core
+- name: Pasto in fast food
+  category: Oggetti Comuni
+  type: Cibo
+  rank: 1
+  era: Moderna
+  cost: "8"
+  weight: "0.5"
+  source: core
+- name: Buon pasto (ristorante)
+  category: Oggetti Comuni
+  type: Cibo
+  rank: 1
+  era: Moderna
+  cost: "15+"
+  weight: "-"
+  source: core
+- name: Spray al peperoncino
+  category: Oggetti Comuni
+  type: Difesa Personale
+  rank: 2
+  era: Moderna
+  cost: "15"
+  weight: "0.2"
+  note: "Sparare (o Combattere in mischia); Gittata 2\"; Colpi 5; vittima Vigore a -2 o Stordita"
+  source: core
+- name: Storditore elettrico
+  category: Oggetti Comuni
+  type: Difesa Personale
+  rank: 2
+  era: Moderna
+  cost: "25"
+  weight: "0.2"
+  note: "Sparare; Gittata 1/2/4; dopo 3 Colpi ricaricare 2 ore; vittima Vigore a -2 o Stordita"
+  source: core
+- name: Cimice (microtrasmettitore)
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "30"
+  weight: "-"
+  note: "12 ore di uso continuativo"
+  source: core
+- name: Intercettatore cellulare
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "650"
+  weight: "2.5"
+  source: core
+- name: Intercettatore telefono
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "250"
+  weight: "0"
+  source: core
+- name: Microfono parabolico
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "750"
+  weight: "2"
+  note: "Permette di sentire fino a 200 metri"
+  source: core
+- name: Microtelecamera
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "50"
+  weight: "-"
+  note: "12 ore di uso continuativo"
+  source: core
+- name: Rilevatore di trasmettitori
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "525"
+  weight: "0.5"
+  source: core
+- name: Telefono per intercettazioni su linea
+  category: Oggetti Comuni
+  type: Sorveglianza
+  rank: 3
+  era: Moderna
+  cost: "150"
+  weight: "1"
+  note: "Tiro di Riparare per accedere a una linea"
+  source: core
+# --- MUNIZIONI MANCANTI ---
+- name: Proiettili per fionda (20)
+  category: Munizioni
+  type: Fionda
+  rank: 1
+  era: Generica
+  cost: "2"
+  weight: "0.5"
+  source: core
+- name: Proiettili e polvere nera (20)
+  category: Munizioni
+  type: Polvere nera
+  rank: 1
+  era: Polvere nera
+  cost: "2"
+  weight: "0.5"
+  note: "Per armi a polvere nera"
+  source: core
+- name: Batterie laser - pistola
+  category: Munizioni
+  type: Laser
+  rank: 3
+  era: Futuristica
+  cost: "20"
+  weight: "0.1"
+  note: "Equivale a un caricatore pieno"
+  source: core
+- name: Batterie laser - fucile/mitra
+  category: Munizioni
+  type: Laser
+  rank: 3
+  era: Futuristica
+  cost: "20"
+  weight: "0.2"
+  note: "Equivale a un caricatore pieno"
+  source: core
+- name: Batterie laser - Gatling
+  category: Munizioni
+  type: Laser
+  rank: 3
+  era: Futuristica
+  cost: "50"
+  weight: "5"
+  note: "Equivale a un caricatore pieno"
+  source: core
+# --- ARMATURE ANTICHE E MEDIEVALI ---
+- name: Giacca cuoio leggero
+  category: Armature
+  type: Cuoio Leggero/Tessuto
+  rank: 1
+  era: Antica
+  cost: "20"
+  weight: "2.5"
+  min_strength: d4
+  armor: "+1"
+  note: "Tronco, braccia"
+  source: core
+- name: Gambali di cuoio leggero
+  category: Armature
+  type: Cuoio Leggero/Tessuto
+  rank: 1
+  era: Antica
+  cost: "20"
+  weight: "2.5"
+  min_strength: d4
+  armor: "+1"
+  note: "Gambe (coppia; dimezza costo/peso se un solo pezzo)"
+  source: core
+- name: Copricapo di cuoio
+  category: Armature
+  type: Cuoio Leggero/Tessuto
+  rank: 1
+  era: Antica
+  cost: "5"
+  weight: "0.5"
+  min_strength: d4
+  armor: "+1"
+  source: core
+- name: Giacca cuoio pesante
+  category: Armature
+  type: Cuoio Pesante/Pelli
+  rank: 1
+  era: Antica
+  cost: "80"
+  weight: "4"
+  min_strength: d6
+  armor: "+2"
+  note: "Tronco, braccia; cuoio bollito/cuir bouilli/pelli"
+  source: core
+- name: Gambali di cuoio pesante
+  category: Armature
+  type: Cuoio Pesante/Pelli
+  rank: 1
+  era: Antica
+  cost: "40"
+  weight: "3.5"
+  min_strength: d6
+  armor: "+2"
+  note: "Gambe (coppia)"
+  source: core
+- name: Cappuccio di cuoio pesante
+  category: Armature
+  type: Cuoio Pesante/Pelli
+  rank: 1
+  era: Antica
+  cost: "20"
+  weight: "0.5"
+  min_strength: d6
+  armor: "+2"
+  source: core
+- name: Giaco di cotta
+  category: Armature
+  type: Cotta di Maglia
+  rank: 2
+  era: Antica
+  cost: "300"
+  weight: "12.5"
+  min_strength: d8
+  armor: "+3"
+  note: "Tronco, braccia; anelli/scaglie metalliche o armatura da samurai"
+  source: core
+- name: Gambali di cotta
+  category: Armature
+  type: Cotta di Maglia
+  rank: 2
+  era: Antica
+  cost: "150"
+  weight: "5"
+  min_strength: d8
+  armor: "+3"
+  note: "Gambe (coppia)"
+  source: core
+- name: Cappuccio/elmo di maglia
+  category: Armature
+  type: Cotta di Maglia
+  rank: 2
+  era: Antica
+  cost: "25"
+  weight: "2"
+  min_strength: d8
+  armor: "+3"
+  source: core
+- name: Bardatura di bronzo (cavallo)
+  category: Armature
+  type: Bronzo
+  rank: 2
+  era: Antica
+  cost: "1500"
+  weight: "25"
+  min_strength: d10
+  armor: "+3"
+  note: "Per cavallo"
+  source: core
+- name: Pettorale di bronzo
+  category: Armature
+  type: Bronzo
+  rank: 2
+  era: Antica
+  cost: "80"
+  weight: "6.5"
+  min_strength: d8
+  armor: "+3"
+  note: "Tronco"
+  source: core
+- name: Bracciali di bronzo
+  category: Armature
+  type: Bronzo
+  rank: 2
+  era: Antica
+  cost: "40"
+  weight: "2.5"
+  min_strength: d8
+  armor: "+3"
+  note: "Braccia (coppia)"
+  source: core
+- name: Gambali di bronzo
+  category: Armature
+  type: Bronzo
+  rank: 2
+  era: Antica
+  cost: "50"
+  weight: "3"
+  min_strength: d8
+  armor: "+3"
+  note: "Gambe (coppia)"
+  source: core
+- name: Elmo di bronzo
+  category: Armature
+  type: Bronzo
+  rank: 2
+  era: Antica
+  cost: "25"
+  weight: "3"
+  min_strength: d8
+  armor: "+3"
+  source: core
+- name: Bardatura di piastre (cavallo)
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "1500"
+  weight: "25"
+  min_strength: d10
+  armor: "+4"
+  note: "Per cavallo"
+  source: core
+- name: Corsetto di piastre
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "500"
+  weight: "15"
+  min_strength: d10
+  armor: "+4"
+  note: "Tronco"
+  source: core
+- name: Bracciali di piastre
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "200"
+  weight: "5"
+  min_strength: d10
+  armor: "+4"
+  note: "Braccia (coppia)"
+  source: core
+- name: Gambali di piastre
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "200"
+  weight: "5"
+  min_strength: d10
+  armor: "+4"
+  note: "Gambe (coppia)"
+  source: core
+- name: Elmo pesante
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "100"
+  weight: "2"
+  min_strength: d10
+  armor: "+4"
+  source: core
+- name: Elmo pesante chiuso
+  category: Armature
+  type: Piastre
+  rank: 3
+  era: Antica
+  cost: "200"
+  weight: "4"
+  min_strength: d10
+  armor: "+4"
+  note: "-1 ai tiri di Percezione basati sulla vista"
+  source: core
+# --- ARMATURE MODERNE MANCANTI ---
+- name: Coprigambe da equitazione
+  category: Armature
+  type: Cuoio/Tessuto
+  rank: 1
+  era: Moderna
+  cost: "70"
+  weight: "2.5"
+  min_strength: d4
+  armor: "+1"
+  note: "Gambe"
+  source: core
+- name: Pantaloni in kevlar
+  category: Armature
+  type: Cuoio/Tessuto
+  rank: 2
+  era: Moderna
+  cost: "175"
+  weight: "2"
+  min_strength: d4
+  armor: "+2"
+  note: "Gambe"
+  source: core
+- name: Casco da ciclismo
+  category: Armature
+  type: Cuoio/Tessuto
+  rank: 1
+  era: Moderna
+  cost: "50"
+  weight: "0.5"
+  min_strength: d4
+  armor: "+2"
+  source: core
+- name: Casco da moto
+  category: Armature
+  type: Cuoio/Tessuto
+  rank: 1
+  era: Moderna
+  cost: "100"
+  weight: "1.5"
+  min_strength: d4
+  armor: "+3"
+  source: core
+- name: Giubbotto flak
+  category: Armature
+  type: Protezioni
+  rank: 2
+  era: Moderna
+  cost: "40"
+  weight: "5"
+  min_strength: d6
+  armor: "+2"
+  note: "Tronco; stile guerra Vietnam"
+  source: core
+- name: Elmetto in kevlar
+  category: Armature
+  type: Protezioni
+  rank: 2
+  era: Moderna
+  cost: "80"
+  weight: "2.5"
+  min_strength: d4
+  armor: "+4*"
+  source: core
+# --- ARMATURA FUTURISTICA MANCANTE ---
+- name: Armatura personale
+  category: Armature
+  type: Leggero/Civile
+  rank: 3
+  era: Futuristica
+  cost: "200"
+  weight: "2"
+  min_strength: d4
+  armor: "+4*"
+  note: "Tronco, braccia, gambe; pelle reattiva disponibile (+50% costo, -2 Furtivita)"
+  source: core
+# --- SCUDI FUTURISTICI ---
+- name: Scudo piccolo in polimeri
+  category: Scudi
+  type: Futuristico
+  rank: 3
+  era: Futuristica
+  cost: "200"
+  weight: "1"
+  min_strength: d4
+  parry: "+1"
+  cover: "-"
+  source: core
+- name: Scudo medio in polimeri
+  category: Scudi
+  type: Futuristico
+  rank: 3
+  era: Futuristica
+  cost: "300"
+  weight: "2"
+  min_strength: d4
+  parry: "+2"
+  cover: "-2"
+  source: core
+- name: Scudo grande in polimeri
+  category: Scudi
+  type: Futuristico
+  rank: 3
+  era: Futuristica
+  cost: "400"
+  weight: "3"
+  min_strength: d6
+  parry: "+3"
+  cover: "-4"
+  source: core
+# --- ARMI DA MISCHIA MANCANTI ---
+- name: Alabarda
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "250"
+  weight: "3"
+  min_strength: d8
+  damage: For+d8
+  note: "Portata 1, due mani"
+  source: core
+- name: Flagello
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "200"
+  weight: "1.5"
+  min_strength: d6
+  damage: For+d6
+  note: "Ignora i bonus di scudo"
+  source: core
+- name: Katana
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "1000"
+  weight: "1.5"
+  min_strength: d6
+  damage: For+d6+1
+  note: "Due mani"
+  source: core
+- name: Lanciada cavaliere
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "300"
+  weight: "3"
+  min_strength: d8
+  damage: For+d8
+  ap: "2"
+  note: "PA 2 solo in carica; Portata 2; utilizzabile solo a cavallo"
+  source: core
+- name: Maglio
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "400"
+  weight: "5"
+  min_strength: d10
+  damage: For+d10
+  note: "Due mani; +2 danni per rompere oggetti"
+  source: core
+- name: Mazza d'arme
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "100"
+  weight: "2"
+  min_strength: d6
+  damage: For+d6
+  source: core
+- name: Picca
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "400"
+  weight: "9"
+  min_strength: d8
+  damage: For+d8
+  note: "Portata 2, due mani"
+  source: core
+- name: Randello leggero
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Generica
+  cost: "25"
+  weight: "1"
+  min_strength: d4
+  damage: For+d4
+  note: "Indica status basso o delinquenza"
+  source: core
+- name: Randello pesante
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Generica
+  cost: "50"
+  weight: "2.5"
+  min_strength: d6
+  damage: For+d6
+  note: "Indica status basso o delinquenza"
+  source: core
+- name: Spada corta
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "100"
+  weight: "1"
+  min_strength: d6
+  damage: For+d6
+  note: "Anche come sciabola da cavalleria"
+  source: core
+- name: Stocco/striscia
+  category: Armi da Mischia
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "150"
+  weight: "1"
+  min_strength: d4
+  damage: For+d4
+  parry: "+1"
+  source: core
+- name: Baionetta
+  category: Armi da Mischia
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "25"
+  weight: "0.5"
+  min_strength: d4
+  damage: For+d4
+  note: "Montata su fucile: For+d6, Parata+1, Portata 1, due mani"
+  source: core
+- name: Bangstick
+  category: Armi da Mischia
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "5"
+  weight: "1"
+  min_strength: d6
+  damage: "3d6"
+  note: "Cartuccia a pallettoni innestata; ricarica dopo ogni colpo (1 azione)"
+  source: core
+- name: Coltello a serramanico
+  category: Armi da Mischia
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "10"
+  weight: "0.2"
+  min_strength: d4
+  damage: For+d4
+  note: "-2 a Percezione se nascosto"
+  source: core
+- name: Coltello da sopravvivenza
+  category: Armi da Mischia
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "50"
+  weight: "0.5"
+  min_strength: d4
+  damage: For+d4
+  note: "+1 ai tiri di Sopravvivenza"
+  source: core
+- name: Coltello molecolare
+  category: Armi da Mischia
+  type: Futuristica
+  rank: 3
+  era: Futuristica
+  cost: "250"
+  weight: "0.2"
+  min_strength: d4
+  damage: For+d4+2
+  ap: "2"
+  note: "Non puo essere scagliato"
+  source: core
+- name: Spada molecolare
+  category: Armi da Mischia
+  type: Futuristica
+  rank: 3
+  era: Futuristica
+  cost: "500"
+  weight: "1"
+  min_strength: d6
+  damage: For+d8+2
+  ap: "4"
+  source: core
+# --- ARMI A DISTANZA MANCANTI ---
+- name: Ascia da lancio
+  category: Armi a Distanza
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "100"
+  weight: "1.5"
+  min_strength: d6
+  range: 3/6/12
+  damage: For+d6
+  rof: "1"
+  source: core
+- name: Fionda
+  category: Armi a Distanza
+  type: Antica/Medievale
+  rank: 1
+  era: Generica
+  cost: "10"
+  weight: "0.5"
+  min_strength: d4
+  range: 4/8/16
+  damage: For+d4
+  rof: "1"
+  note: "Usa Atletica invece di Sparare"
+  source: core
+- name: Giavellotto
+  category: Armi a Distanza
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "100"
+  weight: "1.5"
+  min_strength: d6
+  range: 3/6/12
+  damage: For+d6
+  rof: "1"
+  source: core
+- name: Pugnale/coltello (lancio)
+  category: Armi a Distanza
+  type: Antica/Medievale
+  rank: 1
+  era: Generica
+  cost: "25"
+  weight: "0.5"
+  min_strength: d4
+  range: 3/6/12
+  damage: For+d4
+  rof: "1"
+  source: core
+- name: Rete con pesi
+  category: Armi a Distanza
+  type: Antica/Medievale
+  rank: 1
+  era: Antica
+  cost: "50"
+  weight: "4"
+  min_strength: d4
+  range: 3/6/12
+  damage: "-"
+  rof: "1"
+  note: "Se colpisce: Avviluppato; Durezza 10; vulnerabile agli attacchi da taglio"
+  source: core
+- name: Arco composito
+  category: Armi a Distanza
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "200"
+  weight: "1.5"
+  min_strength: d6
+  range: 12/24/48
+  damage: For+d6
+  rof: "1"
+  source: core
+- name: Balestra moderna
+  category: Armi a Distanza
+  type: Moderna
+  rank: 2
+  era: Moderna
+  cost: "300"
+  weight: "3.5"
+  min_strength: d6
+  range: 15/30/60
+  damage: 2d6
+  ap: "2"
+  rof: "1"
+  source: core
+# Armi a polvere nera mancanti
+- name: Archibugio
+  category: Armi da Fuoco
+  type: Polvere nera
+  rank: 1
+  era: Polvere nera
+  cost: "300"
+  weight: "6"
+  min_strength: d6
+  range: 10/20/40
+  damage: 1-3d6
+  rof: "1"
+  shots: "-"
+  note: "Funziona come Shotgun; Ricarica 3"
+  source: core
+- name: Fucile Kentucky
+  category: Armi da Fuoco
+  type: Polvere nera
+  rank: 1
+  era: Polvere nera
+  cost: "300"
+  weight: "4"
+  min_strength: d6
+  range: 15/30/60
+  damage: 2d8
+  ap: "2"
+  rof: "1"
+  shots: "-"
+  note: "Ricarica 3"
+  source: core
+- name: Fucile Springfield 1861
+  category: Armi da Fuoco
+  type: Polvere nera
+  rank: 1
+  era: Polvere nera
+  cost: "250"
+  weight: "5.5"
+  min_strength: d6
+  range: 15/30/60
+  damage: 2d8
+  rof: "1"
+  shots: "-"
+  note: "Ricarica 3"
+  source: core
+# Pistole mancanti
+- name: Smith & Wesson (.357)
+  category: Armi da Fuoco
+  type: Revolver
+  rank: 2
+  era: Moderna
+  cost: "250"
+  weight: "2.5"
+  min_strength: d4
+  range: 12/24/48
+  damage: 2d6+1
+  ap: "1"
+  rof: "1"
+  shots: "6"
+  source: core
+- name: Ruger (.22)
+  category: Armi da Fuoco
+  type: Semiautomatica
+  rank: 2
+  era: Moderna
+  cost: "100"
+  weight: "1"
+  min_strength: d4
+  range: 10/20/40
+  damage: 2d4
+  rof: "1"
+  shots: "9"
+  source: core
+# Mine mancanti
+- name: Betty Salterina
+  category: Armi Speciali
+  type: Mina
+  rank: 3
+  era: Moderna
+  cost: "100"
+  weight: "4.5"
+  range: "-"
+  damage: 3d6
+  rof: "-"
+  note: "Mina antiuomo; si solleva ed esplode a ~2m; armature sotto la cintura non proteggono; MEP"
+  source: core
+- name: Claymore
+  category: Armi Speciali
+  type: Mina
+  rank: 3
+  era: Moderna
+  cost: "75"
+  weight: "2"
+  range: "-"
+  damage: 3d6
+  rof: "-"
+  note: "Arco frontale 60°; entro 12\" colpisce automaticamente; fino a 50\" 50% probabilita; Speciale"
+  source: core
+- name: Siluro
+  category: Armi Speciali
+  type: Lanciarazzi
+  rank: 4
+  era: Moderna
+  cost: "500K"
+  weight: "1500"
+  range: 300/600/1200
+  damage: 8d10
+  ap: "22"
+  rof: "1"
+  note: "Arma Pesante; MEG"
+  source: core
+
+# Veicoli Terrestri Civili
+- name: Auto utilitaria
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "5-14K"
+  note: "Taglia 4 (Grande); Manovra +1; Vel Max 180km/h; Robustezza 10(2); Equipaggio 1+3"
+  source: core
+- name: Auto media
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "30K"
+  note: "Taglia 4 (Grande); Manovra 0; Vel Max 180km/h; Robustezza 11(2); Equipaggio 1+4"
+  source: core
+- name: Auto d'epoca
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "1K"
+  note: "Taglia 3 (Grande); Manovra -1; Vel Max 60km/h; Robustezza 7; Equipaggio 1+3"
+  source: core
+- name: Auto sportiva
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "15-300K"
+  note: "Taglia 4 (Grande); Manovra +2; Vel Max 240km/h; Robustezza 10(2); Equipaggio 1+3"
+  source: core
+- name: Bicicletta
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Generica
+  cost: "250"
+  note: "Taglia -1; Manovra +1; Vel Max 24km/h; Robustezza 4; Equipaggio 1"
+  source: core
+- name: Carro/Carrozza
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Antica
+  cost: "1-3K"
+  note: "Taglia 3; Manovra -2; Vel Max 24km/h; Robustezza 6; Equipaggio 1+3"
+  source: core
+- name: Furgone/Minivan
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "25K"
+  note: "Taglia 4 (Grande); Manovra 0; Vel Max 135km/h; Robustezza 12(2); Equipaggio 1+7"
+  source: core
+- name: Motocicletta
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "3K"
+  note: "Taglia 1; Manovra +1; Vel Max 180km/h; Robustezza 8; Equipaggio 1+1"
+  source: core
+- name: Moto da Cross
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "2K"
+  note: "Taglia 0; Manovra +1; Vel Max 120km/h; Robustezza 7; Equipaggio 1"
+  source: core
+- name: Autoarticolato
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "200K"
+  note: "Taglia 9 (Enorme); Manovra 0*; Vel Max 110km/h; Robustezza 14(2); Equipaggio 1+1; *Difficile manovrare in spazi stretti"
+  source: core
+- name: SUV
+  category: Veicoli
+  type: Terrestre Civile
+  rank: 1
+  era: Moderna
+  cost: "50K"
+  note: "Taglia 5 (Grande); Manovra 0; Vel Max 180km/h; Robustezza 14(2); Equipaggio 1+7"
+  source: core
+
+# Veicoli Terrestri Militari WWII
+- name: Jeep (WWII)
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 3; Manovra +1; Vel Max 90km/h; Robustezza 10; Equipaggio 1+3; Armamento: LMG 7.62mm"
+  source: core
+- name: M4 Sherman
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 6 (Grande); Manovra -1; Vel Max 45km/h; Robustezza 20(4); Equipaggio 4; Armamento: Cannone 75mm, Cal .30"
+  source: core
+- name: M5A1 Stuart
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 5 (Grande); Manovra 0; Vel Max 60km/h; Robustezza 17(3); Equipaggio 4; Armamento: Cannone 37mm, Cal .30"
+  source: core
+- name: T-34/76
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 6 (Grande); Manovra 0; Vel Max 55km/h; Robustezza 21(4); Equipaggio 4; Armamento: Cannone 76mm, Cal 7.62mm"
+  source: core
+- name: Panzer IV J
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 6 (Grande); Manovra -1; Vel Max 40km/h; Robustezza 22(4); Equipaggio 5; Armamento: Cannone 75mm, MG 7.92mm"
+  source: core
+- name: Panzer VI Tiger II
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 7 (Grande); Manovra -2; Vel Max 35km/h; Robustezza 30(7); Equipaggio 5; Armamento: Cannone 88mm, MG 7.92mm"
+  source: core
+
+# Veicoli Terrestri Militari Moderni
+- name: M1A1 Abrams
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 8 (Grande); Manovra 0; Vel Max 70km/h; Robustezza 50(14); Equipaggio 4; Armamento: Cannone 120mm, Cal .50, Cal 7.62mm"
+  source: core
+- name: M2 Bradley
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 6 (Grande); Manovra 0; Vel Max 65km/h; Robustezza 25(5); Equipaggio 3+6; Armamento: Cannone 25mm, TOW"
+  source: core
+- name: T-72 MBT
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 7 (Grande); Manovra -1; Vel Max 60km/h; Robustezza 40(10); Equipaggio 3; Armamento: Cannone 125mm"
+  source: core
+- name: T-80 MBT
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 7 (Grande); Manovra 0; Vel Max 70km/h; Robustezza 40(10); Equipaggio 3; Armamento: Cannone 125mm"
+  source: core
+- name: BTR 70 APC
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 6; Manovra 0; Vel Max 80km/h; Robustezza 22(4); Equipaggio 3+8; Armamento: MG 14.5mm, MG 7.62mm"
+  source: core
+
+# Veicoli Terrestri Militari Futuristici
+- name: Hover Tank
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 4
+  era: Futuristica
+  cost: "–"
+  note: "Taglia 8 (Enorme); Manovra +1; Vel Max 150km/h; Robustezza 50(14); Equipaggio 3; Armamento: Cannone a energia, Cal laser"
+  source: core
+- name: Hover APC
+  category: Veicoli
+  type: Terrestre Militare
+  rank: 4
+  era: Futuristica
+  cost: "–"
+  note: "Taglia 7 (Grande); Manovra +1; Vel Max 200km/h; Robustezza 30(7); Equipaggio 2+10; Armamento: Cannone laser"
+  source: core
+
+# Velivoli Civili
+- name: Biplano
+  category: Veicoli
+  type: Velivolo Civile
+  rank: 2
+  era: Moderna
+  cost: "5-10K"
+  note: "Taglia 3; Manovra +2; Vel Max 200km/h; Robustezza 8; Equipaggio 1+1"
+  source: core
+- name: Cessna Skyhawk
+  category: Veicoli
+  type: Velivolo Civile
+  rank: 2
+  era: Moderna
+  cost: "250K"
+  note: "Taglia 3; Manovra 0; Vel Max 230km/h; Robustezza 8; Equipaggio 1+3"
+  source: core
+- name: Elicottero
+  category: Veicoli
+  type: Velivolo Civile
+  rank: 2
+  era: Moderna
+  cost: "500K"
+  note: "Taglia 4; Manovra +1; Vel Max 200km/h; Robustezza 10; Equipaggio 1+5"
+  source: core
+- name: Jet privato
+  category: Veicoli
+  type: Velivolo Civile
+  rank: 2
+  era: Moderna
+  cost: "10M"
+  note: "Taglia 6; Manovra 0; Vel Max 850km/h; Robustezza 15; Equipaggio 2+12"
+  source: core
+- name: Space Shuttle
+  category: Veicoli
+  type: Velivolo Civile
+  rank: 3
+  era: Futuristica
+  cost: "2B"
+  note: "Taglia 11 (Colossale); Manovra -4; Vel Max 28000km/h; Robustezza 30; Equipaggio 7+50"
+  source: core
+
+# Velivoli Militari WWII
+- name: B-17 Flying Fortress
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 10 (Enorme); Manovra -2; Vel Max 450km/h; Robustezza 20; Equipaggio 10; Armamento: 13x Cal .50"
+  source: core
+- name: BF-109
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 4; Manovra +2; Vel Max 600km/h; Robustezza 10; Equipaggio 1; Armamento: Cannone 20mm, MG 7.92mm"
+  source: core
+- name: P-51 Mustang
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 4; Manovra +2; Vel Max 700km/h; Robustezza 11; Equipaggio 1; Armamento: 6x Cal .50"
+  source: core
+- name: Mitsubishi A6M Zero
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 4; Manovra +3; Vel Max 530km/h; Robustezza 9; Equipaggio 1; Armamento: 2x Cannone 20mm, 2x MG 7.7mm"
+  source: core
+- name: Spitfire Mk IIA
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 2
+  era: WWII
+  cost: "–"
+  note: "Taglia 4; Manovra +2; Vel Max 570km/h; Robustezza 11; Equipaggio 1; Armamento: 8x Cal .303"
+  source: core
+
+# Velivoli Militari Moderni
+- name: AH-64 Apache
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +1; Vel Max 300km/h; Robustezza 15; Equipaggio 2; Armamento: M230 30mm, Hellfire, Hydra 70"
+  source: core
+- name: AV-8B Harrier
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +1; Vel Max 1000km/h; Robustezza 15; Equipaggio 1; Armamento: GAU-12 25mm, bombe, missili"
+  source: core
+- name: F-15 Eagle
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +2; Vel Max 2600km/h; Robustezza 15; Equipaggio 1; Armamento: M61A1 20mm, missili AIM"
+  source: core
+- name: SU-27
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +2; Vel Max 2500km/h; Robustezza 15; Equipaggio 1; Armamento: GSh-30-1 30mm, missili"
+  source: core
+- name: UH-1 Huey
+  category: Veicoli
+  type: Velivolo Militare
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra 0; Vel Max 220km/h; Robustezza 12; Equipaggio 2+14; Armamento: variabile"
+  source: core
+
+# Natanti
+- name: Galeone
+  category: Veicoli
+  type: Natante
+  rank: 2
+  era: Antica
+  cost: "–"
+  note: "Taglia 10 (Enorme); Manovra -3; Vel Max 20km/h; Robustezza 25; Equipaggio 20+200; Armamento: 40x Cannone 12lb"
+  source: core
+- name: Galea
+  category: Veicoli
+  type: Natante
+  rank: 2
+  era: Antica
+  cost: "–"
+  note: "Taglia 9 (Enorme); Manovra -2; Vel Max 15km/h; Robustezza 20; Equipaggio 50+200; Armamento: 10x Cannone 6lb"
+  source: core
+- name: Aliscafo
+  category: Veicoli
+  type: Natante
+  rank: 2
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +1; Vel Max 80km/h; Robustezza 15; Equipaggio 2+30"
+  source: core
+- name: Pattugliatore PBR
+  category: Veicoli
+  type: Natante
+  rank: 3
+  era: Moderna
+  cost: "–"
+  note: "Taglia 5; Manovra +1; Vel Max 50km/h; Robustezza 15; Equipaggio 4; Armamento: 2x MG 7.62mm, M2 .50"
+  source: core
+- name: PT Boat
+  category: Veicoli
+  type: Natante
+  rank: 3
+  era: WWII
+  cost: "–"
+  note: "Taglia 7; Manovra 0; Vel Max 65km/h; Robustezza 15; Equipaggio 12; Armamento: 2x MG 20mm, 4x siluri"
+  source: core
+- name: Barca a remi
+  category: Veicoli
+  type: Natante
+  rank: 1
+  era: Generica
+  cost: "250"
+  note: "Taglia 1; Manovra 0; Vel Max 5km/h; Robustezza 8; Equipaggio 1+4"
+  source: core
+- name: Motoscafo
+  category: Veicoli
+  type: Natante
+  rank: 1
+  era: Moderna
+  cost: "10K"
+  note: "Taglia 3; Manovra +1; Vel Max 80km/h; Robustezza 10; Equipaggio 1+5"
+  source: core
+- name: Piccolo Yacht
+  category: Veicoli
+  type: Natante
+  rank: 2
+  era: Moderna
+  cost: "100K"
+  note: "Taglia 6; Manovra -1; Vel Max 20km/h; Robustezza 15; Equipaggio 2+8"
+  source: core

@@ -20,6 +20,7 @@ var swadeRulesFiles = []string{
 	"config/svantaggi.yaml",
 	"config/vantaggi.yaml",
 	"config/tratti.yaml",
+	"config/regole_combattimento.yaml",
 }
 var encounterFile = persistentPath("encounter.yml")
 var diceHistoryFile = persistentPath("dice_history.yml")

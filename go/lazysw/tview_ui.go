@@ -2775,7 +2775,10 @@ func isSWADERuleEntry(name string) bool {
 		strings.HasPrefix(n, "svantaggio") ||
 		strings.HasPrefix(n, "vantaggio") ||
 		strings.HasPrefix(n, "attributo") ||
-		strings.HasPrefix(n, "abilit")
+		strings.HasPrefix(n, "abilit") ||
+		strings.HasPrefix(n, "tabella") ||
+		strings.HasPrefix(n, "regola") ||
+		strings.HasPrefix(n, "meccanica")
 }
 
 func (ui *tviewUI) buildClassDetails(c ClassItem) string {
@@ -2790,9 +2793,15 @@ func (ui *tviewUI) buildClassDetails(c ClassItem) string {
 			b.WriteString("\n" + strings.TrimSpace(c.Description) + "\n")
 		}
 		if len(c.ClassPrivileges) > 0 {
+			n := strings.ToLower(strings.TrimSpace(c.Name))
 			label := "Capacità"
-			if strings.HasPrefix(strings.ToLower(strings.TrimSpace(c.Name)), "razza") {
+			switch {
+			case strings.HasPrefix(n, "razza"):
 				label = "Capacità Razziali"
+			case strings.HasPrefix(n, "tabella"):
+				label = "Voci"
+			case strings.HasPrefix(n, "regola"), strings.HasPrefix(n, "meccanica"):
+				label = "Regole"
 			}
 			b.WriteString("\n" + label + ":\n")
 			for _, p := range c.ClassPrivileges {
