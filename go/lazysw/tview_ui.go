@@ -755,6 +755,8 @@ func (ui *tviewUI) build() {
 func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	focus := ui.app.GetFocus()
 	_, focusIsInput := focus.(*tview.InputField)
+	_, focusIsDropDown := focus.(*tview.DropDown)
+	focusIsWidget := focusIsInput || focusIsDropDown
 
 	if ui.helpVisible {
 		if ev.Key() == tcell.KeyEscape || (ev.Key() == tcell.KeyRune && (ev.Rune() == '?' || ev.Rune() == 'q')) {
@@ -945,6 +947,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'c':
+		if focusIsWidget {
+			return ev
+		}
 		if focus == ui.dice {
 			ui.clearDiceResults()
 			return nil
@@ -956,6 +961,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.openCreatePNGModal()
 		return nil
 	case 'x':
+		if focusIsWidget {
+			return ev
+		}
 		if focus == ui.encList {
 			ui.openEncounterConditionRemoveModal()
 			return nil
@@ -1008,11 +1016,17 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'b':
+		if focusIsWidget {
+			return ev
+		}
 		if ui.catalogMode == "equipaggiamento" && (focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.eqSourceDrop || focus == ui.detail || focus == ui.detailTreasure) {
 			ui.openEquipmentTreasureInput()
 			return nil
 		}
 	case 'u':
+		if focusIsWidget {
+			return ev
+		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonSearch)
 			return nil
@@ -1030,6 +1044,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 't':
+		if focusIsWidget {
+			return ev
+		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonRole)
 			return nil
@@ -1047,6 +1064,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'g':
+		if focusIsWidget {
+			return ev
+		}
 		if focus == ui.dice {
 			ui.diceGotoPending = true
 			ui.message = "Jump dadi: premi 1-9, ^ (prima), $ (ultima)."
@@ -1070,6 +1090,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'y':
+		if focusIsWidget {
+			return ev
+		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.openDropDown(ui.monSourceDrop)
 			return nil
@@ -1083,6 +1106,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'v':
+		if focusIsWidget {
+			return ev
+		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.resetMonsterFilters()
 			return nil
@@ -1100,6 +1126,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'd':
+		if focusIsWidget {
+			return ev
+		}
 		if focus == ui.dice {
 			ui.deleteSelectedDiceResult()
 			return nil
