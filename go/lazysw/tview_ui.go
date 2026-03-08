@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]* / n / e[-:-] init mode / next / edit card  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold]G[-:-] vai a pannello  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]* / n / e[-:-] init mode / next / edit card  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -168,6 +168,8 @@ type tviewUI struct {
 
 	helpVisible     bool
 	helpReturnFocus tview.Primitive
+
+	gotoVisible bool
 
 	modalVisible bool
 	modalName    string
@@ -927,6 +929,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case '0':
 		ui.focusPanel(focusDice)
 		return nil
+	case 'G':
+		if !focusIsWidget {
+			ui.openGotoModal()
+			return nil
+		}
 	case '[':
 		if focus == ui.encList {
 			ui.adjustEncounterConditionRounds(-1)
@@ -5674,4 +5681,89 @@ func rollDiceExpression(expr string) (int, string, error) {
 
 func (ui *tviewUI) persistDiceHistory() {
 	_ = saveDiceHistory(diceHistoryFile, ui.diceLog)
+}
+
+func (ui *tviewUI) openGotoModal() {
+	if ui.gotoVisible {
+		return
+	}
+	ui.gotoVisible = true
+
+	type gotoEntry struct {
+		shortcut rune
+		label    string
+		action   func()
+	}
+
+	entries := []gotoEntry{
+		{'0', "Dadi", func() { ui.focusPanel(focusDice) }},
+		{'1', "PNG", func() { ui.focusPanel(focusPNG) }},
+		{'2', "Encounter", func() { ui.focusPanel(focusEncounter) }},
+		{'3', "Mostri", func() {
+			ui.switchToCatalog("mostri")
+			ui.focusPanel(focusMonList)
+		}},
+		{'4', "Equipaggiamento", func() {
+			ui.switchToCatalog("equipaggiamento")
+			ui.focusPanel(focusEqList)
+		}},
+		{'5', "Regole", func() {
+			ui.switchToCatalog("regole")
+			ui.focusPanel(focusClassList)
+		}},
+	}
+
+	list := tview.NewList()
+	list.SetBorder(true).SetTitle(" Vai a pannello (Esc per chiudere) ")
+	list.ShowSecondaryText(false)
+	list.SetHighlightFullLine(true)
+
+	closeModal := func() {
+		ui.gotoVisible = false
+		ui.pages.RemovePage("goto")
+	}
+
+	for _, e := range entries {
+		e := e
+		list.AddItem(fmt.Sprintf("[black:gold]%c[-:-]  %s", e.shortcut, e.label), "", e.shortcut, func() {
+			closeModal()
+			e.action()
+		})
+	}
+
+	list.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
+		if ev.Key() == tcell.KeyEsc {
+			closeModal()
+			return nil
+		}
+		return ev
+	})
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(list, 40, 0, true).
+			AddItem(nil, 0, 1, false), len(entries)+4, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.pages.AddAndSwitchToPage("goto", modal, true)
+	ui.app.SetFocus(list)
+}
+
+func (ui *tviewUI) switchToCatalog(mode string) {
+	if ui.catalogMode == mode {
+		return
+	}
+	ui.catalogMode = mode
+	ui.catalogPanel.SwitchToPage(mode)
+	ui.refreshCatalogTitles()
+	switch mode {
+	case "equipaggiamento":
+		ui.message = "Catalogo: Equipaggiamento"
+	case "regole":
+		ui.message = "Catalogo: Regole"
+	default:
+		ui.message = "Catalogo: Mostri"
+	}
 }
