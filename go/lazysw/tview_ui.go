@@ -13,7 +13,7 @@ import (
 	"github.com/vcrini/diceroll"
 )
 
-const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3[-:-] pannelli  [black:gold]G[-:-] vai a pannello  [black:gold][[ / ]][-:-] Mostri/Equip./Regole  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]* / n / e[-:-] init mode / next / edit card  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
+const helpText = " [black:gold]q[-:-] esci  [black:gold]?[-:-] help  [black:gold]f[-:-] fullscreen  [black:gold]tab/shift+tab[-:-] focus  [black:gold]0/1/2/3/4/5[-:-] pannelli  [black:gold]G[-:-] menu pannelli  [black:gold][[ / ]][-:-] ciclo catalogo  [black:gold]a[-:-] roll dadi  [black:gold]b[-:-] treasure equip  [black:gold]i/I/S[-:-] init one/all/sort (Encounter)  [black:gold]* / n / e[-:-] init mode / next / edit card  [black:gold]c/x/C/o[-:-] condizioni encounter  [black:gold]/[-:-] ricerca raw  [black:gold]PgUp/PgDn[-:-] scroll dettagli  [black:gold]u/t/g/y[-:-] filtri pannello  [black:gold]v[-:-] reset filtri "
 
 const (
 	focusDice = iota
@@ -767,6 +767,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		return ev
 	}
+
+	if ui.gotoVisible {
+		return ev
+	}
 	if ui.modalVisible {
 		if ev.Key() == tcell.KeyEscape {
 			ui.closeModal()
@@ -924,7 +928,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.focusPanel(focusEncounter)
 		return nil
 	case '3':
-		ui.focusPanel(ui.activeCatalogListFocus())
+		ui.switchToCatalog("mostri")
+		ui.focusPanel(focusMonList)
+		return nil
+	case '4':
+		ui.switchToCatalog("equipaggiamento")
+		ui.focusPanel(focusEqList)
+		return nil
+	case '5':
+		ui.switchToCatalog("regole")
+		ui.focusPanel(focusClassList)
 		return nil
 	case '0':
 		ui.focusPanel(focusDice)
