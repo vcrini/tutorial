@@ -21,6 +21,7 @@
     kind: Azione
     text: Evocate un Elementale Minore del Caos attirato dagli echi di violenza e discordia; appare a distanza Lontana e diventa
       immediatamente protagonista.
+  source: core
 - name: Imboscata!
   kind: Evento
   rank: 1
@@ -35,6 +36,7 @@
   - name: Sorpresa!
     kind: Azione
     text: 'Gli avversari si rivelano: ottenete 2 Paure e uno degli avversari diventa immediatamente protagonista.'
+  source: core
 - name: Agguato
   kind: Evento
   rank: 1
@@ -50,6 +52,7 @@
     kind: Reazione
     text: Quando un PG inizia l’imboscata contro avversari ignari, perdete 2 Paure e il primo tiro attacco contro un PG ha
       vantaggio.
+  source: core
 - name: Mercato Affollato
   kind: Contesto Sociale
   rank: 1
@@ -72,6 +75,7 @@
   - name: La Folla si Chiude
     kind: Reazione
     text: Quando uno dei PG si separa dal gruppo, la folla si sposta e lo isola.
+  source: core
 - name: Scalare la Parete
   kind: Attraversamento
   rank: 1
@@ -88,6 +92,7 @@
     kind: Azione
     text: Spendete una Paura per far perdere l’appiglio a un PG. Se precipita, subisce 1d12 danni fisici; una caduta completa
       può infliggere 3d12.
+  source: core
 - name: Taverna Locale
   kind: Contesto Sociale
   rank: 1
@@ -104,6 +109,7 @@
     kind: Azione
     text: Spendete una Paura per far scoppiare una rissa nella taverna. I PG coinvolti rischiano danni fisici e conseguenze
       sociali.
+  source: core
 - name: Avamposto
   kind: Contesto Sociale
   rank: 1
@@ -118,6 +124,7 @@
   - name: Posto Sbagliato, Momento Sbagliato
     kind: Reazione
     text: 'Spingete i PG in guai locali: assalti, truffe o estorsioni che fanno emergere PNG ostili e nuove piste.'
+  source: core
 - name: Fiume Impetuoso
   kind: Attraversamento
   rank: 1
@@ -134,6 +141,7 @@
     kind: Azione
     text: Spendete una Paura per trascinare un PG nella corrente. Se non supera un tiro Reazione di Agilità, viene spostato
       e marca Stress.
+  source: core
 - name: Rituale del Culto
   kind: Evento
   rank: 2
@@ -148,6 +156,7 @@
   - name: Completare la Cerimonia
     kind: Reazione
     text: Se i cultisti ottengono vantaggio tattico, il rituale avanza e può evocare un Demone Minore o effetti equivalenti.
+  source: core
 - name: Tempio Santificato
   kind: Contesto Sociale
   rank: 2
@@ -162,6 +171,7 @@
   - name: Censura Divina
     kind: Reazione
     text: Quando un PG agisce in modo sacrilego, potete invocare autorità religiosa o campioni consacrati a difesa del tempio.
+  source: core
 - name: Città Infestata
   kind: Esplorazione
   rank: 2
@@ -178,6 +188,7 @@
     kind: Azione
     text: 'Spendete una Paura per far riaffiorare frammenti del disastro passato: crolli, incendi o fenomeni spettrali colpiscono
       l’area.'
+  source: core
 - name: Passo Montano
   kind: Attraversamento
   rank: 2
@@ -194,6 +205,7 @@
     kind: Reazione
     text: Quando i PG entrano in territorio di caccia, una creatura predatrice individua una preda e attacca da posizione
       favorevole.
+  source: core
 - name: Cuore Bruciante dei Boschi
   kind: Esplorazione
   rank: 3
@@ -209,6 +221,7 @@
     kind: Reazione
     text: 'Conto alla Rovescia (6): quando si innesca, i bersagli vicini subiscono danni e condizioni dovute al fumo e alla
       cenere ardente.'
+  source: core
 - name: Assedio al Castello
   kind: Evento
   rank: 3
@@ -223,6 +236,7 @@
   - name: Danno Collaterale
     kind: Reazione
     text: Quando un avversario ottiene un successo critico, potete spendere una Paura per colpire ulteriori bersagli nell’area.
+  source: core
 - name: Battaglia Campale
   kind: Evento
   rank: 3
@@ -237,6 +251,7 @@
   - name: Rinforzi
     kind: Azione
     text: Fate comparire nuovi seguaci in base al numero di PG; entrano in scena e diventano immediatamente protagonisti.
+  source: core
 - name: Regno del Caos
   kind: Attraversamento
   rank: 4
@@ -251,6 +266,7 @@
   - name: Predatori dei Regni Esterni
     kind: Azione
     text: Spendete una Paura per evocare creature dei Regni Esterni in posizioni vantaggiose.
+  source: core
 - name: Usurpazione Divina
   kind: Evento
   rank: 4
@@ -266,6 +282,7 @@
   - name: L’Inizio della Fine
     kind: Reazione
     text: Quando il conto alla rovescia si innesca, l’Usurpatore diventa protagonista e riduce un tratto divino a sua scelta.
+  source: core
 - name: Corte Imperiale
   kind: Contesto Sociale
   rank: 4
@@ -281,6 +298,7 @@
   - name: Occhi Ovunque
     kind: Reazione
     text: Con un risultato con Paura, intercettazioni e testimoni rivelano piani dei PG; il gruppo rischia di essere scoperto.
+  source: core
 - name: Ossario del Negromante
   kind: Esplorazione
   rank: 4
@@ -295,3 +313,4 @@
   - name: Continua ad Arrivare!
     kind: Azione
     text: Spendete una Paura per evocare non-morti nelle vicinanze, che entrano subito in scena.
+  source: core

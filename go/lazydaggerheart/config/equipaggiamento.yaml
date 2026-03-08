@@ -8,6 +8,7 @@
   damage: d10+3 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Bastone
   category: Armi Fisiche
   type: primaria
@@ -18,6 +19,7 @@
   damage: d10+3 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Martello da Guerra
   category: Armi Fisiche
   type: primaria
@@ -28,6 +30,7 @@
   damage: d12+3 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Mazza
   category: Armi Fisiche
   type: primaria
@@ -38,6 +41,7 @@
   damage: d8+1 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale
   category: Armi Fisiche
   type: primaria
@@ -48,6 +52,7 @@
   damage: d8+1 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Sciabola
   category: Armi Fisiche
   type: primaria
@@ -58,6 +63,7 @@
   damage: d8+1 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Spada
   category: Armi Fisiche
   type: primaria
@@ -68,6 +74,7 @@
   damage: d8 fis
   grip: A una mano
   characteristic: 'Affidabile: +1 ai tiri attacco'
+  source: core
 - name: Spada Lunga
   category: Armi Fisiche
   type: primaria
@@ -78,6 +85,7 @@
   damage: d8+3 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Spadone
   category: Armi Fisiche
   type: primaria
@@ -88,6 +96,7 @@
   damage: d10+3 fis
   grip: A due mani
   characteristic: 'Massiccio: -1 all''Evasione'
+  source: core
 - name: Stocco
   category: Armi Fisiche
   type: primaria
@@ -98,6 +107,7 @@
   damage: d8 fis
   grip: A una mano
   characteristic: 'Rapido: potete marcare 1 Stress per colpire un''altra creatura'
+  source: core
 - name: Alabarda
   category: Armi Fisiche
   type: primaria
@@ -108,6 +118,7 @@
   damage: d10+2 fis
   grip: A due mani
   characteristic: 'Ingombrante: -1 all''Astuzia'
+  source: core
 - name: Lancia
   category: Armi Fisiche
   type: primaria
@@ -118,6 +129,7 @@
   damage: d10+2 fis
   grip: A due mani
   characteristic: 'Ingombrante: -1 all''Astuzia'
+  source: core
 - name: Arco Corto
   category: Armi Fisiche
   type: primaria
@@ -128,6 +140,7 @@
   damage: d6+3 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Balestra
   category: Armi Fisiche
   type: primaria
@@ -138,6 +151,7 @@
   damage: d6+1 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco Lungo
   category: Armi Fisiche
   type: primaria
@@ -148,6 +162,7 @@
   damage: d8+3 fis
   grip: A due mani
   characteristic: 'Ingombrante: -1 all''Astuzia'
+  source: core
 - name: Ascia Consacrata
   category: Armi Magiche
   type: primaria
@@ -158,6 +173,7 @@
   damage: d8+1 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Guanti Arcani
   category: Armi Magiche
   type: primaria
@@ -168,6 +184,7 @@
   damage: d10+3 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Anelli Splendenti
   category: Armi Magiche
   type: primaria
@@ -178,6 +195,7 @@
   damage: d10+1 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Rune Mistiche
   category: Armi Magiche
   type: primaria
@@ -188,6 +206,7 @@
   damage: d10 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Lama Ritornante
   category: Armi Magiche
   type: primaria
@@ -198,6 +217,7 @@
   damage: d8 mag
   grip: A una mano
   characteristic: Ritornante
+  source: core
 - name: Verga
   category: Armi Magiche
   type: primaria
@@ -208,6 +228,7 @@
   damage: d8+1 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Bacchetta
   category: Armi Magiche
   type: primaria
@@ -218,6 +239,7 @@
   damage: d6+1 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Bastone Gemello
   category: Armi Magiche
   type: primaria
@@ -228,6 +250,7 @@
   damage: d6+3 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Scettro
   category: Armi Magiche
   type: primaria
@@ -238,6 +261,7 @@
   damage: d6 mag
   grip: A due mani
   characteristic: 'Versatile: anche Presenza, Mischia, d8'
+  source: core
 - name: Bordone
   category: Armi Magiche
   type: primaria
@@ -248,6 +272,7 @@
   damage: d6 mag
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Ascia da Battaglia Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -258,6 +283,7 @@
   damage: d10+6 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Bastone Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -268,6 +294,7 @@
   damage: d10+6 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Falcione Dorato
   category: Armi Fisiche
   type: primaria
@@ -278,6 +305,7 @@
   damage: d10+4 fis
   grip: A una mano
   characteristic: Potente
+  source: core
 - name: Martello da Guerra Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -288,6 +316,7 @@
   damage: d12+6 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Mazza Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -298,6 +327,7 @@
   damage: d8+4 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -308,6 +338,7 @@
   damage: d8+4 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Sciabola Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -318,6 +349,7 @@
   damage: d8+4 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Spada Lunga Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -328,6 +360,7 @@
   damage: d8+6 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Spada Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -338,6 +371,7 @@
   damage: d8+3 fis
   grip: A una mano
   characteristic: Affidabile
+  source: core
 - name: Spada Urok
   category: Armi Fisiche
   type: primaria
@@ -348,6 +382,7 @@
   damage: d8+3 fis
   grip: A una mano
   characteristic: Letale
+  source: core
 - name: Spadone Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -358,6 +393,7 @@
   damage: d10+6 fis
   grip: A due mani
   characteristic: Massiccio
+  source: core
 - name: Stocco Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -368,6 +404,7 @@
   damage: d8+3 fis
   grip: A una mano
   characteristic: Rapido
+  source: core
 - name: Tirapugni
   category: Armi Fisiche
   type: primaria
@@ -378,6 +415,7 @@
   damage: d10+6 fis
   grip: A due mani
   characteristic: Brutale
+  source: core
 - name: Alabarda d'Acciaio
   category: Armi Fisiche
   type: primaria
@@ -388,6 +426,7 @@
   damage: d8+4 fis
   grip: A due mani
   characteristic: Spaventosa
+  source: core
 - name: Alabarda Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -398,6 +437,7 @@
   damage: d10+5 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Falce da Guerra
   category: Armi Fisiche
   type: primaria
@@ -408,6 +448,7 @@
   damage: d8+5 fis
   grip: A due mani
   characteristic: Affidabile
+  source: core
 - name: Frusta a Lame
   category: Armi Fisiche
   type: primaria
@@ -418,6 +459,7 @@
   damage: d8+3 fis
   grip: A una mano
   characteristic: Rapido
+  source: core
 - name: Lancia Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -428,6 +470,7 @@
   damage: d10+5 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Archibugio
   category: Armi Fisiche
   type: primaria
@@ -438,6 +481,7 @@
   damage: d8+6 fis
   grip: A due mani
   characteristic: Ricarica
+  source: core
 - name: Arco Corto Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -448,6 +492,7 @@
   damage: d6+6 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Arco Grande
   category: Armi Fisiche
   type: primaria
@@ -458,6 +503,7 @@
   damage: d6+6 fis
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Balestra Perfezionata
   category: Armi Fisiche
   type: primaria
@@ -468,6 +514,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco di Belcrine
   category: Armi Fisiche
   type: primaria
@@ -478,6 +525,7 @@
   damage: d6+5 fis
   grip: A due mani
   characteristic: Affidabile
+  source: core
 - name: Arco Lungo Perfezionato
   category: Armi Fisiche
   type: primaria
@@ -488,6 +536,7 @@
   damage: d8+6 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Ascia Consacrata Perfezionata
   category: Armi Magiche
   type: primaria
@@ -498,6 +547,7 @@
   damage: d8+4 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Guanti Arcani Perfezionati
   category: Armi Magiche
   type: primaria
@@ -508,6 +558,7 @@
   damage: d10+6 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Lama dell'Ego
   category: Armi Magiche
   type: primaria
@@ -518,6 +569,7 @@
   damage: d12+4 mag
   grip: A una mano
   characteristic: Sfarzosa
+  source: core
 - name: Martello di Exota
   category: Armi Magiche
   type: primaria
@@ -528,6 +580,7 @@
   damage: d8+6 mag
   grip: A due mani
   characteristic: Esplosivo
+  source: core
 - name: Pugnale Divorante
   category: Armi Magiche
   type: primaria
@@ -538,6 +591,7 @@
   damage: d8+4 mag
   grip: A una mano
   characteristic: Spaventoso
+  source: core
 - name: Spada Danzante
   category: Armi Magiche
   type: primaria
@@ -548,6 +602,7 @@
   damage: d10+4 mag
   grip: A due mani
   characteristic: Versatile
+  source: core
 - name: Anelli Splendenti Perfezionati
   category: Armi Magiche
   type: primaria
@@ -558,6 +613,7 @@
   damage: d10+5 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Rune Mistiche Perfezionate
   category: Armi Magiche
   type: primaria
@@ -568,6 +624,7 @@
   damage: d10+3 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Lama Ritornante Perfezionata
   category: Armi Magiche
   type: primaria
@@ -578,6 +635,7 @@
   damage: d8+3 mag
   grip: A una mano
   characteristic: Ritornante
+  source: core
 - name: Verga Perfezionata
   category: Armi Magiche
   type: primaria
@@ -588,6 +646,7 @@
   damage: d8+4 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco degli Antichi
   category: Armi Magiche
   type: primaria
@@ -598,6 +657,7 @@
   damage: d6+4 mag
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Arco del Sangue Yutari
   category: Armi Magiche
   type: primaria
@@ -608,6 +668,7 @@
   damage: d6+4 mag
   grip: A due mani
   characteristic: Brutale
+  source: core
 - name: Bacchetta dell'Incanto
   category: Armi Magiche
   type: primaria
@@ -618,6 +679,7 @@
   damage: d6+4 mag
   grip: A una mano
   characteristic: Persuasiva
+  source: core
 - name: Bacchetta Perfezionata
   category: Armi Magiche
   type: primaria
@@ -628,6 +690,7 @@
   damage: d6+4 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Bastone del Custode
   category: Armi Magiche
   type: primaria
@@ -638,6 +701,7 @@
   damage: d6+4 mag
   grip: A due mani
   characteristic: Affidabile
+  source: core
 - name: Bastone Gemello Perfezionato
   category: Armi Magiche
   type: primaria
@@ -648,6 +712,7 @@
   damage: d6+6 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Scettro di Elias
   category: Armi Magiche
   type: primaria
@@ -658,6 +723,7 @@
   damage: d6+3 mag
   grip: A una mano
   characteristic: Rinvigorente
+  source: core
 - name: Scettro Perfezionato
   category: Armi Magiche
   type: primaria
@@ -668,6 +734,7 @@
   damage: d6+3 mag
   grip: A due mani
   characteristic: Versatile
+  source: core
 - name: Bordone Perfezionato
   category: Armi Magiche
   type: primaria
@@ -678,6 +745,7 @@
   damage: d6+3 mag
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Ascia da Battaglia Superiore
   category: Armi Fisiche
   type: primaria
@@ -688,6 +756,7 @@
   damage: d10+9 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Bastone Superiore
   category: Armi Fisiche
   type: primaria
@@ -698,6 +767,7 @@
   damage: d10+9 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Labrys
   category: Armi Fisiche
   type: primaria
@@ -708,6 +778,7 @@
   damage: d10+7 fis
   grip: A due mani
   characteristic: Protettore
+  source: core
 - name: Lama di Scintillante
   category: Armi Fisiche
   type: primaria
@@ -718,6 +789,7 @@
   damage: d8+5 fis
   grip: A una mano
   characteristic: Ala tagliente
+  source: core
 - name: Martello da Guerra Superiore
   category: Armi Fisiche
   type: primaria
@@ -728,6 +800,7 @@
   damage: d12+9 fis
   grip: A due mani
   characteristic: Pesante
+  source: core
 - name: Martello dell'Ira
   category: Armi Fisiche
   type: primaria
@@ -738,6 +811,7 @@
   damage: d10+7 fis
   grip: A due mani
   characteristic: Devastatore
+  source: core
 - name: Mazza Superiore
   category: Armi Fisiche
   type: primaria
@@ -748,6 +822,7 @@
   damage: d8+7 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale Superiore
   category: Armi Fisiche
   type: primaria
@@ -758,6 +833,7 @@
   damage: d8+7 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Sciabola Culminante
   category: Armi Fisiche
   type: primaria
@@ -768,6 +844,7 @@
   damage: d10+5 fis
   grip: A una mano
   characteristic: Da duello
+  source: core
 - name: Sciabola Retrattile
   category: Armi Fisiche
   type: primaria
@@ -778,6 +855,7 @@
   damage: d10+7 fis
   grip: A una mano
   characteristic: Retrattile
+  source: core
 - name: Sciabola Superiore
   category: Armi Fisiche
   type: primaria
@@ -788,6 +866,7 @@
   damage: d8+7 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Spada del Coraggio
   category: Armi Fisiche
   type: primaria
@@ -798,6 +877,7 @@
   damage: d12+7 fis
   grip: A due mani
   characteristic: Coraggioso
+  source: core
 - name: Spada Lunga Superiore
   category: Armi Fisiche
   type: primaria
@@ -808,6 +888,7 @@
   damage: d8+9 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Spada Superiore
   category: Armi Fisiche
   type: primaria
@@ -818,6 +899,7 @@
   damage: d8+6 fis
   grip: A una mano
   characteristic: Affidabile
+  source: core
 - name: Spadone Superiore
   category: Armi Fisiche
   type: primaria
@@ -828,6 +910,7 @@
   damage: d10+9 fis
   grip: A due mani
   characteristic: Massiccio
+  source: core
 - name: Stocco Superiore
   category: Armi Fisiche
   type: primaria
@@ -838,6 +921,7 @@
   damage: d8+6 fis
   grip: A una mano
   characteristic: Rapido
+  source: core
 - name: Alabarda Superiore
   category: Armi Fisiche
   type: primaria
@@ -848,6 +932,7 @@
   damage: d10+8 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Doppio Flagello
   category: Armi Fisiche
   type: primaria
@@ -858,6 +943,7 @@
   damage: d10+8 fis
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Lame Artiglio
   category: Armi Fisiche
   type: primaria
@@ -868,6 +954,7 @@
   damage: d10+7 fis
   grip: A due mani
   characteristic: Brutale
+  source: core
 - name: Lancia Superiore
   category: Armi Fisiche
   type: primaria
@@ -878,6 +965,7 @@
   damage: d10+8 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Arco Corto Superiore
   category: Armi Fisiche
   type: primaria
@@ -888,6 +976,7 @@
   damage: d6+9 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Balestra Superiore
   category: Armi Fisiche
   type: primaria
@@ -898,6 +987,7 @@
   damage: d6+7 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Revolver a Polvere Nera
   category: Armi Fisiche
   type: primaria
@@ -908,6 +998,7 @@
   damage: d6+8 fis
   grip: A una mano
   characteristic: Ricarica
+  source: core
 - name: Arco Lungo Superiore
   category: Armi Fisiche
   type: primaria
@@ -918,6 +1009,7 @@
   damage: d8+9 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Arco Uncinato
   category: Armi Fisiche
   type: primaria
@@ -928,6 +1020,7 @@
   damage: d6+7 fis
   grip: A due mani
   characteristic: Versatile
+  source: core
 - name: Ascia Consacrata Superiore
   category: Armi Magiche
   type: primaria
@@ -938,6 +1031,7 @@
   damage: d8+7 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Ascia di Fortunis
   category: Armi Magiche
   type: primaria
@@ -948,6 +1042,7 @@
   damage: d10+8 mag
   grip: A due mani
   characteristic: Buona sorte
+  source: core
 - name: Daga Benedetta
   category: Armi Magiche
   type: primaria
@@ -958,6 +1053,7 @@
   damage: d10+6 mag
   grip: A una mano
   characteristic: Guaritore
+  source: core
 - name: Guanti Arcani Superiori
   category: Armi Magiche
   type: primaria
@@ -968,6 +1064,7 @@
   damage: d10+9 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Lama Spettrale
   category: Armi Magiche
   type: primaria
@@ -978,6 +1075,7 @@
   damage: d10+7 fis o mag
   grip: A una mano
   characteristic: Ultraterreno
+  source: core
 - name: Anelli Splendenti Superiori
   category: Armi Magiche
   type: primaria
@@ -988,6 +1086,7 @@
   damage: d10+8 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Rune della Rovina
   category: Armi Magiche
   type: primaria
@@ -998,6 +1097,7 @@
   damage: d20+4 mag
   grip: A una mano
   characteristic: Doloroso
+  source: core
 - name: Rune Mistiche Superiori
   category: Armi Magiche
   type: primaria
@@ -1008,6 +1108,7 @@
   damage: d10+6 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Lama Ritornante Superiore
   category: Armi Magiche
   type: primaria
@@ -1018,6 +1119,7 @@
   damage: d8+6 mag
   grip: A una mano
   characteristic: Ritornante
+  source: core
 - name: Pendente di Widogast
   category: Armi Magiche
   type: primaria
@@ -1028,6 +1130,7 @@
   damage: d10+5 mag
   grip: A una mano
   characteristic: Torcitempo
+  source: core
 - name: Verga Superiore
   category: Armi Magiche
   type: primaria
@@ -1038,6 +1141,7 @@
   damage: d8+7 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco Dorato
   category: Armi Magiche
   type: primaria
@@ -1048,6 +1152,7 @@
   damage: d6+7 mag
   grip: A due mani
   characteristic: Tracciante
+  source: core
 - name: Bacchetta Superiore
   category: Armi Magiche
   type: primaria
@@ -1058,6 +1163,7 @@
   damage: d6+7 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Bastone del Fuoco
   category: Armi Magiche
   type: primaria
@@ -1068,6 +1174,7 @@
   damage: d6+7 mag
   grip: A due mani
   characteristic: Ustionante
+  source: core
 - name: Bastone Gemello Superiore
   category: Armi Magiche
   type: primaria
@@ -1078,6 +1185,7 @@
   damage: d6+9 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Scettro Superiore
   category: Armi Magiche
   type: primaria
@@ -1088,6 +1196,7 @@
   damage: d6+6 mag
   grip: A due mani
   characteristic: Versatile
+  source: core
 - name: Sfera del Mago
   category: Armi Magiche
   type: primaria
@@ -1098,6 +1207,7 @@
   damage: d6+7 mag
   grip: A una mano
   characteristic: Potente
+  source: core
 - name: Bordone Superiore
   category: Armi Magiche
   type: primaria
@@ -1108,6 +1218,7 @@
   damage: d6+6 mag
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Fucile di Ilmari
   category: Armi Magiche
   type: primaria
@@ -1118,6 +1229,7 @@
   damage: d6+6 mag
   grip: A una mano
   characteristic: Ricarica
+  source: core
 - name: Ascia da Battaglia Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1128,6 +1240,7 @@
   damage: d10+12 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Bastone Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1138,6 +1251,7 @@
   damage: d10+12 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Maglio Impattante
   category: Armi Fisiche
   type: primaria
@@ -1148,6 +1262,7 @@
   damage: d10+11 fis
   grip: A una mano
   characteristic: Concussivo
+  source: core
 - name: Martello da Guerra Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1158,6 +1273,7 @@
   damage: d12+12 fis
   grip: A due mani
   characteristic: Pesante
+  source: core
 - name: Mazza Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1168,6 +1284,7 @@
   damage: d8+10 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1178,6 +1295,7 @@
   damage: d8+10 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale Ricurvo
   category: Armi Fisiche
   type: primaria
@@ -1188,6 +1306,7 @@
   damage: d8+9 fis
   grip: A una mano
   characteristic: Seghettato
+  source: core
 - name: Sciabola Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1198,6 +1317,7 @@
   damage: d8+10 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Scure Tranciante
   category: Armi Fisiche
   type: primaria
@@ -1208,6 +1328,7 @@
   damage: d12+13 fis
   grip: A due mani
   characteristic: Distruttiva
+  source: core
 - name: Spada a Due Lame
   category: Armi Fisiche
   type: primaria
@@ -1218,6 +1339,7 @@
   damage: d10+9 fis
   grip: A due mani
   characteristic: Rapida
+  source: core
 - name: Spada Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1228,6 +1350,7 @@
   damage: d8+9 fis
   grip: A una mano
   characteristic: Affidabile
+  source: core
 - name: Spada Lunga Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1238,6 +1361,7 @@
   damage: d8+12 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Spadone Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1248,6 +1372,7 @@
   damage: d10+12 fis
   grip: A due mani
   characteristic: Massiccio
+  source: core
 - name: Stocco Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1258,6 +1383,7 @@
   damage: d8+9 fis
   grip: A una mano
   characteristic: Rapido
+  source: core
 - name: Alabarda Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1268,6 +1394,7 @@
   damage: d10+11 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Lancia Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1278,6 +1405,7 @@
   damage: d10+11 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Picca da Guerra
   category: Armi Fisiche
   type: primaria
@@ -1288,6 +1416,7 @@
   damage: d8+10 fis
   grip: A due mani
   characteristic: Allungata
+  source: core
 - name: Falce Vorticante
   category: Armi Fisiche
   type: primaria
@@ -1298,6 +1427,7 @@
   damage: d8+9 fis
   grip: A due mani
   characteristic: Uncinante
+  source: core
 - name: Arco Corto Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1308,6 +1438,7 @@
   damage: d6+12 fis
   grip: A due mani
   characteristic: —
+  source: core
 - name: Arco di Aantari
   category: Armi Fisiche
   type: primaria
@@ -1318,6 +1449,7 @@
   damage: d6+11 fis
   grip: A due mani
   characteristic: Affidabile
+  source: core
 - name: Asce Balzanti
   category: Armi Fisiche
   type: primaria
@@ -1328,6 +1460,7 @@
   damage: d6+11 fis
   grip: A due mani
   characteristic: Rimbalzo
+  source: core
 - name: Balestra Leggendaria
   category: Armi Fisiche
   type: primaria
@@ -1338,6 +1471,7 @@
   damage: d6+10 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco Lungo Leggendario
   category: Armi Fisiche
   type: primaria
@@ -1348,6 +1482,7 @@
   damage: d8+12 fis
   grip: A due mani
   characteristic: Ingombrante
+  source: core
 - name: Cannone Portatile
   category: Armi Fisiche
   type: primaria
@@ -1358,6 +1493,7 @@
   damage: d6+12 fis
   grip: A una mano
   characteristic: Ricarica
+  source: core
 - name: Ascia Consacrata Leggendaria
   category: Armi Magiche
   type: primaria
@@ -1368,6 +1504,7 @@
   damage: d8+10 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Falce di Mida
   category: Armi Magiche
   type: primaria
@@ -1378,6 +1515,7 @@
   damage: d10+9 mag
   grip: A due mani
   characteristic: Avido
+  source: core
 - name: Guanti Arcani Leggendari
   category: Armi Magiche
   type: primaria
@@ -1388,6 +1526,7 @@
   damage: d10+12 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Guanti Vampirici
   category: Armi Magiche
   type: primaria
@@ -1398,6 +1537,7 @@
   damage: d10+9 mag
   grip: A due mani
   characteristic: Risucchio Vitale
+  source: core
 - name: Spada di Luce e Fiamma
   category: Armi Magiche
   type: primaria
@@ -1408,6 +1548,7 @@
   damage: d10+11 mag
   grip: A due mani
   characteristic: Calda
+  source: core
 - name: Anelli Splendenti Leggendari
   category: Armi Magiche
   type: primaria
@@ -1418,6 +1559,7 @@
   damage: d10+11 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Rune Mistiche Leggendarie
   category: Armi Magiche
   type: primaria
@@ -1428,6 +1570,7 @@
   damage: d10+9 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Lama Ritornante Leggendaria
   category: Armi Magiche
   type: primaria
@@ -1438,6 +1581,7 @@
   damage: d8+9 mag
   grip: A una mano
   characteristic: Ritornante
+  source: core
 - name: Schegge Fluttuanti
   category: Armi Magiche
   type: primaria
@@ -1448,6 +1592,7 @@
   damage: d8+9 mag
   grip: A una mano
   characteristic: Potente
+  source: core
 - name: Verga Leggendaria
   category: Armi Magiche
   type: primaria
@@ -1458,6 +1603,7 @@
   damage: d8+10 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Arco di Cardo
   category: Armi Magiche
   type: primaria
@@ -1468,6 +1614,7 @@
   damage: d6+13 mag
   grip: A due mani
   characteristic: Affidabile
+  source: core
 - name: Bacchetta di Essek
   category: Armi Magiche
   type: primaria
@@ -1478,6 +1625,7 @@
   damage: d8+13 mag
   grip: A una mano
   characteristic: Torcitempo
+  source: core
 - name: Bacchetta Leggendaria
   category: Armi Magiche
   type: primaria
@@ -1488,6 +1636,7 @@
   damage: d6+10 mag
   grip: A una mano
   characteristic: —
+  source: core
 - name: Bastone del Sangue
   category: Armi Magiche
   type: primaria
@@ -1498,6 +1647,7 @@
   damage: d20+7 mag
   grip: A due mani
   characteristic: Doloroso
+  source: core
 - name: Bastone Gemello Leggendario
   category: Armi Magiche
   type: primaria
@@ -1508,6 +1658,7 @@
   damage: d8+12 mag
   grip: A due mani
   characteristic: —
+  source: core
 - name: Scettro Leggendario
   category: Armi Magiche
   type: primaria
@@ -1518,6 +1669,7 @@
   damage: d6+9 mag
   grip: A due mani
   characteristic: Versatile
+  source: core
 - name: Bordone Leggendario
   category: Armi Magiche
   type: primaria
@@ -1528,6 +1680,7 @@
   damage: d6+9 mag
   grip: A due mani
   characteristic: Potente
+  source: core
 - name: Guanti di Fusione
   category: Armi Magiche
   type: primaria
@@ -1538,6 +1691,7 @@
   damage: d6+9 mag
   grip: A due mani
   characteristic: Doppio Colpo
+  source: core
 - name: Revolver del Mago
   category: Armi Magiche
   type: primaria
@@ -1548,6 +1702,7 @@
   damage: d6+13 mag
   grip: A una mano
   characteristic: Ricarica
+  source: core
 - name: Scudo Rotella
   category: Armi Secondarie
   type: secondaria
@@ -1558,6 +1713,7 @@
   damage: d4 fis
   grip: A una mano
   characteristic: Protettore
+  source: core
 - name: Scudo Torre
   category: Armi Secondarie
   type: secondaria
@@ -1568,6 +1724,7 @@
   damage: d6 fis
   grip: A una mano
   characteristic: Barriera
+  source: core
 - name: Spada Corta
   category: Armi Secondarie
   type: secondaria
@@ -1578,6 +1735,7 @@
   damage: d8 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Stiletto
   category: Armi Secondarie
   type: secondaria
@@ -1588,6 +1746,7 @@
   damage: d8 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Frusta
   category: Armi Secondarie
   type: secondaria
@@ -1598,6 +1757,7 @@
   damage: d6 fis
   grip: A una mano
   characteristic: Snervante
+  source: core
 - name: Rampino
   category: Armi Secondarie
   type: secondaria
@@ -1608,6 +1768,7 @@
   damage: d6 fis
   grip: A una mano
   characteristic: Agganciato
+  source: core
 - name: Balestra Leggera
   category: Armi Secondarie
   type: secondaria
@@ -1618,6 +1779,7 @@
   damage: d6+1 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Pugnale da Parata
   category: Armi Secondarie
   type: secondaria
@@ -1628,6 +1790,7 @@
   damage: d6+2 fis
   grip: A una mano
   characteristic: Parata
+  source: core
 - name: Scudo Chiodato
   category: Armi Secondarie
   type: secondaria
@@ -1638,6 +1801,7 @@
   damage: d6+2 fis
   grip: A una mano
   characteristic: Doppia Funzione
+  source: core
 - name: Scudo Rotella Perfezionato
   category: Armi Secondarie
   type: secondaria
@@ -1648,6 +1812,7 @@
   damage: d4+2 fis
   grip: A una mano
   characteristic: Protettore
+  source: core
 - name: Scudo Torre Perfezionato
   category: Armi Secondarie
   type: secondaria
@@ -1658,6 +1823,7 @@
   damage: d6+2 fis
   grip: A una mano
   characteristic: Barriera
+  source: core
 - name: Spada Corta Perfezionata
   category: Armi Secondarie
   type: secondaria
@@ -1668,6 +1834,7 @@
   damage: d8+2 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Stiletto Perfezionato
   category: Armi Secondarie
   type: secondaria
@@ -1678,6 +1845,7 @@
   damage: d8+2 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Frusta Perfezionata
   category: Armi Secondarie
   type: secondaria
@@ -1688,6 +1856,7 @@
   damage: d6+2 fis
   grip: A una mano
   characteristic: Snervante
+  source: core
 - name: Accetta Ritornante
   category: Armi Secondarie
   type: secondaria
@@ -1698,6 +1867,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Ritornante
+  source: core
 - name: Rampino Perfezionato
   category: Armi Secondarie
   type: secondaria
@@ -1708,6 +1878,7 @@
   damage: d6+2 fis
   grip: A una mano
   characteristic: Agganciato
+  source: core
 - name: Balestra Leggera Perfezionata
   category: Armi Secondarie
   type: secondaria
@@ -1718,6 +1889,7 @@
   damage: d6+3 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Brocchiere
   category: Armi Secondarie
   type: secondaria
@@ -1728,6 +1900,7 @@
   damage: d4+4 fis
   grip: A una mano
   characteristic: Deflettente
+  source: core
 - name: Scudo Rotella Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1738,6 +1911,7 @@
   damage: d4+4 fis
   grip: A una mano
   characteristic: Protettore
+  source: core
 - name: Scudo Torre Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1748,6 +1922,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Barriera
+  source: core
 - name: Spada Corta Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1758,6 +1933,7 @@
   damage: d8+4 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Stiletto Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1768,6 +1944,7 @@
   damage: d8+4 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Frusta Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1778,6 +1955,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Snervante
+  source: core
 - name: Guanto del Potere
   category: Armi Secondarie
   type: secondaria
@@ -1788,6 +1966,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Infuso
+  source: core
 - name: Rampino Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1798,6 +1977,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Agganciato
+  source: core
 - name: Balestra Leggera Superiore
   category: Armi Secondarie
   type: secondaria
@@ -1808,6 +1988,7 @@
   damage: d6+5 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Fionda
   category: Armi Secondarie
   type: secondaria
@@ -1818,6 +1999,7 @@
   damage: d6+4 fis
   grip: A una mano
   characteristic: Versatile
+  source: core
 - name: Nocche Artigliate
   category: Armi Secondarie
   type: secondaria
@@ -1828,6 +2010,7 @@
   damage: d6+8 fis
   grip: A una mano
   characteristic: Raddoppio
+  source: core
 - name: Scudo del Coraggio
   category: Armi Secondarie
   type: secondaria
@@ -1838,6 +2021,7 @@
   damage: d4+6 fis
   grip: A una mano
   characteristic: Riparo
+  source: core
 - name: Scudo Rotella Leggendario
   category: Armi Secondarie
   type: secondaria
@@ -1848,6 +2032,7 @@
   damage: d4+6 fis
   grip: A una mano
   characteristic: Protettore
+  source: core
 - name: Scudo Torre Leggendario
   category: Armi Secondarie
   type: secondaria
@@ -1858,6 +2043,7 @@
   damage: d6+6 fis
   grip: A una mano
   characteristic: Barriera
+  source: core
 - name: Spada Corta Leggendaria
   category: Armi Secondarie
   type: secondaria
@@ -1868,6 +2054,7 @@
   damage: d8+6 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Stiletto Leggendario
   category: Armi Secondarie
   type: secondaria
@@ -1878,6 +2065,7 @@
   damage: d8+6 fis
   grip: A una mano
   characteristic: Accoppiato
+  source: core
 - name: Frammento Iniettore
   category: Armi Secondarie
   type: secondaria
@@ -1888,6 +2076,7 @@
   damage: d4 fis
   grip: A una mano
   characteristic: Sotto Tiro
+  source: core
 - name: Frusta Leggendaria
   category: Armi Secondarie
   type: secondaria
@@ -1898,6 +2087,7 @@
   damage: d6+6 fis
   grip: A una mano
   characteristic: Snervante
+  source: core
 - name: Rampino Leggendario
   category: Armi Secondarie
   type: secondaria
@@ -1908,6 +2098,7 @@
   damage: d6+6 fis
   grip: A una mano
   characteristic: Agganciato
+  source: core
 - name: Balestra Leggera Leggendaria
   category: Armi Secondarie
   type: secondaria
@@ -1918,6 +2109,7 @@
   damage: d6+7 fis
   grip: A una mano
   characteristic: —
+  source: core
 - name: Gambesone
   category: Armature
   type: armatura
@@ -1928,6 +2120,7 @@
   damage: —
   grip: —
   characteristic: 'Flessibile: +1 all''Evasione'
+  source: core
 - name: Corazza di Cuoio
   category: Armature
   type: armatura
@@ -1938,6 +2131,7 @@
   damage: —
   grip: —
   characteristic: —
+  source: core
 - name: Cotta di Maglia
   category: Armature
   type: armatura
@@ -1948,6 +2142,7 @@
   damage: —
   grip: —
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Corazza di Piastre
   category: Armature
   type: armatura
@@ -1958,6 +2153,7 @@
   damage: —
   grip: —
   characteristic: 'Molto Pesante: -2 all''Evasione; -1 all''Agilità'
+  source: core
 - name: Gambesone Perfezionato
   category: Armature
   type: armatura
@@ -1968,6 +2164,7 @@
   damage: —
   grip: —
   characteristic: 'Flessibile: +1 all''Evasione'
+  source: core
 - name: Corazza di Cuoio Perfezionata
   category: Armature
   type: armatura
@@ -1978,6 +2175,7 @@
   damage: —
   grip: —
   characteristic: —
+  source: core
 - name: Cotta di Maglia Perfezionata
   category: Armature
   type: armatura
@@ -1988,6 +2186,7 @@
   damage: —
   grip: —
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Corazza di Piastre Perfezionata
   category: Armature
   type: armatura
@@ -1998,6 +2197,7 @@
   damage: —
   grip: —
   characteristic: 'Molto Pesante: -2 all''Evasione; -1 all''Agilità'
+  source: core
 - name: Corazza d'Ossa Contorte
   category: Armature
   type: armatura
@@ -2009,6 +2209,7 @@
   grip: —
   characteristic: 'Resiliente: Prima di marcare l''ultima Casella Armatura, tirate un d6. Con un 6, riducete la gravità di
     una soglia senza marcare la Casella Armatura.'
+  source: core
 - name: Cotta Elundriana
   category: Armature
   type: armatura
@@ -2020,6 +2221,7 @@
   grip: —
   characteristic: 'Protetta: Riducete il danno magico subito di un valore pari al vostro Punteggio di Armatura prima di applicarlo
     alle soglie di danno.'
+  source: core
 - name: Armatura Fluttuante di Runetan
   category: Armature
   type: armatura
@@ -2031,6 +2233,7 @@
   grip: —
   characteristic: 'Semovente: Quando siete bersaglio di un attacco, potete marcare una Casella Armatura per dare svantaggio
     al tiro attacco.'
+  source: core
 - name: Pettorale di Legnoferro
   category: Armature
   type: armatura
@@ -2042,6 +2245,7 @@
   grip: —
   characteristic: 'Rinforzato: Quando marcate l''ultima Casella Armatura, aumentate le soglie di danno di +2 finché non riparate
     almeno 1 Casella Armatura.'
+  source: core
 - name: Armatura di Selvarosa
   category: Armature
   type: armatura
@@ -2052,6 +2256,7 @@
   damage: —
   grip: —
   characteristic: 'Speranza: Quando spendereste una Speranza, potete invece marcare una Casella Armatura.'
+  source: core
 - name: Giaco di Tyris
   category: Armature
   type: armatura
@@ -2062,6 +2267,7 @@
   damage: —
   grip: —
   characteristic: 'Quieta: Ottenete bonus +2 ai tiri per muovervi silenziosamente.'
+  source: core
 - name: Gambesone Superiore
   category: Armature
   type: armatura
@@ -2072,6 +2278,7 @@
   damage: —
   grip: —
   characteristic: 'Flessibile: +1 all''Evasione'
+  source: core
 - name: Corazza di Cuoio Superiore
   category: Armature
   type: armatura
@@ -2082,6 +2289,7 @@
   damage: —
   grip: —
   characteristic: —
+  source: core
 - name: Cotta di Maglia Superiore
   category: Armature
   type: armatura
@@ -2092,6 +2300,7 @@
   damage: —
   grip: —
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Corazza di Piastre Superiore
   category: Armature
   type: armatura
@@ -2102,6 +2311,7 @@
   damage: —
   grip: —
   characteristic: 'Molto Pesante: -2 all''Evasione; -1 all''Agilità'
+  source: core
 - name: Corazza di Scaglie di Drago
   category: Armature
   type: armatura
@@ -2113,6 +2323,7 @@
   grip: —
   characteristic: 'Impenetrabile: Una volta per riposo breve, quando dovreste subire il vostro ultimo Punto Ferita, potete
     invece marcare uno Stress.'
+  source: core
 - name: Corpetto di Bellamoi
   category: Armature
   type: armatura
@@ -2123,6 +2334,7 @@
   damage: —
   grip: —
   characteristic: 'Dorato: +1 alla Presenza'
+  source: core
 - name: Armatura di Piastre Chiodate
   category: Armature
   type: armatura
@@ -2134,6 +2346,7 @@
   grip: —
   characteristic: 'Affilata: Dopo un attacco riuscito contro un bersaglio entro distanza di Mischia, aggiungete un d4 al tiro
     di danno.'
+  source: core
 - name: Armatura Spezzalame
   category: Armature
   type: armatura
@@ -2144,6 +2357,7 @@
   damage: —
   grip: —
   characteristic: 'Fisico: Non potete marcare una Casella Armatura per ridurre il danno magico.'
+  source: core
 - name: Mantello di Monett
   category: Armature
   type: armatura
@@ -2154,6 +2368,7 @@
   damage: —
   grip: —
   characteristic: 'Magico: Non potete marcare una Casella Armatura per ridurre il danno fisico.'
+  source: core
 - name: Rune di Fortificazione
   category: Armature
   type: armatura
@@ -2164,6 +2379,7 @@
   damage: —
   grip: —
   characteristic: 'Dolorose: Ogni volta che marcate una Casella Armatura, dovete anche marcare uno Stress.'
+  source: core
 - name: Gambesone Leggendario
   category: Armature
   type: armatura
@@ -2174,6 +2390,7 @@
   damage: —
   grip: —
   characteristic: 'Flessibile: +1 all''Evasione'
+  source: core
 - name: Corazza di Cuoio Leggendaria
   category: Armature
   type: armatura
@@ -2184,6 +2401,7 @@
   damage: —
   grip: —
   characteristic: —
+  source: core
 - name: Cotta di Maglia Leggendaria
   category: Armature
   type: armatura
@@ -2194,6 +2412,7 @@
   damage: —
   grip: —
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Corazza di Piastre Leggendaria
   category: Armature
   type: armatura
@@ -2204,6 +2423,7 @@
   damage: —
   grip: —
   characteristic: 'Molto Pesante: -2 all''Evasione; -1 all''Agilità'
+  source: core
 - name: Armatura Incanalante
   category: Armature
   type: armatura
@@ -2214,6 +2434,7 @@
   damage: —
   grip: —
   characteristic: 'Incanalante: +1 ai Tiri Incantesimo'
+  source: core
 - name: Corazza di Ferrobrace
   category: Armature
   type: armatura
@@ -2224,6 +2445,7 @@
   damage: —
   grip: —
   characteristic: 'Ustionante: Quando un avversario vi attacca a distanza di Mischia, deve marcare uno Stress.'
+  source: core
 - name: Cotta di Dunamis
   category: Armature
   type: armatura
@@ -2235,6 +2457,7 @@
   grip: —
   characteristic: 'Fermatempo: Marcate una Casella Armatura per tirare un d4 e aggiungere il risultato come bonus all''Evasione
     contro un attacco in arrivo.'
+  source: core
 - name: Armatura Completa di Piastre
   category: Armature
   type: armatura
@@ -2246,6 +2469,7 @@
   grip: —
   characteristic: 'Rinforzata: Quando marcate una Casella Armatura, riducete la gravità di un attacco di due soglie invece
     che di una.'
+  source: core
 - name: Armatura dell'Opale della Verità
   category: Armature
   type: armatura
@@ -2257,6 +2481,7 @@
   grip: —
   characteristic: 'Cercatrice di Verità: Questa armatura brilla quando un''altra creatura entro distanza Ravvicinata dice
     il falso.'
+  source: core
 - name: Cotta di Maglia del Protettore
   category: Armature
   type: armatura
@@ -2267,6 +2492,7 @@
   damage: —
   grip: —
   characteristic: 'Difficoltosa: -1 a tutti i tratti del personaggio e all''Evasione'
+  source: core
 - name: Sacco a pelo di qualità
   category: Bottino
   type: bottino
@@ -2277,6 +2503,7 @@
   damage: —
   grip: —
   characteristic: Durante gli interludi, rimuovete automaticamente uno Stress.
+  source: core
 - name: Fischietto del Musico
   category: Bottino
   type: bottino
@@ -2287,6 +2514,7 @@
   damage: —
   grip: —
   characteristic: Quando lo suonate, il suo tono può essere udito in un raggio di circa 1,5 chilometri.
+  source: core
 - name: Faretra Incantata
   category: Bottino
   type: bottino
@@ -2298,6 +2526,7 @@
   grip: —
   characteristic: Quando riuscite in un attacco con una freccia conservata in questa faretra, ottenete un bonus al danno pari
     al vostro livello.
+  source: core
 - name: Torcia di Alistair
   category: Bottino
   type: bottino
@@ -2308,6 +2537,7 @@
   damage: —
   grip: —
   characteristic: Può illuminare uno spazio molto più ampio del normale, ma attira rischi e attenzioni.
+  source: core
 - name: Globi Parlanti
   category: Bottino
   type: bottino
@@ -2318,6 +2548,7 @@
   damage: —
   grip: —
   characteristic: Una coppia di globi che permette a chi li impugna di comunicare a qualsiasi distanza.
+  source: core
 - name: Manette
   category: Bottino
   type: bottino
@@ -2328,6 +2559,7 @@
   damage: —
   grip: —
   characteristic: Un paio di manette con lucchetto dotato di chiave.
+  source: core
 - name: Mantello Arcano
   category: Bottino
   type: bottino
@@ -2338,6 +2570,7 @@
   damage: —
   grip: —
   characteristic: Una creatura con tratto da Incantatore può modificarne colore, consistenza e dimensioni.
+  source: core
 - name: Rete Intrecciata
   category: Bottino
   type: bottino
@@ -2348,6 +2581,7 @@
   damage: —
   grip: —
   characteristic: Con un Tiro Astuzia potete intrappolare una piccola creatura; può liberarsi con un tiro riuscito (16).
+  source: core
 - name: Otre di Fuoco
   category: Bottino
   type: bottino
@@ -2358,6 +2592,7 @@
   damage: —
   grip: —
   characteristic: Versando il liquido contenuto, producete fuoco istantaneamente. Si riempie di nuovo dopo un riposo lungo.
+  source: core
 - name: Verga Levitante
   category: Bottino
   type: bottino
@@ -2368,6 +2603,7 @@
   damage: —
   grip: —
   characteristic: Quando attivata resta sospesa in aria e non segue le normali regole della gravità finché non viene disattivata.
+  source: core
 - name: Gemma delle Apparenze
   category: Bottino
   type: bottino
@@ -2378,6 +2614,7 @@
   damage: —
   grip: —
   characteristic: Memorizza l'aspetto di qualcuno; spendete una Speranza per ricrearlo su di voi come illusione.
+  source: core
 - name: Scrigno Vuoto
   category: Bottino
   type: bottino
@@ -2389,6 +2626,7 @@
   grip: —
   characteristic: 'Scrigno magico apparentemente vuoto: pronunciando una parola o compiendo un''azione specifica, apre lo
     scomparto nascosto.'
+  source: core
 - name: Trasportino del Famiglio
   category: Bottino
   type: bottino
@@ -2400,6 +2638,7 @@
   grip: —
   characteristic: 'Custodia per un piccolo animale domestico: quando è all''interno, lui e la custodia sono al riparo da tutti
     i danni ed effetti nocivi.'
+  source: core
 - name: Frecce Trapassanti
   category: Bottino
   type: bottino
@@ -2411,6 +2650,7 @@
   grip: —
   characteristic: Tre volte per riposo, potete aggiungere la vostra Competenza al tiro di danno di un attacco riuscito con
     queste frecce.
+  source: core
 - name: Pietra del Valore
   category: Bottino
   type: bottino
@@ -2422,6 +2662,7 @@
   grip: —
   characteristic: 'Incastonata in un''armatura senza caratteristica, conferisce Resiliente: tirate 1d6 prima di marcare l''ultima
     Casella Armatura.'
+  source: core
 - name: Passepartout
   category: Bottino
   type: bottino
@@ -2432,6 +2673,7 @@
   damage: —
   grip: —
   characteristic: Quando usate questa chiave per aprire una porta chiusa, ottenete vantaggio al Tiro Astuzia.
+  source: core
 - name: Prisma Arcano
   category: Bottino
   type: bottino
@@ -2442,6 +2684,7 @@
   damage: —
   grip: —
   characteristic: Alleati entro Ravvicinata ottengono +1 ai Tiri Incantesimo finché il prisma resta attivo e non viene mosso.
+  source: core
 - name: Ricetta della Pozione di Recupero Minore
   category: Bottino
   type: bottino
@@ -2452,6 +2695,7 @@
   damage: —
   grip: —
   characteristic: Durante un interludio, potete usare l'osso di una creatura per creare una Pozione di Recupero Minore.
+  source: core
 - name: Ricetta della Pozione di Guarigione Minore
   category: Bottino
   type: bottino
@@ -2462,6 +2706,7 @@
   damage: —
   grip: —
   characteristic: Durante un interludio, potete usare una fiala di sangue per creare una Pozione di Guarigione Minore.
+  source: core
 - name: Bussola del Ritorno
   category: Bottino
   type: bottino
@@ -2472,6 +2717,7 @@
   damage: —
   grip: —
   characteristic: Indica sempre la direzione verso l'altare più vicino, indipendentemente dalla distanza.
+  source: core
 - name: Spiritello Suggeritore
   category: Bottino
   type: bottino
@@ -2483,6 +2729,7 @@
   grip: —
   characteristic: 'Durante un interludio può offrirvi consigli utili: una volta per riposo breve, ottenete vantaggio a un
     tiro attacco.'
+  source: core
 - name: Guanti del Geco
   category: Bottino
   type: bottino
@@ -2493,6 +2740,7 @@
   damage: —
   grip: —
   characteristic: Permettono di arrampicarsi su superfici verticali e camminare sui soffitti.
+  source: core
 - name: Diario dei Segreti
   category: Bottino
   type: bottino
@@ -2504,6 +2752,7 @@
   grip: —
   characteristic: Potete memorizzare nome e dettagli fino a tre creature ostili nel libro; ottenete bonus +1 ai tiri azione
     contro di esse.
+  source: core
 - name: Ricetta di Nerofumo
   category: Bottino
   type: bottino
@@ -2514,6 +2763,7 @@
   damage: —
   grip: —
   characteristic: Durante un interludio, potete marcare uno Stress per creare una Fiala di Nerofumo.
+  source: core
 - name: Pietra del Sangue
   category: Bottino
   type: bottino
@@ -2525,6 +2775,7 @@
   grip: —
   characteristic: 'Incastonata in un''arma senza caratteristica, conferisce Brutale: al valore massimo sul dado di danno tirate
     un dado aggiuntivo.'
+  source: core
 - name: Gemma della Grandezza
   category: Bottino
   type: bottino
@@ -2536,6 +2787,7 @@
   grip: —
   characteristic: 'Incastonata in un''arma senza caratteristica, conferisce Potente: in caso di attacco riuscito tirate un
     dado danno aggiuntivo e scartate il più basso.'
+  source: core
 - name: Aliante
   category: Bottino
   type: bottino
@@ -2546,6 +2798,7 @@
   damage: —
   grip: —
   characteristic: Potete marcare uno Stress per aprire questo piccolo paracadute e planare in sicurezza fino a terra.
+  source: core
 - name: Anello del Silenzio
   category: Bottino
   type: bottino
@@ -2556,6 +2809,7 @@
   damage: —
   grip: —
   characteristic: 'Spendete una Speranza per attivare questo anello: i vostri passi saranno silenziosi fino al prossimo riposo.'
+  source: core
 - name: Monile della Tranquillità
   category: Bottino
   type: bottino
@@ -2566,6 +2820,7 @@
   damage: —
   grip: —
   characteristic: 'Quando dovreste marcare l''ultimo Stress, tirate 1d6: con risultato pari o superiore a 5, non lo marcate.'
+  source: core
 - name: Fiasca Doppia
   category: Bottino
   type: bottino
@@ -2576,6 +2831,7 @@
   damage: —
   grip: —
   characteristic: Contiene due liquidi diversi, scambiabili con una piccola leva sul lato della fiaschetta.
+  source: core
 - name: Borsa della Sabbia Volubile
   category: Bottino
   type: bottino
@@ -2587,6 +2843,7 @@
   grip: —
   characteristic: Con Presenza (10) potete renderla più pesante o più leggera; con Astuzia (10) riuscito, soffiate sabbia
     negli occhi e rendete Vulnerabile un bersaglio.
+  source: core
 - name: Anello della Resistenza
   category: Bottino
   type: bottino
@@ -2597,6 +2854,7 @@
   damage: —
   grip: —
   characteristic: Una volta per ogni riposo lungo, dopo un attacco riuscito su di voi, attivatelo per dimezzarne il danno.
+  source: core
 - name: Piuma di Fenice
   category: Bottino
   type: bottino
@@ -2608,6 +2866,7 @@
   grip: —
   characteristic: 'Spendete una Piuma di Fenice quando perdete conoscenza: ottenete bonus +1 al tiro per determinare se ottenete
     una cicatrice.'
+  source: core
 - name: Scatola delle Tante Cose
   category: Bottino
   type: bottino
@@ -2619,6 +2878,7 @@
   grip: —
   characteristic: 'Una volta per riposo lungo, tirate un d12 per trovare un oggetto consumabile comune casuale (11-12: due
     oggetti).'
+  source: core
 - name: Ninnolo della Lama di Vento
   category: Bottino
   type: bottino
@@ -2630,6 +2890,7 @@
   grip: —
   characteristic: 'Potete legarlo a un''arma da Mischia: tre volte per riposo attiva un bonus al suo attacco in base alla
     connessione con l''aria.'
+  source: core
 - name: Seme del Portale
   category: Bottino
   type: bottino
@@ -2641,6 +2902,7 @@
   grip: —
   characteristic: Piantatelo nel terreno per far crescere un portale. L'altro seme gemello può aprire una connessione verso
     qualsiasi luogo già raggiunto.
+  source: core
 - name: Catenina della Meditazione
   category: Bottino
   type: bottino
@@ -2652,6 +2914,7 @@
   grip: —
   characteristic: 'Durante un interludio, riflettete su un ideale: una volta per riposo lungo potete spendere una Speranza
     per tirare due d12 al posto dei dadi Speranza/Paura.'
+  source: core
 - name: Amuleto dell'Elusione
   category: Bottino
   type: bottino
@@ -2662,6 +2925,7 @@
   damage: —
   grip: —
   characteristic: Una volta per riposo lungo, potete attivarlo per diventare Nascosti fino al vostro prossimo movimento.
+  source: core
 - name: Medaglione della Speranza
   category: Bottino
   type: bottino
@@ -2672,6 +2936,7 @@
   damage: —
   grip: —
   characteristic: Se spendete una Speranza per infondere determinazione, potete usarlo per ottenerne una aggiuntiva.
+  source: core
 - name: Sacca Infinita
   category: Bottino
   type: bottino
@@ -2683,6 +2948,7 @@
   grip: —
   characteristic: Oggetti riposti nella sacca vengono conservati in una dimensione tascabile capiente e accessibile in ogni
     momento.
+  source: core
 - name: Reliquia del Viaggiatore
   category: Bottino
   type: bottino
@@ -2693,6 +2959,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Agilità. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia di Possanza
   category: Bottino
   type: bottino
@@ -2703,6 +2970,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Forza. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia del Sangue Freddo
   category: Bottino
   type: bottino
@@ -2713,6 +2981,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Astuzia. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia dell'Armonia
   category: Bottino
   type: bottino
@@ -2723,6 +2992,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Istinto. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia del Falcione
   category: Bottino
   type: bottino
@@ -2733,6 +3003,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Presenza. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia dell'Illuminazione
   category: Bottino
   type: bottino
@@ -2743,6 +3014,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Conoscenza. Potete indossare una sola reliquia.
+  source: core
 - name: Reliquia dell'Esperienza
   category: Bottino
   type: bottino
@@ -2753,6 +3025,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Esperienza a vostra scelta. Potete indossare una sola reliquia.
+  source: core
 - name: Pendente di Scintillante
   category: Bottino
   type: bottino
@@ -2763,6 +3036,7 @@
   damage: —
   grip: —
   characteristic: Le armi con portata Mischia che infliggono danni fisici possono colpire fino a distanza Prossima.
+  source: core
 - name: Stivali della Traversata
   category: Bottino
   type: bottino
@@ -2773,6 +3047,7 @@
   damage: —
   grip: —
   characteristic: Potete camminare sulla superficie dell'acqua come se fosse terreno solido.
+  source: core
 - name: Compagno d'Argilla
   category: Bottino
   type: bottino
@@ -2783,6 +3058,7 @@
   damage: —
   grip: —
   characteristic: A comando, prende vita e assume forma da piccolo animale o creatura plasmata dall'argilla.
+  source: core
 - name: Formula della Polvere Mistica
   category: Bottino
   type: bottino
@@ -2793,6 +3069,7 @@
   damage: —
   grip: —
   characteristic: Durante un interludio, potete usare una manciata di polvere d'oro fine per creare Polvere Mistica.
+  source: core
 - name: Frammento di Memoria
   category: Bottino
   type: bottino
@@ -2804,6 +3081,7 @@
   grip: —
   characteristic: Una volta per riposo lungo, spendete 2 Speranze per richiamare una carta dominio dalla riserva pagando solo
     il Costo di Richiamo.
+  source: core
 - name: Gemma dell'Alacrità
   category: Bottino
   type: bottino
@@ -2814,6 +3092,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare l'Agilità quando effettuate attacchi con essa.
+  source: core
 - name: Gemma della Potenza
   category: Bottino
   type: bottino
@@ -2824,6 +3103,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare la Forza quando effettuate attacchi con essa.
+  source: core
 - name: Gemma della Precisione
   category: Bottino
   type: bottino
@@ -2834,6 +3114,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare l'Astuzia quando effettuate attacchi con essa.
+  source: core
 - name: Gemma dell'Intuizione
   category: Bottino
   type: bottino
@@ -2844,6 +3125,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare l'Istinto quando effettuate attacchi con essa.
+  source: core
 - name: Gemma dell'Audacia
   category: Bottino
   type: bottino
@@ -2854,6 +3136,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare la Presenza quando effettuate attacchi con essa.
+  source: core
 - name: Gemma della Sagacia
   category: Bottino
   type: bottino
@@ -2864,6 +3147,7 @@
   damage: —
   grip: —
   characteristic: Incastonata in un'arma, permette di usare la Conoscenza quando effettuate attacchi con essa.
+  source: core
 - name: Anello della Risolutezza
   category: Bottino
   type: bottino
@@ -2874,6 +3158,7 @@
   damage: —
   grip: —
   characteristic: Una volta per sessione, quando il GM spende una Paura, potete spendere 4 Speranze per annullarne gli effetti.
+  source: core
 - name: Cintura dell'Unità
   category: Bottino
   type: bottino
@@ -2885,6 +3170,7 @@
   grip: —
   characteristic: Una volta per sessione, potete spendere 5 Speranze per effettuare un Tiro Combinato con tre PG invece che
     due.
+  source: core
 - name: Pozione del Viaggiatore
   category: Scorte
   type: scorte
@@ -2895,6 +3181,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Agilità.
+  source: core
 - name: Pozione della Possanza
   category: Scorte
   type: scorte
@@ -2905,6 +3192,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Forza.
+  source: core
 - name: Pozione del Sangue Freddo
   category: Scorte
   type: scorte
@@ -2915,6 +3203,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Astuzia.
+  source: core
 - name: Pozione di Armonia
   category: Scorte
   type: scorte
@@ -2925,6 +3214,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Istinto.
+  source: core
 - name: Pozione di Fascino
   category: Scorte
   type: scorte
@@ -2935,6 +3225,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Presenza.
+  source: core
 - name: Pozione dell'Illuminazione
   category: Scorte
   type: scorte
@@ -2945,6 +3236,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 al prossimo Tiro Conoscenza.
+  source: core
 - name: Pozione di Guarigione Minore
   category: Scorte
   type: scorte
@@ -2955,6 +3247,7 @@
   damage: —
   grip: —
   characteristic: Recuperate 1d4 PF.
+  source: core
 - name: Pozione di Recupero Minore
   category: Scorte
   type: scorte
@@ -2965,6 +3258,7 @@
   damage: —
   grip: —
   characteristic: Rimuovete 1d4 Stress.
+  source: core
 - name: Veleno di Macinadenti
   category: Scorte
   type: scorte
@@ -2975,6 +3269,7 @@
   damage: —
   grip: —
   characteristic: Applicatelo a un'arma che infligge danni fisici per aggiungere un d6 al prossimo tiro di danno.
+  source: core
 - name: Foglie di Varik
   category: Scorte
   type: scorte
@@ -2985,6 +3280,7 @@
   damage: —
   grip: —
   characteristic: Masticatele per ottenere vantaggio al prossimo Tiro Speranza.
+  source: core
 - name: Fiala di Goccia Lunare
   category: Scorte
   type: scorte
@@ -2995,6 +3291,7 @@
   damage: —
   grip: —
   characteristic: Bevuta prima del riposo, permette di recuperare una risorsa tratto a scelta.
+  source: core
 - name: Frammento Arcano Instabile
   category: Scorte
   type: scorte
@@ -3005,6 +3302,7 @@
   damage: —
   grip: —
   characteristic: 'Tiro Astuzia per lanciarlo: in area entro Lontana i bersagli subiscono 1d20 danni magici.'
+  source: core
 - name: Pozione di Guarigione
   category: Scorte
   type: scorte
@@ -3015,6 +3313,7 @@
   damage: —
   grip: —
   characteristic: Recuperate 1d8+1 PF.
+  source: core
 - name: Veleno di Macinadenti Potenziato
   category: Scorte
   type: scorte
@@ -3025,6 +3324,7 @@
   damage: —
   grip: —
   characteristic: Applicatelo a un'arma fisica per aggiungere d8 al prossimo tiro di danno.
+  source: core
 - name: Maschera d'Argilla
   category: Scorte
   type: scorte
@@ -3035,6 +3335,7 @@
   damage: —
   grip: —
   characteristic: 'Spendete una Speranza per usarla: diventate irriconoscibili fino al prossimo riposo.'
+  source: core
 - name: Fiala di Nerofumo
   category: Scorte
   type: scorte
@@ -3046,6 +3347,7 @@
   grip: —
   characteristic: Quando viene attivata, sottrae il risultato più alto alla vostra Evasione per il prossimo attacco contro
     di voi.
+  source: core
 - name: Radice Balzante
   category: Scorte
   type: scorte
@@ -3056,6 +3358,7 @@
   damage: —
   grip: —
   characteristic: Masticatela per saltare entro distanza Lontana una volta senza tiro.
+  source: core
 - name: Polvere Cauterizzante
   category: Scorte
   type: scorte
@@ -3066,6 +3369,7 @@
   damage: —
   grip: —
   characteristic: Marcate uno Stress e recuperate un PF.
+  source: core
 - name: Pozione di Guarigione
   category: Scorte
   type: scorte
@@ -3076,6 +3380,7 @@
   damage: —
   grip: —
   characteristic: Recuperate 1d4+1 PF.
+  source: core
 - name: Pozione di Recupero
   category: Scorte
   type: scorte
@@ -3086,6 +3391,7 @@
   damage: —
   grip: —
   characteristic: Rimuovete 1d4+1 Stress.
+  source: core
 - name: Ricambi per Armature
   category: Scorte
   type: scorte
@@ -3096,6 +3402,7 @@
   damage: —
   grip: —
   characteristic: Durante un interludio, spendete una quantità minima di Speranza per riparare Caselle Armatura.
+  source: core
 - name: Balsamo delle Branchie
   category: Scorte
   type: scorte
@@ -3106,6 +3413,7 @@
   damage: —
   grip: —
   characteristic: 'Applicatelo sul collo: respirate sott''acqua per un numero di minuti pari al vostro livello.'
+  source: core
 - name: Pergamena di Copiatura
   category: Scorte
   type: scorte
@@ -3116,6 +3424,7 @@
   damage: —
   grip: —
   characteristic: Su testo scritto scoprite dettagli utili o copiatura accurata per usi successivi.
+  source: core
 - name: Frammento Arcano Migliorato
   category: Scorte
   type: scorte
@@ -3126,6 +3435,7 @@
   damage: —
   grip: —
   characteristic: 'Tiro Astuzia per lanciarlo in area: i bersagli subiscono 2d20 danni magici.'
+  source: core
 - name: Pozione del Viaggiatore Maggiore
   category: Scorte
   type: scorte
@@ -3136,6 +3446,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Agilità fino al prossimo riposo.
+  source: core
 - name: Pozione della Possanza Maggiore
   category: Scorte
   type: scorte
@@ -3146,6 +3457,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Forza fino al prossimo riposo.
+  source: core
 - name: Pozione del Sangue Freddo Maggiore
   category: Scorte
   type: scorte
@@ -3156,6 +3468,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Astuzia fino al prossimo riposo.
+  source: core
 - name: Pozione di Armonia Maggiore
   category: Scorte
   type: scorte
@@ -3166,6 +3479,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 all'Istinto fino al prossimo riposo.
+  source: core
 - name: Pozione di Fascino Maggiore
   category: Scorte
   type: scorte
@@ -3176,6 +3490,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Presenza fino al prossimo riposo.
+  source: core
 - name: Pozione dell'Illuminazione Maggiore
   category: Scorte
   type: scorte
@@ -3186,6 +3501,7 @@
   damage: —
   grip: —
   characteristic: Ottenete bonus +1 alla Conoscenza fino al prossimo riposo.
+  source: core
 - name: Sangue di Yorgi
   category: Scorte
   type: scorte
@@ -3196,6 +3512,7 @@
   damage: —
   grip: —
   characteristic: Vi permette di scomparire e riapparire in un punto visibile entro distanza Remota.
+  source: core
 - name: Filtro Segreto di Homet
   category: Scorte
   type: scorte
@@ -3206,6 +3523,7 @@
   damage: —
   grip: —
   characteristic: Dopo averlo bevuto, il prossimo attacco riuscito va a critico se i dadi mostrano lo stesso valore.
+  source: core
 - name: Saliva di Spinarossa
   category: Scorte
   type: scorte
@@ -3216,6 +3534,7 @@
   damage: —
   grip: —
   characteristic: 'Applicatela su arma fisica: aggiunge 1d12 al prossimo tiro di danno con quell''arma.'
+  source: core
 - name: Pietra Rallentrice
   category: Scorte
   type: scorte
@@ -3226,6 +3545,7 @@
   damage: —
   grip: —
   characteristic: Spendete una Speranza per prendere una carta/incantesimo dal mazzo, usarla una volta e poi rimuoverla.
+  source: core
 - name: Polvere Mistica
   category: Scorte
   type: scorte
@@ -3236,6 +3556,7 @@
   damage: —
   grip: —
   characteristic: 'Applicatela ad arma magica: aggiungete 1d12 al prossimo tiro di danno magico.'
+  source: core
 - name: Pasta Acida
   category: Scorte
   type: scorte
@@ -3246,6 +3567,7 @@
   damage: —
   grip: —
   characteristic: Corrode pareti e superfici emettendo lampi luminosi.
+  source: core
 - name: Fiaccola di Speranza
   category: Scorte
   type: scorte
@@ -3256,6 +3578,7 @@
   damage: —
   grip: —
   characteristic: Accesa, consente a un alleato entro Lunga di spendere una Speranza e ottenere un successo critico.
+  source: core
 - name: Frammento Arcano Maggiore
   category: Scorte
   type: scorte
@@ -3266,6 +3589,7 @@
   damage: —
   grip: —
   characteristic: 'Lanciatelo per un gruppo entro Lontana: i bersagli subiscono 4d20 danni magici.'
+  source: core
 - name: Ossocavo
   category: Scorte
   type: scorte
@@ -3276,6 +3600,7 @@
   damage: —
   grip: —
   characteristic: Permette di usare ossa per controllare la velocità di caduta fino al prossimo riposo.
+  source: core
 - name: Cerchio del Vuoto
   category: Scorte
   type: scorte
@@ -3286,6 +3611,7 @@
   damage: —
   grip: —
   characteristic: Tracciato sul terreno, annulla per un tempo limitato magia ed effetti in un'area vicina.
+  source: core
 - name: Linfa dell'Albero del Sole
   category: Scorte
   type: scorte
@@ -3296,6 +3622,7 @@
   damage: —
   grip: —
   characteristic: 'Consumata, tira 1d6: con 4+ rimuovi 2 Stress, con 1 perdi una cicatrice.'
+  source: core
 - name: Veleno di Zanna Sgocciolante
   category: Scorte
   type: scorte
@@ -3306,6 +3633,7 @@
   damage: —
   grip: —
   characteristic: Una creatura che lo ingerisce subisce 8d10 danni magici diretti.
+  source: core
 - name: Pozione di Guarigione Maggiore
   category: Scorte
   type: scorte
@@ -3316,6 +3644,7 @@
   damage: —
   grip: —
   characteristic: Recuperate 1d4+2 PF.
+  source: core
 - name: Pozione di Recupero Maggiore
   category: Scorte
   type: scorte
@@ -3326,6 +3655,7 @@
   damage: —
   grip: —
   characteristic: Rimuovete 1d4+2 Stress.
+  source: core
 - name: Fragranza d'Ogre
   category: Scorte
   type: scorte
@@ -3336,6 +3666,7 @@
   damage: —
   grip: —
   characteristic: 'Profumo muschiato: infligge svantaggio ai nemici su prove sociali contro di voi fino al prossimo riposo.'
+  source: core
 - name: Germoglio d'Ali
   category: Scorte
   type: scorte
@@ -3346,6 +3677,7 @@
   damage: —
   grip: —
   characteristic: Lama magica che consente di volare per un numero di minuti pari al livello.
+  source: core
 - name: Giara delle Voci Perdute
   category: Scorte
   type: scorte
@@ -3356,6 +3688,7 @@
   damage: —
   grip: —
   characteristic: 'Rilascia urla assordanti: i nemici entro Lunga subiscono 6d8 danni magici.'
+  source: core
 - name: Infusione di Fior di Drago
   category: Scorte
   type: scorte
@@ -3366,6 +3699,7 @@
   damage: —
   grip: —
   characteristic: Fermento che conferisce bonus +1 ai tratti mentali per un giorno.
+  source: core
 - name: Noce di Pontile
   category: Scorte
   type: scorte
@@ -3376,6 +3710,7 @@
   damage: —
   grip: —
   characteristic: Fa crescere un rampicante che aiuta ad arrampicare o attraversare piccoli strapiombi.
+  source: core
 - name: Linfa del Sonno
   category: Scorte
   type: scorte
@@ -3386,6 +3721,7 @@
   damage: —
   grip: —
   characteristic: Addormenta per un intero riposo chi la respira, se non resistente al sonno.
+  source: core
 - name: Banchetto di Vark
   category: Scorte
   type: scorte
@@ -3396,6 +3732,7 @@
   damage: —
   grip: —
   characteristic: Consumandolo come pasto, recuperate 1d4 Stress.
+  source: core
 - name: Miele Incollante
   category: Scorte
   type: scorte
@@ -3406,6 +3743,7 @@
   damage: —
   grip: —
   characteristic: Usabile per incollare due oggetti in modo permanente.
+  source: core
 - name: Pozione di Rimpicciolimento
   category: Scorte
   type: scorte
@@ -3416,6 +3754,7 @@
   damage: —
   grip: —
   characteristic: Riduce la taglia a metà fino a fine scena; bonus +2 ad Agilità e penalità -1 alla Competenza.
+  source: core
 - name: Pozione della Crescita
   category: Scorte
   type: scorte
@@ -3426,6 +3765,7 @@
   damage: —
   grip: —
   characteristic: Aumenta la taglia fino a fine scena; penalità -2 a Forza e bonus +1 alla Competenza.
+  source: core
 - name: Pietra della Conoscenza
   category: Scorte
   type: scorte
@@ -3436,6 +3776,7 @@
   damage: —
   grip: —
   characteristic: Toccando una pietra ricevete una conoscenza custodita al suo interno (si sbriciola dopo l'uso).
+  source: core
 - name: Muschio Dolce
   category: Scorte
   type: scorte
@@ -3446,6 +3787,7 @@
   damage: —
   grip: —
   characteristic: Consumandolo, recuperate 1d4 PF o rimuovete 1d4 Stress.
+  source: core
 - name: Sfera Accecante
   category: Scorte
   type: scorte
@@ -3456,6 +3798,7 @@
   damage: —
   grip: —
   characteristic: Lanciata, abbaglia i bersagli entro Ravvicinata rendendoli Vulnerabili fino al prossimo tiro.
+  source: core
 - name: Infuso Mortale
   category: Scorte
   type: scorte
@@ -3466,6 +3809,7 @@
   damage: —
   grip: —
   characteristic: Dopo aver bevuto, il prossimo attacco con successo è critico; se il tiro è un 1, perdete la vita.
+  source: core
 - name: Specchio di Calendula
   category: Scorte
   type: scorte
@@ -3476,6 +3820,7 @@
   damage: —
   grip: —
   characteristic: Quando subite danno potete spendere una Speranza per annullarlo, poi lo specchio si frantuma.
+  source: core
 - name: Lacrima di Stelle
   category: Scorte
   type: scorte
@@ -3486,6 +3831,7 @@
   damage: —
   grip: —
   characteristic: Scaglia una granata di comete che infligge 8d20 danni fisici a tutti i bersagli entro distanza Remota.
+  source: core
 - name: Sedia a Rotelle Telaio Leggero
   category: Armi Fisiche
   type: primaria
@@ -3496,6 +3842,7 @@
   damage: d8 fis
   grip: A una mano
   characteristic: 'Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un''altra creatura entro portata.'
+  source: core
 - name: Sedia a Rotelle Perfezionata Telaio Leggero
   category: Armi Fisiche
   type: primaria
@@ -3506,6 +3853,7 @@
   damage: d8+3 fis
   grip: A una mano
   characteristic: 'Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un''altra creatura entro portata.'
+  source: core
 - name: Sedia a Rotelle Superiore Telaio Leggero
   category: Armi Fisiche
   type: primaria
@@ -3516,6 +3864,7 @@
   damage: d8+6 fis
   grip: A una mano
   characteristic: 'Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un''altra creatura entro portata.'
+  source: core
 - name: Sedia a Rotelle Leggendaria Telaio Leggero
   category: Armi Fisiche
   type: primaria
@@ -3526,6 +3875,7 @@
   damage: d8+9 fis
   grip: A una mano
   characteristic: 'Rapida: Quando effettuate un attacco, potete marcare uno Stress per colpire un''altra creatura entro portata.'
+  source: core
 - name: Sedia a Rotelle Telaio Pesante
   category: Armi Fisiche
   type: primaria
@@ -3536,6 +3886,7 @@
   damage: d12+3 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Sedia a Rotelle Perfezionata Telaio Pesante
   category: Armi Fisiche
   type: primaria
@@ -3546,6 +3897,7 @@
   damage: d12+6 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Sedia a Rotelle Superiore Telaio Pesante
   category: Armi Fisiche
   type: primaria
@@ -3556,6 +3908,7 @@
   damage: d12+9 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Sedia a Rotelle Leggendaria Telaio Pesante
   category: Armi Fisiche
   type: primaria
@@ -3566,6 +3919,7 @@
   damage: d12+12 fis
   grip: A due mani
   characteristic: 'Pesante: -1 all''Evasione'
+  source: core
 - name: Sedia a Rotelle Telaio Incantato
   category: Armi Magiche
   type: primaria
@@ -3576,6 +3930,7 @@
   damage: d6 mag
   grip: A una mano
   characteristic: 'Affidabile: +1 al tiro attacco'
+  source: core
 - name: Sedia a Rotelle Perfezionata Telaio Incantato
   category: Armi Magiche
   type: primaria
@@ -3586,6 +3941,7 @@
   damage: d6+3 mag
   grip: A una mano
   characteristic: 'Affidabile: +1 al tiro attacco'
+  source: core
 - name: Sedia a Rotelle Superiore Telaio Incantato
   category: Armi Magiche
   type: primaria
@@ -3596,6 +3952,7 @@
   damage: d6+6 mag
   grip: A una mano
   characteristic: 'Affidabile: +1 al tiro attacco'
+  source: core
 - name: Sedia a Rotelle Leggendaria Telaio Incantato
   category: Armi Magiche
   type: primaria
@@ -3606,3 +3963,4 @@
   damage: d6+9 mag
   grip: A una mano
   characteristic: 'Affidabile: +1 al tiro attacco'
+  source: core

@@ -19,6 +19,7 @@
   - name: In Faccia
     kind: Passiva
     text: Tutti i bersagli entro distanza di Mischia hanno svantaggio agli attacchi contro bersagli diversi dal Branco.
+  source: core
 - name: Capo Delle Guardie
   role: Condottiero
   rank: 1
@@ -46,6 +47,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Capo delle Guardie effettua un attacco riuscito contro un PG, ottenete Paura.
+  source: core
 - name: Bandito Dei Coltelli Seghettati
   role: Avversario Base
   rank: 1
@@ -68,6 +70,7 @@
     kind: Passiva
     text: Quando il Bandito riesce in un attacco base dall’alto su un bersaglio, infligge 1d10+1 danni fisici invece dei suoi
       danni normali.
+  source: core
 - name: Cecchino Dei Coltelli Seghettati
   role: Tiratore
   rank: 1
@@ -87,6 +90,7 @@
     kind: Passiva
     text: Se il cecchino è Nascosto quando effettua un attacco base riuscito contro un bersaglio, infligge 1d10+4 danni fisici
       invece dei suoi danni base. AVVERSARI DI RANGO 1 (LIVELLO 1)
+  source: core
 - name: Lacchè Dei Coltelli Seghettati
   role: Seguace
   rank: 1
@@ -111,6 +115,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Lacchè dei Coltelli Seghettati entro
       distanza Ravvicinata da esso. I Lacchè si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco
       condiviso. In caso di successo, infliggono 2 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Luogotenente Dei Coltelli Seghettati
   role: Condottiero
   rank: 1
@@ -140,6 +145,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Luogotenente colpisce un PG, ottenete Paura.
+  source: core
 - name: Picchiatore Dei Coltelli Seghettati
   role: Bruto
   rank: 1
@@ -163,6 +169,7 @@
     text: Effettuate un attacco contro un bersaglio entro distanza di Mischia. In caso di successo, il bersaglio non subisce
       danni ma è Trattenuto e Vulnerabile. Il bersaglio può liberarsi, eliminando entrambe le condizioni, con un Tiro Forza
       riuscito oppure automaticamente se il Picchiatore subisce danno Maggiore o superiore.
+  source: core
 - name: Stregone Dei Coltelli Seghettati
   role: Supporto
   rank: 1
@@ -187,6 +194,7 @@
     kind: Azione
     text: Effettuate un attacco contro un massimo di tre bersagli entro distanza Prossima. Marcate uno Stress per infliggere
       2d6+3 danni magici ai bersagli colpiti.
+  source: core
 - name: Costrutto
   role: Solitario
   rank: 1
@@ -222,6 +230,7 @@
     text: Quando il Costrutto perde l’ultimo PF, il potere magico che lo alimenta esplode in una scarica di potere magico.
       Effettuate un attacco con vantaggio contro tutti i bersagli entro distanza Prossima. I bersagli colpiti subiscono 1d12+2
       danni magici.
+  source: core
 - name: Cortigiano
   role: Controparte
   rank: 1
@@ -246,6 +255,7 @@
     kind: Azione
     text: SpendeteunaPaura e scegliete un PG come bersaglio. Il Cortigiano convince unafolla o un personaggio importante che
       il PG è la causa dei loro dissapori o delle loro sventure.
+  source: core
 - name: Demone Minore
   role: Solitario
   rank: 1
@@ -280,6 +290,7 @@
   - name: Slancio
     kind: Reazione
     text: QuandoilDemonecolpisceunPG,ottenetePaura.
+  source: core
 - name: Elementale Minore Del Caos
   role: Solitario
   rank: 1
@@ -313,6 +324,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando l’Elementale colpisce un PG, ottenete Paura.
+  source: core
 - name: Elementale Minore Del Fuoco
   role: Solitario
   rank: 1
@@ -349,6 +361,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando l’Elementale colpisce un PG, ottenete Paura.
+  source: core
 - name: Difensore Dalle Radici Profonde
   role: Bruto
   rank: 1
@@ -373,6 +386,7 @@
     text: Effettuate un attacco contro un bersaglio entro distanza Ravvicinata. In caso di successo, spendete una Paura per
       trascinarlo a distanza di Mischia, infliggendogli 1d6+2 danni fisici e rendendolo Trattenuto finché il Difensore non
       subisce danno Grave.
+  source: core
 - name: Duellante Arcano
   role: Condottiero
   rank: 1
@@ -401,6 +415,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Duellante colpisce un PG, ottenete Paura.
+  source: core
 - name: Giovane Driade
   role: Condottiero
   rank: 1
@@ -426,6 +441,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando la driade colpisce un PG, ottenete Paura.
+  source: core
 - name: Groviglio Avviluppante
   role: Seguace
   rank: 1
@@ -455,6 +471,7 @@
     text: Quando un attacco del Groviglio fa perdere PF a un bersaglio e ci sono tre o più Grovigli Avviluppanti Seguaci entro
       distanza Ravvicinata, potete combinare i Seguaci in uno Sciame di Grovigli Avviluppanti. I PF dell’Orda sono pari al
       numero di Grovigli Seguaci combinati.
+  source: core
 - name: Sciame Di Grovigli Avviluppanti
   role: Orda
   rank: 1
@@ -483,6 +500,7 @@
       rimossi superando un Tiro Astuzia (12 + il numero di gettoni cespuglio) o infliggendo danno Maggiore o superiore allo
       Sciame. Se i gettoni cespuglio vengono rimossi dal bersaglio con il Tiro Astuzia, un numero di Grovigli Avviluppanti
       Seguaci pari al numero di gettoni rimossi compare a distanza di Mischia.
+  source: core
 - name: Guardia Arciere
   role: Tiratore
   rank: 1
@@ -503,6 +521,7 @@
     text: Effettuate un attacco contro un bersaglio entro distanza Lontana. In caso di successo, marcate uno Stress per infliggere
       1d12+3 danni fisici. Se il bersaglio subisce PF da questo attacco, ha svantaggio sui Tiri Agilità finché non recupera
       almeno 1 PF.
+  source: core
 - name: Guardia Armata
   role: Avversario Base
   rank: 1
@@ -527,6 +546,7 @@
     kind: Azione
     text: Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, marcate uno Stress per Trattenere
       il bersaglio finché non si libera con un attacco riuscito, un Tiro Astuzia o un Tiro Forza.
+  source: core
 - name: Maestro D’Armi
   role: Bruto
   rank: 1
@@ -553,6 +573,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Maestro d’Armi colpisce un PG, ottenete Paura.
+  source: core
 - name: Mercenario
   role: Seguace
   rank: 1
@@ -577,6 +598,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonistitutti i Mercenari entro distanza Ravvicinata da
       esso. Quei Mercenari si portano a distanza di Mischia dal bersaglio ed effettuano untiro attacco condiviso. In caso
       di successo, infliggono 3 dannifisici ciascuno. Sommate questi danni.
+  source: core
 - name: Nobile Minore
   role: Controparte
   rank: 1
@@ -604,6 +626,7 @@
     text: SpendeteunaPaura e scegliete un PG come bersaglio. Il Nobile proclama che il bersaglio e i suoi alleati sono esiliati
       dal suoterritorio. Il bersaglio e i suoi alleati subiscono svantaggio aitiri azione a fini sociali all’interno del dominio
       del Nobile.
+  source: core
 - name: Ogre Di Caverna
   role: Solitario
   rank: 1
@@ -635,6 +658,7 @@
     kind: Reazione
     text: quandol’Ogresubisce2opiùPF,puòscatenare la suafuria. Spostate l’Ogre in un punto entro distanza Ravvicinata e infliggete
       2d6+3 dannifisici diretti atutti i bersagli sul suo percorso.
+  source: core
 - name: Orso
   role: Bruto
   rank: 1
@@ -660,6 +684,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando l’Orso colpisce un PG, ottenete Paura.
+  source: core
 - name: Capitano Pirata
   role: Condottiero
   rank: 1
@@ -689,6 +714,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Capitano colpisce un PG, ottenete Paura.
+  source: core
 - name: Pirata Brutale
   role: Bruto
   rank: 1
@@ -712,6 +738,7 @@
     text: 'Effettuate un attacco contro un bersaglio entro distanza Prossima. In caso di successo, marcate uno Stress per
       muovervi a distanza di Mischia dal bersaglio, infliggendo 3d4 danni fisici e spingendo indietro il bersaglio a distanza
       Ravvicinata. 218 Capitolo 4: Avversari di Rango 1'
+  source: core
 - name: Pirati Predoni
   role: Orda
   rank: 1
@@ -733,6 +760,7 @@
   - name: Cappa e Spada
     kind: Passiva
     text: Quando i Predoni subiscono 2 o meno PF da un attacco in Mischia, l’attaccante deve marcare uno Stress.
+  source: core
 - name: Ratto Gigante
   role: Seguace
   rank: 1
@@ -756,6 +784,7 @@
     kind: Azione
     text: SpendiunaPauraperscegliereunbersaglio erendereprotagonistituttiiRattiGigantientrodistanzaRavvicinata daesso.TaliSeguacisimuovonoadistanzadiMischiadalbersaglio
       edeffettuanountiroattaccocondiviso.Incasodisuccesso, infliggono1dannofisicociascuno.Sommatequestidanni.
+  source: core
 - name: Cavaliere Scheletrico
   role: Bruto
   rank: 1
@@ -783,6 +812,7 @@
     kind: Reazione
     text: Quando il Cavaliereviene sconfitto, effettuate un attacco contro un bersaglio entro distanza Prossima (dando priorità
       alla creatura che lo ha ucciso). In caso di successo, il bersaglio subisce 1d4+8 danni fisici e perde 1d4 Speranze.
+  source: core
 - name: Catasta Scheletrica
   role: Seguace
   rank: 1
@@ -807,6 +837,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonistetutte le Cataste entro distanza Ravvicinata da
       esso. Le Cataste si portano a distanza di Mischia dal bersaglio ed effettuano untiro attacco condiviso. In caso di successo,
       infliggono 1 dannofisico ciascuna. Sommate questi danni.
+  source: core
 - name: Guerriero Scheletrico
   role: Avversario Base
   rank: 1
@@ -829,6 +860,7 @@
     kind: Reazione
     text: Quando il Guerriero viene sconfitto, potete renderlo protagonista e tirare un d6. Se il risultato è 6, se ci sono
       altri avversari sul campo di battaglia, il Guerriero si rigenera a pieno punteggio di PF.
+  source: core
 - name: Tiratore Scheletrico
   role: Tiratore
   rank: 1
@@ -852,6 +884,7 @@
     kind: Azione
     text: Effettuate un attacco contro un bersaglio Vulnerabile entro distanza Lontana. In caso di successo, marcate uno Stress
       per infliggere 3d4+8 danni fisici.
+  source: core
 - name: Sciogliterra
   role: Solitario
   rank: 1
@@ -886,6 +919,7 @@
     text: Quando lo Sciogliterra subisce danno Grave, tutte le creature entro distanza Ravvicinatavengono bagnate dal suo
       sangue acido, subendo 1d10 danni fisici. Il sangue ricopre il terreno entro distanza Prossima etutte le creature diverse
       dallo Sciogliterra che lo attraversano subiscono 1d6 danni fisici.
+  source: core
 - name: Scorpione Gigante
   role: Bruto
   rank: 1
@@ -913,6 +947,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando lo Scorpione colpisce un PG, ottenete Paura.
+  source: core
 - name: Schermagliatore
   role: Avversario Base
   rank: 1
@@ -936,6 +971,7 @@
     text: Quando una creatura si muove a distanza di Mischia per effettuare un attacco, potete marcare uno Stress prima del
       tiro attacco per muovervi in qualsiasi entro distanza Ravvicinata ed effettuare un attacco contro quella creatura. In
       caso di successo, infliggete 1d10+2 danni fisici.
+  source: core
 - name: Serpente Di Vetro
   role: Avversario Base
   rank: 1
@@ -965,6 +1001,7 @@
     text: SpendeteunaPaura perprendere un Dado Sputatore d6. Quando il Serpente è protagonista, tirate questo dado. Con un
       risultato di 5 o superiore, tutti i bersagli davanti al Serpente entro distanza Lontana devono superare unTiro Reazione
       diAgilità o subire 1d4 danni fisici. Il Serpente può diventare protagonista una secondavolta in questo turno del GM.
+  source: core
 - name: Soldato Silvano
   role: Avversario Base
   rank: 1
@@ -992,6 +1029,7 @@
     kind: Reazione
     text: Quando il Soldato colpisce, potete marcare unoStress perrenderlo Nascosto fino al suo prossimo o fino a quando un
       PG non supera unTiro Istinto (14) perindividuarlo.
+  source: core
 - name: Treant Minore
   role: Seguace
   rank: 1
@@ -1016,6 +1054,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonisti tutti iTreant Minori entro distanza Ravvicinata
       da esso. Si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di successo,
       infliggono 4 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Zanzare Gigante
   role: Orda
   rank: 1
@@ -1041,6 +1080,7 @@
     kind: Reazione
     text: Quando l’attacco delle Zanzare provoca la perdita di PF a un bersaglio, potete marcare uno Stress per costringere
       il bersaglio a subire un PF aggiuntivo.
+  source: core
 - name: Orda Di Zombi
   role: Orda
   rank: 1
@@ -1063,6 +1103,7 @@
     kind: Reazione
     text: Quando gli Zombie subiscono PF da un attacco in Mischia, potete marcare uno Stress per effettuare un attacco base
       contro l’attaccante.
+  source: core
 - name: Zombi Barcollante
   role: Avversario Base
   rank: 1
@@ -1085,6 +1126,7 @@
   - name: Terrorizzato
     kind: Passiva
     text: I bersagli che subiscono PF dagli attacchi dello Zombi marcano anche uno Stress.
+  source: core
 - name: Zombi Corpulento
   role: Bruto
   rank: 1
@@ -1113,6 +1155,7 @@
     kind: Reazione
     text: Quando lo Zombi effettua un attacco base con successo, potete marcare uno Stress per Trattenere temporaneamente
       il bersaglio e costringerlo a marcare 2 Stress.
+  source: core
 - name: Zombi Gigante Ricucito
   role: Solitario
   rank: 1
@@ -1144,6 +1187,7 @@
     text: Marcate uno Stress per costringere tutti i PG entro distanza Lontana a effettuare un Tiro Reazione di Presenza (13).
       I bersagli che falliscono perdono una Speranza e voi guadagnate una Paura per ciascuno di essi. I bersagli che superano
       il tiro devono marcare uno Stress.
+  source: core
 - name: Zombi Marcio
   role: Seguace
   rank: 1
@@ -1168,6 +1212,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonistitutti gli Zombi Marci entro distanza Ravvicinata.
       Gli Zombi Seguaci si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso di
       successo, infliggono 2 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Anguille Elettriche
   role: Orda
   rank: 2
@@ -1190,6 +1235,7 @@
     kind: Azione
     text: Marcate uno Stress per effettuare un attacco base contro tutti i bersagli entro distanza Prossima. Ottenete Paura
       per ogni bersaglio che subisce PF.
+  source: core
 - name: Apprendista Assassino
   role: Seguace
   rank: 2
@@ -1214,6 +1260,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti gli Apprendisti Assassini entro distanza
       Ravvicinata con esso. Gli Apprendisti si spostano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco
       condiviso. In caso di successo, infliggono 4 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Maestro Assassino
   role: Condottiero
   rank: 2
@@ -1243,6 +1290,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando l’Assassino colpisce un PG, ottenete una Paura.
+  source: core
 - name: Branco Di Segugi Infernali
   role: Orda
   rank: 2
@@ -1268,6 +1316,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Branco colpisce un PG, ottenete Paura.
+  source: core
 - name: Cacciatore Di Mortali
   role: Condottiero
   rank: 2
@@ -1303,6 +1352,7 @@
       rovescia. Quando si innesca, muovete il Cacciatore in linea retta fino a un punto entro distanza Lontana ed effettuate
       un attacco contro tutti i bersagli sul suo percorso. I bersagli contro cui il Cacciatore ha successo subiscono 2d8+2
       danni fisici.
+  source: core
 - name: Cavaliere Del Reame
   role: Condottiero
   rank: 2
@@ -1333,6 +1383,7 @@
     kind: Azione
     text: Marcate uno Stress per rendere protagonisti 1d4+1 alleati. Gli attacchi che effettuano mentre sono protagonisti
       infliggono metà dei danni.
+  source: core
 - name: Coscritto
   role: Seguace
   rank: 2
@@ -1357,6 +1408,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonisti tutti i Coscritti entro distanza Ravvicinata da
       esso. Quei Coscritti si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso
       di successo, infliggono 6 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Adepto Del Culto
   role: Supporto
   rank: 2
@@ -1380,6 +1432,7 @@
     kind: Azione
     text: Marcate uno Stress per avvolgere un alleato entro distanza Ravvicinata in un sudario protettivo fino a quando l’Adepto
       non viene reso inoffensivo. Mentre è Protetto, il bersaglio ha resistenza a tutti i danni.
+  source: core
 - name: Iniziato Del Culto
   role: Seguace
   rank: 2
@@ -1404,6 +1457,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti gli Iniziati del Culto entro distanza
       Ravvicinata da esso. Quegli Iniziati si portano a distanza di Mischia dal bersaglio ed effettuano untiro attacco condiviso.
       In caso di successo, infliggono 5 dannifisici ciascuno. Sommate questi danni.
+  source: core
 - name: Custode Dei Segreti
   role: Condottiero
   rank: 2
@@ -1435,6 +1489,7 @@
     kind: Reazione
     text: Una volta per scena, quando il Custode subisce 2 o più PF, potete marcare uno Stress per evocare un Branco di Segugi
       Infernali, che appare a distanza Ravvicinata e diventa immediatamente protagonista.
+  source: core
 - name: Consigliere Di Corte
   role: Controparte
   rank: 1
@@ -1462,6 +1517,7 @@
     text: 'Spendete una Paura per convincere una folla o un individuo importante che una persona o un gruppo è responsabile
       del problema che affligge il bersaglio. Il bersaglio diventa ostile al capro espiatorio finché non viene convinto della
       sua innocenza con un Tiro Presenza (17) riuscito. 225 Capitolo 4: Avversari di Rango 2'
+  source: core
 - name: Dignitario
   role: Controparte
   rank: 1
@@ -1482,6 +1538,7 @@
     text: Quando un PG entro distanza Ravvicinata effettua un Tiro Presenza, potete marcare uno Stress per scoccare un’occhiata
       verso il bersaglio. Se il bersaglio fallisce, deve marcare 2 Stress ed è Vulnerabile fino alla fine della scena o fino
       a quando non riesce in un’azione sociale contro il Dignitario. Se il bersaglio ha successo, deve marcare uno Stress.
+  source: core
 - name: Drappello Di Arcieri
   role: Orda
   rank: 1
@@ -1510,6 +1567,7 @@
     text: Marcate uno Stress per mirare a un punto entro distanza Lontana. Fino al prossimo tiro con Paura, una creatura che
       si muove entro distanza Ravvicinata da quel punto deve effettuare un Tiro Reazione di Agilità. In caso di fallimento,
       subisce 2d6+3 danni fisici. In caso di successo, subisce metà dei danni.
+  source: core
 - name: Esperimento Fallito
   role: Avversario Base
   rank: 1
@@ -1535,6 +1593,7 @@
   - name: Affondo Barcollante
     kind: Azione
     text: Marcate uno Stress per rendere protagonista l’Esperimento come mossa aggiuntiva del GM invece di spendere Paura.
+  source: core
 - name: Gigante Lottatore
   role: Bruto
   rank: 1
@@ -1562,6 +1621,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Lottatore colpisce un PG, ottenete Paura.
+  source: core
 - name: Gigante Recluta
   role: Seguace
   rank: 2
@@ -1586,6 +1646,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Giganti Reclute entro distanza Ravvicinata
       da esso. Quei Giganti si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso
       di successo, infliggono 5 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Gigante Signore Delle Bestie
   role: Condottiero
   rank: 2
@@ -1613,6 +1674,7 @@
     kind: Azione
     text: Due volte per scena, evocate un Orso, un Lupo Terribile o un animale simile di Rango 1 sotto il controllo del Gigante.
       L’avversario appare a distanza Ravvicinata e diventa immediatamente protagonista.
+  source: core
 - name: Gorgone
   role: Solitario
   rank: 2
@@ -1650,6 +1712,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando la Gorgone colpisce un PG, ottenete una Paura.
+  source: core
 - name: Guerra In Scatola
   role: Solitario
   rank: 2
@@ -1691,6 +1754,7 @@
     kind: Reazione
     text: Quando la Scatola subisce l’ultimo PF, il potere magico che la alimenta esplode in una scarica di forza. Tutti i
       bersagli entro distanza Ravvicinata devono superare un Tiro Reazione di Istinto o subire 2d8+1 danni magici.
+  source: core
 - name: Magnate
   role: Controparte
   rank: 2
@@ -1715,6 +1779,7 @@
     kind: Azione
     text: Una volta per scena, marcate uno Stress per evocare 1d4+1 avversari di Rango 1, che appaiono a distanza Lontana
       per far rispettare la volontà del Magnate.
+  source: core
 - name: Mago Da Battaglia
   role: Tiratore
   rank: 2
@@ -1752,6 +1817,7 @@
     kind: Reazione
     text: Quando il Mago subisce danni da un attaccoadistanzaRavvicinata,infligge2d6dannimagiciall’attaccante. Questa reazione
       non può essere utilizzata nuovamente finché il Mago non la riattiva con l’azione “Riattivare Globo di Protezione”.
+  source: core
 - name: Minotauro Demolitore
   role: Bruto
   rank: 2
@@ -1780,6 +1846,7 @@
     kind: Azione
     text: Effettuate un attacco contro un bersaglio entro distanza Prossima, spostando il Minotauro a distanza di Mischia
       da esso. In caso di successo, infliggete 2d8 danni fisici diretti.
+  source: core
 - name: Scintillante Giovane
   role: Solitario
   rank: 2
@@ -1816,6 +1883,7 @@
       Lontana. I bersagli devono superare un Tiro Reazione di Istinto o essere tormentati da allucinazioni spaventose. I bersagli
       di cui lo Scintillante conosce le paure hanno svantaggio al tiro. I bersagli che falliscono devono marcare uno Stress
       e perdere una Speranza.
+  source: core
 - name: Soldato Scelto
   role: Avversario Base
   rank: 2
@@ -1839,6 +1907,7 @@
     kind: Reazione
     text: Quando il Soldato si trova entro distanza Prossima da un cavaliere o da un altro nobile che subirebbe danno, potete
       marcareunoStress per portarvi a distanza di Mischia da quest’ultimo e subire il danno al suo posto.
+  source: core
 - name: Capitano Spettrale
   role: Condottiero
   rank: 2
@@ -1869,6 +1938,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Capitano colpisce un PG, ottenete Paura.
+  source: core
 - name: Guardiano Spettrale
   role: Avversario Base
   rank: 2
@@ -1892,6 +1962,7 @@
     kind: Azione
     text: Spendete una Paura per effettuare un attacco contro un bersaglio entro distanza Prossima. In caso di successo, infliggete
       2d10+6 danni fisici e il bersaglio deve marcare uno Stress.
+  source: core
 - name: Arciere Spettrale
   role: Tiratore
   rank: 2
@@ -1915,6 +1986,7 @@
     kind: Azione
     text: Spendete una Paura per effettuare un attacco entro distanza Lontana contro un PG che si trova entro distanza Prossima
       da almeno altri due PG. In caso di successo, il bersaglio subisce 2d8+12 danni fisici.
+  source: core
 - name: Spia
   role: Controparte
   rank: 2
@@ -1939,6 +2011,7 @@
     text: Quando un PG o un gruppo sta discutendo qualcosa di delicato, potete marcare uno Stress per svelare come la Spia
       sia presente in scena e li stia osservando. Se la Spia riesce a fuggire dalla scena per riferire le sue scoperte, ottenete
       1d4 Paure.
+  source: core
 - name: Squalo
   role: Bruto
   rank: 2
@@ -1967,6 +2040,7 @@
     text: Quando una creatura entro distanza Ravvicinata dallo Squalo subisce PF a causa dell’attacco di un’altra creatura,
       potete marcare uno Stress per rendere immediatamente protagonista lo Squalo, spostandolo a distanza di Mischia dal bersaglio
       ed effettuando un attacco base.
+  source: core
 - name: Teschio Del Caos
   role: Tiratore
   rank: 2
@@ -1997,6 +2071,7 @@
     text: Spendete una Paura per effettuare un attacco contro un PG che possieda un tratto da incantatore entro distanza Prossima.
       In caso di successo, il bersaglio marca 1d4 Stress e ilTeschio rimuove altrettanto Stress. Inoltre, in caso di successo,
       ilTeschio può essere immediatamente reso protagonista.
+  source: core
 - name: Cavaliere Del Cervo
   role: Avversario Base
   rank: 3
@@ -2025,6 +2100,7 @@
     kind: Reazione
     text: Quando il Cavaliere subisce danni da un attacco a distanza di Mischia, potete marcare uno Stress per infliggere
       1d10+5 danni fisici all’attaccante.
+  source: core
 - name: Demone Dell’Arroganza
   role: Condottiero
   rank: 3
@@ -2058,6 +2134,7 @@
   - name: Non Reggere il Confronto
     kind: Reazione
     text: Quando un PG fallisce un tiro entro distanza Ravvicinata dal Demone, deve marcare uno Stress.
+  source: core
 - name: Demone Dell’Avarizia
   role: Supporto
   rank: 3
@@ -2087,6 +2164,7 @@
     kind: Azione
     text: Spendete 3 manciate d’oro (o una Paura) per rendere protagonisti 1d4+1 alleati. AVVERSARI DI RANGO 3 (LIVELLI 5–7)
       DEMONE
+  source: core
 - name: Demone Della Gelosia
   role: Tiratore
   rank: 3
@@ -2119,6 +2197,7 @@
     text: Quando un PG subisce danno Grave entro Distanza Prossima dal Demone, potete spendereuna Paura per costringere il
       bersaglio a effettuare unTiro Reazione diAstuzia. In caso di fallimento, il Demone si impossessa di un oggetto o di
       una scorta a sua scelta dall’inventario del bersaglio.
+  source: core
 - name: Demone Dell’Ira
   role: Bruto
   rank: 3
@@ -2151,6 +2230,7 @@
     text: Conto alla Rovescia (Ciclo 6). Attivato la prima volta che un attacco viene effettuato alla vista del Demone. Il
       conto alla rovescia avanza quando un PG compie un’azione violenta. Quando si innesca, evoca 1d4 Demoni Minori, che appaiono
       a distanza Ravvicinata.
+  source: core
 - name: Drago Dei Ghiacci Giovane
   role: Solitario
   rank: 3
@@ -2197,6 +2277,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando il Drago colpisce un PG, ottenete una Paura.
+  source: core
 - name: Driade
   role: Condottiero
   rank: 3
@@ -2226,6 +2307,7 @@
   - name: SiamoUnaCosaSola
     kind: Reazione
     text: Quandounalleatomuoreentrodistanza Ravvicinata,potetespendereunaPaurapercurare2PFerimuovere2 Stressmentrelaforzavitaledelcadutovienerestituitaallaforesta.
+  source: core
 - name: Elementale Maggiore Dell’Acqua
   role: Supporto
   rank: 3
@@ -2254,6 +2336,7 @@
     kind: Reazione
     text: Quando l’Elementale effettua un attacco base con successo, potete marcare uno Stress per spingere indietro il bersaglio
       a distanza Ravvicinata.
+  source: core
 - name: Elementale Maggiore Della Terra
   role: Bruto
   rank: 3
@@ -2292,6 +2375,7 @@
   - name: Slancio
     kind: Reazione
     text: Quandol’ElementalecolpisceunPG,ottenetePaura.
+  source: core
 - name: Tizzone Elementale
   role: Seguace
   rank: 3
@@ -2316,6 +2400,7 @@
     text: SpendeteunaPaura perscegliere un bersaglio e rendere protagonisti tutti iTizzoni Elementali a distanza Ravvicinata
       da esso. Quei Seguaci si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso
       di successo, infliggono 5 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Carceriere Della Cripta
   role: Supporto
   rank: 3
@@ -2340,6 +2425,7 @@
     text: Marcate uno Stress per effettuare un attacco contro un bersaglio entro distanza Prossima. In caso di successo, il
       bersaglio viene Trattenuto all’interno del Carceriere fino a quando non viene liberato con un Tiro Forza (18) riuscito.
       Mentre è Trattenuto, il bersaglio può attaccare solo il Carceriere.
+  source: core
 - name: Sentinella Della Cripta
   role: Condottiero
   rank: 3
@@ -2372,6 +2458,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando la Sentinella colpisce un PG, ottenete una Paura.
+  source: core
 - name: Torretta Della Cripta
   role: Tiratore
   rank: 3
@@ -2405,6 +2492,7 @@
     text: Quando la Torretta viene distrutta, esplode. Tutti i bersagli entro distanza Ravvicinata devono effettuare un Tiro
       Reazione di Agilità. I bersagli che falliscono subiscono 3d20 danni fisici. I bersagli che superano il tiro subiscono
       metà dei danni.
+  source: core
 - name: Idra
   role: Solitario
   rank: 3
@@ -2439,6 +2527,7 @@
     kind: Reazione
     text: Quando l’Idra subisce danni magici, diventa Stordita fino al prossimo tiro con Paura. Mentre è Stordita, non può
       usare la sua azione Rigenerazione ma è immune ai danni magici.
+  source: core
 - name: Monarca
   role: Controparte
   rank: 3
@@ -2469,6 +2558,7 @@
     text: Conto alla Rovescia a Lungo Termine (8). Spendete una Paura per attivarlo dopo che il desiderio di guerra del Monarca
       è stato rivelato per la prima volta nella campagna. Quando si innesca, il Monarca ha un motivo per chiamare la nazione
       alle armi e il supporto per agire in base a tale motivo. Ottenete 1d4 Paura.
+  source: core
 - name: Treant Arbusto
   role: Seguace
   rank: 3
@@ -2493,6 +2583,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Treant Arbusti entro distanza Ravvicinata
       da esso. Quegli Arbusti si portano a Distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In caso
       di successo, infliggono 8 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Treant Delle Querce
   role: Bruto
   rank: 3
@@ -2522,6 +2613,7 @@
     text: Marcate uno Stress per far Mettere Radici al Treant dove si trova. Il Treant è Trattenuto fintantoché ha Messo Radici
       e può terminare questo effetto invece di muoversi quando è protagonista. Mentre ha Messo Radici, il Treant ha resistenza
       ai danni fisici.
+  source: core
 - name: Vampiro
   role: Avversario Base
   rank: 3
@@ -2545,6 +2637,7 @@
   - name: Forma di Nebbia
     kind: Reazione
     text: Quando il vampiro subisce danni fisici, potete spendere una Paura per fargli subire solo metà dei danni.
+  source: core
 - name: Vampiro Dominante
   role: Condottiero
   rank: 3
@@ -2580,6 +2673,7 @@
     kind: Reazione
     text: Quando il Vampiro è protagonista, tirate un d8. Con un risultato pari o superiore a 6, tutti i bersagli entro una
       distanza Prossima subiscono un PF.
+  source: core
 - name: Arci-Negromante
   role: Condottiero
   rank: 4
@@ -2620,6 +2714,7 @@
     text: Conto alla Rovescia (Ciclo 2d6). Quando il Negromante ha subito 6 o più dei propri PF, attivate il conto alla rovescia.
       Quando si innesca, infliggete 2d10+6 danni magici diretti a un bersaglio entro distanza Ravvicinata. Il Negromante poi
       rimuove un numero di Stress o cura un numero di PF pari al numero di PF subiti dal bersaglio di questo attacco.
+  source: core
 - name: Stregone Dei Caduti
   role: Supporto
   rank: 4
@@ -2654,6 +2749,7 @@
       Quando si innesca, tutti i bersagli entro distanza Lontana diventano Vulnerabili e devono marcare uno Stress mentre
       rivivono i loro più grandi rimpianti. Un bersaglio può liberarsi dal proprio rimpianto con unTiro Presenza o Forza riuscito.
       Quando un PG non riesce a liberarsi, perde una Speranza.
+  source: core
 - name: Truppa D’Assalto Dei Caduti
   role: Seguace
   rank: 4
@@ -2682,6 +2778,7 @@
       distanza Ravvicinata da esso. Questi Seguaci si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco
       condiviso. In caso di successo, infliggono 12 danni fisici ciascuno. Sommate questi danni. AVVERSARI DI RANGO 4 (LIVELLI
       8–10)
+  source: core
 - name: Predatore D’Ossidiana
   role: Solitario
   rank: 4
@@ -2722,6 +2819,7 @@
     kind: Reazione
     text: 'Quando il Predatore d’Ossidiana subisce il suo ultimo PF, sostituitelo con il Flagello Fuso e rendetelo immediatamente
       protagonista. DRAGO VULCANICO:'
+  source: core
 - name: Flagello Fuso
   role: Solitario
   rank: 4
@@ -2772,6 +2870,7 @@
     text: 'Quando il Flagello Fuso subisce il suo ultimo PF, sostituitelo con il Tiranno della Cenere e rendetelo immediatamente
       protagonista. DRAGO VULCANICO: predatore d’ossidiana DRAGO VULCANICO: flagello fuso 241 Capitolo 4: Avversari di Rango
       4 DRAGO VULCANICO:'
+  source: core
 - name: Tiranno Della Cenere
   role: Solitario
   rank: 4
@@ -2822,6 +2921,7 @@
       con unTiro Forza riuscito. I bersagli che riescono subiscono metà dei danni. Se ilTiranno di Cenereviene sconfitto mentre
       questo conto alla rovescia è ancora attivo, innesca immediatamente il conto alla rovescia nella distruzione causata
       dalla sua agonia.
+  source: core
 - name: Kraken
   role: Solitario
   rank: 4
@@ -2860,6 +2960,7 @@
     kind: Reazione
     text: 'Quando il Kraken colpisce un PG, ottenete una Paura. DRAGO VULCANICO: tiranno della cenere 242 Capitolo 4: Avversari
       di Rango 4'
+  source: core
 - name: Oracolo Del Fato
   role: Solitario
   rank: 4
@@ -2899,6 +3000,7 @@
     kind: Reazione
     text: Quando l’Oracolo subisce PF da un attacco effettuato entro distanza Prossima, potete marcare uno Stress per respingere
       l’attaccante a distanza Lontana e infliggere 2d10+4 danni fisici.
+  source: core
 - name: Abominio Dei Regni Esterni
   role: Bruto
   rank: 4
@@ -2931,6 +3033,7 @@
     kind: Reazione
     text: Quando l’Abominio subisce danni, riduceteli di 1d20. Se l’Abominio subisce 1 o meno PF a seguito di un attacco riuscito
       contro di lui, ottenete una Paura.
+  source: core
 - name: Corruttore Dei Reami Esterni
   role: Supporto
   rank: 4
@@ -2953,6 +3056,7 @@
     kind: Azione
     text: Marcate uno Stress per vomitare porzioni parzialmente digerite delle realtà su tutti i bersagli entro distanza Ravvicinata.
       I bersagli devono superare un Tiro Reazione di Conoscenza o marcare 2 Stress.
+  source: core
 - name: Servitore Dei Reami Esterni
   role: Seguace
   rank: 4
@@ -2977,6 +3081,7 @@
     text: Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Servitori dei Reami Esterni entro distanza
       Ravvicinata da esso. Quei Seguaci si portano a distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso.
       In caso di successo, infliggono 11 danni fisici ciascuno. Sommate questi danni.
+  source: core
 - name: Arciere Santificato
   role: Tiratore
   rank: 4
@@ -2998,6 +3103,7 @@
   - name: Salva Divina
     kind: Azione
     text: Marcate uno Stress per effettuare un attacco base contro un massimo di tre bersagli.
+  source: core
 - name: Campione Consacrato
   role: Condottiero
   rank: 4
@@ -3038,6 +3144,7 @@
     kind: Azione
     text: Una volta per scena, spendete una Paura per rendere protagonisti tutti gli avversari che si trovano entro distanza
       Lontana. Gli attacchi che effettuano mentre sono protagonisti infliggono metà dei danni.
+  source: core
 - name: Soldato Santificato
   role: Seguace
   rank: 4
@@ -3066,6 +3173,7 @@
     text: 'Spendete una Paura per scegliere un bersaglio e rendere protagonisti tutti i Soldati Santificati a distanza Ravvicinata
       da esso. Quei Seguaci si portano entro distanza di Mischia dal bersaglio ed effettuano un tiro attacco condiviso. In
       caso di successo, infliggono 10 danni fisici ciascuno. Sommate questi danni. 244 Capitolo 4: Avversari di Rango 4'
+  source: core
 - name: Legione Di Zombi
   role: Orda
   rank: 4
@@ -3095,6 +3203,7 @@
     kind: Reazione
     text: Quando la Legione subisce danno Minore da un attacco a distanza di Mischia, potete marcare uno Stress per effettuare
       un attacco base con vantaggio contro l’attaccante.
+  source: core
 - name: Zombi Perfezionato
   role: Bruto
   rank: 4
@@ -3125,6 +3234,7 @@
     kind: Reazione
     text: 'Quando un altro avversario infligge danno a un bersaglio entro distanza Prossima dallo Zombi, potete spendere una
       Paura per aggiungere il danno dell’attacco base dello Zombi al tiro di danno. 245 Capitolo 4: Avversari di Rango 4'
+  source: core
 - name: Spettro Di Pietra
   role: Sicario
   rank: 2
@@ -3158,6 +3268,7 @@
   - name: Slancio
     kind: Reazione
     text: Quando lo Spettro colpisce un PG, ottenete Paura.
+  source: core
 - name: Ladro Mascherato
   role: Sicario
   rank: 2
@@ -3184,6 +3295,7 @@
       i bersagli entro distanza Prossima dalla trappola devono superare un Tiro Reazione di Agilità (13) o vengono sollevati
       da terra e sospesi a testa in giù. I bersagli sono Trattenuti e Vulnerabili finché non si liberano, ponendo fine a entrambe
       le condizioni, con un Tiro Astuzia o Forza (13).
+  source: core
 - name: Sirena
   role: Sicario
   rank: 2
@@ -3210,6 +3322,7 @@
       devono superare un Tiro Reazione di Istinto con svantaggio finché non marcano 2 Stress. Altre Sirene a distanza Ravvicinata
       dal bersaglio possono marcare uno Stress per aggiungere bonus +1 alla Difficoltà del Tiro Reazione. Mentre è Incantato,
       un bersaglio non può agire ed è Vulnerabile.
+  source: core
 - name: Zanna Del Culto
   role: Sicario
   rank: 2
@@ -3234,6 +3347,7 @@
     text: Marcate uno Stress per costringere un bersaglio entro distanza di Mischia a effettuare un Tiro Reazione di Istinto.
       In caso di fallimento, il bersaglio marca 2 Stress e viene teletrasportato con la Zanna in un’ombra entro distanza Lontana,
       rendendolo temporaneamente Vulnerabile. In caso di successo, il bersaglio deve marcare uno Stress.
+  source: core
 - name: Aquila Gigante
   role: Sicario
   rank: 2
@@ -3267,6 +3381,7 @@
     text: Mentre vola, l’Aquila può lasciare cadere un bersaglio Trattenuto che sta tenendo. Una volta lasciato cadere, il
       bersaglio non è più Trattenuto, ma precipita. Se la sua caduta non viene impedita durante l’azione successiva del PG,
       il bersaglio subisce 2d20 danni fisici quando atterra.
+  source: core
 - name: Assassino Avvelenatore
   role: Sicario
   rank: 2
@@ -3293,6 +3408,7 @@
     kind: Azione
     text: Lanciate una bomba fumogena che satura l’aria entro distanza Ravvicinata di fumo, stordendo tutti i bersagli in
       quest’area. I bersagli Storditi hanno svantaggio al prossimo tiro azione, poi la condizione viene rimossa.
+  source: core
 - name: Demone Della Disperazione
   role: Sicario
   rank: 3
@@ -3316,6 +3432,7 @@
     kind: Reazione
     text: Quando un PG fallisce un tiro con Paura, potete marcare uno Stress per fargli perdere una Speranza a tutti gli altri
       PG entro distanza Ravvicinata.
+  source: core
 - name: Melma Verde Gigante
   role: Sicario
   rank: 3
@@ -3336,6 +3453,7 @@
     kind: Passiva
     text: Quando la Melma diventa protagonista, prima prepara il blocco statistico e agisce alla successiva attivazione da
       protagonista.
+  source: core
 - name: Pipistrello Gigante
   role: Sicario
   rank: 3
@@ -3355,6 +3473,7 @@
   - name: Volo
     kind: Passiva
     text: Mentre vola, il Pipistrello ottiene bonus +3 alla sua Difficoltà.
+  source: core
 - name: Scintillante Adulto
   role: Solitario
   rank: 3
@@ -3373,6 +3492,7 @@
   - name: Inesorabile (4)
     kind: Passiva
     text: Lo Scintillante può diventare protagonista fino a quattro volte per turno del GM.
+  source: core
 - name: 'Signore Della Guerra Dei Caduti: Distruttore Di Reami'
   role: Solitario
   rank: 4
@@ -3392,6 +3512,7 @@
   - name: Inesorabile (2)
     kind: Passiva
     text: Il Distruttore può diventare protagonista fino a due volte per turno del GM.
+  source: core
 - name: 'Signore Della Guerra Dei Caduti: Campione Imbattuto'
   role: Solitario
   rank: 4
@@ -3411,3 +3532,4 @@
   - name: Inesorabile (3)
     kind: Passiva
     text: Il Campione può diventare protagonista fino a tre volte per turno del GM.
+  source: core
