@@ -2071,7 +2071,11 @@ func highlightMatches(text, query string) string {
 }
 
 func (ui *tviewUI) refreshStatus() {
-	ui.status.SetText(fmt.Sprintf("%s | Paure [black:gold]%d/12[-:-]", helpText, clampFear(ui.paure)))
+	base := fmt.Sprintf("%s | Paure [black:gold]%d/12[-:-]", helpText, clampFear(ui.paure))
+	if ui.focusIdx == focusPNG {
+		base += " | [black:teal]Shift←→[-:-] PF  [black:teal]Alt←→[-:-] ARM  [black:teal]Shift↑↓[-:-] ST  [black:teal]Alt↑↓[-:-] SPE"
+	}
+	ui.status.SetText(base)
 }
 
 func (ui *tviewUI) currentMonsterIndex() int {
