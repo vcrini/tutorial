@@ -117,6 +117,7 @@ type Monster struct {
 		Kind string `yaml:"kind"`
 		Text string `yaml:"text"`
 	} `yaml:"traits"`
+	Source string `yaml:"source,omitempty"`
 }
 
 type Environment struct {
