@@ -367,7 +367,7 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
-	ui.notesSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("testo nota...")
+	ui.notesSearch = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("testo nota...")
 	ui.notesSearch.SetChangedFunc(func(_ string) {
 		ui.refreshNotes()
 		ui.refreshDetail()
@@ -392,7 +392,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.notesList, 0, 1, true)
 	ui.notesPanel.SetBorder(true)
 
-	ui.search = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
+	ui.search = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
 	ui.search.SetChangedFunc(func(_ string) {
 		ui.refreshMonsters()
 		ui.refreshDetail()
@@ -408,7 +408,7 @@ func (ui *tviewUI) build() {
 	ui.sourceFilter = "Tutti"
 	ui.roleOpts, ui.rankOpts, ui.sourceOpts = ui.buildMonsterFilterOptions()
 
-	ui.roleDrop = tview.NewDropDown().SetLabel(" Ruolo ")
+	ui.roleDrop = tview.NewDropDown().SetLabel(" (t) Ruolo ")
 	ui.roleDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.roleDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.roleDrop.SetListStyles(
@@ -426,7 +426,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.roleDrop.SetCurrentOption(0)
 
-	ui.rankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.rankDrop = tview.NewDropDown().SetLabel(" (g) Rango ")
 	ui.rankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.rankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.rankDrop.SetListStyles(
@@ -444,7 +444,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.rankDrop.SetCurrentOption(0)
 
-	ui.sourceDrop = tview.NewDropDown().SetLabel(" Source ")
+	ui.sourceDrop = tview.NewDropDown().SetLabel(" (o) Source ")
 	ui.sourceDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.sourceDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.sourceDrop.SetListStyles(
@@ -481,7 +481,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.monList, 0, 1, true)
 	ui.monstersPanel.SetBorder(true)
 
-	ui.envSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
+	ui.envSearch = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
 	ui.envSearch.SetChangedFunc(func(_ string) {
 		ui.refreshEnvironments()
 		ui.refreshDetail()
@@ -497,7 +497,7 @@ func (ui *tviewUI) build() {
 	ui.envTypeOpts = ui.buildEnvironmentTypeOptions()
 	ui.envRankOpts = ui.buildEnvironmentRankOptions()
 
-	ui.envTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.envTypeDrop = tview.NewDropDown().SetLabel(" (t) Tipo ")
 	ui.envTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.envTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.envTypeDrop.SetListStyles(
@@ -515,7 +515,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.envTypeDrop.SetCurrentOption(0)
 
-	ui.envRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.envRankDrop = tview.NewDropDown().SetLabel(" (g) Rango ")
 	ui.envRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.envRankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.envRankDrop.SetListStyles(
@@ -548,7 +548,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.envList, 0, 1, true)
 	ui.environmentsPanel.SetBorder(true)
 
-	ui.eqSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
+	ui.eqSearch = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
 	ui.eqSearch.SetChangedFunc(func(_ string) {
 		ui.refreshEquipment()
 		ui.refreshDetail()
@@ -566,7 +566,7 @@ func (ui *tviewUI) build() {
 	ui.eqItemTypeOpts = ui.buildEquipmentItemTypeOptions()
 	ui.eqRankOpts = ui.buildEquipmentRankOptions()
 
-	ui.eqTypeDrop = tview.NewDropDown().SetLabel(" Categoria ")
+	ui.eqTypeDrop = tview.NewDropDown().SetLabel(" (t) Categoria ")
 	ui.eqTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqTypeDrop.SetListStyles(
@@ -584,7 +584,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqTypeDrop.SetCurrentOption(0)
 
-	ui.eqItemTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.eqItemTypeDrop = tview.NewDropDown().SetLabel(" (y) Tipo ")
 	ui.eqItemTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqItemTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqItemTypeDrop.SetListStyles(
@@ -602,7 +602,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqItemTypeDrop.SetCurrentOption(0)
 
-	ui.eqRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.eqRankDrop = tview.NewDropDown().SetLabel(" (g) Rango ")
 	ui.eqRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqRankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqRankDrop.SetListStyles(
@@ -636,7 +636,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.eqList, 0, 1, true)
 	ui.equipmentPanel.SetBorder(true)
 
-	ui.cardSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome carta...")
+	ui.cardSearch = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("nome carta...")
 	ui.cardSearch.SetChangedFunc(func(_ string) {
 		ui.refreshCards()
 		ui.refreshDetail()
@@ -652,7 +652,7 @@ func (ui *tviewUI) build() {
 	ui.cardClassOpts = ui.buildCardClassOptions()
 	ui.cardTypeOpts = ui.buildCardTypeOptions()
 
-	ui.cardClassDrop = tview.NewDropDown().SetLabel(" Classe ")
+	ui.cardClassDrop = tview.NewDropDown().SetLabel(" (t) Classe ")
 	ui.cardClassDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.cardClassDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.cardClassDrop.SetListStyles(
@@ -670,7 +670,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.cardClassDrop.SetCurrentOption(0)
 
-	ui.cardTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.cardTypeDrop = tview.NewDropDown().SetLabel(" (g) Tipo ")
 	ui.cardTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.cardTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.cardTypeDrop.SetListStyles(
@@ -703,7 +703,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.cardList, 0, 1, true)
 	ui.cardsPanel.SetBorder(true)
 
-	ui.classSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome classe/sottoclasse...")
+	ui.classSearch = tview.NewInputField().SetLabel(" (U) Cerca ").SetFieldWidth(0).SetPlaceholder("nome classe/sottoclasse...")
 	ui.classSearch.SetChangedFunc(func(_ string) {
 		ui.refreshClasses()
 		ui.refreshDetail()
@@ -719,7 +719,7 @@ func (ui *tviewUI) build() {
 	ui.classNameOpts = ui.buildClassNameOptions()
 	ui.classSubOpts = ui.buildClassSubclassOptions()
 
-	ui.classNameDrop = tview.NewDropDown().SetLabel(" Classe ")
+	ui.classNameDrop = tview.NewDropDown().SetLabel(" (t) Classe ")
 	ui.classNameDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classNameDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classNameDrop.SetListStyles(
@@ -737,7 +737,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.classNameDrop.SetCurrentOption(0)
 
-	ui.classSubDrop = tview.NewDropDown().SetLabel(" Sottoclasse ")
+	ui.classSubDrop = tview.NewDropDown().SetLabel(" (g) Sottoclasse ")
 	ui.classSubDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classSubDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classSubDrop.SetListStyles(
@@ -978,6 +978,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 	}
 
+	if focusIsInput {
+		return ev
+	}
+
 	switch ev.Rune() {
 	case '?':
 		ui.openHelpOverlay(focus)
@@ -1001,15 +1005,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.openGotoPanelModal()
 		return nil
 	case 'S':
-		if !focusIsInput {
-			ui.openStateFileModal("save", "fear")
-			return nil
-		}
+		ui.openStateFileModal("save", "fear")
+		return nil
 	case 'L':
-		if !focusIsInput {
-			ui.openStateFileModal("load", "fear")
-			return nil
-		}
+		ui.openStateFileModal("load", "fear")
+		return nil
 	case 'N':
 		ui.catalogMode = "note"
 		ui.catalogPanel.SwitchToPage("note")
@@ -1020,34 +1020,30 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.app.Stop()
 		return nil
 	case 's':
-		if !focusIsInput {
-			if focus == ui.pngList {
-				ui.openStateFileModal("save", "png")
-				return nil
-			}
-			if focus == ui.encList {
-				ui.openStateFileModal("save", "encounter")
-				return nil
-			}
-			if focus == ui.dice {
-				ui.openStateFileModal("save", "dice")
-				return nil
-			}
+		if focus == ui.pngList {
+			ui.openStateFileModal("save", "png")
+			return nil
+		}
+		if focus == ui.encList {
+			ui.openStateFileModal("save", "encounter")
+			return nil
+		}
+		if focus == ui.dice {
+			ui.openStateFileModal("save", "dice")
+			return nil
 		}
 	case 'l':
-		if !focusIsInput {
-			if focus == ui.pngList {
-				ui.openStateFileModal("load", "png")
-				return nil
-			}
-			if focus == ui.encList {
-				ui.openStateFileModal("load", "encounter")
-				return nil
-			}
-			if focus == ui.dice {
-				ui.openStateFileModal("load", "dice")
-				return nil
-			}
+		if focus == ui.pngList {
+			ui.openStateFileModal("load", "png")
+			return nil
+		}
+		if focus == ui.encList {
+			ui.openStateFileModal("load", "encounter")
+			return nil
+		}
+		if focus == ui.dice {
+			ui.openStateFileModal("load", "dice")
+			return nil
 		}
 	case '1':
 		ui.focusPanel(focusPNG)
