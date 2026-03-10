@@ -178,25 +178,27 @@ type ClassItem struct {
 
 // PNG rappresenta la struttura dati per un PNG con il suo token.
 type PNG struct {
-	Name        string `yaml:"name"`
-	Token       int    `yaml:"token"`
-	PF          int    `yaml:"pf,omitempty"`
-	Stress      int    `yaml:"stress,omitempty"`
-	ArmorScore  int    `yaml:"armor_score,omitempty"`
-	Hope        int    `yaml:"hope,omitempty"`
-	Class       string `yaml:"class,omitempty"`
-	Subclass    string `yaml:"subclass,omitempty"`
-	Level       int    `yaml:"level,omitempty"`
-	Rank        int    `yaml:"rank,omitempty"`
-	CompBonus   int    `yaml:"comp_bonus,omitempty"`
-	ExpBonus    int    `yaml:"exp_bonus,omitempty"`
-	Description string `yaml:"description,omitempty"`
-	Traits      string `yaml:"traits,omitempty"`
-	Primary     string `yaml:"primary,omitempty"`
-	Secondary   string `yaml:"secondary,omitempty"`
-	Armor       string `yaml:"armor,omitempty"`
-	Look        string `yaml:"look,omitempty"`
-	Inventory   string `yaml:"inventory,omitempty"`
+	Name              string `yaml:"name"`
+	Token             int    `yaml:"token"`
+	PF                int    `yaml:"pf,omitempty"`
+	Stress            int    `yaml:"stress,omitempty"`
+	ArmorScore        int    `yaml:"armor_score,omitempty"`
+	ArmorMinThreshold int    `yaml:"armor_min_threshold,omitempty"`
+	ArmorMaxThreshold int    `yaml:"armor_max_threshold,omitempty"`
+	Hope              int    `yaml:"hope,omitempty"`
+	Class             string `yaml:"class,omitempty"`
+	Subclass          string `yaml:"subclass,omitempty"`
+	Level             int    `yaml:"level,omitempty"`
+	Rank              int    `yaml:"rank,omitempty"`
+	CompBonus         int    `yaml:"comp_bonus,omitempty"`
+	ExpBonus          int    `yaml:"exp_bonus,omitempty"`
+	Description       string `yaml:"description,omitempty"`
+	Traits            string `yaml:"traits,omitempty"`
+	Primary           string `yaml:"primary,omitempty"`
+	Secondary         string `yaml:"secondary,omitempty"`
+	Armor             string `yaml:"armor,omitempty"`
+	Look              string `yaml:"look,omitempty"`
+	Inventory         string `yaml:"inventory,omitempty"`
 }
 
 func randomPNGName() string {

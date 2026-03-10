@@ -28,6 +28,7 @@ const (
 	focusMonSearch
 	focusMonRole
 	focusMonRank
+	focusMonSource
 	focusMonList
 	focusEnvSearch
 	focusEnvType
@@ -124,6 +125,7 @@ type tviewUI struct {
 	search         *tview.InputField
 	roleDrop       *tview.DropDown
 	rankDrop       *tview.DropDown
+	sourceDrop     *tview.DropDown
 	monList        *tview.List
 	envSearch      *tview.InputField
 	envTypeDrop    *tview.DropDown
@@ -179,6 +181,7 @@ type tviewUI struct {
 	filteredNotes    []int
 	roleOpts         []string
 	rankOpts         []string
+	sourceOpts       []string
 	envTypeOpts      []string
 	envRankOpts      []string
 	eqTypeOpts       []string
@@ -190,6 +193,7 @@ type tviewUI struct {
 	classSubOpts     []string
 	roleFilter       string
 	rankFilter       string
+	sourceFilter     string
 	envTypeFilter    string
 	envRankFilter    string
 	eqTypeFilter     string
@@ -211,13 +215,14 @@ type tviewUI struct {
 	modalVisible bool
 	modalName    string
 
-	fullscreenActive bool
-	fullscreenTarget string
-	activeBottomPane string
-	paure            int
-	undoStack        []uiSnapshot
-	redoStack        []uiSnapshot
-	activeCampaign   string
+	fullscreenActive     bool
+	fullscreenTarget     string
+	activeBottomPane     string
+	paure                int
+	undoStack            []uiSnapshot
+	redoStack            []uiSnapshot
+	activeCampaign       string
+	copiedEncounterEntry *EncounterEntry
 }
 
 func runTViewUI() error {
@@ -400,7 +405,8 @@ func (ui *tviewUI) build() {
 
 	ui.roleFilter = "Tutti"
 	ui.rankFilter = "Tutti"
-	ui.roleOpts, ui.rankOpts = ui.buildMonsterFilterOptions()
+	ui.sourceFilter = "Tutti"
+	ui.roleOpts, ui.rankOpts, ui.sourceOpts = ui.buildMonsterFilterOptions()
 
 	ui.roleDrop = tview.NewDropDown().SetLabel(" Ruolo ")
 	ui.roleDrop.SetFieldBackgroundColor(tcell.ColorBlack)
@@ -438,6 +444,24 @@ func (ui *tviewUI) build() {
 	})
 	ui.rankDrop.SetCurrentOption(0)
 
+	ui.sourceDrop = tview.NewDropDown().SetLabel(" Source ")
+	ui.sourceDrop.SetFieldBackgroundColor(tcell.ColorBlack)
+	ui.sourceDrop.SetFieldTextColor(tcell.ColorWhite)
+	ui.sourceDrop.SetListStyles(
+		tcell.StyleDefault.Foreground(tcell.ColorWhite).Background(tcell.ColorBlack),
+		tcell.StyleDefault.Foreground(tcell.ColorBlack).Background(tcell.ColorGold),
+	)
+	ui.sourceDrop.SetOptions(ui.sourceOpts, func(text string, _ int) {
+		if text == "" {
+			text = "Tutti"
+		}
+		ui.sourceFilter = text
+		ui.refreshMonsters()
+		ui.refreshDetail()
+		ui.focusActiveCatalogList()
+	})
+	ui.sourceDrop.SetCurrentOption(0)
+
 	ui.monList = tview.NewList().ShowSecondaryText(false).SetSelectedFocusOnly(true)
 	ui.monList.SetChangedFunc(func(int, string, string, rune) {
 		ui.refreshDetail()
@@ -449,7 +473,8 @@ func (ui *tviewUI) build() {
 	filters := tview.NewFlex().SetDirection(tview.FlexColumn).
 		AddItem(ui.search, 0, 2, false).
 		AddItem(ui.roleDrop, 0, 1, false).
-		AddItem(ui.rankDrop, 0, 1, false)
+		AddItem(ui.rankDrop, 0, 1, false).
+		AddItem(ui.sourceDrop, 0, 1, false)
 
 	ui.monstersPanel = tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(filters, 2, 0, false).
@@ -786,7 +811,7 @@ func (ui *tviewUI) build() {
 	ui.pages = tview.NewPages().AddPage("main", root, true, true)
 	ui.focus = []tview.Primitive{
 		ui.dice,
-		ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.monList,
+		ui.pngList, ui.encList, ui.search, ui.roleDrop, ui.rankDrop, ui.sourceDrop, ui.monList,
 		ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList,
 		ui.eqSearch, ui.eqTypeDrop, ui.eqItemTypeDrop, ui.eqRankDrop, ui.eqList,
 		ui.cardSearch, ui.cardClassDrop, ui.cardTypeDrop, ui.cardList,
@@ -1207,8 +1232,23 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		}
 		return nil
 	case 'y':
+		if focus == ui.encList {
+			idx := ui.currentEncounterIndex()
+			if idx >= 0 {
+				entry := ui.encounter[idx]
+				ui.copiedEncounterEntry = &entry
+				ui.message = fmt.Sprintf("Copiato: %s", ui.encounterLabelAt(idx))
+				ui.refreshStatus()
+			}
+			return nil
+		}
 		if ui.catalogMode == "equipaggiamento" {
 			ui.focusPanel(focusEqItemType)
+			return nil
+		}
+	case 'p':
+		if focus == ui.encList && ui.copiedEncounterEntry != nil {
+			ui.pasteEncounterEntry()
 			return nil
 		}
 	case 'v':
@@ -1346,6 +1386,9 @@ func (ui *tviewUI) focusPanel(panel int) {
 	if panel == focusMonRank && ui.catalogMode == "note" {
 		panel = focusNotesSearch
 	}
+	if panel == focusMonSource && ui.catalogMode != "mostri" {
+		panel = ui.activeCatalogListFocus()
+	}
 	if panel < 0 || panel >= len(ui.focus) {
 		return
 	}
@@ -1360,7 +1403,7 @@ func (ui *tviewUI) focusPanel(panel int) {
 
 func (ui *tviewUI) isFocusVisible(idx int) bool {
 	switch idx {
-	case focusMonSearch, focusMonRole, focusMonRank, focusMonList:
+	case focusMonSearch, focusMonRole, focusMonRank, focusMonSource, focusMonList:
 		return ui.catalogMode == "mostri"
 	case focusEnvSearch, focusEnvType, focusEnvRank, focusEnvList:
 		return ui.catalogMode == "ambienti"
@@ -1505,7 +1548,11 @@ func (ui *tviewUI) refreshPNGs() {
 		return
 	}
 	for _, p := range ui.pngs {
-		label := fmt.Sprintf("%s [token %d | PF %d | ST %d | ARM %d | SPE %d]", p.Name, p.Token, p.PF, p.Stress, p.ArmorScore, p.Hope)
+		armorStr := fmt.Sprintf("%d", p.ArmorScore)
+		if p.ArmorMinThreshold > 0 || p.ArmorMaxThreshold > 0 {
+			armorStr = fmt.Sprintf("%d <%d/%d>", p.ArmorScore, p.ArmorMinThreshold, p.ArmorMaxThreshold)
+		}
+		label := fmt.Sprintf("%s [token %d | PF %d | ST %d | ARM %s | SPE %d]", p.Name, p.Token, p.PF, p.Stress, armorStr, p.Hope)
 		ui.pngList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.pngs) {
@@ -1528,6 +1575,9 @@ func (ui *tviewUI) refreshMonsters() {
 			continue
 		}
 		if ui.rankFilter != "" && ui.rankFilter != "Tutti" && strconv.Itoa(m.Rank) != ui.rankFilter {
+			continue
+		}
+		if ui.sourceFilter != "" && ui.sourceFilter != "Tutti" && m.Source != ui.sourceFilter {
 			continue
 		}
 		ui.filtered = append(ui.filtered, i)
@@ -1939,7 +1989,11 @@ func (ui *tviewUI) refreshDetail() {
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\nToken: %d", p.Name, p.Token)
-	fmt.Fprintf(&b, "\nPF: %d | Stress: %d | Armatura: %d | Speranza: %d", p.PF, p.Stress, p.ArmorScore, p.Hope)
+	armorStr := fmt.Sprintf("%d", p.ArmorScore)
+	if p.ArmorMinThreshold > 0 || p.ArmorMaxThreshold > 0 {
+		armorStr = fmt.Sprintf("%d <%d/%d>", p.ArmorScore, p.ArmorMinThreshold, p.ArmorMaxThreshold)
+	}
+	fmt.Fprintf(&b, "\nPF: %d | Stress: %d | Armatura: %s | Speranza: %d", p.PF, p.Stress, armorStr, p.Hope)
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -2152,9 +2206,10 @@ func (ui *tviewUI) currentClassIndex() int {
 	return ui.filteredClasses[cur]
 }
 
-func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
+func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string, []string) {
 	roleSet := map[string]struct{}{}
 	rankSet := map[int]struct{}{}
+	sourceSet := map[string]struct{}{}
 
 	for _, m := range ui.monsters {
 		role := strings.TrimSpace(m.Role)
@@ -2163,6 +2218,10 @@ func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
 		}
 		if m.Rank > 0 {
 			rankSet[m.Rank] = struct{}{}
+		}
+		src := strings.TrimSpace(m.Source)
+		if src != "" {
+			sourceSet[src] = struct{}{}
 		}
 	}
 
@@ -2185,7 +2244,14 @@ func (ui *tviewUI) buildMonsterFilterOptions() ([]string, []string) {
 		ranks = append(ranks, strconv.Itoa(rank))
 	}
 
-	return roles, ranks
+	sources := make([]string, 0, len(sourceSet)+1)
+	sources = append(sources, "Tutti")
+	for src := range sourceSet {
+		sources = append(sources, src)
+	}
+	sort.Strings(sources[1:])
+
+	return roles, ranks, sources
 }
 
 func (ui *tviewUI) buildEnvironmentRankOptions() []string {
@@ -2350,12 +2416,16 @@ func (ui *tviewUI) buildClassSubclassOptions() []string {
 func (ui *tviewUI) resetMonsterFilters() {
 	ui.roleFilter = "Tutti"
 	ui.rankFilter = "Tutti"
+	ui.sourceFilter = "Tutti"
 	ui.search.SetText("")
 	if ui.roleDrop != nil {
 		ui.roleDrop.SetCurrentOption(0)
 	}
 	if ui.rankDrop != nil {
 		ui.rankDrop.SetCurrentOption(0)
+	}
+	if ui.sourceDrop != nil {
+		ui.sourceDrop.SetCurrentOption(0)
 	}
 	ui.refreshMonsters()
 	ui.refreshDetail()
@@ -2625,6 +2695,33 @@ func (ui *tviewUI) currentEncounterIndex() int {
 	return cur
 }
 
+func (ui *tviewUI) pasteEncounterEntry() {
+	if ui.copiedEncounterEntry == nil {
+		return
+	}
+	src := *ui.copiedEncounterEntry
+	seq := nextEncounterSeq(ui.encounter, src.Monster.Name)
+	newEntry := EncounterEntry{
+		Monster:    src.Monster,
+		Seq:        seq,
+		Wounds:     0,
+		BasePF:     src.BasePF,
+		Stress:     src.BaseStress,
+		BaseStress: src.BaseStress,
+	}
+	idx := ui.currentEncounterIndex()
+	ui.beginUndoableChange()
+	if idx < 0 || idx >= len(ui.encounter)-1 {
+		ui.encounter = append(ui.encounter, newEntry)
+	} else {
+		ui.encounter = append(ui.encounter[:idx+1], append([]EncounterEntry{newEntry}, ui.encounter[idx+1:]...)...)
+	}
+	ui.persistEncounter()
+	label := fmt.Sprintf("%s #%d", src.Monster.Name, seq)
+	ui.message = fmt.Sprintf("Incollato: %s", label)
+	ui.refreshAll()
+}
+
 func (ui *tviewUI) buildMonsterDetails(m Monster, title string, extraLine string) string {
 	var b strings.Builder
 	b.WriteString(title + "\n")
@@ -2726,6 +2823,8 @@ func (ui *tviewUI) openCreatePNGModal() {
 	selectedPF := 0
 	selectedStress := 0
 	selectedArmor := 3
+	selectedArmorMin := 0
+	selectedArmorMax := 0
 	selectedHope := 2
 
 	form := tview.NewForm()
@@ -2767,6 +2866,28 @@ func (ui *tviewUI) openCreatePNGModal() {
 			selectedArmor = v
 		}
 	})
+	form.AddInputField("Soglia Armatura Min", "0", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmorMin = v
+		}
+	})
+	form.AddInputField("Soglia Armatura Max", "0", 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmorMax = v
+		}
+	})
 	form.AddInputField("Speranza", "2", 4, func(textToCheck string, lastChar rune) bool {
 		if textToCheck == "" {
 			return true
@@ -2797,6 +2918,12 @@ func (ui *tviewUI) openCreatePNGModal() {
 			form.SetFocus(4)
 			return nil
 		case itemIdx == 4:
+			form.SetFocus(5)
+			return nil
+		case itemIdx == 5:
+			form.SetFocus(6)
+			return nil
+		case itemIdx == 6:
 			advanceToGenerate()
 			return nil
 		case buttonIdx >= 0:
@@ -2834,13 +2961,23 @@ func (ui *tviewUI) openCreatePNGModal() {
 			selectedArmor = 3
 		}
 		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(4).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedArmorMin = v
+		} else {
+			selectedArmorMin = 0
+		}
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(5).(*tview.InputField).GetText())); err == nil && v >= 0 {
+			selectedArmorMax = v
+		} else {
+			selectedArmorMax = 0
+		}
+		if v, err := strconv.Atoi(strings.TrimSpace(form.GetFormItem(6).(*tview.InputField).GetText())); err == nil && v >= 0 {
 			selectedHope = v
 		} else {
 			selectedHope = 2
 		}
 
 		ui.beginUndoableChange()
-		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress, ArmorScore: selectedArmor, Hope: selectedHope})
+		ui.pngs = append(ui.pngs, PNG{Name: name, Token: defaultToken, PF: selectedPF, Stress: selectedStress, ArmorScore: selectedArmor, ArmorMinThreshold: selectedArmorMin, ArmorMaxThreshold: selectedArmorMax, Hope: selectedHope})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
 		ui.closeModal()
@@ -2881,6 +3018,8 @@ func (ui *tviewUI) openEditPNGModal() {
 	selectedPF := cur.PF
 	selectedStress := cur.Stress
 	selectedArmor := cur.ArmorScore
+	selectedArmorMin := cur.ArmorMinThreshold
+	selectedArmorMax := cur.ArmorMaxThreshold
 	selectedHope := cur.Hope
 	returnFocus := ui.app.GetFocus()
 
@@ -2936,6 +3075,28 @@ func (ui *tviewUI) openEditPNGModal() {
 			selectedArmor = v
 		}
 	})
+	form.AddInputField("Soglia Armatura Min", strconv.Itoa(cur.ArmorMinThreshold), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmorMin = v
+		}
+	})
+	form.AddInputField("Soglia Armatura Max", strconv.Itoa(cur.ArmorMaxThreshold), 4, func(textToCheck string, lastChar rune) bool {
+		if textToCheck == "" {
+			return true
+		}
+		_, err := strconv.Atoi(textToCheck)
+		return err == nil
+	}, func(text string) {
+		if v, err := strconv.Atoi(strings.TrimSpace(text)); err == nil && v >= 0 {
+			selectedArmorMax = v
+		}
+	})
 	form.AddInputField("Speranza", strconv.Itoa(cur.Hope), 4, func(textToCheck string, lastChar rune) bool {
 		if textToCheck == "" {
 			return true
@@ -2969,6 +3130,12 @@ func (ui *tviewUI) openEditPNGModal() {
 			form.SetFocus(5)
 			return nil
 		case itemIdx == 5:
+			form.SetFocus(6)
+			return nil
+		case itemIdx == 6:
+			form.SetFocus(7)
+			return nil
+		case itemIdx == 7:
 			advanceToSave()
 			return nil
 		case buttonIdx >= 0:
@@ -2999,6 +3166,8 @@ func (ui *tviewUI) openEditPNGModal() {
 		afterPF := selectedPF
 		afterStress := selectedStress
 		afterArmor := selectedArmor
+		afterArmorMin := selectedArmorMin
+		afterArmorMax := selectedArmorMax
 		afterHope := selectedHope
 		if afterToken < minToken {
 			afterToken = minToken
@@ -3015,10 +3184,16 @@ func (ui *tviewUI) openEditPNGModal() {
 		if afterArmor < 0 {
 			afterArmor = 0
 		}
+		if afterArmorMin < 0 {
+			afterArmorMin = 0
+		}
+		if afterArmorMax < 0 {
+			afterArmorMax = 0
+		}
 		if afterHope < 0 {
 			afterHope = 0
 		}
-		if before.Name == afterName && before.Token == afterToken && before.PF == afterPF && before.Stress == afterStress && before.ArmorScore == afterArmor && before.Hope == afterHope {
+		if before.Name == afterName && before.Token == afterToken && before.PF == afterPF && before.Stress == afterStress && before.ArmorScore == afterArmor && before.ArmorMinThreshold == afterArmorMin && before.ArmorMaxThreshold == afterArmorMax && before.Hope == afterHope {
 			ui.closeModal()
 			ui.focusPanel(focusPNG)
 			ui.message = "Nessuna modifica al PNG."
@@ -3036,6 +3211,12 @@ func (ui *tviewUI) openEditPNGModal() {
 		if selectedArmor < 0 {
 			selectedArmor = 0
 		}
+		if selectedArmorMin < 0 {
+			selectedArmorMin = 0
+		}
+		if selectedArmorMax < 0 {
+			selectedArmorMax = 0
+		}
 		if selectedHope < 0 {
 			selectedHope = 0
 		}
@@ -3044,6 +3225,8 @@ func (ui *tviewUI) openEditPNGModal() {
 		ui.pngs[ui.selected].PF = selectedPF
 		ui.pngs[ui.selected].Stress = selectedStress
 		ui.pngs[ui.selected].ArmorScore = selectedArmor
+		ui.pngs[ui.selected].ArmorMinThreshold = selectedArmorMin
+		ui.pngs[ui.selected].ArmorMaxThreshold = selectedArmorMax
 		ui.pngs[ui.selected].Hope = selectedHope
 		ui.persistPNGs()
 		ui.closeModal()
