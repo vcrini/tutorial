@@ -1231,6 +1231,11 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.focusPanel(focusClassSubclass)
 		}
 		return nil
+	case 'o':
+		if ui.catalogMode == "mostri" {
+			ui.focusPanel(focusMonSource)
+			return nil
+		}
 	case 'y':
 		if focus == ui.encList {
 			idx := ui.currentEncounterIndex()
@@ -4794,6 +4799,8 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- s / l: salva / carica Encounter da file",
 			"- d: rimuovi mostro selezionato (senza conferma)",
 			"- D: svuota Encounter (senza conferma)",
+			"- y: copia riga selezionata",
+			"- p: incolla riga copiata (con numero incrementato)",
 			"- Shift+← / Shift+→: PF -1 / +1 sul selezionato",
 			"- Shift+↓ / Shift+↑: stress -1 / +1 sul selezionato",
 			"- stress a 0: ulteriore riduzione stress riduce PF",
@@ -4807,12 +4814,12 @@ func (ui *tviewUI) buildHelpContent(focus tview.Primitive) string {
 			"- U / t / g: focus filtro Nome",
 			"- v: reset filtro Note",
 		}
-	case ui.search, ui.roleDrop, ui.rankDrop, ui.monList:
+	case ui.search, ui.roleDrop, ui.rankDrop, ui.sourceDrop, ui.monList:
 		panel = "Mostri"
 		panelLines = []string{
 			"- a: aggiungi mostro selezionato a Encounter",
 			"- n: genera Encounter random (Punti Battaglia)",
-			"- U / t / g: focus filtro Nome / Ruolo / Rango",
+			"- U / t / g / o: focus filtro Nome / Ruolo / Rango / Source",
 			"- v: reset filtri Mostri",
 		}
 	case ui.envSearch, ui.envTypeDrop, ui.envRankDrop, ui.envList:
