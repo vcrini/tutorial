@@ -295,7 +295,7 @@ func (ui *tviewUI) build() {
 		ui.refreshDetail()
 	})
 
-	ui.search = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
+	ui.search = tview.NewInputField().SetLabel(" (u) Cerca ").SetFieldWidth(0).SetPlaceholder("nome mostro...")
 	ui.search.SetChangedFunc(func(_ string) {
 		ui.refreshMonsters()
 		ui.refreshDetail()
@@ -313,7 +313,7 @@ func (ui *tviewUI) build() {
 	ui.monSourceSelected = newSourceSelection(ui.monSourceValues)
 	ui.monSourceOpts = sourceMenuOptions(ui.monSourceValues, ui.monSourceSelected)
 
-	ui.roleDrop = tview.NewDropDown().SetLabel(" Ruolo ")
+	ui.roleDrop = tview.NewDropDown().SetLabel(" (t) Ruolo ")
 	ui.roleDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.roleDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.roleDrop.SetListStyles(
@@ -331,7 +331,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.roleDrop.SetCurrentOption(0)
 
-	ui.rankDrop = tview.NewDropDown().SetLabel(" Taglia ")
+	ui.rankDrop = tview.NewDropDown().SetLabel(" (g) Taglia ")
 	ui.rankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.rankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.rankDrop.SetListStyles(
@@ -349,7 +349,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.rankDrop.SetCurrentOption(0)
 
-	ui.monSourceDrop = tview.NewDropDown().SetLabel(" Source ")
+	ui.monSourceDrop = tview.NewDropDown().SetLabel(" (y) Source ")
 	ui.monSourceDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.monSourceDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.monSourceDrop.SetListStyles(
@@ -380,7 +380,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.monList, 0, 1, true)
 	ui.monstersPanel.SetBorder(true)
 
-	ui.envSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
+	ui.envSearch = tview.NewInputField().SetLabel(" (u) Cerca ").SetFieldWidth(0).SetPlaceholder("nome ambiente...")
 	ui.envSearch.SetChangedFunc(func(_ string) {
 		ui.refreshEnvironments()
 		ui.refreshDetail()
@@ -396,7 +396,7 @@ func (ui *tviewUI) build() {
 	ui.envTypeOpts = ui.buildEnvironmentTypeOptions()
 	ui.envRankOpts = ui.buildEnvironmentRankOptions()
 
-	ui.envTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.envTypeDrop = tview.NewDropDown().SetLabel(" (t) Tipo ")
 	ui.envTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.envTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.envTypeDrop.SetListStyles(
@@ -414,7 +414,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.envTypeDrop.SetCurrentOption(0)
 
-	ui.envRankDrop = tview.NewDropDown().SetLabel(" Rango ")
+	ui.envRankDrop = tview.NewDropDown().SetLabel(" (g) Rango ")
 	ui.envRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.envRankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.envRankDrop.SetListStyles(
@@ -447,7 +447,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.envList, 0, 1, true)
 	ui.environmentsPanel.SetBorder(true)
 
-	ui.eqSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
+	ui.eqSearch = tview.NewInputField().SetLabel(" (u) Cerca ").SetFieldWidth(0).SetPlaceholder("nome equipaggiamento...")
 	ui.eqSearch.SetChangedFunc(func(_ string) {
 		ui.refreshEquipment()
 		ui.refreshDetail()
@@ -486,7 +486,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqTypeDrop.SetCurrentOption(0)
 
-	ui.eqItemTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.eqItemTypeDrop = tview.NewDropDown().SetLabel(" (t) Tipo ")
 	ui.eqItemTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqItemTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqItemTypeDrop.SetListStyles(
@@ -504,7 +504,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqItemTypeDrop.SetCurrentOption(0)
 
-	ui.eqRankDrop = tview.NewDropDown().SetLabel(" Era ")
+	ui.eqRankDrop = tview.NewDropDown().SetLabel(" (g) Era ")
 	ui.eqRankDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqRankDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqRankDrop.SetListStyles(
@@ -522,7 +522,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.eqRankDrop.SetCurrentOption(0)
 
-	ui.eqSourceDrop = tview.NewDropDown().SetLabel(" Source ")
+	ui.eqSourceDrop = tview.NewDropDown().SetLabel(" (y) Source ")
 	ui.eqSourceDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.eqSourceDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.eqSourceDrop.SetListStyles(
@@ -551,7 +551,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.eqList, 0, 1, true)
 	ui.equipmentPanel.SetBorder(true)
 
-	ui.cardSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("nome carta...")
+	ui.cardSearch = tview.NewInputField().SetLabel(" (u) Cerca ").SetFieldWidth(0).SetPlaceholder("nome carta...")
 	ui.cardSearch.SetChangedFunc(func(_ string) {
 		ui.refreshCards()
 		ui.refreshDetail()
@@ -567,7 +567,7 @@ func (ui *tviewUI) build() {
 	ui.cardClassOpts = ui.buildCardClassOptions()
 	ui.cardTypeOpts = ui.buildCardTypeOptions()
 
-	ui.cardClassDrop = tview.NewDropDown().SetLabel(" Classe ")
+	ui.cardClassDrop = tview.NewDropDown().SetLabel(" (t) Classe ")
 	ui.cardClassDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.cardClassDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.cardClassDrop.SetListStyles(
@@ -585,7 +585,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.cardClassDrop.SetCurrentOption(0)
 
-	ui.cardTypeDrop = tview.NewDropDown().SetLabel(" Tipo ")
+	ui.cardTypeDrop = tview.NewDropDown().SetLabel(" (g) Tipo ")
 	ui.cardTypeDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.cardTypeDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.cardTypeDrop.SetListStyles(
@@ -618,7 +618,7 @@ func (ui *tviewUI) build() {
 		AddItem(ui.cardList, 0, 1, true)
 	ui.cardsPanel.SetBorder(true)
 
-	ui.classSearch = tview.NewInputField().SetLabel(" Cerca ").SetFieldWidth(0).SetPlaceholder("categoria/voce...")
+	ui.classSearch = tview.NewInputField().SetLabel(" (u) Cerca ").SetFieldWidth(0).SetPlaceholder("categoria/voce...")
 	ui.classSearch.SetChangedFunc(func(_ string) {
 		ui.refreshClasses()
 		ui.refreshDetail()
@@ -637,7 +637,7 @@ func (ui *tviewUI) build() {
 	ui.classSourceSelected = newSourceSelection(ui.classSourceValues)
 	ui.classSourceOpts = sourceMenuOptions(ui.classSourceValues, ui.classSourceSelected)
 
-	ui.classNameDrop = tview.NewDropDown().SetLabel(" Categoria ")
+	ui.classNameDrop = tview.NewDropDown().SetLabel(" (t) Categoria ")
 	ui.classNameDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classNameDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classNameDrop.SetListStyles(
@@ -655,7 +655,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.classNameDrop.SetCurrentOption(0)
 
-	ui.classSubDrop = tview.NewDropDown().SetLabel(" Voce ")
+	ui.classSubDrop = tview.NewDropDown().SetLabel(" (g) Voce ")
 	ui.classSubDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classSubDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classSubDrop.SetListStyles(
@@ -673,7 +673,7 @@ func (ui *tviewUI) build() {
 	})
 	ui.classSubDrop.SetCurrentOption(0)
 
-	ui.classSourceDrop = tview.NewDropDown().SetLabel(" Source ")
+	ui.classSourceDrop = tview.NewDropDown().SetLabel(" (y) Source ")
 	ui.classSourceDrop.SetFieldBackgroundColor(tcell.ColorBlack)
 	ui.classSourceDrop.SetFieldTextColor(tcell.ColorWhite)
 	ui.classSourceDrop.SetListStyles(
@@ -2448,13 +2448,13 @@ func setAllSourceSelection(values []string, selected map[string]bool, enabled bo
 
 func (ui *tviewUI) updateSourceDropLabels() {
 	if ui.monSourceDrop != nil {
-		ui.monSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.monSourceValues, ui.monSourceSelected), len(ui.monSourceValues)))
+		ui.monSourceDrop.SetLabel(fmt.Sprintf(" (y) Source (%d/%d) ", sourceSelectedCount(ui.monSourceValues, ui.monSourceSelected), len(ui.monSourceValues)))
 	}
 	if ui.eqSourceDrop != nil {
-		ui.eqSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.eqSourceValues, ui.eqSourceSelected), len(ui.eqSourceValues)))
+		ui.eqSourceDrop.SetLabel(fmt.Sprintf(" (y) Source (%d/%d) ", sourceSelectedCount(ui.eqSourceValues, ui.eqSourceSelected), len(ui.eqSourceValues)))
 	}
 	if ui.classSourceDrop != nil {
-		ui.classSourceDrop.SetLabel(fmt.Sprintf(" Source (%d/%d) ", sourceSelectedCount(ui.classSourceValues, ui.classSourceSelected), len(ui.classSourceValues)))
+		ui.classSourceDrop.SetLabel(fmt.Sprintf(" (y) Source (%d/%d) ", sourceSelectedCount(ui.classSourceValues, ui.classSourceSelected), len(ui.classSourceValues)))
 	}
 }
 
