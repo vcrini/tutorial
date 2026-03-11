@@ -3688,3 +3688,43 @@
       kind: Passiva
       text: "BKI Ghost Suit (+2 Armor full, +4 Stealth) or Glide Suit (+2 Armor full, gliding), 9mm tactical SMG (Rng 12/24/48, Dmg 2d6, RoF 3, AP 1, suppressed), good knife (Str+d4), grapple gun, bug scanner, laser microphone."
   source: iz
+- name: Undercover Agent
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d8
+    - Fighting d8
+    - Language d8
+    - Notice d8
+    - Persuasion d10
+    - Shooting d8
+    - Stealth d8
+    - Thievery d6
+  parry: "2"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Race: Bioroid; Origin: Agent. Infiltrator, narc, or spy; joins a group to learn secrets and share them; usually does only one major infiltration."
+  motivations_tactics: "Alternate Identity for deep cover; Killer Instinct + Martial Artist for combat; Persuasion d10 for social infiltration."
+  attack:
+    bonus: "Shooting d8"
+    name: 9mm Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Alternate Identity, Charismatic, Killer Instinct, Martial Artist, Streetwise."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Combatant Processor (Edge: Quick), Tissue Fabricator (Self-Repair). Biotech: Organ Sheathing II (+2 Toughness). IDS Tier 3."
+    - name: Psionics (optional zeek)
+      kind: Passiva
+      text: "~1/3 of agents are zeeks. Arcane Background (Psionics), Mentalist. Psionics d8; PP 15. Powers: barrier, empathy, mind link, mind reading, mind wipe."
+    - name: Gear
+      kind: Passiva
+      text: "Armored coat (+2 Armor torso/arms), 9mm pistol (Rng 12/24/48, Dmg 2d6, RoF 1, AP 1), knife (Str+d4), various appropriate items."
+  source: iz
