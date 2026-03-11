@@ -3158,3 +3158,1531 @@
   cost: "100K"
   note: "Taglia 6; Manovra -1; Vel Max 20km/h; Robustezza 15; Equipaggio 2+8"
   source: core
+
+# ---- IZ: ARMATURE MANCANTI ----
+- source: iz
+  name: Abbigliamento Corazzato Assortito
+  category: Armature
+  type: Leggera
+  armor: "+1"
+  min_strength: "d4"
+  weight: "2"
+  cost: "$75/pezzo"
+  note: "Varia (torso, arti, testa)"
+
+- source: iz
+  name: BKI Ghost Suit
+  category: Armature
+  type: Leggera
+  armor: "+2"
+  min_strength: "d4"
+  weight: "10"
+  cost: "$2,350"
+  note: "Torso, braccia, gambe, testa"
+
+- source: iz
+  name: BKI Glide Suit
+  category: Armature
+  type: Leggera
+  armor: "+2"
+  min_strength: "d4"
+  weight: "9"
+  cost: "$950"
+  note: "Torso, braccia, gambe, testa"
+
+- source: iz
+  name: ED Boardroom Suit
+  category: Armature
+  type: Leggera
+  armor: "+2"
+  min_strength: "d4"
+  weight: "4"
+  cost: "$900"
+  note: "Torso, braccia, gambe"
+
+# ---- IZ: EQUIPAGGIAMENTO ----
+- source: iz
+  name: Adesivo
+  category: Equipaggiamento
+  type: Base
+  cost: "$50"
+  weight: "–"
+  note: "Solleva 2.000 libbre, si solidifica in 30 secondi"
+
+- source: iz
+  name: Solvente Adesivo
+  category: Equipaggiamento
+  type: Base
+  cost: "$50"
+  weight: "–"
+  note: "Rimuove adesivo in 60 secondi"
+
+- source: iz
+  name: Cartucciera
+  category: Equipaggiamento
+  type: Base
+  cost: "$25"
+  weight: "1.5"
+  note: "Sei oggetti"
+
+- source: iz
+  name: Binocolo
+  category: Equipaggiamento
+  type: Base
+  cost: "$25"
+  weight: "1"
+  note: "Ingrandimento 20x"
+
+- source: iz
+  name: Bussola
+  category: Equipaggiamento
+  type: Base
+  cost: "$10"
+  weight: "0.5"
+
+- source: iz
+  name: Estintore
+  category: Equipaggiamento
+  type: Base
+  cost: "$75"
+  weight: "10"
+  note: "+2 Athletics per combattere il fuoco, 3 cariche"
+
+- source: iz
+  name: Tuta Resistente al Fuoco
+  category: Equipaggiamento
+  type: Base
+  cost: "$75"
+  weight: "8"
+  note: "+6 Armatura contro il fuoco"
+
+- source: iz
+  name: Pistola a Razzi
+  category: Equipaggiamento
+  type: Base
+  cost: "$25"
+  weight: "2"
+  note: "Singolo colpo; arma improvvisata Gittata 5/10/20, Danni 1d6, fuoco"
+
+- source: iz
+  name: Razzo Segnalatore
+  category: Equipaggiamento
+  type: Base
+  cost: "$50/5"
+  weight: "1/5"
+
+- source: iz
+  name: Razzo Fumogeno
+  category: Equipaggiamento
+  type: Base
+  cost: "$75/5"
+  weight: "1/5"
+
+- source: iz
+  name: Razzo Luce Stellare
+  category: Equipaggiamento
+  type: Base
+  cost: "$375/5"
+  weight: "1/5"
+  note: "Illuminazione 200 yarde con paracadute, 60 secondi"
+
+- source: iz
+  name: Maschera Antigas
+  category: Equipaggiamento
+  type: Base
+  cost: "$120"
+  weight: "1"
+
+- source: iz
+  name: Tuta Mimetismo
+  category: Equipaggiamento
+  type: Base
+  cost: "$375"
+  weight: "12"
+  note: "Nell'ambiente corretto +4 Furtività; Passo max 2"
+
+- source: iz
+  name: Bastone Luminoso
+  category: Equipaggiamento
+  type: Base
+  cost: "$5/10"
+  weight: "1/10"
+  note: "Luce fioca LBT, 30 minuti di durata"
+
+- source: iz
+  name: Pistola Rampino
+  category: Equipaggiamento
+  type: Base
+  cost: "$250"
+  weight: "10"
+  note: "30 metri di fune, portata 500 libbre. Gittata 5/10/20"
+
+- source: iz
+  name: Tuta HazMat
+  category: Equipaggiamento
+  type: Base
+  cost: "$1,200"
+  weight: "32"
+  note: "Ambiente sigillato, 5 minuti d'aria; protegge da rischi ambientali"
+
+- source: iz
+  name: Cassaforte
+  category: Equipaggiamento
+  type: Base
+  cost: "$200"
+  weight: "15"
+  note: "Dimensione scarpa. Durezza 10, Furto –2"
+
+- source: iz
+  name: Metal Detector
+  category: Equipaggiamento
+  type: Base
+  cost: "$200"
+  weight: "8"
+  note: "Raggio di rilevamento 1 yarda"
+
+- source: iz
+  name: Paracadute
+  category: Equipaggiamento
+  type: Base
+  cost: "$400"
+  weight: "20"
+  note: "Caduta min 50' (100 yarde); Athletics per atterrare, danni 2d6+2 in caso di fallimento"
+
+- source: iz
+  name: Bombola Portatile
+  category: Equipaggiamento
+  type: Base
+  cost: "$50"
+  weight: "1"
+  note: "5 minuti di aria"
+
+- source: iz
+  name: Fascia Rad
+  category: Equipaggiamento
+  type: Base
+  cost: "$150"
+  weight: "0.25"
+  note: "Dosimetro radiazioni, raggio 4'' (8 yarde)"
+
+- source: iz
+  name: Rilevatore di Radiazioni
+  category: Equipaggiamento
+  type: Base
+  cost: "$300"
+  weight: "2"
+  note: "Direzione e forza, gittata 100'' (200 yarde)"
+
+- source: iz
+  name: Imbracatura da Rappel
+  category: Equipaggiamento
+  type: Base
+  cost: "$150"
+  weight: "5"
+
+- source: iz
+  name: Attrezzatura SCUBA
+  category: Equipaggiamento
+  type: Base
+  cost: "$1,000"
+  weight: "10"
+  note: "60 minuti sott'acqua"
+
+- source: iz
+  name: Ripetitore di Segnale
+  category: Equipaggiamento
+  type: Comunicazioni
+  cost: "$500"
+  weight: "3"
+  note: "Amplifica segnali fino a 5km"
+
+- source: iz
+  name: Radio Tattica
+  category: Equipaggiamento
+  type: Comunicazioni
+  cost: "$500"
+  weight: "1"
+  note: "Gittata 2km, crittografia configurabile (–4 Electronics per decrittare)"
+
+- source: iz
+  name: Auricolare Tattico
+  category: Equipaggiamento
+  type: Comunicazioni
+  cost: "$50"
+  weight: "0.25"
+
+- source: iz
+  name: Microfono Tattico Sussurrante
+  category: Equipaggiamento
+  type: Comunicazioni
+  cost: "$150"
+  weight: "0.25"
+  note: "Comunicazione sub-vocale"
+
+- source: iz
+  name: Proiettore Olografico
+  category: Equipaggiamento
+  type: Elettronica
+  cost: "$1,000"
+  weight: "1"
+  note: "Proietta ologramma 3D fino a 3 yarde"
+
+- source: iz
+  name: RAT (Remote Access Trojan)
+  category: Equipaggiamento
+  type: Elettronica
+  cost: "$2,500"
+  weight: "–"
+  note: "+1 Hacking (Operate Device). Tre usi"
+
+- source: iz
+  name: Display TAP
+  category: Equipaggiamento
+  type: Elettronica
+  cost: "$350"
+  weight: "1"
+  note: "Schermo da 6 pollici collegato al TAP"
+
+- source: iz
+  name: Esplosivo Grado Costruzione
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$200"
+  weight: "1"
+  note: "Danni 3d6, PA 6, Heavy Weapon, Small Blast Template. Fino a 10 mattoni"
+
+- source: iz
+  name: Esplosivo Grado Militare
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$1,800"
+  weight: "1"
+  note: "Danni 4d6, PA 8, Heavy Weapon, Small Blast Template. Fino a 12 mattoni"
+
+- source: iz
+  name: Detonatore di Rete
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$75"
+  weight: "0.25"
+  note: "Attivabile da qualsiasi luogo con accesso alla rete, hackerabile"
+
+- source: iz
+  name: Detonatore di Prossimità
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$100"
+  weight: "0.25"
+  note: "Sensore di movimento (infrarossi/lidar/EM), scansione 5'' (10 yarde)"
+
+- source: iz
+  name: Detonatore Radio
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$50"
+  weight: "0.25"
+  note: "Attivabile fino a 5km (max 1km in ambiente urbano)"
+
+- source: iz
+  name: Detonatore a Timer
+  category: Equipaggiamento
+  type: Esplosivi
+  cost: "$25"
+  weight: "0.25"
+  note: "Programmabile da 1 minuto a 24 ore"
+
+- source: iz
+  name: M3 Autodoc
+  category: Equipaggiamento
+  type: Medico
+  cost: "$2,500/grado"
+  weight: "30"
+  note: "IA medica limitata. Gradi D (Guarigione d4) – A (Guarigione d10)"
+
+- source: iz
+  name: M3 Fascia Diagnostica Medica
+  category: Equipaggiamento
+  type: Medico
+  cost: "$500"
+  weight: "0.1"
+  note: "Sensore da polso. –1 penalità circostanziale alla Guarigione se collegato all'Autodoc"
+
+- source: iz
+  name: Rigeneratore Cellulare Nanitico
+  category: Equipaggiamento
+  type: Medico
+  cost: "$50,000"
+  weight: "250"
+  note: "Guarigione Naturale ogni giorno. Max 4 utenti. 8 ore per elaborare il DNA"
+
+- source: iz
+  name: Inalatore Stimolante
+  category: Equipaggiamento
+  type: Medico
+  cost: "$25"
+  weight: "1/10"
+  note: "Ignora 1 livello di Stanchezza per un'ora"
+
+- source: iz
+  name: Stabilizzatore Trauma
+  category: Equipaggiamento
+  type: Medico
+  cost: "$1,500"
+  weight: "1"
+  note: "Paziente in Emorragia tira Vigore; successo = stabile. Ricarica $300"
+
+- source: iz
+  name: Cerotto TRIAGE
+  category: Equipaggiamento
+  type: Medico
+  cost: "$50"
+  weight: "1/3"
+  note: "Ignora 1 Ferita per un'ora (non guarisce)"
+
+- source: iz
+  name: Microspia
+  category: Equipaggiamento
+  type: Sorveglianza
+  cost: "$150"
+  weight: "–"
+  note: "Tiny, adesivo. Durata batteria 12 ore attivo, 2 settimane in standby"
+
+- source: iz
+  name: IFF Tag
+  category: Equipaggiamento
+  type: Sorveglianza
+  cost: "$150"
+  weight: "1/10"
+  note: "Proietta icona virtuale visibile dai computer collegati. Mostra stato salute alleati"
+
+- source: iz
+  name: Microfono Laser
+  category: Equipaggiamento
+  type: Sorveglianza
+  cost: "$200"
+  weight: "3"
+  note: "Rilevamento vibrazionale superficiale fino a 200 yarde, richiede linea di vista"
+
+- source: iz
+  name: Sensore Ultrasonico
+  category: Equipaggiamento
+  type: Sorveglianza
+  cost: "$3,500"
+  weight: "5"
+  note: "SONAR. Rileva occupanti in area 20x6x6 yarde. +4 Notice in area"
+
+- source: iz
+  name: Volo Commerciale
+  category: Servizi
+  type: Trasporto
+  cost: "$1/Miglio"
+
+- source: iz
+  name: Volo Charter
+  category: Servizi
+  type: Trasporto
+  cost: "$5/Miglio"
+
+- source: iz
+  name: Taxi
+  category: Servizi
+  type: Trasporto
+  cost: "$3/Miglio"
+
+- source: iz
+  name: Trasporto Pubblico
+  category: Servizi
+  type: Trasporto
+  cost: "$1/3 Miglia"
+
+- source: iz
+  name: Limousine
+  category: Servizi
+  type: Trasporto
+  cost: "$10/Miglio"
+
+- source: iz
+  name: Birra Domestica
+  category: Servizi
+  type: Bevande
+  cost: "$3"
+
+- source: iz
+  name: Birra d'Importazione
+  category: Servizi
+  type: Bevande
+  cost: "$5"
+
+- source: iz
+  name: Birra Speciale
+  category: Servizi
+  type: Bevande
+  cost: "$8"
+
+- source: iz
+  name: Liquore Economico
+  category: Servizi
+  type: Bevande
+  cost: "$5"
+
+- source: iz
+  name: Liquore di Qualità
+  category: Servizi
+  type: Bevande
+  cost: "$10"
+
+- source: iz
+  name: Liquore Top di Gamma
+  category: Servizi
+  type: Bevande
+  cost: "$25"
+
+- source: iz
+  name: Hotel Capsule/Economico
+  category: Servizi
+  type: Alloggio
+  cost: "$25/notte"
+
+- source: iz
+  name: Motel Squallido
+  category: Servizi
+  type: Alloggio
+  cost: "$75/notte"
+
+- source: iz
+  name: Buon Hotel
+  category: Servizi
+  type: Alloggio
+  cost: "$150/notte"
+
+- source: iz
+  name: Hotel 5 Stelle
+  category: Servizi
+  type: Alloggio
+  cost: "$350+/notte"
+
+- source: iz
+  name: Casupola/Alloggio LIFEVAC
+  category: Servizi
+  type: Alloggio
+  cost: "$800/mese/camera"
+
+- source: iz
+  name: Appartamento
+  category: Servizi
+  type: Alloggio
+  cost: "$1,250/mese/camera"
+
+- source: iz
+  name: Condominio o Casa Spaziosa
+  category: Servizi
+  type: Alloggio
+  cost: "$10,000+/mese"
+
+- source: iz
+  name: Clinica Non Autorizzata (Ambulatorio)
+  category: Servizi
+  type: Servizi Medici
+  cost: "$700/livello ferita"
+  note: "Tiri Guarigione Naturale normali"
+
+- source: iz
+  name: Clinica Non Autorizzata (Degenza)
+  category: Servizi
+  type: Servizi Medici
+  cost: "$1,000/livello ferita"
+  note: "Tiri Guarigione Naturale normali"
+
+- source: iz
+  name: Ospedale Comunitario
+  category: Servizi
+  type: Servizi Medici
+  cost: "$4,000/giorno"
+  note: "Rilancio tiri Guarigione Naturale"
+
+- source: iz
+  name: Ospedale Corporativo
+  category: Servizi
+  type: Servizi Medici
+  cost: "$10,000/giorno"
+  note: "Guarigione Naturale ogni 3 giorni (Fast Healer), rilancio tiri Guarigione Naturale"
+
+- source: iz
+  name: Unità di Terapia Intensiva
+  category: Servizi
+  type: Servizi Medici
+  cost: "$15,000"
+  note: "Fast Healer e rilancio Guarigione Naturale"
+
+# ---- IZ: AUGMENT BIOTECH ----
+- source: iz
+  name: Better-U Quadriceps Enhancement
+  category: Augment
+  type: Biotech
+  cost: "$1,000"
+  ap: "2"
+  note: "Strain 2. +2 Passo, aumenta dado Corsa di un passo"
+
+- source: iz
+  name: Better-U Self-Actualization Package
+  category: Augment
+  type: Biotech
+  cost: "$3,000"
+  ap: "6"
+  note: "Strain 6. Edge Attraente, +1 dado Agilità e Vigore"
+
+- source: iz
+  name: Chimera Cross-Lobe Synaptic Pairing
+  category: Augment
+  type: Biotech
+  cost: "$2,000"
+  ap: "2"
+  note: "Strain 2. Edge Ambidestro"
+
+- source: iz
+  name: Chimera Forca Maxima Treatment
+  category: Augment
+  type: Biotech
+  cost: "$1,000/livello"
+  ap: "2/livello"
+  note: "Strain 2/livello. +1 passo dado Forza per livello"
+
+- source: iz
+  name: Chimera Gnosys Augmentation
+  category: Augment
+  type: Biotech
+  cost: "$3,000"
+  ap: "6"
+  note: "Strain 6. Aumenta Intelligenza di tre passi"
+
+- source: iz
+  name: Chimera Razor's Edge Bone Sharpening
+  category: Augment
+  type: Biotech
+  cost: "$500/livello"
+  ap: "1/livello"
+  note: "Strain 1/livello (max 4). +1 danni senz'armi per livello"
+
+- source: iz
+  name: Chimera Synaptic Anti-Catalyst
+  category: Augment
+  type: Biotech
+  cost: "$1,000"
+  ap: "2"
+  note: "Strain 2. +2 a un'abilità a scelta"
+
+- source: iz
+  name: Octagon Inc. Bone Sculpting Treatment
+  category: Augment
+  type: Biotech
+  cost: "$500 o $1,000"
+  ap: "1 o 2"
+  note: "Strain 1 o 2. +1 o +2 passi Persuasione"
+
+- source: iz
+  name: Octagon Inc. Mass Impact Treatment
+  category: Augment
+  type: Biotech
+  cost: "$1,500"
+  ap: "3"
+  note: "Strain 3. +3 Durezza"
+
+- source: iz
+  name: Octagon Inc. Regenerative Tissue Treatment
+  category: Augment
+  type: Biotech
+  cost: "$2,000"
+  ap: "4"
+  note: "Strain 4. +2 Durezza, Guarigione Naturale ogni giorno"
+
+# ---- IZ: AUGMENT CHEMTECH ----
+- source: iz
+  name: Ceilteach Leon Emergency Adrenaline Patch
+  category: Augment
+  type: Chemtech
+  cost: "$200/dose"
+  ap: "2/dose"
+  note: "Strain 2/dose. Edge Berserker"
+
+- source: iz
+  name: "Doc Pango's Smash and Burn"
+  category: Augment
+  type: Chemtech
+  cost: "$50/dose"
+  ap: "4/dose"
+  note: "Strain 4/dose (Gutterware 8). Edge Bruto/Picchiatore"
+
+- source: iz
+  name: "Emperor Pharmaceuticals Boostah!"
+  category: Augment
+  type: Chemtech
+  cost: "$200/dose"
+  ap: "2/dose"
+  note: "Strain 2/dose. Edge Rapido/Mente Lucida"
+
+- source: iz
+  name: Emperor Pharmaceuticals Membrane Oxygenator
+  category: Augment
+  type: Chemtech
+  cost: "$200/dose"
+  ap: "2/dose"
+  note: "Strain 2/dose. Non può annegare, nuota a Passo pieno"
+
+- source: iz
+  name: Savage Skinz Jellyhanz
+  category: Augment
+  type: Chemtech
+  cost: "$300/dose"
+  ap: "3/dose"
+  note: "Strain 3/dose. Touch Attack: bersaglio tira Vigore o Veleno Paralizzante"
+
+- source: iz
+  name: X-Factor
+  category: Augment
+  type: Chemtech
+  cost: "$1,000/dose"
+  ap: "Speciale"
+  note: "Strain speciale. Arcane Background (Dotato) temporaneo con abilità Focus"
+
+# ---- IZ: AUGMENT CYBERTECH ----
+- source: iz
+  name: Acme LMS Knowcomp
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. Microcomputer TAP-compatibile, fornisce d6 in un'abilità"
+
+- source: iz
+  name: Acme LMS Systems Support Computer
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. +2 Hacking, specializzazioni Counter Hacking e Network Security"
+
+- source: iz
+  name: AGA Gunhand
+  category: Augment
+  type: Cybertech
+  cost: "$1,800"
+  ap: "3"
+  note: "Strain 3. Pistola integrata (Gittata 15/30/60, 2d8, PA 4, CdT 1, Colpi 30, Forza min d6)"
+
+- source: iz
+  name: AGA IBIS Rank 1
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. Integrated Battle Information System: Edge Gun Fu"
+
+- source: iz
+  name: AGA IBIS Rank 2
+  category: Augment
+  type: Cybertech
+  cost: "$3,000"
+  ap: "5"
+  note: "Strain 5. Aggiunge Edge Block a Gun Fu"
+
+- source: iz
+  name: Bastion FloJo Cyber Legs
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. +4 Passo, +2 passi dado Corsa"
+
+- source: iz
+  name: Bastion Self Defense Cyberlimbs
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. Edge First Strike"
+
+- source: iz
+  name: Bastion Hi Power Self Defense Cyberlimbs
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. Edge First Strike e Martial Artist"
+
+- source: iz
+  name: Bastion Heavy Cyberarms
+  category: Augment
+  type: Cybertech
+  cost: "$4,800"
+  ap: "8"
+  note: "Strain 8. +1 passo dado Forza (attuale e massimo), Edge Steady Hands, Rock and Roll!, Rapid Fire"
+
+- source: iz
+  name: Benkei Ashigaru Gunhand
+  category: Augment
+  type: Cybertech
+  cost: "$3,600 o $6,000"
+  ap: "6 o 10"
+  note: "Strain 6 o 10. Edge Rapid Fire e Rock and Roll! (modello Shohei: anche Improved Rapid Fire)"
+
+- source: iz
+  name: Benkei BSS Sarashi
+  category: Augment
+  type: Cybertech
+  cost: "$600/livello"
+  ap: "1/livello (max 3)"
+  note: "Strain 1/livello (max 3). +2 Armatura/livello (solo torso)"
+
+- source: iz
+  name: Berger-Suisse Ocular Implant
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. Visione Infrarossa e Visione Notturna"
+
+- source: iz
+  name: Gxarha Izibhamu Smartgun System
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. +2 ai tiri Sparare con l'arma designata"
+
+- source: iz
+  name: KCD Battlemaster Cyberarm
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. Vano segreto (–2 Notice), +1 passo dado Forza, micro-lanciarazzi (Gittata 15/30/60, 2d8, PA 4, CdT 1, Colpi 4)"
+
+- source: iz
+  name: KCD Cobra Venom System
+  category: Augment
+  type: Cybertech
+  cost: "$3,600"
+  ap: "6"
+  note: "Strain 6. Zanne retrattili con veleno letale (Str+1d6, –2 Notice, ogni uso = 1 Stanchezza)"
+
+- source: iz
+  name: KCD Cyclone Injection System
+  category: Augment
+  type: Cybertech
+  cost: "$600/iniettore"
+  ap: "1 + 1/iniettore"
+  note: "Strain 1+1/iniettore (max 3). Riduce l'uso di Chemtech da un turno a un'azione"
+
+- source: iz
+  name: KCD Dermal Holographic Sheath
+  category: Augment
+  type: Cybertech
+  cost: "$3,000"
+  ap: "5"
+  note: "Strain 5. +4 Furtività quando attivo, +2 Armatura"
+
+- source: iz
+  name: KCD Dreadnaught
+  category: Augment
+  type: Cybertech
+  cost: "$4,200"
+  ap: "7"
+  note: "Strain 7. +1 passo dado Vigore (attuale e massimo), +2 Armatura, +2 Durezza, filtri (+4 vs tossine)"
+
+- source: iz
+  name: KCD Iron Assassin Arm Blade
+  category: Augment
+  type: Cybertech
+  cost: "$3,600"
+  ap: "6"
+  note: "Strain 6. Spada lunga retrattile (Str+d8+2, PA 2), –2 Notice per individuarla"
+
+- source: iz
+  name: KCD Kenjutsu Cyber Arm
+  category: Augment
+  type: Cybertech
+  cost: "$1,200"
+  ap: "2"
+  note: "Strain 2. +1 passo dado Combattimento, specializzazione Spade"
+
+- source: iz
+  name: KCD Mnemonic Mule Data Carrier
+  category: Augment
+  type: Cybertech
+  cost: "$600 base"
+  ap: "1"
+  note: "Strain 1. Archiviazione dati crittografati illimitata. IDS incluso (Tier 2, aggiornabile)"
+
+- source: iz
+  name: KCD Shikanoko Visor
+  category: Augment
+  type: Cybertech
+  cost: "$1,800"
+  ap: "3"
+  note: "Strain 3. +1 passo dado Notice, Edge Danger Sense"
+
+- source: iz
+  name: "KCD Sin'ya Neurotactical Wetware"
+  category: Augment
+  type: Cybertech
+  cost: "$3,000"
+  ap: "5"
+  note: "Strain 5. Edge Counterattack e First Strike"
+
+- source: iz
+  name: Masamune Systems Sanso
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. Tre lame da 90cm nelle braccia (Str+d6+1). Upgrades aumentano danni e PA"
+
+- source: iz
+  name: Monkey Mask Gecko Hands
+  category: Augment
+  type: Cybertech
+  cost: "$600"
+  ap: "1"
+  note: "Strain 1. Arrampicata su superfici verticali a Passo pieno"
+
+- source: iz
+  name: Parque Electronica Tarantula Drone Hand
+  category: Augment
+  type: Cybertech
+  cost: "$2,400"
+  ap: "4"
+  note: "Strain 4. La mano si stacca e diventa un drone Extra autonomo con camera"
+
+- source: iz
+  name: Thur Cyberbionics Kurat Sala Full Body Package
+  category: Augment
+  type: Cybertech
+  cost: "$4,200"
+  ap: "7"
+  note: "Strain 7. +1 passo dado Athletics e Vigore, raddoppia salto, +2 Passo, +1 passo dado Corsa"
+
+# ---- IZ: AUGMENT GENETECH ----
+- source: iz
+  name: Chimera Pisces Gills
+  category: Augment
+  type: Genetech
+  cost: "$2,000"
+  ap: "2"
+  note: "Strain 2. Respirazione subacquea, nuota a Passo pieno"
+
+- source: iz
+  name: Oboroten Manufacturing Volkolak Treatment
+  category: Augment
+  type: Genetech
+  cost: "$8,000"
+  ap: "8"
+  note: "Strain 8. Trattamento Lupo Mannaro: morso (Str+d4), visione notturna, auto-riparazione, +Forza, +Vigore"
+
+- source: iz
+  name: Savage Skinz Komodo Kommando Osteoderm Implants
+  category: Augment
+  type: Genetech
+  cost: "$1,000"
+  ap: "1"
+  note: "Strain 1. +2 Armatura (si cumula con armature indossate)"
+
+- source: iz
+  name: "Savage Skinz Pawz 'N' Clawz"
+  category: Augment
+  type: Genetech
+  cost: "$1,000-$4,000"
+  ap: "1-4"
+  note: "Strain 1-4. Artigli non retrattili (Str+d4) o retrattili (Str+d6)"
+
+- source: iz
+  name: "Savage Skinz Cat's Eyes"
+  category: Augment
+  type: Genetech
+  cost: "$1,000"
+  ap: "1"
+  note: "Strain 1. Visione Notturna"
+
+# ---- IZ: AUGMENT NANOTECH ----
+- source: iz
+  name: AGA Cardsharp Blade
+  category: Augment
+  type: Nanotech
+  cost: "$20,000"
+  ap: "4"
+  note: "Strain 4. Spina nanotica (Str+d4, PA 2)"
+
+- source: iz
+  name: Benkei Bionics Dokuhebi Digital System
+  category: Augment
+  type: Nanotech
+  cost: "$15,000"
+  ap: "3"
+  note: "Strain 3. Colonia naniti nelle dita: veleno ematotossico letale via Touch Attack"
+
+- source: iz
+  name: Benkei Bionics Medical Nanites
+  category: Augment
+  type: Nanotech
+  cost: "$10,000"
+  ap: "2"
+  note: "Strain 2. Guarigione Naturale ogni giorno (o 16 ore con Fast Healer)"
+
+- source: iz
+  name: KCD Kohei Trans-Skeletal Drysuit
+  category: Augment
+  type: Nanotech
+  cost: "$15,000"
+  ap: "3"
+  note: "Strain 3. Quando attivato i nanobot formano una corazza (+6 Armatura)"
+
+- source: iz
+  name: KCD Oyumi Infiltrator
+  category: Augment
+  type: Nanotech
+  cost: "$25,000"
+  ap: "5"
+  note: "Strain 5. Arma flechette (Gittata 10/20/40, 2d6, CdT 3, PA 4, Colpi 40)"
+
+# ---- IZ: PISTOLE ----
+- source: iz
+  name: AGA Prophet (9mm)
+  category: Armi da Fuoco
+  type: Pistola
+  range: "12/24/48"
+  damage: "2d6+1"
+  ap: "2"
+  rof: "1"
+  shots: "13"
+  min_strength: "d4"
+  weight: "2"
+  cost: "$500"
+
+- source: iz
+  name: AGA Rhino-10 Heavy Pistol (.50)
+  category: Armi da Fuoco
+  type: Pistola
+  range: "12/24/48"
+  damage: "2d8+1"
+  ap: "3"
+  rof: "1"
+  shots: "12"
+  min_strength: "d6"
+  weight: "5"
+  cost: "$875"
+  note: "Conceal +1"
+
+- source: iz
+  name: ME Nightlife Stun Pistol
+  category: Armi da Fuoco
+  type: Pistola
+  range: "10/20/40"
+  damage: "Speciale"
+  rof: "1"
+  shots: "10"
+  min_strength: "d4"
+  weight: "3"
+  cost: "$400"
+  note: "Stun"
+
+- source: iz
+  name: RS 007 Whisper Palm Pistol (9mm)
+  category: Armi da Fuoco
+  type: Pistola
+  range: "12/24/48"
+  damage: "2d6"
+  ap: "0"
+  rof: "1"
+  shots: "6"
+  min_strength: "d4"
+  weight: "2"
+  cost: "$425"
+  note: "Conceal -1/-3. Collapsible, Non-Ferrous Construction, Silencer"
+
+- source: iz
+  name: RT 328t Vengence (9mm)
+  category: Armi da Fuoco
+  type: Pistola
+  range: "12/24/48"
+  damage: "2d6"
+  ap: "1"
+  rof: "1"
+  shots: "12"
+  min_strength: "d4"
+  weight: "2"
+  cost: "$455"
+  note: "Flash Suppressor, Silencer, Tactical Rails, Three-Round Burst"
+
+# ---- IZ: MITRA ----
+- source: iz
+  name: AGA Hand of Caine (9mm)
+  category: Armi da Fuoco
+  type: Mitra
+  range: "12/24/48"
+  damage: "2d6+1"
+  ap: "2"
+  rof: "3"
+  shots: "30"
+  min_strength: "d6"
+  weight: "5"
+  cost: "$625"
+  note: "Conceal +1. CQB"
+
+- source: iz
+  name: BKI Peltast (9mm)
+  category: Armi da Fuoco
+  type: Mitra
+  range: "15/30/60"
+  damage: "2d6"
+  ap: "1"
+  rof: "3"
+  shots: "30"
+  min_strength: "d4"
+  weight: "7"
+  cost: "$550"
+  note: "Conceal +2. Laser Sight, CQB, Recoil Compensation, Silencer, Tactical Rails, Three-Round Burst, Two Hands"
+
+- source: iz
+  name: RT 44t Scythe (9mm)
+  category: Armi da Fuoco
+  type: Mitra
+  range: "12/24/48"
+  damage: "2d6"
+  ap: "1"
+  rof: "3"
+  shots: "30"
+  min_strength: "d6"
+  weight: "6"
+  cost: "$575"
+  note: "Conceal +1. Biometric Safety, CQB, Recoil Compensation, Tactical Rails"
+
+- source: iz
+  name: SRC Daisy Chain (Gyroc)
+  category: Armi da Fuoco
+  type: Mitra
+  range: "15/30/60"
+  damage: "3d6"
+  ap: "4"
+  rof: "2"
+  shots: "30"
+  min_strength: "d8"
+  weight: "8"
+  cost: "$1,125"
+  note: "Conceal +3. Heavy Weapon, Two Hands"
+
+# ---- IZ: FUCILI A POMPA ----
+- source: iz
+  name: PD Noir Confident (12g)
+  category: Armi da Fuoco
+  type: Fucile a Pompa
+  range: "12/24/48"
+  damage: "1-3d6"
+  ap: "0"
+  rof: "1"
+  shots: "12"
+  min_strength: "d6"
+  weight: "7"
+  cost: "$425"
+  note: "Conceal +4"
+
+- source: iz
+  name: RS 314A3 Utility Gun (12g)
+  category: Armi da Fuoco
+  type: Fucile a Pompa
+  range: "12/24/48"
+  damage: "1-3d6"
+  ap: "0"
+  rof: "1"
+  shots: "6"
+  min_strength: "d6"
+  weight: "6"
+  cost: "$400"
+  note: "Conceal +4/+2. Collapsible, Flash Compensator, Tactical Rails"
+
+- source: iz
+  name: RS 817 Riot Control (12g)
+  category: Armi da Fuoco
+  type: Fucile a Pompa
+  range: "12/24/48"
+  damage: "1-3d6"
+  ap: "0"
+  rof: "2"
+  shots: "20"
+  min_strength: "d6"
+  weight: "9"
+  cost: "$625"
+  note: "Conceal +4. Flash Compensator, Foregrip, Tactical Rails"
+
+- source: iz
+  name: UP Blinding Truth
+  category: Armi da Fuoco
+  type: Fucile a Pompa
+  range: "12/24/48"
+  damage: "Speciale"
+  ap: "0"
+  rof: "1"
+  shots: "15"
+  min_strength: "d4"
+  weight: "6"
+  cost: "$415"
+  note: "Conceal +4. Flash"
+
+- source: iz
+  name: WT Road Warrior (12g)
+  category: Armi da Fuoco
+  type: Fucile a Pompa
+  range: "6/12/24"
+  damage: "1-3d6"
+  ap: "0"
+  rof: "1"
+  shots: "6"
+  min_strength: "d6"
+  weight: "6"
+  cost: "$425"
+  note: "Conceal +2. CQB, Double Barrel, One Hand"
+
+# ---- IZ: FUCILI ----
+- source: iz
+  name: AGA Hand of God (MAW)
+  category: Armi da Fuoco
+  type: Fucile
+  range: "75/150/300"
+  damage: "2d10"
+  ap: "6"
+  rof: "1"
+  shots: "4"
+  min_strength: "d8"
+  weight: "10"
+  cost: "$1,630"
+  note: "Conceal +5. MAW, Scope, Snapfire, Two Hands"
+
+- source: iz
+  name: BKI Penetrator (.50)
+  category: Armi da Fuoco
+  type: Fucile
+  range: "36/72/144"
+  damage: "2d10"
+  ap: "4"
+  rof: "1"
+  shots: "8"
+  min_strength: "d10"
+  weight: "9"
+  cost: "$1,050"
+  note: "Conceal +5. Bipod, Scope, Snapfire, Two Hands"
+
+- source: iz
+  name: RT 13c Jupiter (7.62mm)
+  category: Armi da Fuoco
+  type: Fucile
+  range: "24/48/96"
+  damage: "2d8"
+  ap: "2"
+  rof: "1"
+  shots: "10"
+  min_strength: "d6"
+  weight: "9"
+  cost: "$725"
+  note: "Conceal +5. Bipod, Flash Suppressor, Low-light Scope, Snapfire, Two Hands"
+
+- source: iz
+  name: SRC Trebuchet (Gyroc)
+  category: Armi da Fuoco
+  type: Fucile
+  range: "30/60/120"
+  damage: "3d6"
+  ap: "4"
+  rof: "1"
+  shots: "6"
+  min_strength: "d8"
+  weight: "10"
+  cost: "$1,575"
+  note: "Conceal +5. Heavy Weapon, Scope, Snapfire, Two Hands"
+
+# ---- IZ: FUCILI D'ASSALTO ----
+- source: iz
+  name: AGA Rapture (7.62mm)
+  category: Armi da Fuoco
+  type: Fucile d'Assalto
+  range: "24/48/96"
+  damage: "2d8+2"
+  ap: "3"
+  rof: "3"
+  shots: "24"
+  min_strength: "d6"
+  weight: "8"
+  cost: "$1,925"
+  note: "Conceal +4. Two Hands"
+
+- source: iz
+  name: RS M209 Heavy Threat (.50)
+  category: Armi da Fuoco
+  type: Fucile d'Assalto
+  range: "30/60/120"
+  damage: "2d10"
+  ap: "4"
+  rof: "2"
+  shots: "20"
+  min_strength: "d10"
+  weight: "22"
+  cost: "$2,250"
+  note: "Conceal +5. Heavy Weapon, Two Hands"
+
+- source: iz
+  name: RT 240c Renegade (5.56mm)
+  category: Armi da Fuoco
+  type: Fucile d'Assalto
+  range: "20/40/80"
+  damage: "2d8"
+  ap: "2"
+  rof: "3"
+  shots: "30"
+  min_strength: "d6"
+  weight: "6"
+  cost: "$2,050"
+  note: "Conceal +3. CQB, Recoil Compensation, Two Hands"
+
+- source: iz
+  name: WT PR Nightmare (7.62mm)
+  category: Armi da Fuoco
+  type: Fucile d'Assalto
+  range: "24/48/96"
+  damage: "2d8+1"
+  ap: "2"
+  rof: "3"
+  shots: "30"
+  min_strength: "d6"
+  weight: "7"
+  cost: "$1,900"
+  note: "Conceal +4. Two Hands"
+
+# ---- IZ: MITRAGLIATRICI ----
+- source: iz
+  name: AGA Wrath of God Minigun (7.62mm)
+  category: Armi da Fuoco
+  type: Mitragliatrice
+  range: "24/48/96"
+  damage: "2d8+2"
+  ap: "3"
+  rof: "5"
+  shots: "140"
+  min_strength: "d10"
+  weight: "30"
+  cost: "$5,500"
+  note: "Minimum RoF 2, Reload 2, Snapfire. Two Hands"
+
+- source: iz
+  name: BKI Partisan (.50)
+  category: Armi da Fuoco
+  type: Mitragliatrice
+  range: "30/60/120"
+  damage: "2d10"
+  ap: "4"
+  rof: "3"
+  shots: "100"
+  min_strength: "d10"
+  weight: "28"
+  cost: "$6,500"
+  note: "Conceal +6. Bipod, Heavy Weapon, Laser Sight, Recoil Compensation, Reload 2, Two Hands"
+
+- source: iz
+  name: RT 360s Squad Support Weapon (5.56mm)
+  category: Armi da Fuoco
+  type: Mitragliatrice
+  range: "30/60/120"
+  damage: "2d8"
+  ap: "2"
+  rof: "4"
+  shots: "200"
+  min_strength: "d8"
+  weight: "18"
+  cost: "$6,600"
+  note: "Conceal +6. Bipod, Flash Suppressor, Recoil Compensation, Reload 2, Snapfire, Sound Suppressor, Two Hands"
+
+- source: iz
+  name: SO Boregan Machinegun (7.62mm)
+  category: Armi da Fuoco
+  type: Mitragliatrice
+  range: "30/60/120"
+  damage: "2d8+1"
+  ap: "2"
+  rof: "3"
+  shots: "100"
+  min_strength: "d8"
+  weight: "24"
+  cost: "$6,250"
+  note: "Conceal +6. Recoil Compensation, Reload 2, Snapfire, Two Hands"
+
+# ---- IZ: CANNONI D'ASSALTO ----
+- source: iz
+  name: BKI Battering Ram (40mm)
+  category: Armi Pesanti
+  type: Cannone d'Assalto
+  range: "20/40/80"
+  damage: "4d6"
+  ap: "5"
+  rof: "1"
+  shots: "1"
+  min_strength: "d8"
+  weight: "18"
+  cost: "$16,750"
+  note: "Heavy Weapon, Laser Sight, Snapfire, Two Hands"
+
+- source: iz
+  name: SRC 5000 Bunker Buster (30mm)
+  category: Armi Pesanti
+  type: Cannone d'Assalto
+  range: "48/96/192"
+  damage: "3d8+2"
+  ap: "6"
+  rof: "1"
+  shots: "4"
+  min_strength: "d10"
+  weight: "35"
+  cost: "$17,500"
+  note: "Heavy Weapon, Low-light Scope, Snapfire, Two Hands"
+
+- source: iz
+  name: WT Purger (20mm)
+  category: Armi Pesanti
+  type: Cannone d'Assalto
+  range: "24/48/96"
+  damage: "2d12"
+  ap: "4"
+  rof: "1"
+  shots: "20"
+  min_strength: "d10"
+  weight: "21"
+  cost: "$16,800"
+  note: "Bipod, Heavy Weapon, Two Hands"
+
+# ---- IZ: ARTIGLIERIA ----
+- source: iz
+  name: AGA Rain of Judgement Grenade Launcher (40mm)
+  category: Armi Pesanti
+  type: Artiglieria
+  range: "24/48/96"
+  damage: "4d8"
+  ap: "0"
+  rof: "1"
+  shots: "3"
+  min_strength: "d6"
+  weight: "10"
+  cost: "$22,150"
+  note: "Conceal +4. Two Hands"
+
+- source: iz
+  name: SRC 323 Big Daddy Grenade Launcher (30mm)
+  category: Armi Pesanti
+  type: Artiglieria
+  range: "24/48/96"
+  damage: "4d8"
+  ap: "0"
+  rof: "1"
+  shots: "4"
+  min_strength: "d8"
+  weight: "12"
+  cost: "$22,325"
+  note: "Conceal +5. Two Hands"
+
+# ---- IZ: LANCIAFIAMME ----
+- source: iz
+  name: AGA Gehenna Flamethrower
+  category: Armi Pesanti
+  type: Lanciafiamme
+  range: "Cono"
+  damage: "3d8"
+  ap: "0"
+  rof: "1"
+  shots: "10"
+  min_strength: "d10"
+  weight: "30"
+  cost: "$2,000"
+  note: "Cone Template, Evaded, Heavy Weapon, Two Hands"
+
+- source: iz
+  name: WT Nest Purge Hand Flamer
+  category: Armi Pesanti
+  type: Lanciafiamme
+  range: "Cono"
+  damage: "3d6"
+  ap: "0"
+  rof: "1"
+  shots: "5"
+  min_strength: "d8"
+  weight: "15"
+  cost: "$1,500"
+  note: "Conceal +5. Cone Template, Evaded, Heavy Weapon, One Hand"
+
+# ---- IZ: LANCIARAZZI ----
+- source: iz
+  name: BKI Ballistic Lance
+  category: Armi Pesanti
+  type: Lanciarazzi
+  range: "24/48/96"
+  damage: "4d8+2"
+  ap: "20"
+  rof: "1"
+  shots: "1"
+  min_strength: "d6"
+  weight: "5"
+  cost: "$2,900"
+  note: "Conceal +5/+3. Collapsible, Heavy Weapon, Laser Sight, Small Blast Template"
+
+- source: iz
+  name: SRC 2201 Armageddon (66mm)
+  category: Armi Pesanti
+  type: Lanciarazzi
+  range: "24/48/96"
+  damage: "5d8"
+  ap: "24"
+  rof: "1"
+  shots: "1"
+  min_strength: "d6"
+  weight: "7"
+  cost: "$4,200"
+  note: "Conceal +5. Collapsible, Heavy Weapon, Small Blast Template"
+
+# ---- IZ: GRANATE ----
+- source: iz
+  name: Granata Aerodinamica
+  category: Armi Pesanti
+  type: Granata
+  range: "10/20/40"
+  damage: "3d6"
+  min_strength: "d4"
+  weight: "0.75"
+  cost: "$175"
+  note: "Conceal +1. Small Blast Template"
+
+- source: iz
+  name: Granata Flashbang
+  category: Armi Pesanti
+  type: Granata
+  range: "5/10/20"
+  damage: "Speciale"
+  min_strength: "d4"
+  weight: "0.5"
+  cost: "$160"
+  note: "Disorientation, Flash, Medium Blast Template"
+
+- source: iz
+  name: Granata Knockout
+  category: Armi Pesanti
+  type: Granata
+  range: "5/10/20"
+  damage: "Speciale"
+  min_strength: "d4"
+  weight: "0.5"
+  cost: "$165"
+  note: "Knockout Gas, Medium Blast Template"
+
+- source: iz
+  name: Mini Granata
+  category: Armi Pesanti
+  type: Granata
+  range: "5/10/20"
+  damage: "3d4"
+  ap: "2"
+  min_strength: "d4"
+  weight: "0.25"
+  cost: "$150"
+  note: "Conceal -2. Small Blast Template"
