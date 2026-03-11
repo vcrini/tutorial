@@ -1649,3 +1649,2042 @@
       kind: Passiva
       text: "Vampire moths climb ceilings, walls, and sheer surfaces at their standard pace."
   source: iz
+- name: Borg (Thug)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d4
+    - Fighting d8
+    - Hacking d4
+    - Intimidation d6
+    - Lockpicking d4
+    - Notice d4
+    - Persuasion d4
+    - Repair d6
+    - Shooting d4
+    - Stealth d4
+  parry: "6"
+  toughness: "8 (2)"
+  wounds_max: 1
+  description: "Race: Cyborg; Origin: Ganger. Street cyborg who sold limbs to pay bio-replacement debts and now works muscle jobs."
+  motivations_tactics: "Aggressive brawler; charges in melee, uses rifle at range."
+  attack:
+    bonus: "Fighting d8"
+    name: Assault Rifle / Fists
+    range: "24/48/96"
+    damage: 2d8+1
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Berserk, Brawler, Combat Reflexes, Cyber Tolerance, Marksman."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Gutterware) Tier 1 IDS, Razor Nails (Str+d4; raise adds d8 to damage), Amplified Hearing (+1 Notice sound), Muscle Grafts I (+1 Str die, factored in)."
+    - name: Gear
+      kind: Passiva
+      text: "Assault rifle (Rng 24/48/96, Dmg 2d8+1, RoF 3, AP 2), leather jacket (+2 Armor torso/arms), toolkit."
+  source: iz
+- name: Borg (Experienced)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d4
+    - Fighting d8
+    - Hacking d4
+    - Intimidation d6
+    - Notice d6
+    - Persuasion d4
+    - Research d4
+    - Shooting d6
+    - Survival d6
+    - Thievery d6
+  parry: "7"
+  toughness: "10 (2)"
+  wounds_max: 1
+  description: "Race: Bioroid; Origin: Soldier. Decommissioned soldier whose security firm stripped their best gear; now works independently."
+  motivations_tactics: "Loyal and stubborn; uses calculated tactics, level-headed under fire."
+  attack:
+    bonus: "Shooting d6"
+    name: Army Surplus Pistol
+    range: "12/24/48"
+    damage: 2d6+1
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Calculating, Level-Headed, Power Armor Training, Soldier."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Tier 1 IDS, Subdermal Armor (+2 Armor), Silicon Bone Injections (+1 Toughness), Reactive Reflex Enhancers I (+1 Parry), Cyber Eye (Low Light Vision, flash comp, +1 Notice sight)."
+    - name: Gear
+      kind: Passiva
+      text: "Army Surplus Pistol (Rng 12/24/48, Dmg 2d6+1, RoF 1, AP 1)."
+  source: iz
+- name: Bounty Hunter
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "8"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Driving d8
+    - Fighting d8
+    - Hacking d4
+    - Notice d6
+    - Persuasion d4
+    - Research d6
+    - Shooting d8
+    - Stealth d6
+    - Survival d6
+  parry: "6"
+  toughness: "8 (2)"
+  wounds_max: 1
+  description: "Race: Human; Origin: Detective. More interested in the money than in justice; tracks and captures fugitives."
+  motivations_tactics: "Quick and mobile; uses Fleet-Footed to close distance; tactical shooter at range."
+  attack:
+    bonus: "Shooting d8"
+    name: Heavy Pistol
+    range: "12/24/48"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Brawler, Fleet-Footed, Quick."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Tier 1 IDS, Cyber Eye (Low Light Vision, flash comp, +1 Notice sight), Tactical Computer (-1 penalty to Medium range shots, -3 to Long range)."
+    - name: Gear
+      kind: Passiva
+      text: "Heavy pistol (Rng 12/24/48, Dmg 2d8, RoF 1, AP 2, Biometrics), shotgun (Rng 12/24/48, Dmg 1-3d6, RoF 1), BKI Glide Suit (+2 Armor, Gliding), handcuffs."
+  source: iz
+- name: Ganger (Street Soldier)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d4
+    - Fighting d6
+    - Intimidation d8
+    - Notice d4
+    - Shooting d4
+    - Stealth d4
+  parry: "5"
+  toughness: "8 (1)"
+  wounds_max: 1
+  description: "Race: Hybrid (Rodentia); Origin: Ganger. Working muscle of any gang; guards dealers, shakes down civilians."
+  motivations_tactics: "Quantity over quality; intimidates and overwhelms; Berserk when cornered."
+  attack:
+    bonus: "Shooting d4"
+    name: Light Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Ignore penalties for Dim and Dark illumination."
+    - name: Edges
+      kind: Passiva
+      text: "Brawler, Hard to Kill."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Mechanical Muscles I (Str increase), Tier 1 IDS. Biotech: Lymphatic Booster I (Vigor increase)."
+    - name: Gear
+      kind: Passiva
+      text: "Armored Hoodie (+1 Armor torso/head/arms), Survival knife (Str+d4), Light pistol (Rng 12/24/48, Dmg 2d6, RoF 1, AP 1), Chemtech Fury (Berserk Edge) x1."
+  source: iz
+- name: Ganger (Leader)
+  role: Umanoide
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Battle d6
+    - Common Knowledge d6
+    - Fighting d8
+    - Intimidation d10
+    - Notice d6
+    - Persuasion d10
+    - Shooting d8
+    - Stealth d6
+  parry: "6"
+  toughness: "12 (5)"
+  wounds_max: 3
+  description: "Race: Bioroid; Origin: Ganger. Oversees daily gang operations, leads Rough Boys into battle, reports to the Boss."
+  motivations_tactics: "Commands and menaces; combines Rock and Roll with suppressive fire; leads from the front."
+  attack:
+    bonus: "Shooting d8"
+    name: AGA Rhino
+    range: "12/24/48"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Command, Martial Artist, Menacing, Rock and Roll!, Streetwise."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Tier 2 IDS, Dermal Armor II (+4 Armor). Biotech: Lymphatic Booster I, Muscle Densifying I."
+    - name: Gear
+      kind: Passiva
+      text: "Armored Jacket (+1 Armor torso/arms), AGA Rhino (Rng 12/24/48, Dmg 2d8, RoF 1, AP 2), PD Noir (Rng 12/24/48, Dmg 1-3d6, RoF 1), Molecular Knife (Str+d4+2, AP 2)."
+  source: iz
+- name: Ganger (Boss)
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Battle d8
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d10
+    - Hacking d4
+    - Intimidation d12
+    - Notice d8
+    - Persuasion d8
+    - Shooting d8
+    - Stealth d8
+    - Thievery d6
+  parry: "7"
+  toughness: "9 (2)"
+  wounds_max: 3
+  description: "Race: Human 2.0; Origin: Ganger. Controls the entire gang and its territory; reputation for decisive, ruthless violence."
+  motivations_tactics: "Ambidextrous dual-wield; Rock and Roll suppression; Assassin for eliminating threats silently."
+  attack:
+    bonus: "Shooting d8"
+    name: AGA Hand of Caine (dual)
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Alertness, Ambidextrous*, Assassin, Charismatic, Combat Reflexes, Command, Fast Healer*, Inspire, Menacing, Rock and Roll!, Streetwise, Tough As Nails, Two Fisted. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Ubi-Blade x2 (Str+d4, AP 2, retractable), Manual Coordinator (Ambidextrous), Tier 3 IDS. Genetech: Lymphatic Booster I. Biotech: Optimized Bone Marrow (Fast Healer)."
+    - name: Gear
+      kind: Passiva
+      text: "Awesome suit (+2 Armor torso/arms/legs), AGA Hand of Caine x2 (Rng 12/24/48, Dmg 2d6, RoF 3, AP 1), AGA Rapture (Rng 24/48/96, Dmg 2d8+1, RoF 3, AP 2), Chemtech Adrenol (Nerves of Steel) x2."
+  source: iz
+- name: Mercenary (Raw)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d4
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d6
+    - Intimidation d6
+    - Language d4
+    - Notice d6
+    - Persuasion d6
+    - Repair d4
+    - Shooting d6
+    - Stealth d4
+  parry: "5"
+  toughness: "9 (4)"
+  wounds_max: 1
+  description: "Race: Android; Origin: Blue Plater. Inexperienced but professional soldier for hire; relies on firepower and ruthlessness."
+  motivations_tactics: "Soldier edge; stays at range with assault rifle; uses grenades for area denial."
+  attack:
+    bonus: "Shooting d6"
+    name: 5.56mm Assault Rifle
+    range: "24/48/96"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken, ignore one Wound penalty, does not breathe, immune to disease/poison, cannot heal naturally."
+    - name: Dependency
+      kind: Passiva
+      text: "One hour of electrical charging per 24 hours or gain Fatigue."
+    - name: Environmental Weakness (Electricity)
+      kind: Passiva
+      text: "+4 damage from electricity, -4 to resist electricity, includes EMP."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Cyber Eyes (Low Light Vision), Reflex Booster I (Agility increase), Smartgun System (reroll Shooting). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Combat Fatigues (+4 Armor torso/arms/legs), combat knife (Str+d4), 9mm pistol, 5.56mm assault rifle (Rng 24/48/96, Dmg 2d8, RoF 3, AP 2), 2x frag grenade, 2x smoke grenade."
+  source: iz
+- name: Mercenary (Veteran)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "8"
+  skills:
+    - Athletics d6
+    - Battle d6
+    - Common Knowledge d6
+    - Fighting d8
+    - Intimidation d6
+    - Language d6
+    - Notice d6
+    - Persuasion d6
+    - Shooting d8
+    - Stealth d6
+    - Survival d4
+  parry: "6"
+  toughness: "12 (4)"
+  wounds_max: 1
+  description: "Race: Hybrid (wolf); Origin: Insurgent. Battle-hardened soldier with improved tactics and a powerful arsenal."
+  motivations_tactics: "Combat Reflexes and Rock and Roll!; assault rifle primary; grenade launcher for area denial."
+  attack:
+    bonus: "Shooting d8"
+    name: 7.62mm Assault Rifle
+    range: "24/48/96"
+    damage: 2d8+1
+    damage_type: fisico
+  traits:
+    - name: Fast
+      kind: Passiva
+      text: "d8 Running die."
+    - name: Scent
+      kind: Passiva
+      text: "+2 to scent-based Notice and Survival (tracking) rolls."
+    - name: Edges
+      kind: Passiva
+      text: "Combat Reflexes, Fast Healer*, Rock and Roll!, Soldier. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Cyber Eyes (Infravision + Low Light Vision), Smartgun System (reroll Shooting), NBC Kit (Filters). Genetech: Organ Sheathing II (+2 Toughness). Biotech: Bone Bond Suite (Fast Healer). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Combat fatigues (+4 Armor), molecular knife (Str+d4+2, AP 2), 9mm SMG, 7.62mm assault rifle (Rng 24/48/96, Dmg 2d8+1, RoF 3, AP 2), 30mm grenade launcher, stun/frag/smoke grenades."
+  source: iz
+- name: Mercenary (Zeek)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d6
+    - Intimidation d8
+    - Language d6
+    - Notice d6
+    - Persuasion d6
+    - Psionics d8
+    - Shooting d6
+    - Stealth d6
+  parry: "7"
+  toughness: "13 (4)"
+  wounds_max: 1
+  description: "Race: Human 2.0; Origin: Refugee. Mercenary zeeks mix tactical skills with psionic powers for defense, disruption and enhancement."
+  motivations_tactics: "Uses psionics for barrier/protection/stun; supports squad with mind powers while covering fire."
+  attack:
+    bonus: "Shooting d6"
+    name: 5.56mm Assault Rifle
+    range: "24/48/96"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Arcane Background (Psionics)
+      kind: Passiva
+      text: "Power Points: 15. Powers (five of): barrier, environmental protection, fear, mind reading, protection, stun, warrior's gift."
+    - name: Edges
+      kind: Passiva
+      text: "Arcane Background (Psionics), Combat Reflexes, Soldier."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Cyber Eyes (Infravision + Low Light Vision), Skeletal Reinforcement II (+2 Toughness). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Combat Fatigues (+4 Armor), combat knife, 9mm pistol, 5.56mm assault rifle (Rng 24/48/96, Dmg 2d8, RoF 3, AP 2), frag/smoke grenades."
+  source: iz
+- name: Mercenary (Living Legend 1)
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "10"
+  skills:
+    - Athletics d10
+    - Battle d8
+    - Common Knowledge d8
+    - Driving d8
+    - Fighting d10
+    - Intimidation d8
+    - Language d8
+    - Notice d8
+    - Persuasion d8
+    - Piloting d8
+    - Repair d6
+    - Shooting d12
+    - Stealth d8
+    - Survival d6
+    - Taunt d8
+  parry: "7"
+  toughness: "17 (8)"
+  wounds_max: 3
+  description: "Race: Human 1.0; Origin: Squatter. A living legend of the mercenary world; command experience and a terrifying arsenal."
+  motivations_tactics: "Rapid Fire + Rock and Roll! with 20mm cannon; Dodge + ImpNerves of Steel; drones for recon; Leaping cyber legs for positioning."
+  attack:
+    bonus: "Shooting d12"
+    name: 20mm Assault Cannon
+    range: "24/48/96"
+    damage: 2d10+1
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Combat Reflexes, Command, Cyber Tolerant, Dodge, Fast Healer, Level-Headed, Martial Artist, Nerves of Steel (Imp), Rapid Fire, Rock and Roll!, Soldier, Strong Willed, Tough As Nails."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Cyber Eyes (Infravision/Low Light/Telescopic), Cyber Legs (Pace II, Leaping), NBC Kit. Genetech: Frog Man (Aquatic), Organ Sheathing II. Nanotech: BB Medical Nanites (Self-Repair). IDS Tier 4."
+    - name: Gear
+      kind: Passiva
+      text: "Combat fatigues (+4), heavy vest (+6 torso), molecular knife, 9mm tactical pistol, 7.62mm assault rifle, 20mm assault cannon (Rng 24/48/96, Dmg 2d10+1, AP 4), frag/smoke/stun grenades, 2x AGA Recon Drone."
+  source: iz
+- name: Mercenary (Living Legend 2)
+  role: Boss
+  wild_card: true
+  size: 2
+  pace: "6"
+  skills:
+    - Athletics d10
+    - Battle d6
+    - Common Knowledge d8
+    - Driving d8
+    - Fighting d12
+    - Intimidation d8
+    - Language d8
+    - Notice d8
+    - Persuasion d8
+    - Repair d8
+    - Shooting d10
+    - Stealth d8
+    - Survival d6
+    - Taunt d8
+  parry: "9"
+  toughness: "21 (8)"
+  wounds_max: 3
+  description: "Race: Hybrid (Rhino); Origin: Cleaner. Close combat expert and demolition specialist; massive, paranoid, and devastatingly effective."
+  motivations_tactics: "Block + Counterattack in melee; minigun suppression; rocket launcher for vehicles/fortifications."
+  attack:
+    bonus: "Shooting d10"
+    name: 7.62mm Minigun
+    range: "20/40/80"
+    damage: 2d8+1
+    damage_type: fisico
+  traits:
+    - name: Horn
+      kind: Azione
+      text: "Str+d6, +4 damage at end of Running 10 yards (5\")."
+    - name: Size +2
+      kind: Passiva
+      text: "Size of a grizzly bear. +2 Toughness (factored in)."
+    - name: Edges
+      kind: Passiva
+      text: "Block, Brawny, Bruiser, Combat Reflexes, Counterattack (Imp), Dodge, Fast Healer, Martial Artist, Nerves of Steel (Imp), Rock and Roll!, Soldier, Tough As Nails."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Cyber Eyes (Infravision/Low Light/Telescopic), NBC Kit. Genetech: Frog Man (Aquatic), Organ Sheathing II. Nanotech: BB Medical Nanites (Self-Repair). IDS Tier 4."
+    - name: Gear
+      kind: Passiva
+      text: "Combat fatigues (+4), heavy vest (+6 torso), molecular knife, 9mm tactical pistol, 7.62mm minigun (Rng 20/40/80, Dmg 2d8+1, RoF 5, AP 2, Snapfire), 66mm rocket launcher (Dmg 4d8, HW), frag/smoke grenades."
+  source: iz
+- name: Security Officer (Bear)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d4
+    - Athletics d8
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d6
+    - Healing d4
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d6
+    - Shooting d6
+    - Stealth d4
+    - Taunt d4
+  parry: "5"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Bear hybrid security officer; one of several variants used by companies with diverse hiring policies."
+  motivations_tactics: "Patrol and detain; shock truncheon in melee, service pistol at range."
+  attack:
+    bonus: "Shooting d6"
+    name: 9mm Service Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Claws
+      kind: Passiva
+      text: "Str+d4. +2 to Athletics (Climbing)."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Reinforced Skeleton II (+2 Toughness), Riot Officer Package (Filters). IDS Tier 2."
+    - name: Gear
+      kind: Passiva
+      text: "Uniform with Armor Vest (+2 Armor torso), shock truncheon (Str+d4, Stun), 9mm service pistol (Rng 12/24/48, Dmg 2d6, RoF 1, AP 2), handcuffs."
+  source: iz
+- name: Security Officer (Bioroid)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d4
+    - Athletics d8
+    - Common Knowledge d8
+    - Driving d6
+    - Fighting d8
+    - Healing d4
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d8
+    - Shooting d8
+    - Stealth d4
+    - Taunt d4
+  parry: "6"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Bioroid security officer; appears human but is artificially created; Martial Artist and persuasive."
+  motivations_tactics: "Martial Artist melee; service pistol at range; Ruthless when provoked."
+  attack:
+    bonus: "Shooting d8"
+    name: 9mm Service Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Martial Artist."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Reinforced Skeleton II (+2 Toughness), Riot Officer Package (Filters). IDS Tier 2."
+    - name: Gear
+      kind: Passiva
+      text: "Uniform with Armor Vest (+2 Armor torso), shock truncheon (Str+d4, Stun), 9mm service pistol (Rng 12/24/48, Dmg 2d6, RoF 1, AP 2), handcuffs."
+  source: iz
+- name: Scavenger
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Common Knowledge d4
+    - Driving d6
+    - Fighting d4
+    - Lockpicking d4
+    - Notice d6
+    - Persuasion d6
+    - Repair d6
+    - Stealth d6
+    - Survival d8
+  parry: "4"
+  toughness: "10 (2)"
+  wounds_max: 1
+  description: "Wasteland dweller making a living scavenging ruins left behind by war, flood, and ecological collapse."
+  motivations_tactics: "Fleet-Footed; avoids combat if possible; uses improvised weapons and terrain."
+  attack:
+    bonus: "Fighting d4"
+    name: Club/Knife
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Fleet-Footed."
+    - name: Gear
+      kind: Passiva
+      text: "Club or quarterstaff (Str+d4), knife (Str+d4), light pistol substandard (Rng 12/24/48, Dmg 2d6-1), scavenger's trench substandard (+1 Armor), pick-up truck substandard."
+  source: iz
+- name: Security (Detective)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d8
+    - Athletics d6
+    - Common Knowledge d8
+    - Driving d6
+    - Fighting d6
+    - Hacking d6
+    - Intimidation d8
+    - Notice d6
+    - Persuasion d6
+    - Research d8
+    - Science d6
+    - Shooting d6
+    - Stealth d4
+  parry: "5"
+  toughness: "11 (5)"
+  wounds_max: 1
+  description: "Race: Human 1.0; Origin: Detective. Investigates incidents for corporate, government, or freelance clients; sometimes a Wild Card."
+  motivations_tactics: "Investigator and Streetwise; uses Intimidation and Research; heavy pistol for backup."
+  attack:
+    bonus: "Shooting d6"
+    name: AGA Rhino Heavy Pistol
+    range: "12/24/48"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Investigator, Streetwise, Strong Willed."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Cyber Eyes (Infravision), Subdermal Mesh I (+2 Armor), Riot Officer Package (Filters). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Armored Overcoat (+3 Armor torso/arms/legs 50%), AGA Rhino heavy pistol (Rng 12/24/48, Dmg 2d8, RoF 1, AP 2), handcuffs."
+  source: iz
+- name: Security Officer (Generic)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d4
+    - Athletics d8
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d6
+    - Healing d4
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d6
+    - Shooting d6
+    - Stealth d4
+    - Taunt d4
+  parry: "5"
+  toughness: "9 (2)"
+  wounds_max: 1
+  description: "Race: any; Origin: Patrol Officer. Standard corporate or government security officer; patrol or corporate guard."
+  motivations_tactics: "Detain and subdue; shock truncheon in melee, service pistol at range; calls backup."
+  attack:
+    bonus: "Shooting d6"
+    name: 9mm Service Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Reinforced Skeleton II (+2 Toughness), Riot Officer Package (Filters). IDS Tier 2."
+    - name: Gear
+      kind: Passiva
+      text: "Uniform with Armor Vest (+2 Armor torso), shock truncheon (Str+d4, Stun), 9mm service pistol (Rng 12/24/48, Dmg 2d6, RoF 1, AP 2), handcuffs."
+  source: iz
+- name: Security Officer (Tactical Build)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "8"
+  skills:
+    - Academics d4
+    - Athletics d8
+    - Battle d4
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d10
+    - Healing d4
+    - Intimidation d8
+    - Notice d8
+    - Persuasion d6
+    - Piloting d8
+    - Repair d6
+    - Science d4
+    - Shooting d10
+    - Stealth d8
+    - Taunt d6
+    - Thievery d6
+  parry: "7"
+  toughness: "21 (12)"
+  wounds_max: 1
+  description: "Race: Cyborg; Origin: Patrol Officer. Elite heavy-combat security specialist; the big guns of most security organizations."
+  motivations_tactics: "Hardy; uses Brawler + Quick to engage fast; CQB compact rifle at close range."
+  attack:
+    bonus: "Shooting d10"
+    name: CQB Compact Assault Rifle
+    range: "15/30/60"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Hardy
+      kind: Passiva
+      text: "A second Shaken condition does not cause a Wound."
+    - name: No Vital Organs
+      kind: Passiva
+      text: "No additional damage from Called Shots."
+    - name: Weakness (Head)
+      kind: Passiva
+      text: "+4 damage from head shots."
+    - name: Edges
+      kind: Passiva
+      text: "Brawler, Combat Reflexes, Fleet Footed, Martial Artist, Quick*, Steady Hands. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "Armor Plating (+6 Armor, 0 Strain), Tactical Processor (Quick), Mechanical Muscles I (Str increase), Synthetic Organs I (Vigor increase), Riot Officer Package (Filters). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Riot armor (+6 Armor full), 5.56mm CQB compact rifle (Rng 15/30/60, Dmg 2d8, RoF 3, AP 2), 9mm tactical pistol, knife, stun/KO gas/smoke grenades."
+  source: iz
+- name: Security Operative
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "12"
+  skills:
+    - Academics d4
+    - Athletics d12
+    - Battle d6
+    - Common Knowledge d8
+    - Driving d8
+    - Fighting d12
+    - Hacking d10
+    - Healing d4
+    - Intimidation d10
+    - Notice d8
+    - Persuasion d6
+    - Piloting d8
+    - Repair d6
+    - Shooting d12
+    - Stealth d8
+    - Taunt d6
+    - Thievery d6
+  parry: "8"
+  toughness: "24 (12)"
+  wounds_max: 3
+  description: "Race: Human 2.0; Origin: Agent. One-man-army security operative; a single highly skilled agent with extensive milware augments."
+  motivations_tactics: "First Strike + Sweep for melee; Master (Shooting) + Marksman at range; Leaping for positioning; Frenzy for burst damage."
+  attack:
+    bonus: "Shooting d12+2"
+    name: MAW Rifle
+    range: "75/150/300"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Alertness, Ambidextrous, Assassin, Brawler, Combat Reflexes, Cyber Tolerant, Dodge, Enlightened Gun Fu!, First Strike (Imp), Fleet Footed, Frenzy, Level Headed, Marksman, Master (Shooting), Martial Warrior, Nerves of Steel, Quick*, Steady Hands, Sweep, Two-Gun Kid. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "(Milware) Armor Plating III (+6 Armor), Cyber Eyes (Infravision/LLV), Tactical Processors (Quick), Mechanical Muscles III (Str increase), Riot Officer Package, Internal Hardening III (+3 Toughness), Static Induction System (Leaping), Cyber Legs II (Pace increase), 2x Arm Laser (Rng 15/30/60, Dmg 2d8, AP 8). IDS Tier 4."
+    - name: Gear
+      kind: Passiva
+      text: "Heavy tactical armor (+6 Armor full), MAW rifle (Rng 75/150/300, Dmg 2d8, AP 4), 2x .50 heavy pistol, molecular knife (Str+d4+2, AP 2). Drones: 3x RS Firefly."
+  source: iz
+- name: Soldier (Rank and File)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d6
+    - Intimidation d6
+    - Notice d6
+    - Persuasion d6
+    - Shooting d6
+    - Stealth d4
+  parry: "5"
+  toughness: "9 (4)"
+  wounds_max: 1
+  description: "Race: any; Origin: any. Standard infantry soldier; equipment varies wildly by faction but basic training is universal."
+  motivations_tactics: "Soldier edge; assault rifle primary; grenade for area denial; uses cover."
+  attack:
+    bonus: "Shooting d6"
+    name: 5.56mm Assault Rifle
+    range: "24/48/96"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Soldier."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Cyber Eyes (Low Light Vision), NBC Kit (Filters). IDS Tier 2."
+    - name: Gear
+      kind: Passiva
+      text: "Armor vest and helmet (+4 Armor torso/head), 5.56mm assault rifle (Rng 24/48/96, Dmg 2d8, RoF 3, AP 2), knife (Str+d4), 1x fragmentation grenade (Dmg 3d6, MBT)."
+  source: iz
+- name: Soldier (Special Ops)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d8
+    - Intimidation d6
+    - Notice d6
+    - Persuasion d6
+    - Shooting d8
+    - Stealth d6
+  parry: "6"
+  toughness: "10 (4)"
+  wounds_max: 1
+  description: "Race: any; Origin: any. Veteran troop with better training and more responsibility than rank and file."
+  motivations_tactics: "Rock and Roll! + Soldier; MAW Rotary Cannon for suppression; assault rifle for precision fire."
+  attack:
+    bonus: "Shooting d8"
+    name: MAW Rotary Cannon
+    range: "24/48/96"
+    damage: 2d10
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Rock and Roll!, Soldier, any one combat edge."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Cyber Eyes (Low Light Vision), NBC Kit (Filters). IDS Tier 2."
+    - name: Gear
+      kind: Passiva
+      text: "Armor vest (+4 Armor torso), MAW Rotary Cannon (Rng 24/48/96, Dmg 2d10, RoF 3, AP 6, Snapfire), 5.56mm assault rifle (Rng 24/48/96, Dmg 2d8, RoF 3, AP 2), knife, 2x frag grenade."
+  source: iz
+- name: Automated Turret
+  role: Costrutto
+  wild_card: false
+  size: -2
+  pace: "—"
+  skills:
+    - Notice d6
+    - Shooting d8
+  parry: "2"
+  toughness: "10 (6)"
+  wounds_max: 1
+  description: "Proprietary security turret with standard sensor/targeting systems; armed with machine gun, grenade launcher, or laser."
+  motivations_tactics: "Stationary; fires continuously at detected threats; minimum RoF 2 on machine gun."
+  attack:
+    bonus: "Shooting d8"
+    name: Medium Machine Gun
+    range: "30/60/120"
+    damage: 2d8+1
+    damage_type: fisico
+  traits:
+    - name: Armor +6
+      kind: Passiva
+      text: "Heavy composite plating."
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken; ignores 1 Wound penalty; does not breathe or suffer from disease/poison."
+    - name: Fearless
+      kind: Passiva
+      text: "Immune to Fear and Intimidation."
+    - name: Night Vision
+      kind: Passiva
+      text: "Sensor packages ignore penalties for Illumination."
+    - name: Size -2 (Small)
+      kind: Passiva
+      text: "Compact and unobtrusive; human-sized opponents suffer -2 to attack rolls against it."
+    - name: Alternate Weapons
+      kind: Passiva
+      text: "Grenade Launcher (Rng 24/48/96, Dmg 4d8, MBT) or Repeating Laser (Rng 30/60/120, Dmg 3d6, RoF 2, AP 2). Tier 3 IDS."
+  source: iz
+- name: MK XII Battle-Bot "Obliterator"
+  role: Costrutto
+  wild_card: false
+  size: 3
+  pace: "10"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Notice d6
+    - Shooting d10
+  parry: "7"
+  toughness: "16 (6)"
+  wounds_max: 2
+  description: "10-foot autonomous combat platform originally manufactured for FEMA civil war efforts; said to be worth an entire platoon."
+  motivations_tactics: "Very Resilient (2 Wounds to incap); heavy machine gun suppression; charges with Size 3 bulk."
+  attack:
+    bonus: "Shooting d10"
+    name: Heavy Machine Gun
+    range: "50/100/200"
+    damage: 2d10
+    damage_type: fisico
+  traits:
+    - name: Armor +6
+      kind: Passiva
+      text: "Heavy composite plating."
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken; ignores 1 Wound penalty; does not breathe or suffer from disease/poison."
+    - name: Fearless
+      kind: Passiva
+      text: "Immune to Fear effects and Intimidation."
+    - name: Night Vision
+      kind: Passiva
+      text: "Sensor packages ignore penalties for Illumination."
+    - name: Size 3
+      kind: Passiva
+      text: "10 feet tall, 1,200 pounds of metal and fury. +3 Toughness (factored in)."
+    - name: Very Resilient
+      kind: Passiva
+      text: "Can take two Wounds before incapacitated."
+    - name: Gear
+      kind: Passiva
+      text: "Heavy Machine Gun (Rng 50/100/200, Dmg 2d10, RoF 3, AP 4, HW, minimum RoF 2). Tier 4 IDS."
+  source: iz
+- name: Ravenlocke Echelon Security Robot
+  role: Costrutto
+  wild_card: false
+  size: 2
+  pace: "8"
+  skills:
+    - Athletics d8
+    - Fighting d10
+    - Notice d6
+    - Shooting d8
+  parry: "7"
+  toughness: "12 (4)"
+  wounds_max: 1
+  description: "Ravenlocke Securities riot control robot manufactured to quell civil unrest; 2 meters of intimidating metal."
+  motivations_tactics: "Hardy; uses Stun Gun for crowd control; Knockout Gas for area denial; Shock Pads as last resort."
+  attack:
+    bonus: "Shooting d8"
+    name: Stun Gun
+    range: "5/10/20"
+    damage: Special
+    damage_type: elettrico
+  traits:
+    - name: Armor +4
+      kind: Passiva
+      text: "Composite plating."
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken; ignores 1 Wound penalty; does not breathe or suffer from disease/poison."
+    - name: Fearless
+      kind: Passiva
+      text: "Immune to Fear effects and Intimidation."
+    - name: Hardy
+      kind: Passiva
+      text: "The drone does not suffer a Wound from being Shaken twice."
+    - name: Night Vision
+      kind: Passiva
+      text: "Sensor packages ignore penalties for Illumination."
+    - name: Size 2
+      kind: Passiva
+      text: "Two meters of intimidating metal. +2 Toughness (factored in)."
+    - name: Gear
+      kind: Passiva
+      text: "Stun Gun (Rng 5/10/20, Vigor -2 or Stunned), Knockout Gas (Large Blast Template, 5 shots), Shock Pads (Touch Attack, Vigor -2 or Stunned). Tier 3 IDS."
+  source: iz
+- name: Ravenlocke Security Carcelero
+  role: Costrutto
+  wild_card: false
+  size: 1
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Fighting d6
+    - Intimidation d6
+    - Notice d8
+    - Shooting d8
+  parry: "5"
+  toughness: "12 (4)"
+  wounds_max: 1
+  description: "Automated prison perimeter guard robot; 6'8\" armed with integrated shotgun and 30mm grenade launcher; over 400 pounds."
+  motivations_tactics: "Rock and Roll!; shotgun arm for close targets; grenade launcher for groups or fortified positions."
+  attack:
+    bonus: "Shooting d8"
+    name: Shotgun Arm
+    range: "12/24/48"
+    damage: 1-3d6
+    damage_type: fisico
+  traits:
+    - name: Armor +4
+      kind: Passiva
+      text: "Metal plating."
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken; ignores 1 Wound penalty; does not breathe or suffer from disease/poison."
+    - name: Fearless
+      kind: Passiva
+      text: "Immune to Fear and Intimidation; smart enough to react to fear-causing situations."
+    - name: Night Vision
+      kind: Passiva
+      text: "Sensor packages ignore penalties for Illumination."
+    - name: Size 1
+      kind: Passiva
+      text: "Bigger than most humans, weighs over 400 pounds. +1 Toughness (factored in)."
+    - name: Gear
+      kind: Passiva
+      text: "Shotgun arm (Rng 12/24/48, Dmg 1-3d6, RoF 2), 30mm grenade launcher (Rng 24/48/96). Tier 4 IDS."
+  source: iz
+- name: Urban Punk Rave Reaver
+  role: Costrutto
+  wild_card: false
+  size: 1
+  pace: "8"
+  skills:
+    - Athletics d10
+    - Fighting d8
+    - Intimidation d6
+    - Notice d4
+    - Shooting d4
+  parry: "5"
+  toughness: "10 (3)"
+  wounds_max: 1
+  description: "Urban Punk's premier humanoid combat robot; limited AI for complex environments; integrated weapons always ready."
+  motivations_tactics: "Leaper for room-clearing jumps; Wild Attack after jump for +4 damage; rotary cannon for suppression."
+  attack:
+    bonus: "Shooting d4"
+    name: Rotary Cannon Arm
+    range: "24/48/96"
+    damage: 2d10
+    damage_type: fisico
+  traits:
+    - name: Armor +3
+      kind: Passiva
+      text: "Composite plating."
+    - name: Construct
+      kind: Passiva
+      text: "+2 recover Shaken; ignores 1 Wound penalty; does not breathe or suffer from disease/poison."
+    - name: Fearless
+      kind: Passiva
+      text: "Immune to Fear and Intimidation; smart enough to react aptly."
+    - name: Leaper
+      kind: Azione
+      text: "Double jumping distances; Wild Attack after jump (at least 1\") does +4 damage instead of +2."
+    - name: Night Vision
+      kind: Passiva
+      text: "Sensor packages ignore penalties for Illumination."
+    - name: Size 1
+      kind: Passiva
+      text: "Weighs nearly 400 pounds. +1 Toughness (factored in)."
+    - name: Stomp
+      kind: Azione
+      text: "Str+d6."
+    - name: Gear
+      kind: Passiva
+      text: "Arm blade (Str+d6+1, AP 1), rotary cannon arm (Rng 24/48/96, Dmg 2d10, RoF 3, AP 4). Tier 4 IDS."
+  source: iz
+- name: Ancient Lodge Master
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "5"
+  skills:
+    - Athletics d4
+    - Common Knowledge d10
+    - Fighting d10
+    - Hacking d4
+    - Intimidation d8
+    - Notice d10
+    - Persuasion d8
+    - Stealth d10
+  parry: "2"
+  toughness: "8 (3)"
+  wounds_max: 3
+  description: "Ancient centenarian criminal mastermind; head of a large diversified criminal network; speaks in fables and parables."
+  motivations_tactics: "Command Presence + Inspire to buff allies; Connections and Filthy Rich for resources; ceremonial sword if forced to fight."
+  attack:
+    bonus: "Fighting d10"
+    name: Ceremonial Jian
+    range: "Mischia"
+    damage: Str+d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Alertness, Charismatic, Command, Command Presence, Connections (Criminal Tong), Fervor, Filthy Rich, Inspire, Luck, Streetwise, Strong Willed."
+    - name: Hindrances
+      kind: Passiva
+      text: "Bad Eyes, Code of Honor, Elderly, Stubborn, Wanted (Major)."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 1 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Ceremonial jian/Chinese sword (Str+d8), exotic padded robe (+3 Armor)."
+  source: iz
+- name: Blog Journalist
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d10
+    - Hacking d6
+    - Notice d6
+    - Persuasion d8
+    - Research d10
+    - Stealth d6
+  parry: "2"
+  toughness: "6 (2)"
+  wounds_max: 1
+  description: "Self-made media icon trying to spread memes to the largest possible percentage of divers; usually has an agenda."
+  motivations_tactics: "Famous and Connections (Media); uses Investigator and Persuasion; avoids direct combat."
+  attack:
+    bonus: "Shooting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections (Media), Famous, Investigator, Streetwise."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Tier 1 IDS, Berger-Suisse Ocular Implant (Infravision, Low Light Vision, 1-hour continuous recording)."
+    - name: Gear
+      kind: Passiva
+      text: "Leather bomber jacket (+2 Armor torso)."
+  source: iz
+- name: Bureaucrat
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d6
+    - Notice d4
+    - Persuasion d6
+    - Research d4
+    - Stealth d4
+  parry: "2"
+  toughness: "5"
+  wounds_max: 1
+  description: "Corporate or government receptionist/clerk; sticks to rules and procedures; cannot think outside the box."
+  motivations_tactics: "Cautious; uses Connections to pass problems up the chain; never fights directly."
+  attack:
+    bonus: "Fighting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections (corporate or government employer)."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 3 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Pencils (mechanical), anxiety medication."
+  source: iz
+- name: Crime Boss
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "5"
+  skills:
+    - Academics d4
+    - Athletics d6
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d6
+    - Gambling d10
+    - Hacking d6
+    - Intimidation d10
+    - Language d10
+    - Notice d10
+    - Persuasion d8
+    - Piloting d4
+    - Shooting d8
+    - Stealth d6
+    - Taunt d6
+  parry: "5"
+  toughness: "14 (8)"
+  wounds_max: 3
+  description: "Race: Human 2.0. Major organized crime player commanding wealth, influence, and violence; dominates any meeting."
+  motivations_tactics: "Intimidation and Connections to control situations; Menacing for social pressure; laser pistol if things go wrong."
+  attack:
+    bonus: "Shooting d8"
+    name: Laser Pistol
+    range: "15/30/60"
+    damage: 2d6
+    damage_type: energia
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Bolster, Connections (Gangs/Government/Ravenlocke), Charismatic, Filthy Rich, Menacing, Reputation, Streetwise."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) BBSS Sarashi III (+6 Armor torso). Genetech: Cat Eyes (Low Light Vision). IDS Tier 4."
+    - name: Gear
+      kind: Passiva
+      text: "Armored suit (+2 Armor torso/arms/legs), laser pistol (Rng 15/30/60, Dmg 2d6, AP 2, Cauterize, Overcharge), various permits."
+    - name: Psionics (optional)
+      kind: Passiva
+      text: "Zeek crime bosses may have: empathy, mind link, mind reading, mind wipe, object reading."
+  source: iz
+- name: Disreputable Doctor
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d6
+    - Athletics d4
+    - Driving d8
+    - Fighting d6
+    - Hacking d8
+    - Healing d10
+    - Intimidation d6
+    - Persuasion d6
+    - Science d10
+    - Shooting d6
+    - Stealth d4
+    - Taunt d8
+    - Thievery d6
+  parry: "5"
+  toughness: "8 (1)"
+  wounds_max: 1
+  description: "Race: Hybrid (Capra); Origin: Biohacker. Skilled street doc operating from a van with surgical cot and blood collectors."
+  motivations_tactics: "Healer + Miracle Worker; uses Horns charge in emergencies; mobile clinic for field surgery."
+  attack:
+    bonus: "Fighting d6"
+    name: Horns (charge)
+    range: "Mischia"
+    damage: Str+d6
+    damage_type: fisico
+  traits:
+    - name: Horns
+      kind: Azione
+      text: "Str+d6. +4 damage on charge attack of at least 5\" (ten yards)."
+    - name: Leaper
+      kind: Azione
+      text: "Double jumping distances (2\" free action, +2\" with successful Athletics)."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Ignore penalties for Dim and Dark illumination."
+    - name: Edges
+      kind: Passiva
+      text: "Healer, Reputation."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Surgical Suite Arm (+2 Healing). Genetech: Enhanced Membranes (Filters), Organ Cleaning II (Vigor increase). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Hooded coat (+1 Armor), 9mm pistol, 3x medical kit (+1 Healing), 2x trauma stabilizer, mobile clinic (EE Oasis). Drone: MS Bulldog x1."
+  source: iz
+- name: Fanatic
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Driving d4
+    - Fighting d4
+    - Notice d4
+    - Persuasion d6
+    - Shooting d4
+    - Stealth d6
+  parry: "4"
+  toughness: "5"
+  wounds_max: 1
+  description: "Ordinary person whose belief overshadows reality; violently psychotic; found in cults, radical sects, or terror cells."
+  motivations_tactics: "Death Wish; suicidal charge; explosive-laden cyberware as last resort; no respect for life including their own."
+  attack:
+    bonus: "Shooting d4"
+    name: Assault Rifle
+    range: "24/48/96"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Hindrances
+      kind: Passiva
+      text: "Death Wish, Loyal, Vow: serve the cause (Major)."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 1 IDS (with storage compartments filled with explosives)."
+    - name: Gear
+      kind: Passiva
+      text: "Assault rifle (Rng 24/48/96, Dmg 2d8, RoF 3, CQB, Recoil Compensation) or hold-out pistol (Rng 12/24/48, Dmg 2d6+1, AP 1), articles of faith."
+  source: iz
+- name: Hybrid Activist
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d6
+    - Athletics d4
+    - Common Knowledge d10
+    - Fighting d6
+    - Hacking d6
+    - Healing d6
+    - Notice d6
+    - Persuasion d6
+    - Stealth d6
+  parry: "5"
+  toughness: "6 (1)"
+  wounds_max: 1
+  description: "Hybrid who has turned inward toward their inner beast for guidance; advocates love and life-affirming messages."
+  motivations_tactics: "Pacifist (Minor); Beast Master and Danger Sense; Claws as last resort; cyber IDS for hacking defense."
+  attack:
+    bonus: "Fighting d6"
+    name: Claws
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Claws
+      kind: Passiva
+      text: "Two claws, Str+d4 each."
+    - name: Heightened Vision
+      kind: Passiva
+      text: "Low Light Vision."
+    - name: Keen Sense
+      kind: Passiva
+      text: "+2 Notice with hearing."
+    - name: Edges
+      kind: Passiva
+      text: "Beast Master, Danger Sense, Quick."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Tier 3 IDS (-2 to enemy Hacking rolls, d8 Smarts/Hacking/Notice/Research/Taunt)."
+    - name: Gear
+      kind: Passiva
+      text: "Armored hoodie (+1 Armor torso/arms/head), eco-friendly minivan."
+  source: iz
+- name: Idle Rich
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d6
+    - Electronics d6
+    - Hacking d6
+    - Notice d4
+    - Persuasion d4
+    - Stealth d4
+  parry: "2"
+  toughness: "5"
+  wounds_max: 1
+  description: "Society's leaders in culture, art, finance, and industry; live above day-to-day concerns inside private arcologies."
+  motivations_tactics: "Filthy Rich; avoids all conflict; uses wealth and connections to make problems go away."
+  attack:
+    bonus: "Fighting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Filthy Rich."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 3 IDS, Sage IT Loremaster Knowcomp (Electronics d6)."
+  source: iz
+- name: Negotiator
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d6
+    - Hacking d6
+    - Notice d8
+    - Persuasion d8
+    - Research d6
+    - Stealth d6
+  parry: "2"
+  toughness: "8 (3)"
+  wounds_max: 1
+  description: "Mediator, representative, investigator, fixer, and middleman; knows everyone in the sprawl and gets paid to put people together."
+  motivations_tactics: "Charismatic + Connections; uses Fence and Rich for brokering deals; heavy pistol for emergencies."
+  attack:
+    bonus: "Shooting d4"
+    name: Heavy Pistol
+    range: "12/24/48"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Charismatic, Connections, Fence, Rich, Streetwise."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Tier 1 IDS, language translator."
+    - name: Gear
+      kind: Passiva
+      text: "Heavy pistol (Rng 12/24/48, Dmg 2d8, AP 2, Biometrics), nanoweave shirt (+3 Armor)."
+  source: iz
+- name: Politician/CEO
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d8
+    - Athletics d6
+    - Boating d6
+    - Common Knowledge d8
+    - Driving d4
+    - Gambling d8
+    - Intimidation d8
+    - Language d6
+    - Notice d8
+    - Performance d6
+    - Persuasion d10
+    - Piloting d4
+    - Shooting d6
+    - Taunt d10
+  parry: "2"
+  toughness: "8 (2)"
+  wounds_max: 3
+  description: "Race: Human 2.0; Origin: Activist. Entrenched powerhouse raising proteges, destroying enemies, dictating the future of cities."
+  motivations_tactics: "Rabble Rouser and Retort for social combat; Killer Instinct; Followers (bodyguards and interns) as shields."
+  attack:
+    bonus: "Shooting d6"
+    name: Concealed Firearm
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Aristocrat, Attractive (Very*), Charismatic, Filthy Rich, Followers, Killer Instinct, Linguist*, Rabble Rouser, Retort. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Self Translator (Linguist), Tissue Fabricator (Self-Repair). Genetech: Face Sculpting (Very Attractive). IDS Tier 5."
+    - name: Followers
+      kind: Passiva
+      text: "Bodyguards: Security Officer (Generic) with Guardian armored suits (+3 Armor). Interns: d6 all Attributes, d6 Common Knowledge/Notice/Persuasion/Research."
+    - name: Psionics (optional)
+      kind: Passiva
+      text: "~40% are zeeks. Psionics d8; PP 10; detect/conceal arcana, empathy, fear, mind reading, speak language."
+    - name: Gear
+      kind: Passiva
+      text: "Stylish armored suit (+2 Armor torso/arms/legs). Has access to several firearms (not on person)."
+  source: iz
+- name: Pop Star
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Hacking d4
+    - Notice d4
+    - Performance d8
+    - Persuasion d4
+    - Stealth d4
+  parry: "2"
+  toughness: "6 (1)"
+  wounds_max: 1
+  description: "Pre-natal genetic scripting product; media consultants invest millions to create the perfect corporate public spokesperson."
+  motivations_tactics: "Famous and Attractive; Magnet hindrance draws attention; uses entourage as buffer; no real combat ability."
+  attack:
+    bonus: "Fighting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Attractive, Famous, Filthy Rich."
+    - name: Hindrances
+      kind: Passiva
+      text: "All Thumbs, Big Mouth, Magnet (Major), Stubborn."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 3 IDS, sensory recorder."
+    - name: Gear
+      kind: Passiva
+      text: "Trendy leather jacket (+2 Armor torso/arms), booster box, expensive designer clothing, entourage and groupies."
+  source: iz
+- name: Religious Leader
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d8
+    - Notice d4
+    - Persuasion d6
+    - Stealth d4
+  parry: "2"
+  toughness: "7 (2)"
+  wounds_max: 1
+  description: "Head of an organized religious group; ranges from pious shepherd to megalomaniacal cult leader."
+  motivations_tactics: "Persuasion +2 via cybertech; Charismatic personality chip; Rich connections to religious donors."
+  attack:
+    bonus: "Fighting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections (religious donors), Cyber Tolerance, Rich."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 1, boomer voice box, forked tongue (+2 Persuasion checks), personality chip (free reroll on Persuasion, like Charismatic)."
+    - name: Gear
+      kind: Passiva
+      text: "Ballistic robes (+2 Armor torso/arms/head/legs)."
+  source: iz
+- name: Shady Fence
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Academics d6
+    - Athletics d8
+    - Common Knowledge d10
+    - Fighting d6
+    - Gambling d10
+    - Hacking d8
+    - Language d6
+    - Research d8
+    - Science d6
+    - Shooting d8
+    - Taunt d10
+    - Thievery d8
+  parry: "5"
+  toughness: "12 (6)"
+  wounds_max: 1
+  description: "Race: Cyborg; Origin: Criminal. Will buy nova-hot data or prototypes; sells armor-piercing rockets without paperwork."
+  motivations_tactics: "Danger Sense* warns of ambushes; Hardy + No Vital Organs makes them tough; Iron Will resists mental effects."
+  attack:
+    bonus: "Shooting d8"
+    name: Unspecified Firearm
+    range: "12/24/48"
+    damage: 2d8
+    damage_type: fisico
+  traits:
+    - name: Hardy
+      kind: Passiva
+      text: "A second Shaken condition does not cause a Wound."
+    - name: No Vital Organs
+      kind: Passiva
+      text: "No additional damage from Called Shots."
+    - name: Weakness (Head)
+      kind: Passiva
+      text: "+4 damage from head shots."
+    - name: Edges
+      kind: Passiva
+      text: "Connections (arms manufacturer, organized crime), Danger Sense*, Iron Will, Reputation, Rock and Roll!, Streetwise. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "Armor Plating (+6 Armor, 0 Strain), (Customware) Mechanical Muscles II (Str), Synthetic Organs II (Vigor), Sensor Package (Danger Sense). Nanotech: Medical Nanites (Self-Repair). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "Armored vest (+4 Armor torso), custom hat (+3 Armor head)."
+  source: iz
+- name: Shifty Fixer
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Driving d6
+    - Fighting d10
+    - Intimidation d6
+    - Language d8
+    - Persuasion d12
+    - Piloting d8
+    - Research d8
+    - Shooting d6
+    - Stealth d6
+    - Taunt d8
+    - Thievery d6
+  parry: "7"
+  toughness: "9 (3)"
+  wounds_max: 1
+  description: "Race: Bioroid; Origin: Smuggler. Go-between and introduction broker for city criminal and corporate networks; worth their weight in nanotech."
+  motivations_tactics: "Persuasion d12 + Pheromone Package; Martial Artist in melee; Charismatic and Connections for social encounters."
+  attack:
+    bonus: "Shooting d6"
+    name: RS 007 Palm Pistol
+    range: "12/24/48"
+    damage: 2d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections (city gov, organized crime, major security company), Charismatic, Hard to Kill*, Linguist, Martial Artist, Reliable, Reputation, Streetwise, Work the Room. (*from augments)"
+    - name: Cybertech
+      kind: Passiva
+      text: "(Customware) Tissue Fabricator (Self-Repair). Biotech: Pheromone Package (+2 Persuasion). Genetech: Vascular Redundancies (Hard to Kill). IDS Tier 4."
+    - name: Gear
+      kind: Passiva
+      text: "Armored suit (+3 Armor torso/arms/legs), RS 007 palm pistol (Rng 12/24/48, Dmg 2d4, sound suppressor, non-ferrous), holographic projector, bug scanner, ultra-sonic sensor."
+  source: iz
+- name: Colony Freelancer
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d4
+    - Hacking d4
+    - Notice d6
+    - Persuasion d6
+    - Shooting d6
+    - Stealth d6
+  parry: "4"
+  toughness: "5 (1)"
+  wounds_max: 1
+  description: "Freelancers work for hire throughout the solar system colonies; versatile generalists with customizable specializations."
+  motivations_tactics: "Connections and GM-choice Edge; flexible role depending on specialization."
+  attack:
+    bonus: "Shooting d6"
+    name: Light Pistol
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections, GM's choice."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 2 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Light Armor (+2, arms/torso/legs), melee weapon (Str+d4), Light Pistol (Dmg 2d6)."
+    - name: Qualified
+      kind: Passiva
+      text: "(+2) Increase one attribute to d10 or two attributes to d8."
+    - name: Skilled
+      kind: Passiva
+      text: "(+3) Give 3 Skill points to improve essential Skill to d8 or round out other Skills."
+    - name: Professional Edge
+      kind: Passiva
+      text: "One Professional Edge related to their role."
+  source: iz
+- name: Colony CEO/Politician
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d8
+    - Hacking d10
+    - Intimidation d8
+    - Notice d8
+    - Persuasion d8
+    - Research d8
+    - Science d10
+    - Shooting d6
+    - Stealth d6
+    - Survival d6
+  parry: "2"
+  toughness: "5 (1)"
+  wounds_max: 3
+  description: "Colony corporate executive assigned to oversee day-to-day colony operations and ensure parent corp profitability."
+  motivations_tactics: "Connections + Filthy Rich + Followers for leverage; Hacking d10 for network control."
+  attack:
+    bonus: "Shooting d6"
+    name: Concealed Firearm
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections, Filthy Rich, Followers."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 4 IDS, Assistance, KNOWcomp (Survival [space] d6)."
+    - name: Gear
+      kind: Passiva
+      text: "Armored business suit (+4 Armor torso/arms/legs)."
+  source: iz
+- name: Law Enforcement Agent
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d4
+    - Fighting d4
+    - Hacking d4
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d6
+    - Science d6
+    - Shooting d6
+    - Stealth d4
+  parry: "6"
+  toughness: "9 (4)"
+  wounds_max: 1
+  description: "Solar system law enforcement; jurisdiction and connections vary by allegiance; throws their weight around universally."
+  motivations_tactics: "Connections and Soldier; shock truncheon for subduing; pistol for lethal force."
+  attack:
+    bonus: "Shooting d6"
+    name: Pistol
+    range: "12/24/48"
+    damage: 2d6+2
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Connections, Soldier."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 2 IDS, Bounty Board (+2 Notice to identify known criminals)."
+    - name: Gear
+      kind: Passiva
+      text: "Shock Truncheon (Str+d4, Stun), Medium armor (+4, Full body), Pistol (Dmg 2d6+2, AP 2)."
+  source: iz
+- name: Medic
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Hacking d4
+    - Healing d10
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d6
+    - Science d10
+    - Shooting d4
+    - Stealth d4
+  parry: "2"
+  toughness: "5"
+  wounds_max: 1
+  description: "Integral part of the colony staff; identifies diseases and treats injuries; Healer + Miracle Worker."
+  motivations_tactics: "Non-combatant; keeps Code of Honor; supports allies with healing; avoids direct engagement."
+  attack:
+    bonus: "Shooting d4"
+    name: Unarmed (unskilled)
+    range: "Mischia"
+    damage: Str
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Healer, Miracle Worker."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 2 IDS, Respirator/Environmental Filters (+2 Vigor to resist poison/disease), Cranial pen light."
+    - name: Gear
+      kind: Passiva
+      text: "Scrubs, Doctor's Bag, Medical Supplies."
+  source: iz
+- name: Marauder (Bioroid)
+  role: Boss
+  wild_card: true
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Common Knowledge d4
+    - Fighting d8
+    - Hacking d4
+    - Intimidation d8
+    - Notice d6
+    - Persuasion d6
+    - Piloting d8
+    - Research d8
+    - Science d8
+    - Shooting d8
+    - Stealth d6
+    - Survival d8
+    - Thievery d6
+  parry: "7"
+  toughness: "15 (6)"
+  wounds_max: 3
+  description: "Experimental skinless bioroid packed in an environmental suit; the solar system's most dangerous creation; kills everyone who can identify them."
+  motivations_tactics: "Calculating + Level-Headed for initiative control; Martial Warrior in melee; impersonates targets via Voice Modulator."
+  attack:
+    bonus: "Shooting d8"
+    name: Rifle
+    range: "12/24/48"
+    damage: 2d6+1
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Calculating, Level-Headed, Martial Warrior, Soldier."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 3 IDS, Exotic Biotech Enhancements (+2 Toughness), Vat-grown Eyes (Infravision), Voice Modulator (+2 Persuasion for impersonation), Tool Kit (embedded in hand), Self-contained Power Cell."
+    - name: Gear
+      kind: Passiva
+      text: "Containment Suit (+6 Armor, Mag boots, full environmental protection 1 week), Rifle (Rng 12/24/48, Dmg 2d6+1, AP 2, ROF 3), Marauder Personal Craft, Light Repair Drone."
+  source: iz
+- name: Miner
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d6
+    - Common Knowledge d6
+    - Fighting d6
+    - Hacking d4
+    - Intimidation d4
+    - Notice d6
+    - Persuasion d6
+    - Science d6
+    - Shooting d6
+    - Stealth d6
+  parry: "6"
+  toughness: "7 (2)"
+  wounds_max: 1
+  description: "Workers toiling in solar system mining operations to collect resources for their employers."
+  motivations_tactics: "Soldier and Brawny; uses Drill as melee weapon; Vacsuit for environmental protection."
+  attack:
+    bonus: "Fighting d6"
+    name: Drill
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Soldier, Brawny."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 2 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Armored Vacsuit (+2, Full Body), Drill (Str+d4, AP 6), Mining Tools, Locator Beacon."
+  source: iz
+- name: Supervisor/Pit Boss
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Battle d8
+    - Common Knowledge d6
+    - Driving d6
+    - Fighting d8
+    - Hacking d4
+    - Intimidation d8
+    - Notice d8
+    - Persuasion d8
+    - Shooting d6
+    - Stealth d8
+  parry: "5"
+  toughness: "10 (4)"
+  wounds_max: 1
+  description: "Middle management of a mining operation; natural leader who inspires miners and blames them when things go wrong."
+  motivations_tactics: "Command + Inspire + Natural Leader for squad bonuses; Tactician for extra cards; Two-Fisted for dual drill attacks."
+  attack:
+    bonus: "Fighting d8"
+    name: Reinforced Drill
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Brawny, Command, Combat Reflexes, Inspire, Natural Leader, No Mercy, Packfighting, Tactician, Two-Fisted."
+    - name: Cybertech
+      kind: Passiva
+      text: "Tier 2 IDS, Credentials (access to company message board)."
+    - name: Gear
+      kind: Passiva
+      text: "Armored Vacsuit reinforced (+4, Full Body), Drill (Str+d4, AP 6), Mining Tools, Locator Beacon."
+  source: iz
+- name: Void Screamer
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "5"
+  skills:
+    - Athletics d4
+    - Common Knowledge d4
+    - Fighting d4
+    - Hacking d4
+    - Intimidation d6
+    - Notice d8
+    - Persuasion d4
+    - Piloting d6
+    - Repair d10
+    - Research d6
+    - Science d6
+    - Stealth d6
+    - Thievery d8
+  parry: "4"
+  toughness: "5"
+  wounds_max: 1
+  description: "Apocalyptic cult member serving AI Styx/Ferryman; dedicated to pushing humanity out of the solar system."
+  motivations_tactics: "Jack-of-all-Trades + McGyver; uses improvised weapons and bombs; focused on Repair and Piloting for sabotage."
+  attack:
+    bonus: "Fighting d4"
+    name: Improvised Weapon/Bomb
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Jack-of-all-Trades, Improvised Fighter, McGyver."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Gutterware) Tier 1 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Robes, junk, patchwork Vac Suit, improvised melee weapons and bombs."
+  source: iz
+- name: Void Screamer (Zeek)
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "5"
+  skills:
+    - Athletics d4
+    - Common Knowledge d6
+    - Fighting d4
+    - Notice d4
+    - Persuasion d4
+    - Psionics d8
+    - Stealth d4
+  parry: "4"
+  toughness: "6 (1)"
+  wounds_max: 1
+  description: "Psionic Void Screamer; delusional cultist with telekinetic and empathic powers in service of AI Styx/Ferryman."
+  motivations_tactics: "Psionics for Empathy/Mind Reading/Telekinesis; power over physical combat ability."
+  attack:
+    bonus: "Psionics d8"
+    name: Telekinesis
+    range: "12/24/48"
+    damage: 2d6
+    damage_type: fisico
+  traits:
+    - name: Arcane Background (Psionics)
+      kind: Passiva
+      text: "Power Points: 15. Powers: Empathy, Mind Reading, Telekinesis."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Gutterware) Tier 1 IDS."
+    - name: Gear
+      kind: Passiva
+      text: "Leather jacket (+1 Armor), scrap jewelry, patchwork Vac Suit, improvised melee weapons."
+  source: iz
+- name: Hacker
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d4
+    - Common Knowledge d8
+    - Hacking d10
+    - Lockpicking d8
+    - Notice d8
+    - Persuasion d4
+    - Repair d8
+    - Research d8
+    - Stealth d6
+  parry: "2"
+  toughness: "6 (1)"
+  wounds_max: 1
+  description: "Race: Hybrid (leopard); Origin: Programmer. Classic black-hat hacker violating system security; uses claws and Low Light Vision."
+  motivations_tactics: "Hacker + Cutter + New Programs edges; Co-Processor for +2 Hacking; escapes via Stealth and Lockpicking."
+  attack:
+    bonus: "Hacking d10"
+    name: Claws / Remote Access Trojan
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Claws
+      kind: Passiva
+      text: "Str+d4, +2 to Athletics (climbing)."
+    - name: Low Light Vision
+      kind: Passiva
+      text: "Ignore penalties for Dim and Dark illumination."
+    - name: Edges
+      kind: Passiva
+      text: "Cutter, Hacker, New Programs."
+    - name: Cybertech
+      kind: Passiva
+      text: "(Streetware) Co-Processor (+2 Hacking rolls), Heat Sinks I (+2 Armor, program physical damage only). IDS Tier 4."
+    - name: Programs
+      kind: Passiva
+      text: "Active: Autoscanner, BlackRAT, ICEpick, Reality Editor, Traceroute Deluxe. Inactive: Autodoc, Blaster, Corruptokhan, DeletePro, Hyper Editor, Mask Maker, Mindfrag, Pestilence, Traceroute."
+    - name: Gear
+      kind: Passiva
+      text: "Armored hoodie (+1 Armor), shock truncheon (Str+d4, Stun), 9mm pistol (Rng 12/24/48, Dmg 2d6, AP 1), Remote Access Trojan (+1 Hacking [operate device], 3 uses)."
+  source: iz
+- name: Thief
+  role: Umanoide
+  wild_card: false
+  size: 0
+  pace: "6"
+  skills:
+    - Athletics d8
+    - Common Knowledge d8
+    - Driving d6
+    - Electronics d6
+    - Fighting d8
+    - Gambling d8
+    - Language d6
+    - Notice d8
+    - Persuasion d6
+    - Piloting d6
+    - Research d8
+    - Stealth d10
+    - Taunt d6
+    - Thievery d10
+  parry: "5"
+  toughness: "7 (2)"
+  wounds_max: 1
+  description: "Race: Human 1.0; Origin: Petty criminal. Takes physical objects by bypassing security; commission thief for specific targets."
+  motivations_tactics: "Stealth d10 + Blending Field for infiltration; Combat Acrobat for mobility; Ghost Suit +4 Stealth."
+  attack:
+    bonus: "Fighting d8"
+    name: Good Knife
+    range: "Mischia"
+    damage: Str+d4
+    damage_type: fisico
+  traits:
+    - name: Edges
+      kind: Passiva
+      text: "Combat Acrobat, Streetwise, Strong Willed, Thief."
+    - name: Cybertech
+      kind: Passiva
+      text: "Genetech: Night Eyes (Infravision + Low Light Vision). Nanotech: Blending Field (+2 Stealth). IDS Tier 3."
+    - name: Gear
+      kind: Passiva
+      text: "BKI Ghost Suit (+2 Armor full, +4 Stealth) or Glide Suit (+2 Armor full, gliding), 9mm tactical SMG (Rng 12/24/48, Dmg 2d6, RoF 3, AP 1, suppressed), good knife (Str+d4), grapple gun, bug scanner, laser microphone."
+  source: iz
