@@ -1001,6 +1001,9 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'a':
+		if focusIsInput {
+			return ev
+		}
 		if focus == ui.dice {
 			ui.openDiceRollInput()
 			return nil
@@ -1022,7 +1025,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.advanceEncounterInitiativeTurn()
 			return nil
 		}
-		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.search || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.monSourceDrop) {
+		if focusIsInput {
+			return ev
+		}
+		if ui.catalogMode == "mostri" && (focus == ui.monList || focus == ui.roleDrop || focus == ui.rankDrop || focus == ui.monSourceDrop) {
 			ui.openRandomEncounterFromMonstersInput()
 			return nil
 		}
