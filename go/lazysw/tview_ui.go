@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand/v2"
+	"os"
+	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -189,6 +191,8 @@ type tviewUI struct {
 	encInitTurnIndex  int
 	encInitRound      int
 	encInitSorted     bool
+
+	campaignName string
 }
 
 func runTViewUI() error {
@@ -885,6 +889,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	switch ev.Key() {
 	case tcell.KeyCtrlC:
 		ui.app.Stop()
+		return nil
+	case tcell.KeyCtrlS:
+		if ui.campaignName != "" {
+			ui.saveCampaignState(ui.campaignName)
+		} else {
+			ui.showSaveCampaignModal()
+		}
+		return nil
+	case tcell.KeyCtrlO:
+		ui.showCampaignManagerModal()
 		return nil
 	case tcell.KeyEnter:
 		if focus == ui.dice {
@@ -2063,7 +2077,11 @@ func (ui *tviewUI) refreshStatus() {
 	} else if ui.catalogMode == "regole" {
 		catalogLabel = "Regole"
 	}
-	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] | %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, helpText, msg))
+	campPart := ""
+	if ui.campaignName != "" {
+		campPart = fmt.Sprintf("| campagna:[black:gold] %s [-:-] ", ui.campaignName)
+	}
+	ui.status.SetText(fmt.Sprintf("focus:[black:gold] %s [-:-] | catalogo:[black:gold] %s [-:-] %s| %s [black:gold]msg[-:-] %s", focusLabel, catalogLabel, campPart, helpText, msg))
 }
 
 func (ui *tviewUI) currentMonsterIndex() int {
@@ -5784,5 +5802,322 @@ func (ui *tviewUI) switchToCatalog(mode string) {
 		ui.message = "Catalogo: Regole"
 	default:
 		ui.message = "Catalogo: Mostri"
+	}
+}
+
+// saveCampaignState saves pngs, encounter and dice history to ~/.lazysw/<name>/.
+func (ui *tviewUI) saveCampaignState(name string) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		ui.message = "Nome campagna non valido."
+		ui.refreshStatus()
+		return
+	}
+	dir := campaignDir(name)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		ui.message = "Errore campagna: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	if err := savePNGList(filepath.Join(dir, "pngs.yml"), ui.pngs, selectedPNGName(ui.pngs, ui.selected)); err != nil {
+		ui.message = "Errore salvataggio PNG: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	encEntries := make([]struct {
+		Name             string         `yaml:"name"`
+		Wounds           int            `yaml:"wounds"`
+		PF               int            `yaml:"pf"`
+		InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+		LegacyInitiative int            `yaml:"initiative,omitempty"`
+		HasInit          bool           `yaml:"has_initiative,omitempty"`
+		Conditions       map[string]int `yaml:"conditions,omitempty"`
+		Stress           int            `yaml:"stress,omitempty"`
+		BaseStress       int            `yaml:"base_stress,omitempty"`
+	}, 0, len(ui.encounter))
+	for _, e := range ui.encounter {
+		base := encounterWoundsCap(e)
+		encEntries = append(encEntries, struct {
+			Name             string         `yaml:"name"`
+			Wounds           int            `yaml:"wounds"`
+			PF               int            `yaml:"pf"`
+			InitiativeCard   string         `yaml:"initiative_card,omitempty"`
+			LegacyInitiative int            `yaml:"initiative,omitempty"`
+			HasInit          bool           `yaml:"has_initiative,omitempty"`
+			Conditions       map[string]int `yaml:"conditions,omitempty"`
+			Stress           int            `yaml:"stress,omitempty"`
+			BaseStress       int            `yaml:"base_stress,omitempty"`
+		}{Name: e.Monster.Name, Wounds: e.Wounds, PF: base, InitiativeCard: e.InitiativeCard, HasInit: e.HasInit, Conditions: cloneStringIntMap(e.Conditions)})
+	}
+	if err := saveEncounter(filepath.Join(dir, "encounter.yml"), encEntries); err != nil {
+		ui.message = "Errore salvataggio encounter: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	if err := saveDiceHistory(filepath.Join(dir, "dice_history.yml"), ui.diceLog); err != nil {
+		ui.message = "Errore salvataggio dadi: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	ui.campaignName = name
+	ui.message = fmt.Sprintf("Campagna '%s' salvata.", name)
+	ui.refreshStatus()
+}
+
+// loadCampaignState loads pngs, encounter and dice history from ~/.lazysw/<name>/.
+func (ui *tviewUI) loadCampaignState(name string) {
+	dir := campaignDir(name)
+	pngs, selectedName, err := loadPNGList(filepath.Join(dir, "pngs.yml"))
+	if err != nil {
+		pngs = []PNG{}
+	}
+	selectedIdx := -1
+	for i, p := range pngs {
+		if p.Name == selectedName {
+			selectedIdx = i
+			break
+		}
+	}
+	enc, err := loadEncounter(filepath.Join(dir, "encounter.yml"), ui.monsters)
+	if err != nil {
+		enc = []EncounterEntry{}
+	}
+	diceLog, err := loadDiceHistory(filepath.Join(dir, "dice_history.yml"))
+	if err != nil {
+		diceLog = []DiceResult{}
+	}
+	ui.pngs = pngs
+	ui.selected = selectedIdx
+	ui.encounter = enc
+	ui.diceLog = diceLog
+	ui.campaignName = name
+	ui.refreshPNGs()
+	ui.refreshEncounter()
+	ui.renderDiceList()
+	ui.message = fmt.Sprintf("Campagna '%s' caricata.", name)
+	ui.refreshStatus()
+}
+
+// showSaveCampaignModal shows a form to name and save the current campaign.
+func (ui *tviewUI) showSaveCampaignModal() {
+	if ui.modalVisible {
+		return
+	}
+	returnFocus := ui.app.GetFocus()
+
+	form := tview.NewForm()
+	form.AddInputField("Nome campagna", ui.campaignName, 40, nil, nil)
+	form.AddButton("Salva", func() {
+		name := strings.TrimSpace(form.GetFormItemByLabel("Nome campagna").(*tview.InputField).GetText())
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+		if name != "" {
+			ui.saveCampaignState(name)
+		}
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.app.SetFocus(returnFocus)
+	})
+	form.SetBorder(true).SetTitle(" Salva Campagna ").SetTitleAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 50, 0, true).
+			AddItem(nil, 0, 1, false), 7, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "saveCampaign"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
+}
+
+// showCampaignManagerModal shows a navigable list of campaigns with load/rename/delete actions.
+func (ui *tviewUI) showCampaignManagerModal() {
+	if ui.modalVisible {
+		return
+	}
+	ui.openCampaignList()
+}
+
+func (ui *tviewUI) openCampaignList() {
+	campaigns, _ := listCampaigns()
+
+	campaignList := tview.NewList().ShowSecondaryText(false)
+	for _, c := range campaigns {
+		label := c
+		if c == ui.campaignName {
+			label = "* " + c
+		}
+		campaignList.AddItem(label, c, 0, nil)
+	}
+	if len(campaigns) == 0 {
+		campaignList.AddItem("(nessuna campagna)", "", 0, nil)
+	}
+
+	hints := tview.NewTextView().
+		SetDynamicColors(true).
+		SetText(" [black:gold]Invio[-:-] Carica  [black:gold]r[-:-] Rinomina  [black:gold]d[-:-] Elimina  [black:gold]n[-:-] Nuova  [black:gold]Esc[-:-] Chiudi")
+
+	container := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(campaignList, 0, 1, true).
+		AddItem(hints, 1, 0, false)
+	container.SetBorder(true).SetTitle(" Gestione Campagne [Ctrl+O] ").SetTitleAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(container, 60, 0, true).
+			AddItem(nil, 0, 1, false), 20, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "campaignManager"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(campaignList)
+
+	campaignList.SetInputCapture(func(ev *tcell.EventKey) *tcell.EventKey {
+		if len(campaigns) == 0 {
+			return ev
+		}
+		idx := campaignList.GetCurrentItem()
+		if idx < 0 || idx >= len(campaigns) {
+			return ev
+		}
+		selected := campaigns[idx]
+
+		switch ev.Key() {
+		case tcell.KeyEnter:
+			ui.closeModal()
+			ui.loadCampaignState(selected)
+			return nil
+		case tcell.KeyRune:
+			switch ev.Rune() {
+			case 'r', 'R':
+				ui.closeModal()
+				ui.showRenameCampaignModal(selected)
+				return nil
+			case 'd', 'D':
+				ui.closeModal()
+				ui.showDeleteCampaignModal(selected)
+				return nil
+			case 'n', 'N':
+				ui.closeModal()
+				ui.showSaveCampaignModal()
+				return nil
+			}
+		}
+		return ev
+	})
+}
+
+// showRenameCampaignModal asks for a new name and renames the campaign folder.
+func (ui *tviewUI) showRenameCampaignModal(oldName string) {
+	if ui.modalVisible {
+		return
+	}
+
+	form := tview.NewForm()
+	form.AddInputField("Nuovo nome", oldName, 40, nil, nil)
+	form.AddButton("Rinomina", func() {
+		newName := strings.TrimSpace(form.GetFormItemByLabel("Nuovo nome").(*tview.InputField).GetText())
+		ui.closeModal()
+		if newName != "" && newName != oldName {
+			if err := renameCampaign(oldName, newName); err != nil {
+				ui.message = "Errore rinomina: " + err.Error()
+				ui.refreshStatus()
+				return
+			}
+			if ui.campaignName == oldName {
+				ui.campaignName = newName
+			}
+			ui.message = fmt.Sprintf("Campagna rinominata: '%s' → '%s'", oldName, newName)
+			ui.refreshStatus()
+		}
+		ui.openCampaignList()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.openCampaignList()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.openCampaignList()
+	})
+	form.SetBorder(true).SetTitle(fmt.Sprintf(" Rinomina '%s' ", oldName)).SetTitleAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(form, 52, 0, true).
+			AddItem(nil, 0, 1, false), 7, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "campaignRename"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItem(0))
+}
+
+// showDeleteCampaignModal asks for confirmation before deleting a campaign.
+func (ui *tviewUI) showDeleteCampaignModal(name string) {
+	if ui.modalVisible {
+		return
+	}
+
+	form := tview.NewForm()
+	form.AddButton("Sì, Elimina", func() {
+		ui.closeModal()
+		if err := deleteCampaign(name); err != nil {
+			ui.message = "Errore eliminazione: " + err.Error()
+			ui.refreshStatus()
+		} else {
+			if ui.campaignName == name {
+				ui.campaignName = ""
+			}
+			ui.message = fmt.Sprintf("Campagna '%s' eliminata.", name)
+			ui.refreshStatus()
+		}
+		ui.openCampaignList()
+	})
+	form.AddButton("Annulla", func() {
+		ui.closeModal()
+		ui.openCampaignList()
+	})
+	form.SetCancelFunc(func() {
+		ui.closeModal()
+		ui.openCampaignList()
+	})
+
+	info := tview.NewTextView().SetText(fmt.Sprintf("Eliminare la campagna '%s'?\nQuesta operazione non è reversibile.", name))
+	container := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(info, 2, 0, false).
+		AddItem(form, 0, 1, true)
+	container.SetBorder(true).SetTitle(" Elimina Campagna ").SetTitleAlign(tview.AlignLeft)
+
+	modal := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(nil, 0, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(nil, 0, 1, false).
+			AddItem(container, 52, 0, true).
+			AddItem(nil, 0, 1, false), 9, 0, true).
+		AddItem(nil, 0, 1, false)
+
+	ui.modalVisible = true
+	ui.modalName = "campaignDelete"
+	ui.pages.AddAndSwitchToPage(ui.modalName, modal, true)
+	ui.app.SetFocus(form.GetFormItemByLabel(""))
+	// Focus the first button
+	if h := form.GetButton(0); h != nil {
+		ui.app.SetFocus(form)
 	}
 }

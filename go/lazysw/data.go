@@ -568,6 +568,40 @@ func selectedPNGName(pngs []PNG, idx int) string {
 	return pngs[idx].Name
 }
 
+// campaignDir returns the folder for a named campaign under ~/.lazysw/.
+func campaignDir(name string) string {
+	return filepath.Join(lazyswAppDir(), name)
+}
+
+// listCampaigns returns all campaign directory names under ~/.lazysw/.
+func listCampaigns() ([]string, error) {
+	base := lazyswAppDir()
+	entries, err := os.ReadDir(base)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	var names []string
+	for _, e := range entries {
+		if e.IsDir() {
+			names = append(names, e.Name())
+		}
+	}
+	return names, nil
+}
+
+// renameCampaign renames a campaign folder.
+func renameCampaign(oldName, newName string) error {
+	return os.Rename(campaignDir(oldName), campaignDir(newName))
+}
+
+// deleteCampaign removes a campaign folder and all its contents.
+func deleteCampaign(name string) error {
+	return os.RemoveAll(campaignDir(name))
+}
+
 func loadDiceHistory(path string) ([]DiceResult, error) {
 	data, err := readPersistentFileWithFallback(path)
 	if err != nil {
