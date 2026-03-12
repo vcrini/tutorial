@@ -9,6 +9,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -193,6 +194,24 @@ type tviewUI struct {
 	encInitSorted     bool
 
 	campaignName string
+
+	// g+number navigation on list panels
+	listGotoPending bool
+	listGotoTarget  *tview.List
+	listGotoMulti   bool
+	listGotoAccum   string
+
+	// panel prefix with timer (digits 0-5)
+	panelPrefixActive bool
+	panelPrefixDigit  int
+	panelPrefixTimer  *time.Timer
+
+	// detail panel vim cursor
+	detailCursorLine int
+	detailGPending   bool
+
+	// line number toggle
+	showLineNumbers bool
 }
 
 func runTViewUI() error {
@@ -759,10 +778,27 @@ func (ui *tviewUI) build() {
 }
 
 func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
-	focus := ui.app.GetFocus()
-	_, focusIsInput := focus.(*tview.InputField)
-	_, focusIsDropDown := focus.(*tview.DropDown)
+	realFocus := ui.app.GetFocus()
+	_, focusIsInput := realFocus.(*tview.InputField)
+	_, focusIsDropDown := realFocus.(*tview.DropDown)
 	focusIsWidget := focusIsInput || focusIsDropDown
+
+	// Panel prefix: when active, route key to the prefixed panel's context.
+	focus := realFocus
+	if ui.panelPrefixActive {
+		if ev.Key() == tcell.KeyEscape {
+			ui.cancelPanelPrefix()
+			return nil
+		}
+		ui.ensureCatalogForDigit(ui.panelPrefixDigit)
+		focus = ui.listForPanelDigit(ui.panelPrefixDigit)
+		if ui.panelPrefixTimer != nil {
+			ui.panelPrefixTimer.Stop()
+			ui.panelPrefixTimer = nil
+		}
+		ui.panelPrefixActive = false
+		ui.message = ""
+	}
 
 	if ui.helpVisible {
 		if ev.Key() == tcell.KeyEscape || (ev.Key() == tcell.KeyRune && (ev.Rune() == '?' || ev.Rune() == 'q')) {
@@ -806,6 +842,101 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.message = "Jump dadi annullato."
 		ui.refreshStatus()
 		return nil
+	}
+
+	if ui.detailGPending {
+		ui.detailGPending = false
+		if ev.Key() == tcell.KeyRune && ev.Rune() == 'g' {
+			ui.detailCursorLine = 0
+			ui.renderDetail()
+			ui.detail.ScrollTo(0, 0)
+			ui.message = "Prima riga."
+			ui.refreshStatus()
+		} else {
+			ui.message = ""
+			ui.refreshStatus()
+			return ev
+		}
+		return nil
+	}
+
+	if ui.listGotoPending {
+		if ui.listGotoMulti {
+			switch ev.Key() {
+			case tcell.KeyEscape:
+				ui.listGotoPending = false
+				ui.listGotoMulti = false
+				ui.message = "Jump lista annullato."
+				ui.refreshStatus()
+				return nil
+			case tcell.KeyEnter:
+				ui.listGotoPending = false
+				ui.listGotoMulti = false
+				n, err := strconv.Atoi(ui.listGotoAccum)
+				if err == nil && n >= 1 {
+					ui.jumpList(ui.listGotoTarget, n-1)
+				} else {
+					ui.message = fmt.Sprintf("Riga non valida: %q", ui.listGotoAccum)
+					ui.refreshStatus()
+				}
+				return nil
+			default:
+				if ev.Key() == tcell.KeyRune && ev.Rune() >= '0' && ev.Rune() <= '9' {
+					ui.listGotoAccum += string(ev.Rune())
+					ui.message = fmt.Sprintf("Jump multi: %s (Invio per confermare)", ui.listGotoAccum)
+					ui.refreshStatus()
+					return nil
+				}
+				ui.listGotoPending = false
+				ui.listGotoMulti = false
+				ui.message = "Jump lista annullato."
+				ui.refreshStatus()
+				return nil
+			}
+		} else {
+			ui.listGotoPending = false
+			if ev.Key() == tcell.KeyEscape {
+				ui.message = "Jump lista annullato."
+				ui.refreshStatus()
+				return nil
+			}
+			if ev.Key() == tcell.KeyRune {
+				r := ev.Rune()
+				switch r {
+				case '^':
+					ui.jumpList(ui.listGotoTarget, 0)
+					return nil
+				case '$':
+					n := 0
+					if ui.listGotoTarget != nil {
+						n = ui.listGotoTarget.GetItemCount() - 1
+					}
+					if n < 0 {
+						n = 0
+					}
+					ui.jumpList(ui.listGotoTarget, n)
+					return nil
+				case '\'':
+					ui.listGotoPending = true
+					ui.listGotoMulti = true
+					ui.listGotoAccum = ""
+					ui.message = "Jump multi: digita numero, Invio per confermare, Esc annulla."
+					ui.refreshStatus()
+					return nil
+				default:
+					if r >= '1' && r <= '9' {
+						ui.jumpList(ui.listGotoTarget, int(r-'0')-1)
+						return nil
+					}
+					ui.message = fmt.Sprintf("Jump lista: tasto non valido: %q", string(r))
+					ui.refreshStatus()
+					return nil
+				}
+			}
+			ui.message = "Jump lista annullato."
+			ui.refreshStatus()
+			return nil
+		}
 	}
 
 	if focusIsInput && ev.Key() == tcell.KeyEsc {
@@ -901,8 +1032,22 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		ui.showCampaignManagerModal()
 		return nil
 	case tcell.KeyEnter:
+		if focus == ui.detail {
+			ui.rollDiceFromDetailCursorLine()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.rerollSelectedDiceResult()
+			return nil
+		}
+	case tcell.KeyCtrlD:
+		if focus == ui.detail {
+			ui.scrollDetailHalfPage(1)
+			return nil
+		}
+	case tcell.KeyCtrlU:
+		if focus == ui.detail {
+			ui.scrollDetailHalfPage(-1)
 			return nil
 		}
 	case tcell.KeyTAB:
@@ -929,35 +1074,54 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		return nil
 	case 'f':
 		if !focusIsInput {
+			if focus == ui.detail {
+				ui.scrollDetailHalfPage(1)
+				return nil
+			}
 			ui.toggleFullscreenForFocus(focus)
 			return nil
 		}
 	case 'q':
 		ui.app.Stop()
 		return nil
-	case '1':
-		ui.focusPanel(focusPNG)
-		return nil
-	case '2':
-		ui.focusPanel(focusEncounter)
-		return nil
-	case '3':
-		ui.switchToCatalog("mostri")
-		ui.focusPanel(focusMonList)
-		return nil
-	case '4':
-		ui.switchToCatalog("equipaggiamento")
-		ui.focusPanel(focusEqList)
-		return nil
-	case '5':
-		ui.switchToCatalog("regole")
-		ui.focusPanel(focusClassList)
-		return nil
-	case '0':
-		ui.focusPanel(focusDice)
-		return nil
+	case '0', '1', '2', '3', '4', '5':
+		if !focusIsWidget {
+			ui.startPanelPrefix(int(ev.Rune() - '0'))
+			return nil
+		}
+	case 'W':
+		if !focusIsWidget {
+			ui.focusPanel(focusDetail)
+			return nil
+		}
+	case '#':
+		if !focusIsWidget {
+			ui.showLineNumbers = !ui.showLineNumbers
+			if ui.showLineNumbers {
+				ui.message = "Numeri di riga: ON."
+			} else {
+				ui.message = "Numeri di riga: OFF."
+			}
+			ui.refreshPNGs()
+			ui.refreshMonsters()
+			ui.refreshEncounter()
+			ui.refreshStatus()
+			return nil
+		}
 	case 'G':
 		if !focusIsWidget {
+			if focus == ui.detail {
+				lines := strings.Split(ui.detailRaw, "\n")
+				ui.detailCursorLine = len(lines) - 1
+				if ui.detailCursorLine < 0 {
+					ui.detailCursorLine = 0
+				}
+				ui.renderDetail()
+				ui.detail.ScrollToEnd()
+				ui.message = "Ultima riga."
+				ui.refreshStatus()
+				return nil
+			}
 			ui.openGotoModal()
 			return nil
 		}
@@ -1059,6 +1223,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		if focusIsWidget {
 			return ev
 		}
+		if focus == ui.detail {
+			ui.scrollDetailHalfPage(-1)
+			return nil
+		}
 		if ui.catalogMode == "equipaggiamento" && (focus == ui.eqList || focus == ui.eqSearch || focus == ui.eqTypeDrop || focus == ui.eqItemTypeDrop || focus == ui.eqRankDrop || focus == ui.eqSourceDrop || focus == ui.detail || focus == ui.detailTreasure) {
 			ui.openEquipmentTreasureInput()
 			return nil
@@ -1107,9 +1275,24 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		if focusIsWidget {
 			return ev
 		}
+		if focus == ui.detail {
+			ui.detailGPending = true
+			ui.message = "g — premi g per prima riga, Esc annulla."
+			ui.refreshStatus()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.diceGotoPending = true
 			ui.message = "Jump dadi: premi 1-9, ^ (prima), $ (ultima)."
+			ui.refreshStatus()
+			return nil
+		}
+		if list := ui.focusedListWidget(focus); list != nil {
+			ui.listGotoPending = true
+			ui.listGotoTarget = list
+			ui.listGotoMulti = false
+			ui.listGotoAccum = ""
+			ui.message = "Jump lista: 1-9, ' (multi-cifra), ^ (prima), $ (ultima), Esc annulla."
 			ui.refreshStatus()
 			return nil
 		}
@@ -1192,11 +1375,19 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			return nil
 		}
 	case 'j':
+		if focus == ui.detail {
+			ui.moveDetailCursor(1)
+			return nil
+		}
 		if focus == ui.encList {
 			ui.adjustEncounterWounds(1)
 			return nil
 		}
 	case 'k':
+		if focus == ui.detail {
+			ui.moveDetailCursor(-1)
+			return nil
+		}
 		if focus == ui.encList {
 			ui.adjustEncounterWounds(-1)
 			return nil
@@ -1473,7 +1664,11 @@ func (ui *tviewUI) refreshPNGs() {
 		if i == ui.selected {
 			prefix = "* "
 		}
-		ui.pngList.AddItem(fmt.Sprintf("%s%s", prefix, p.Name), "", 0, nil)
+		label := fmt.Sprintf("%s%s", prefix, p.Name)
+		if ui.showLineNumbers {
+			label = fmt.Sprintf("%d. %s", i+1, label)
+		}
+		ui.pngList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.pngs) {
 		current = len(ui.pngs) - 1
@@ -1514,13 +1709,17 @@ func (ui *tviewUI) refreshMonsters() {
 		ui.monList.AddItem("(nessun mostro)", "", 0, nil)
 		return
 	}
-	for _, idx := range ui.filtered {
+	for j, idx := range ui.filtered {
 		m := ui.monsters[idx]
 		wc := ""
 		if m.WildCard {
 			wc = " WC"
 		}
-		ui.monList.AddItem(fmt.Sprintf("%s [S%d%s] Ferite:%d", m.Name, m.Size, wc, monsterWoundsCap(m)), "", 0, nil)
+		label := fmt.Sprintf("%s [S%d%s] Ferite:%d", m.Name, m.Size, wc, monsterWoundsCap(m))
+		if ui.showLineNumbers {
+			label = fmt.Sprintf("%d. %s", j+1, label)
+		}
+		ui.monList.AddItem(label, "", 0, nil)
 	}
 	if current >= len(ui.filtered) {
 		current = len(ui.filtered) - 1
@@ -1771,7 +1970,11 @@ func (ui *tviewUI) refreshEncounter() {
 		if e.HasInit {
 			initLabel = e.InitiativeCard
 		}
-		ui.encList.AddItem(fmt.Sprintf("%s [Ini %s | Ferite %d/%d]", label, initLabel, remaining, base), "", 0, nil)
+		fullLabel := fmt.Sprintf("%s [Ini %s | Ferite %d/%d]", label, initLabel, remaining, base)
+		if ui.showLineNumbers {
+			fullLabel = fmt.Sprintf("%d. %s", i+1, fullLabel)
+		}
+		ui.encList.AddItem(fullLabel, "", 0, nil)
 	}
 	if current >= len(ui.encounter) {
 		current = len(ui.encounter) - 1
@@ -1786,6 +1989,7 @@ func (ui *tviewUI) refreshDetail() {
 	if ui.detail == nil {
 		return
 	}
+	ui.detailCursorLine = 0
 	focus := ui.app.GetFocus()
 	if focus == ui.detailTreasure {
 		ui.renderTreasure()
@@ -1985,8 +2189,21 @@ func (ui *tviewUI) renderDetail() {
 	lines := strings.Split(out, "\n")
 	if len(lines) > 0 {
 		lines[0] = "[yellow]" + lines[0] + "[-]"
-		out = strings.Join(lines, "\n")
 	}
+	// Show cursor when detail panel is focused
+	if ui.app != nil && ui.app.GetFocus() == ui.detail {
+		cursor := ui.detailCursorLine
+		if cursor < 0 {
+			cursor = 0
+		}
+		if cursor >= len(lines) {
+			cursor = len(lines) - 1
+		}
+		if cursor >= 0 && len(lines) > 0 {
+			lines[cursor] = "[::r]" + lines[cursor] + "[::-]"
+		}
+	}
+	out = strings.Join(lines, "\n")
 	if strings.TrimSpace(ui.detailQuery) != "" {
 		out = highlightMatches(out, ui.detailQuery)
 	}
@@ -6120,4 +6337,221 @@ func (ui *tviewUI) showDeleteCampaignModal(name string) {
 	if h := form.GetButton(0); h != nil {
 		ui.app.SetFocus(form)
 	}
+}
+
+// ── Feature 1: g+number navigation on list panels ────────────────────────────
+
+// focusedListWidget returns the *tview.List if focus is directly on a list widget.
+func (ui *tviewUI) focusedListWidget(focus tview.Primitive) *tview.List {
+	switch focus {
+	case ui.pngList:
+		return ui.pngList
+	case ui.encList:
+		return ui.encList
+	case ui.monList:
+		return ui.monList
+	case ui.envList:
+		return ui.envList
+	case ui.eqList:
+		return ui.eqList
+	case ui.cardList:
+		return ui.cardList
+	case ui.classList:
+		return ui.classList
+	}
+	return nil
+}
+
+// jumpList sets the current item in list to idx (clamped), updates message.
+func (ui *tviewUI) jumpList(list *tview.List, idx int) {
+	if list == nil {
+		return
+	}
+	n := list.GetItemCount()
+	if n <= 0 {
+		return
+	}
+	if idx < 0 {
+		idx = 0
+	}
+	if idx >= n {
+		idx = n - 1
+	}
+	list.SetCurrentItem(idx)
+	ui.message = fmt.Sprintf("Jump: riga %d", idx+1)
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+// ── Feature 2: panel prefix with timer ───────────────────────────────────────
+
+// listForPanelDigit returns the primary list widget for digits 0-5.
+func (ui *tviewUI) listForPanelDigit(digit int) tview.Primitive {
+	switch digit {
+	case 0:
+		return ui.dice
+	case 1:
+		return ui.pngList
+	case 2:
+		return ui.encList
+	case 3:
+		return ui.monList
+	case 4:
+		return ui.eqList
+	case 5:
+		return ui.classList
+	}
+	return ui.app.GetFocus()
+}
+
+// ensureCatalogForDigit switches the catalog page for digits 3-5 without moving focus.
+func (ui *tviewUI) ensureCatalogForDigit(digit int) {
+	switch digit {
+	case 3:
+		if ui.catalogMode != "mostri" {
+			ui.catalogMode = "mostri"
+			ui.catalogPanel.SwitchToPage("mostri")
+			ui.refreshCatalogTitles()
+		}
+	case 4:
+		if ui.catalogMode != "equipaggiamento" {
+			ui.catalogMode = "equipaggiamento"
+			ui.catalogPanel.SwitchToPage("equipaggiamento")
+			ui.refreshCatalogTitles()
+		}
+	case 5:
+		if ui.catalogMode != "regole" {
+			ui.catalogMode = "regole"
+			ui.catalogPanel.SwitchToPage("regole")
+			ui.refreshCatalogTitles()
+		}
+	}
+}
+
+// startPanelPrefix activates the panel-prefix timer for the given digit.
+func (ui *tviewUI) startPanelPrefix(digit int) {
+	if ui.panelPrefixTimer != nil {
+		ui.panelPrefixTimer.Stop()
+	}
+	ui.panelPrefixActive = true
+	ui.panelPrefixDigit = digit
+	ui.message = fmt.Sprintf("Prefisso pannello: %d — shortcut o 500ms per focus", digit)
+	ui.refreshStatus()
+	ui.panelPrefixTimer = time.AfterFunc(500*time.Millisecond, func() {
+		ui.app.QueueUpdateDraw(func() {
+			if ui.panelPrefixActive && ui.panelPrefixDigit == digit {
+				ui.panelPrefixActive = false
+				ui.panelPrefixTimer = nil
+				ui.activatePanelForDigit(digit)
+				ui.message = ""
+				ui.refreshStatus()
+			}
+		})
+	})
+}
+
+// cancelPanelPrefix stops the timer and clears prefix state.
+func (ui *tviewUI) cancelPanelPrefix() {
+	if ui.panelPrefixTimer != nil {
+		ui.panelPrefixTimer.Stop()
+		ui.panelPrefixTimer = nil
+	}
+	ui.panelPrefixActive = false
+	ui.message = "Prefisso annullato."
+	ui.refreshStatus()
+}
+
+// activatePanelForDigit focuses the panel corresponding to digit 0-5.
+func (ui *tviewUI) activatePanelForDigit(digit int) {
+	switch digit {
+	case 0:
+		ui.focusPanel(focusDice)
+	case 1:
+		ui.focusPanel(focusPNG)
+	case 2:
+		ui.focusPanel(focusEncounter)
+	case 3:
+		ui.switchToCatalog("mostri")
+		ui.focusPanel(focusMonList)
+	case 4:
+		ui.switchToCatalog("equipaggiamento")
+		ui.focusPanel(focusEqList)
+	case 5:
+		ui.switchToCatalog("regole")
+		ui.focusPanel(focusClassList)
+	}
+}
+
+// ── Feature 3: detail panel vim navigation ───────────────────────────────────
+
+// moveDetailCursor moves the cursor by delta lines and re-renders.
+func (ui *tviewUI) moveDetailCursor(delta int) {
+	lines := strings.Split(ui.detailRaw, "\n")
+	ui.detailCursorLine += delta
+	if ui.detailCursorLine < 0 {
+		ui.detailCursorLine = 0
+	}
+	if ui.detailCursorLine >= len(lines) {
+		ui.detailCursorLine = len(lines) - 1
+	}
+	if ui.detailCursorLine < 0 {
+		ui.detailCursorLine = 0
+	}
+	ui.renderDetail()
+	ui.detail.ScrollTo(ui.detailCursorLine, 0)
+}
+
+// scrollDetailHalfPage scrolls the detail panel by half a page and moves cursor.
+func (ui *tviewUI) scrollDetailHalfPage(direction int) {
+	_, _, _, h := ui.detail.GetInnerRect()
+	if h <= 0 {
+		h = 24
+	}
+	step := h / 2
+	if step < 1 {
+		step = 1
+	}
+	row, col := ui.detail.GetScrollOffset()
+	row += direction * step
+	if row < 0 {
+		row = 0
+	}
+	ui.detail.ScrollTo(row, col)
+	ui.detailCursorLine += direction * step
+	lines := strings.Split(ui.detailRaw, "\n")
+	if ui.detailCursorLine < 0 {
+		ui.detailCursorLine = 0
+	}
+	if ui.detailCursorLine >= len(lines) {
+		ui.detailCursorLine = len(lines) - 1
+	}
+	ui.renderDetail()
+}
+
+// rollDiceFromDetailCursorLine finds the first dice expression on the cursor line and rolls it.
+func (ui *tviewUI) rollDiceFromDetailCursorLine() {
+	lines := strings.Split(ui.detailRaw, "\n")
+	if ui.detailCursorLine < 0 || ui.detailCursorLine >= len(lines) {
+		ui.message = "Nessuna riga cursore."
+		ui.refreshStatus()
+		return
+	}
+	line := lines[ui.detailCursorLine]
+	re := regexp.MustCompile(`(?i)\d*[dD]\d+([+-]\d+)?`)
+	expr := re.FindString(line)
+	if expr == "" {
+		ui.message = "Nessun dado trovato sulla riga."
+		ui.refreshStatus()
+		return
+	}
+	_, breakdown, err := rollDiceExpression(expr)
+	if err != nil {
+		ui.message = "Errore dado: " + err.Error()
+		ui.refreshStatus()
+		return
+	}
+	ui.appendDiceLog(DiceResult{Expression: expr, Output: breakdown})
+	ui.renderDiceList()
+	ui.message = fmt.Sprintf("Dado %s: %s", expr, breakdown)
+	ui.refreshStatus()
 }
