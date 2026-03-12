@@ -212,6 +212,10 @@ type tviewUI struct {
 
 	// line number toggle
 	showLineNumbers bool
+
+	// copy/paste clipboard for encounter and PNG
+	clipPNG       *PNG
+	clipEncounter *EncounterEntry
 }
 
 func runTViewUI() error {
@@ -1316,6 +1320,14 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		if focusIsWidget {
 			return ev
 		}
+		if focus == ui.pngList {
+			ui.yankCurrentPNG()
+			return nil
+		}
+		if focus == ui.encList {
+			ui.yankCurrentEncounterEntry()
+			return nil
+		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.openDropDown(ui.monSourceDrop)
 			return nil
@@ -1422,6 +1434,18 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			}
 			ui.refreshDetail()
 			ui.refreshStatus()
+			return nil
+		}
+	case 'p':
+		if focusIsWidget {
+			return ev
+		}
+		if focus == ui.pngList {
+			ui.pasteClipPNG()
+			return nil
+		}
+		if focus == ui.encList {
+			ui.pasteClipEncounterEntry()
 			return nil
 		}
 	}
@@ -6553,5 +6577,122 @@ func (ui *tviewUI) rollDiceFromDetailCursorLine() {
 	ui.appendDiceLog(DiceResult{Expression: expr, Output: breakdown})
 	ui.renderDiceList()
 	ui.message = fmt.Sprintf("Dado %s: %s", expr, breakdown)
+	ui.refreshStatus()
+}
+
+// ── Copy/paste for encounter & PNG panels ────────────────────────────────────
+
+// pngEntryBaseName strips the trailing " #N" from a PNG name.
+func pngEntryBaseName(name string) string {
+	re := regexp.MustCompile(`^(.*?) #\d+$`)
+	if m := re.FindStringSubmatch(name); m != nil {
+		return m[1]
+	}
+	return name
+}
+
+// nextPNGName returns "<base> #N" where N is one more than the highest existing #N for that base.
+func nextPNGName(base string, names []string) string {
+	max := 1
+	for _, n := range names {
+		if n == base || strings.HasPrefix(n, base+" #") {
+			rest := strings.TrimPrefix(n, base+" #")
+			if v, err := strconv.Atoi(rest); err == nil && v > max {
+				max = v
+			}
+		}
+	}
+	return base + " #" + strconv.Itoa(max+1)
+}
+
+func (ui *tviewUI) yankCurrentPNG() {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		ui.message = "Nessun PNG da copiare."
+		ui.refreshStatus()
+		return
+	}
+	p := ui.pngs[ui.selected]
+	ui.clipPNG = &p
+	ui.clipEncounter = nil
+	ui.message = fmt.Sprintf("PNG copiato: %s", p.Name)
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) pasteClipPNG() {
+	if ui.clipPNG == nil {
+		ui.message = "Clipboard vuoto (y per copiare)."
+		ui.refreshStatus()
+		return
+	}
+	names := make([]string, len(ui.pngs))
+	for i, p := range ui.pngs {
+		names[i] = p.Name
+	}
+	base := pngEntryBaseName(ui.clipPNG.Name)
+	newName := nextPNGName(base, names)
+	newPNG := *ui.clipPNG
+	newPNG.Name = newName
+	// Insert after current position
+	pos := ui.selected + 1
+	if pos < 0 || pos > len(ui.pngs) {
+		pos = len(ui.pngs)
+	}
+	ui.pngs = append(ui.pngs, PNG{})
+	copy(ui.pngs[pos+1:], ui.pngs[pos:])
+	ui.pngs[pos] = newPNG
+	ui.selected = pos
+	ui.persistPNGs()
+	ui.message = fmt.Sprintf("PNG incollato: %s", newName)
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) yankCurrentEncounterEntry() {
+	idx := ui.currentEncounterIndex()
+	if idx < 0 {
+		ui.message = "Nessun elemento encounter da copiare."
+		ui.refreshStatus()
+		return
+	}
+	e := ui.encounter[idx]
+	ui.clipEncounter = &e
+	ui.clipPNG = nil
+	ui.message = fmt.Sprintf("Encounter copiato: %s", e.Monster.Name)
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) pasteClipEncounterEntry() {
+	if ui.clipEncounter == nil {
+		ui.message = "Clipboard vuoto (y per copiare)."
+		ui.refreshStatus()
+		return
+	}
+	names := make([]string, len(ui.encounter))
+	for i, e := range ui.encounter {
+		names[i] = e.Monster.Name
+	}
+	base := pngEntryBaseName(ui.clipEncounter.Monster.Name)
+	newName := nextPNGName(base, names)
+	newEntry := *ui.clipEncounter
+	newEntry.Monster.Name = newName
+	newEntry.Wounds = 0
+	newEntry.Conditions = cloneStringIntMap(ui.clipEncounter.Conditions)
+	newEntry.HasInit = false
+	newEntry.InitiativeCard = ""
+	// Insert after current item
+	cur := ui.encList.GetCurrentItem()
+	pos := cur + 1
+	if pos < 0 || pos > len(ui.encounter) {
+		pos = len(ui.encounter)
+	}
+	ui.encounter = append(ui.encounter, EncounterEntry{})
+	copy(ui.encounter[pos+1:], ui.encounter[pos:])
+	ui.encounter[pos] = newEntry
+	ui.persistEncounter()
+	ui.message = fmt.Sprintf("Encounter incollato: %s", newName)
+	ui.refreshEncounter()
+	ui.encList.SetCurrentItem(pos)
+	ui.refreshDetail()
 	ui.refreshStatus()
 }
