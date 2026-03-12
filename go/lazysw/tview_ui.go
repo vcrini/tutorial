@@ -216,6 +216,16 @@ type tviewUI struct {
 	// copy/paste clipboard for encounter and PNG
 	clipPNG       *PNG
 	clipEncounter *EncounterEntry
+
+	// undo/redo stacks
+	undoStack []undoSnapshot
+	redoStack []undoSnapshot
+}
+
+type undoSnapshot struct {
+	pngs      []PNG
+	selected  int
+	encounter []EncounterEntry
 }
 
 func runTViewUI() error {
@@ -1235,9 +1245,21 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 			ui.openEquipmentTreasureInput()
 			return nil
 		}
+	case 'r':
+		if focusIsWidget {
+			return ev
+		}
+		if len(ui.redoStack) > 0 {
+			ui.performRedo()
+			return nil
+		}
 	case 'u':
 		if focusIsWidget {
 			return ev
+		}
+		if len(ui.undoStack) > 0 {
+			ui.performUndo()
+			return nil
 		}
 		if ui.isMonsterPanelFocus(focus) {
 			ui.focusPanel(focusMonSearch)
@@ -3369,6 +3391,7 @@ func (ui *tviewUI) openCreatePNGModal() {
 				return
 			}
 		}
+		ui.pushUndo()
 		ui.pngs = append(ui.pngs, PNG{Name: name})
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
@@ -3427,6 +3450,7 @@ func (ui *tviewUI) openRenamePNGModal() {
 				return
 			}
 		}
+		ui.pushUndo()
 		ui.pngs[ui.selected].Name = newName
 		ui.persistPNGs()
 		ui.closeModal()
@@ -3514,6 +3538,7 @@ func (ui *tviewUI) openClassPNGInput() {
 			Look:        look,
 			Inventory:   inv,
 		}
+		ui.pushUndo()
 		ui.pngs = append(ui.pngs, png)
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
@@ -4032,6 +4057,7 @@ func (ui *tviewUI) deleteSelectedPNG() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	name := ui.pngs[ui.selected].Name
 	ui.pngs = append(ui.pngs[:ui.selected], ui.pngs[ui.selected+1:]...)
 	if len(ui.pngs) == 0 {
@@ -4051,6 +4077,7 @@ func (ui *tviewUI) addSelectedMonsterToEncounter() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	mon := ui.monsters[idx]
 	woundsMax := monsterWoundsCap(mon)
 	ui.encounter = append(ui.encounter, EncounterEntry{
@@ -4073,6 +4100,7 @@ func (ui *tviewUI) addSelectedPNGToEncounter() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	p := ui.pngs[ui.selected]
 	name := strings.TrimSpace(p.Name)
 	if name == "" {
@@ -4311,6 +4339,7 @@ func (ui *tviewUI) openRandomEncounterFromMonstersInput() {
 		}
 		selectedPG = n
 		mod := battleBudgetModifierByDifficulty(selectedDifficulty)
+		ui.pushUndo()
 		summary := ui.generateRandomEncounterFromMonsters(selectedSize, selectedPG, mod)
 		if summary.AddedEntries == 0 {
 			ui.message = fmt.Sprintf("Nessun mostro generato (S%d, %d PG).", selectedSize, selectedPG)
@@ -4471,6 +4500,7 @@ func (ui *tviewUI) removeSelectedEncounter() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	name := ui.encounter[idx].Monster.Name
 	ui.encounter = append(ui.encounter[:idx], ui.encounter[idx+1:]...)
 	ui.clearEncounterInitTracking()
@@ -4486,6 +4516,7 @@ func (ui *tviewUI) adjustEncounterWounds(delta int) {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	e := &ui.encounter[idx]
 	prevWounds := e.Wounds
 	e.Wounds += delta
@@ -4515,6 +4546,7 @@ func (ui *tviewUI) rollEncounterInitiativeSelected() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	e := &ui.encounter[idx]
 	card, ok := ui.drawInitiativeCard(idx)
 	if !ok {
@@ -4538,6 +4570,7 @@ func (ui *tviewUI) rollEncounterInitiativeAll() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	deck := buildInitiativeDeck()
 	rand.Shuffle(len(deck), func(i, j int) { deck[i], deck[j] = deck[j], deck[i] })
 	for i := range ui.encounter {
@@ -4567,6 +4600,7 @@ func (ui *tviewUI) sortEncounterByInitiative() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	currentLabel := ui.encounterLabelAt(ui.currentEncounterIndex())
 	sort.SliceStable(ui.encounter, func(i, j int) bool {
 		ai, aj := ui.encounter[i], ui.encounter[j]
@@ -4661,6 +4695,7 @@ func (ui *tviewUI) incrementEncounterConditionRoundsAt(idx int) {
 	if len(ui.encounter[idx].Conditions) == 0 {
 		return
 	}
+	ui.pushUndo()
 	for code, rounds := range ui.encounter[idx].Conditions {
 		if rounds <= 0 {
 			ui.encounter[idx].Conditions[code] = 1
@@ -4703,6 +4738,7 @@ func (ui *tviewUI) openEncounterInitiativeEditModal() {
 	save := func() {
 		rankText := strings.ToUpper(strings.TrimSpace(form.GetFormItem(0).(*tview.InputField).GetText()))
 		if rankText == "" {
+			ui.pushUndo()
 			ui.encounter[idx].HasInit = false
 			ui.encounter[idx].InitiativeCard = ""
 			ui.clearEncounterInitTracking()
@@ -4728,6 +4764,7 @@ func (ui *tviewUI) openEncounterInitiativeEditModal() {
 			return
 		}
 
+		ui.pushUndo()
 		ui.encounter[idx].HasInit = true
 		ui.encounter[idx].InitiativeCard = card
 		ui.clearEncounterInitTracking()
@@ -4843,6 +4880,7 @@ func (ui *tviewUI) openEncounterConditionModal() {
 		if !apply {
 			return
 		}
+		ui.pushUndo()
 		ui.encounter[idx].Conditions = cloneStringIntMap(temp)
 		ui.persistEncounter()
 		ui.refreshEncounter()
@@ -4892,6 +4930,7 @@ func (ui *tviewUI) clearEncounterConditions() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	ui.encounter[idx].Conditions = nil
 	ui.persistEncounter()
 	ui.refreshEncounter()
@@ -4912,6 +4951,7 @@ func (ui *tviewUI) removeEncounterConditionByCode(index int, code string) bool {
 	if _, ok := ui.encounter[index].Conditions[code]; !ok {
 		return false
 	}
+	ui.pushUndo()
 	delete(ui.encounter[index].Conditions, code)
 	if len(ui.encounter[index].Conditions) == 0 {
 		ui.encounter[index].Conditions = nil
@@ -5017,6 +5057,7 @@ func (ui *tviewUI) adjustEncounterConditionRounds(delta int) {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	for code, r := range ui.encounter[idx].Conditions {
 		n := r + delta
 		if n <= 0 {
@@ -6624,6 +6665,7 @@ func (ui *tviewUI) pasteClipPNG() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	names := make([]string, len(ui.pngs))
 	for i, p := range ui.pngs {
 		names[i] = p.Name
@@ -6668,6 +6710,7 @@ func (ui *tviewUI) pasteClipEncounterEntry() {
 		ui.refreshStatus()
 		return
 	}
+	ui.pushUndo()
 	names := make([]string, len(ui.encounter))
 	for i, e := range ui.encounter {
 		names[i] = e.Monster.Name
@@ -6694,5 +6737,94 @@ func (ui *tviewUI) pasteClipEncounterEntry() {
 	ui.refreshEncounter()
 	ui.encList.SetCurrentItem(pos)
 	ui.refreshDetail()
+	ui.refreshStatus()
+}
+
+// ── Undo / Redo ───────────────────────────────────────────────────────────────
+
+func deepCopyEncounter(src []EncounterEntry) []EncounterEntry {
+	if src == nil {
+		return nil
+	}
+	dst := make([]EncounterEntry, len(src))
+	copy(dst, src)
+	for i, e := range src {
+		dst[i].Conditions = cloneStringIntMap(e.Conditions)
+	}
+	return dst
+}
+
+func (ui *tviewUI) pushUndo() {
+	pngsCopy := make([]PNG, len(ui.pngs))
+	copy(pngsCopy, ui.pngs)
+	snap := undoSnapshot{
+		pngs:      pngsCopy,
+		selected:  ui.selected,
+		encounter: deepCopyEncounter(ui.encounter),
+	}
+	ui.undoStack = append(ui.undoStack, snap)
+	if len(ui.undoStack) > 50 {
+		ui.undoStack = ui.undoStack[len(ui.undoStack)-50:]
+	}
+	ui.redoStack = nil
+}
+
+func (ui *tviewUI) performUndo() {
+	if len(ui.undoStack) == 0 {
+		ui.message = "Niente da annullare."
+		ui.refreshStatus()
+		return
+	}
+	// Save current state to redo stack
+	pngsCopy := make([]PNG, len(ui.pngs))
+	copy(pngsCopy, ui.pngs)
+	ui.redoStack = append(ui.redoStack, undoSnapshot{
+		pngs:      pngsCopy,
+		selected:  ui.selected,
+		encounter: deepCopyEncounter(ui.encounter),
+	})
+	if len(ui.redoStack) > 50 {
+		ui.redoStack = ui.redoStack[len(ui.redoStack)-50:]
+	}
+	// Restore previous state
+	prev := ui.undoStack[len(ui.undoStack)-1]
+	ui.undoStack = ui.undoStack[:len(ui.undoStack)-1]
+	ui.pngs = prev.pngs
+	ui.selected = prev.selected
+	ui.encounter = prev.encounter
+	_ = savePNGList(dataFile, ui.pngs, selectedPNGName(ui.pngs, ui.selected))
+	ui.persistEncounter()
+	ui.refreshAll()
+	ui.message = fmt.Sprintf("Annullato. (undo: %d, redo: %d)", len(ui.undoStack), len(ui.redoStack))
+	ui.refreshStatus()
+}
+
+func (ui *tviewUI) performRedo() {
+	if len(ui.redoStack) == 0 {
+		ui.message = "Niente da ripristinare."
+		ui.refreshStatus()
+		return
+	}
+	// Save current state to undo stack (without clearing redo)
+	pngsCopy := make([]PNG, len(ui.pngs))
+	copy(pngsCopy, ui.pngs)
+	ui.undoStack = append(ui.undoStack, undoSnapshot{
+		pngs:      pngsCopy,
+		selected:  ui.selected,
+		encounter: deepCopyEncounter(ui.encounter),
+	})
+	if len(ui.undoStack) > 50 {
+		ui.undoStack = ui.undoStack[len(ui.undoStack)-50:]
+	}
+	// Restore redo state
+	next := ui.redoStack[len(ui.redoStack)-1]
+	ui.redoStack = ui.redoStack[:len(ui.redoStack)-1]
+	ui.pngs = next.pngs
+	ui.selected = next.selected
+	ui.encounter = next.encounter
+	_ = savePNGList(dataFile, ui.pngs, selectedPNGName(ui.pngs, ui.selected))
+	ui.persistEncounter()
+	ui.refreshAll()
+	ui.message = fmt.Sprintf("Ripristinato. (undo: %d, redo: %d)", len(ui.undoStack), len(ui.redoStack))
 	ui.refreshStatus()
 }
