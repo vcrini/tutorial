@@ -1045,6 +1045,16 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 	case tcell.KeyCtrlO:
 		ui.showCampaignManagerModal()
 		return nil
+	case tcell.KeyLeft:
+		if focus == ui.pngList {
+			ui.adjustPNGToken(-1)
+			return nil
+		}
+	case tcell.KeyRight:
+		if focus == ui.pngList {
+			ui.adjustPNGToken(1)
+			return nil
+		}
 	case tcell.KeyEnter:
 		if focus == ui.detail {
 			ui.rollDiceFromDetailCursorLine()
@@ -1710,7 +1720,7 @@ func (ui *tviewUI) refreshPNGs() {
 		if i == ui.selected {
 			prefix = "* "
 		}
-		label := fmt.Sprintf("%s%s", prefix, p.Name)
+		label := fmt.Sprintf("%s%s [T:%d]", prefix, p.Name, p.Token)
 		if ui.showLineNumbers {
 			label = fmt.Sprintf("%d. %s", i+1, label)
 		}
@@ -2117,6 +2127,7 @@ func (ui *tviewUI) refreshDetail() {
 	p := ui.pngs[ui.selected]
 	var b strings.Builder
 	b.WriteString(p.Name)
+	b.WriteString(fmt.Sprintf("\nToken: %d  (← decrementa, → incrementa)", p.Token))
 	if strings.TrimSpace(p.Class) != "" || strings.TrimSpace(p.Subclass) != "" || p.Level > 0 {
 		classLine := ""
 		if strings.TrimSpace(p.Subclass) != "" {
@@ -6826,5 +6837,22 @@ func (ui *tviewUI) performRedo() {
 	ui.persistEncounter()
 	ui.refreshAll()
 	ui.message = fmt.Sprintf("Ripristinato. (undo: %d, redo: %d)", len(ui.undoStack), len(ui.redoStack))
+	ui.refreshStatus()
+}
+
+// adjustPNGToken increments or decrements the token counter for the selected PNG.
+func (ui *tviewUI) adjustPNGToken(delta int) {
+	if ui.selected < 0 || ui.selected >= len(ui.pngs) {
+		return
+	}
+	ui.pushUndo()
+	ui.pngs[ui.selected].Token += delta
+	if ui.pngs[ui.selected].Token < 0 {
+		ui.pngs[ui.selected].Token = 0
+	}
+	ui.persistPNGs()
+	ui.refreshPNGs()
+	ui.refreshDetail()
+	ui.message = fmt.Sprintf("Token %s: %d", ui.pngs[ui.selected].Name, ui.pngs[ui.selected].Token)
 	ui.refreshStatus()
 }

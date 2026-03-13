@@ -178,6 +178,7 @@ type PNG struct {
 	Armor       string `json:"Armor,omitempty" yaml:"armor,omitempty"`
 	Look        string `json:"Look,omitempty" yaml:"look,omitempty"`
 	Inventory   string `json:"Inventory,omitempty" yaml:"inventory,omitempty"`
+	Token       int    `json:"Token,omitempty" yaml:"token,omitempty"`
 }
 
 func (p *PNG) UnmarshalJSON(data []byte) error {
@@ -218,10 +219,15 @@ func (p *PNG) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	p.Name = aux.Name
-	_ = aux.Token
-	_ = aux.TokenLower
-	_ = aux.Counter
-	_ = aux.CounterLower
+	if aux.Token != nil {
+		p.Token = *aux.Token
+	} else if aux.TokenLower != nil {
+		p.Token = *aux.TokenLower
+	} else if aux.Counter != nil {
+		p.Token = *aux.Counter
+	} else if aux.CounterLower != nil {
+		p.Token = *aux.CounterLower
+	}
 	if strings.TrimSpace(aux.Class) != "" {
 		p.Class = strings.TrimSpace(aux.Class)
 	} else {
