@@ -1396,6 +1396,10 @@ func (ui *tviewUI) handleGlobalKeys(ev *tcell.EventKey) *tcell.EventKey {
 		if focusIsWidget {
 			return ev
 		}
+		if focus == ui.pngList {
+			ui.deleteSelectedPNG()
+			return nil
+		}
 		if focus == ui.dice {
 			ui.deleteSelectedDiceResult()
 			return nil
