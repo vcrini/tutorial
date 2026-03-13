@@ -4686,3 +4686,340 @@
   weight: "0.25"
   cost: "$150"
   note: "Conceal -2. Small Blast Template"
+
+# ---- CORE: VEICOLI TERRESTRI CIVILI ----
+- source: core
+  name: Auto Utilitaria
+  category: Veicolo
+  type: Terrestre
+  cost: "$15,000"
+  note: "Taglia: 3. Manovr: +0. Vel: 36/72. Rob: 11(3). Equipaggio: 1+4"
+
+- source: core
+  name: Auto Media
+  category: Veicolo
+  type: Terrestre
+  cost: "$25,000"
+  note: "Taglia: 4. Manovr: +0. Vel: 40/80. Rob: 11(3). Equipaggio: 1+4"
+
+- source: core
+  name: Auto d'Epoca
+  category: Veicolo
+  type: Terrestre
+  cost: "$10,000"
+  note: "Taglia: 3. Manovr: +0. Vel: 30/60. Rob: 11(3). Equipaggio: 1+4"
+
+- source: core
+  name: Auto Sportiva
+  category: Veicolo
+  type: Terrestre
+  cost: "$50,000"
+  note: "Taglia: 3. Manovr: +1. Vel: 50/100. Rob: 11(3). Equipaggio: 1+1"
+
+- source: core
+  name: Bicicletta
+  category: Veicolo
+  type: Terrestre
+  cost: "$500"
+  note: "Taglia: 0. Manovr: +0. Vel: 10/20. Rob: 5. Equipaggio: 1"
+
+- source: core
+  name: Carro/Carrozza
+  category: Veicolo
+  type: Terrestre
+  cost: "$1,000"
+  note: "Taglia: 3. Manovr: -1. Vel: 8/16. Rob: 10(2). Equipaggio: 1+7"
+
+- source: core
+  name: Furgone/Minivan
+  category: Veicolo
+  type: Terrestre
+  cost: "$30,000"
+  note: "Taglia: 4. Manovr: -1. Vel: 30/60. Rob: 12(3). Equipaggio: 1+7"
+
+- source: core
+  name: Motocicletta
+  category: Veicolo
+  type: Terrestre
+  cost: "$8,000"
+  note: "Taglia: 2. Manovr: +1. Vel: 45/90. Rob: 8(1). Equipaggio: 1+1"
+
+- source: core
+  name: Moto da Cross
+  category: Veicolo
+  type: Terrestre
+  cost: "$5,000"
+  note: "Taglia: 1. Manovr: +2. Vel: 40/80. Rob: 6. Equipaggio: 1"
+
+- source: core
+  name: Autoarticolato
+  category: Veicolo
+  type: Terrestre
+  cost: "$150,000"
+  note: "Taglia: 8. Manovr: -2. Vel: 32/64. Rob: 18(4). Equipaggio: 1+1"
+
+- source: core
+  name: SUV
+  category: Veicolo
+  type: Terrestre
+  cost: "$40,000"
+  note: "Taglia: 5. Manovr: +0. Vel: 38/76. Rob: 14(3). Equipaggio: 1+5"
+
+# ---- CORE: VEICOLI MILITARI WWII ----
+- source: core
+  name: Jeep (WWII)
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 3. Manovr: +1. Vel: 36/72. Rob: 10(2). Equipaggio: 1+3. Armi: LMG cal.30"
+
+- source: core
+  name: M4 Sherman
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: -1. Vel: 24/48. Rob: 28(14). Equipaggio: 1+4. Armi: Cannone 75mm, LMG cal.30 (coassiale), LMG cal.50 (AA)"
+
+- source: core
+  name: M5A1 Stuart
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 6. Manovr: +0. Vel: 36/72. Rob: 22(10). Equipaggio: 1+3. Armi: Cannone 37mm, LMG cal.30 (coassiale)"
+
+- source: core
+  name: T-34/76
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: -1. Vel: 26/52. Rob: 26(12). Equipaggio: 1+3. Armi: Cannone 76mm, LMG 7.62mm (coassiale)"
+
+- source: core
+  name: Panzer IV J
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: -1. Vel: 24/48. Rob: 26(12). Equipaggio: 1+4. Armi: Cannone 75mm KwK 40, MG34 (coassiale), MG34 (scafo)"
+
+- source: core
+  name: Panzer VI Tiger II
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 8. Manovr: -2. Vel: 18/36. Rob: 34(18). Equipaggio: 1+4. Armi: Cannone 88mm KwK 43, MG34 (coassiale), MG34 (scafo)"
+
+# ---- CORE: VEICOLI MILITARI MODERNI ----
+- source: core
+  name: M1A1 Abrams
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 8. Manovr: -1. Vel: 38/76. Rob: 40(22). Equipaggio: 1+3. Armi: Cannone 120mm, LMG cal.50, LMG cal.7.62 (x2)"
+
+- source: core
+  name: M2 Bradley
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: +0. Vel: 32/64. Rob: 30(14). Equipaggio: 1+2+6. Armi: Cannone 25mm, Missili TOW (x2)"
+
+- source: core
+  name: T-72 MBT
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 8. Manovr: -1. Vel: 30/60. Rob: 36(20). Equipaggio: 1+2. Armi: Cannone 125mm, LMG 7.62mm (coassiale), LMG 12.7mm (AA)"
+
+- source: core
+  name: T-80 MBT
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 8. Manovr: -1. Vel: 36/72. Rob: 38(22). Equipaggio: 1+2. Armi: Cannone/Lanciamissili 125mm, LMG 7.62mm (coassiale), LMG 12.7mm (AA)"
+
+- source: core
+  name: BTR 70 APC
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: +0. Vel: 32/64. Rob: 24(10). Equipaggio: 1+2+8. Armi: LMG 14.5mm, LMG 7.62mm (coassiale)"
+
+# ---- CORE: VEICOLI MILITARI FUTURISTICI ----
+- source: core
+  name: Hover Tank
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: +0. Vel: 60/120. Rob: 40(22). Equipaggio: 1+2. Armi: Cannone a particelle, LMG laser (coassiale)"
+
+- source: core
+  name: Hover APC
+  category: Veicolo
+  type: Terrestre
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: +0. Vel: 60/120. Rob: 30(14). Equipaggio: 1+1+10. Armi: LMG laser"
+
+# ---- CORE: VELIVOLI CIVILI ----
+- source: core
+  name: Biplano
+  category: Veicolo
+  type: Velivolo
+  cost: "$50,000"
+  note: "Taglia: 4. Manovr: +2. Vel: 50/200. Rob: 10(2). Equipaggio: 1+1"
+
+- source: core
+  name: Cessna Skyhawk
+  category: Veicolo
+  type: Velivolo
+  cost: "$200,000"
+  note: "Taglia: 5. Manovr: +1. Vel: 70/280. Rob: 10(2). Equipaggio: 1+3"
+
+- source: core
+  name: Elicottero
+  category: Veicolo
+  type: Velivolo
+  cost: "$500,000"
+  note: "Taglia: 5. Manovr: +1. Vel: 60/240. Rob: 12(2). Equipaggio: 1+7"
+
+- source: core
+  name: Jet Privato
+  category: Veicolo
+  type: Velivolo
+  cost: "$10,000,000"
+  note: "Taglia: 7. Manovr: +0. Vel: 250/1000. Rob: 14(2). Equipaggio: 1+1+12"
+
+- source: core
+  name: Space Shuttle
+  category: Veicolo
+  type: Velivolo
+  cost: "Governativo"
+  note: "Taglia: 12. Manovr: -2. Vel: 350/1400. Rob: 30(8). Equipaggio: 2+5"
+
+# ---- CORE: VELIVOLI MILITARI WWII ----
+- source: core
+  name: B-17 Flying Fortress
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 9. Manovr: -1. Vel: 150/600. Rob: 18(4). Equipaggio: 10. Armi: LMG cal.50 (x13), Bombe"
+
+- source: core
+  name: BF-109
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 4. Manovr: +2. Vel: 250/1000. Rob: 12(2). Equipaggio: 1. Armi: Cannone 20mm (x2), MG 7.92mm (x2)"
+
+- source: core
+  name: P-51 Mustang
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 4. Manovr: +2. Vel: 280/1120. Rob: 12(2). Equipaggio: 1. Armi: LMG cal.50 (x6)"
+
+- source: core
+  name: Mitsubishi A6M Zero
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 4. Manovr: +2. Vel: 260/1040. Rob: 10(1). Equipaggio: 1. Armi: Cannone 20mm (x2), LMG 7.7mm (x2)"
+
+- source: core
+  name: Spitfire Mk IIA
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 4. Manovr: +2. Vel: 270/1080. Rob: 12(2). Equipaggio: 1. Armi: LMG cal.30 (x8)"
+
+# ---- CORE: VELIVOLI MILITARI MODERNI ----
+- source: core
+  name: AH-64 Apache
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 6. Manovr: +2. Vel: 130/520. Rob: 18(4). Equipaggio: 1+1. Armi: Cannone M230 30mm, Missili Hellfire (x16), Razzi Hydra 70 (x76)"
+
+- source: core
+  name: AV-8B Harrier
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 5. Manovr: +2. Vel: 300/1200. Rob: 16(4). Equipaggio: 1. Armi: Cannone 25mm, Missili, Bombe"
+
+- source: core
+  name: F-15 Eagle
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 6. Manovr: +3. Vel: 700/2800. Rob: 18(4). Equipaggio: 1+1. Armi: Cannone M61 20mm, Missili AA, Bombe"
+
+- source: core
+  name: SU-27
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 6. Manovr: +3. Vel: 650/2600. Rob: 18(4). Equipaggio: 1. Armi: Cannone 30mm, Missili AA"
+
+- source: core
+  name: UH-1 Huey
+  category: Veicolo
+  type: Velivolo
+  cost: "Militare"
+  note: "Taglia: 6. Manovr: +1. Vel: 80/320. Rob: 14(2). Equipaggio: 1+1+12. Armi: LMG cal.30 (x2)"
+
+# ---- CORE: NATANTI ----
+- source: core
+  name: Galeone
+  category: Veicolo
+  type: Natante
+  cost: "$100,000"
+  note: "Taglia: 12. Manovr: -3. Vel: 8/16. Rob: 22(6). Equipaggio: 30+200. Armi: Cannoni (x60)"
+
+- source: core
+  name: Galea
+  category: Veicolo
+  type: Natante
+  cost: "$50,000"
+  note: "Taglia: 9. Manovr: -2. Vel: 10/20. Rob: 16(4). Equipaggio: 20+100. Armi: Cannoni prua (x2)"
+
+- source: core
+  name: Aliscafo
+  category: Veicolo
+  type: Natante
+  cost: "$300,000"
+  note: "Taglia: 6. Manovr: +1. Vel: 70/280. Rob: 12(2). Equipaggio: 1+49"
+
+- source: core
+  name: Pattugliatore PBR
+  category: Veicolo
+  type: Natante
+  cost: "Militare"
+  note: "Taglia: 5. Manovr: +1. Vel: 40/160. Rob: 12(2). Equipaggio: 4. Armi: LMG cal.50 (x2), LMG cal.30"
+
+- source: core
+  name: PT Boat
+  category: Veicolo
+  type: Natante
+  cost: "Militare"
+  note: "Taglia: 7. Manovr: +1. Vel: 50/200. Rob: 14(2). Equipaggio: 12. Armi: LMG cal.50 (x4), Siluri (x4), Granate di profondità"
+
+- source: core
+  name: Barca a Remi
+  category: Veicolo
+  type: Natante
+  cost: "$500"
+  note: "Taglia: 2. Manovr: +0. Vel: 4/8. Rob: 8(1). Equipaggio: 1+3"
+
+- source: core
+  name: Motoscafo
+  category: Veicolo
+  type: Natante
+  cost: "$30,000"
+  note: "Taglia: 4. Manovr: +1. Vel: 40/160. Rob: 10(2). Equipaggio: 1+5"
+
+- source: core
+  name: Piccolo Yacht
+  category: Veicolo
+  type: Natante
+  cost: "$200,000"
+  note: "Taglia: 7. Manovr: -1. Vel: 16/32. Rob: 16(3). Equipaggio: 2+8"
