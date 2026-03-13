@@ -3396,7 +3396,7 @@ func (ui *tviewUI) openCreatePNGModal() {
 		ui.selected = len(ui.pngs) - 1
 		ui.persistPNGs()
 		ui.closeModal()
-		ui.focusPanel(0)
+		ui.focusPanel(focusPNG)
 		ui.message = fmt.Sprintf("Creato PNG %s.", name)
 		ui.refreshAll()
 	})
