@@ -1,0 +1,107 @@
+- name: Razza
+  subclass: Androide
+  domains: ""
+  description: "Gli androidi sono esseri semi-organici creati tramite tecnologie avanzate. La loro intelligenza artificiale include una personalità individuale dotata di emozioni e tratti caratteriali paragonabili a quelli di ogni altro essere senziente."
+  class_privileges:
+    - "Costrutto: +2 per riprendersi da Scosso, non respirano, immuni a veleni e malattie, ignorano 1 livello di penalità da Ferite. Le Ferite devono essere curate con Riparare."
+    - "Estraneo (Maggiore): -2 ai tiri di Persuasione quando interagiscono con non-androidi; in molte aree non hanno diritti legali."
+    - "Giuramento (Maggiore): sono progettati per scopi specifici e hanno direttive ampie che corrispondono allo Svantaggio Giuramento (Maggiore)."
+    - "Pacifista (Maggiore): nelle società più avanzate è obbligatoria l'installazione dei Circuiti Asimov. L'androide non può causare una lesione né permettere che venga danneggiato."
+  source: core
+
+- name: Razza
+  subclass: Atlantidei
+  domains: ""
+  description: "Il popolo degli atlantidei proviene dalle profondità oceaniche. Sotto la superficie delle onde sono esseri forti e resistenti ma spesso risultano vulnerabili all'aria aperta o se esposti al caldo più intenso."
+  class_privileges:
+    - "Acquatico: non possono annegare in acqua e nuotano al loro normale Passo."
+    - "Dipendenza Innata: devono immergersi per almeno un'ora ogni 24; altrimenti ricevono un livello di Fatica al giorno, fino a diventare Incapacitati. Ogni ora in acqua rimuove un livello di Fatica."
+    - "Robustezza +1: la pelle degli atlantidei è dura e resistente."
+    - "Visione Crepuscolare: ignorano le penalità dovute a Luce Fioca e Oscurità."
+  source: core
+
+- name: Razza
+  subclass: Avion
+  domains: ""
+  description: "Gli avion sono esseri umanoidi dotati di ali, di corporatura leggera anche grazie alle loro ossa cave. Alcuni possiedono ali piumate, altri le hanno simili a pipistrelli o a rettili."
+  class_privileges:
+    - "Fragile: l'ossatura cava comporta -1 alla Robustezza."
+    - "Non Sa Nuotare: -2 ai tiri di Atletica per nuotare; ogni pollice di spostamento in acqua conta per 3."
+    - "Passo Ridotto: -1 al Passo e il dado per correre peggiora di un tipo quando camminano."
+    - "Sensi Acuti: iniziano con Percezione d6 (invece di d4); il massimo è d12+1."
+    - "Volo: volano con Passo 12 e utilizzano Atletica per eventuali tiri di manovra."
+  source: core
+
+- name: Razza
+  subclass: Elfi
+  domains: ""
+  description: "Gli elfi sono alti e snelli, hanno orecchie appuntite e occhi profondi. Sono per nascita più aggraziati degli umani, ma anche più fragili. La maggior parte degli elfi vive oltre 300 anni."
+  class_privileges:
+    - "Agile: iniziano il gioco con Agilità d6 anziché d4; il massimo per tale attributo è d12+1."
+    - "Scarsa Manualità (Svantaggio): hanno una congenita avversione per gli oggetti meccanici."
+    - "Visione Crepuscolare: ignorano le penalità dovute a Luce Fioca e Oscurità."
+  source: core
+
+- name: Razza
+  subclass: Mezzelfi
+  domains: ""
+  description: "I mezzelfi ereditano la grazia degli elfi ma non la loro elegante fragilità. Molti vivono perfettamente integrati, ma alcuni sviluppano un certo risentimento. La durata della loro vita si attesta intorno ai 100 anni."
+  class_privileges:
+    - "Estraneo (Minore): -2 ai tiri di Persuasione quando interagiscono con chiunque non sia un mezzelfo."
+    - "Retaggio: ciascun mezzelfo può decidere di ottenere un Vantaggio gratuito oppure iniziare con Agilità d6 (massimo d12+1)."
+    - "Visione Crepuscolare: ignorano le penalità dovute a Luce Fioca e Oscurità."
+  source: core
+
+- name: Razza
+  subclass: Mezzuomini
+  domains: ""
+  description: "I mezzuomini sono creature piccole e agili. Sebbene siano fisicamente più fragili rispetto ad altre razze, il loro allegro ottimismo li spinge a non darsi mai per vinti. Tendono a vivere in piccole comunità lontano dalle vie più battute."
+  class_privileges:
+    - "Fortuna: ottengono un Benny in più all'inizio di ogni sessione di gioco."
+    - "Passo Ridotto: -1 al Passo e il dado per correre peggiora di un tipo."
+    - "Taglia -1: sono alti in media 1,2 metri; -1 alla Taglia e quindi -1 alla Robustezza."
+    - "Vivace: iniziano con Spirito d6 invece di d4; il massimo è d12+1."
+  source: core
+
+- name: Razza
+  subclass: Nani
+  domains: ""
+  description: "I nani sono esseri bassi, massicci e robusti che abitano in maestose caverne o sui monti. Sono un popolo di orgogliosi guerrieri, spesso in conflitto con razze ostili. Vivono fino a 200 anni e spesso anche di più."
+  class_privileges:
+    - "Passo Ridotto: -1 al Passo e il dado per correre peggiora di un tipo."
+    - "Tenace: iniziano con Vigore d6 invece di d4; il massimo è d12+1."
+    - "Visione Crepuscolare: i nani sono abituati alle tenebre sotterranee e ignorano le penalità dovute a Luce Fioca e Oscurità."
+  source: core
+
+- name: Razza
+  subclass: Rakashan
+  domains: ""
+  description: "I rakashan sono umanoidi dai tratti felini. Possiedono sempre artigli e denti affilati, e un'indole feroce quando è il momento di cacciare. Possono vivere in remote città esotiche, oppure ai margini della società."
+  class_privileges:
+    - "Agile: iniziano con Agilità d6 anziché d4; il massimo è d12+1."
+    - "Artigli/Morso: Armi Naturali che infliggono For+d4 danni."
+    - "Nemico Razziale: -2 ai tiri di Persuasione con una razza rivale comune nell'ambientazione."
+    - "Non Sa Nuotare: -2 ai tiri di Atletica per nuotare; ogni pollice di spostamento in acqua conta per 3."
+    - "Sanguinario: raramente prendono prigionieri e non si fanno remore a punirli brutalmente."
+    - "Visione Crepuscolare: ignorano le penalità dovute a Luce Fioca e Oscurità."
+  source: core
+
+- name: Razza
+  subclass: Sauriani
+  domains: ""
+  description: "Gli uomini lucertola solitamente provengono da giungle brumose o deserti riarsi, dove hanno sviluppato civiltà uniche e pressoché sconosciute alle altre razze."
+  class_privileges:
+    - "Armatura +2: la pelle scagliosa equivale a un'armatura di cuoio."
+    - "Debolezza Ambientale (freddo): -4 ai tiri per resistere agli effetti ambientali da freddo; +4 danni dagli attacchi basati sul freddo."
+    - "Estraneo (Minore): -2 ai tiri di Persuasione verso chiunque non appartenga alla loro stessa razza."
+    - "Morso: Armi Naturali che infliggono For+d4 danni."
+    - "Sensi Acuti: iniziano il gioco con il Vantaggio Allerta."
+  source: core
+
+- name: Razza
+  subclass: Umani
+  domains: ""
+  description: "Nella maggior parte delle ambientazioni gli umani ottengono un Vantaggio aggiuntivo gratuito, che riflette la loro maggiore versatilità rispetto alle altre razze."
+  class_privileges:
+    - "Adattabile: iniziano il gioco con un Vantaggio gratuito di Rango Principiante (devono comunque soddisfarne i Requisiti)."
+  source: core

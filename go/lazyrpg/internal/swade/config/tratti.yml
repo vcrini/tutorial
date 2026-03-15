@@ -1,0 +1,227 @@
+# Attributi
+- name: Attributo
+  subclass: Agilita
+  domains: ""
+  description: "La misura della destrezza e della coordinazione generale. Utilizzata come base per molte abilità fisiche come Atletica, Combattere, Furtività e Sparare."
+  source: core
+
+- name: Attributo
+  subclass: Forza
+  domains: ""
+  description: "La potenza fisica del personaggio. Utilizzata come base per il danno nel combattimento corpo a corpo. Determina inoltre quanto peso può trasportare il personaggio."
+  source: core
+
+- name: Attributo
+  subclass: Intelligenza
+  domains: ""
+  description: "Misura le capacità intellettive, l'acume e la velocità di pensiero. Utilizzata per resistere ad alcuni tipi di attacchi mentali o sociali e per molte abilità di conoscenza."
+  source: core
+
+- name: Attributo
+  subclass: Spirito
+  domains: ""
+  description: "Rappresenta la forza di volontà e la sicurezza di sé. Utilizzata per resistere ad alcuni attacchi sociali e soprannaturali e per far fronte alla paura."
+  source: core
+
+- name: Attributo
+  subclass: Vigore
+  domains: ""
+  description: "Rappresenta la resistenza fisica a malattie, veleni, tossine e danni fisici. Utilizzato soprattutto per resistere alla Fatica ed è la base del valore di Robustezza."
+  source: core
+
+# Abilità di Base
+- name: Abilita - Base
+  subclass: Atletica
+  domains: "Agilità"
+  description: "L'Atletica combina la coordinazione naturale del personaggio con competenze apprese quali arrampicarsi, saltare, stare in equilibrio, andare in bici, sciare, lottare, nuotare, lanciare e afferrare oggetti al volo. I personaggi che fanno maggiore affidamento sulla forza fisica che non sulla coordinazione possono prendere il Vantaggio Bruto per associare questa abilità alla Forza anziché all'Agilità."
+  source: core
+
+- name: Abilita - Base
+  subclass: Conoscenze Comuni
+  domains: "Intelligenza"
+  description: "I tiri di Conoscenze Comuni determinano se il personaggio conosce persone, luoghi e cose del proprio mondo, inclusi la geografia, la cultura, le buone maniere, le tradizioni, la tecnologia più comune e simili. Chiunque è in grado di utilizzare i dispositivi di uso comune nel proprio mondo senza bisogno di un tiro."
+  source: core
+
+- name: Abilita - Base
+  subclass: Furtivita
+  domains: "Agilità"
+  description: "Furtività è la capacità di nascondersi e muoversi silenziosamente. Un successo significa che il personaggio non si fa scoprire da nemici che non stanno prestando particolare attenzione. Una volta allarmati i nemici, Furtività diventa un tiro contrapposto a Percezione."
+  source: core
+
+- name: Abilita - Base
+  subclass: Percezione
+  domains: "Intelligenza"
+  description: "Percezione rappresenta la consapevolezza, l'attenzione e l'acume dei sensi e si utilizza per cogliere dettagli, accorgersi in tempo di un'imboscata, notare un'arma nascosta, comprendere se una persona è spaventata o felice, o se sta mentendo."
+  source: core
+
+- name: Abilita - Base
+  subclass: Persuasione
+  domains: "Spirito"
+  description: "Persuasione è la capacità di convincere gli altri a fare qualcosa, tramite il ragionamento, la retorica, le promesse, o altri metodi comunque amichevoli. Non è una forma di controllo mentale e può alterare la disposizione dell'interlocutore ma non i suoi obiettivi fondamentali."
+  source: core
+
+# Abilità Combat e Fisiche
+- name: Abilita
+  subclass: Arte del Furto
+  domains: "Agilità"
+  description: "Scassinare serrature, forzare casseforti, rubare con destrezza, piazzare e disattivare trappole e altre azioni di sotterfugio, sabotaggio, inganno e manipolazione rientrano nell'ambito di Arte del Furto."
+  source: core
+
+- name: Abilita
+  subclass: Cavalcare
+  domains: "Agilità"
+  description: "Cavalcare permette di montare e condurre ogni genere di creatura o veicolo a trazione animale comuni nell'ambientazione. Può quindi trattarsi di cavalli, cammelli, draghi, carri, carrozze e simili."
+  source: core
+
+- name: Abilita
+  subclass: Combattere
+  domains: "Agilità"
+  description: "Combattere è l'abilità utilizzata per tutti i tipi di attacchi in corpo a corpo, che si tratti di utilizzare asce, spade laser o arti marziali. Le regole relative al combattimento e alle manovre possibili in mischia sono descritte nel Capitolo Tre."
+  source: core
+
+- name: Abilita
+  subclass: Guidare
+  domains: "Agilità"
+  description: "Guidare permette di controllare tutti i veicoli a motore comuni nell'ambientazione, incluse auto, moto, camion e anche carri armati. I tiri di Guidare sono di solito richiesti per situazioni pericolose o stressanti, come per esempio durante gli Inseguimenti."
+  source: core
+
+- name: Abilita
+  subclass: Navigare
+  domains: "Agilità"
+  description: "I personaggi con questa abilità sanno governare la maggior parte delle imbarcazioni comuni nella propria ambientazione e sono competenti anche nelle attività associate alla navigazione, come per esempio realizzare nodi, riparare vele o seguire le correnti."
+  source: core
+
+- name: Abilita
+  subclass: Pilotare
+  domains: "Agilità"
+  description: "Pilotare permette di manovrare aeroplani, elicotteri, jetpack, astronavi e ogni altro velivolo. Le regole per gli Inseguimenti e il combattimento tra veicoli si trovano nel Capitolo Quattro. Un essere dotato della capacità innata di volare utilizza l'abilità Atletica."
+  source: core
+
+- name: Abilita
+  subclass: Sparare
+  domains: "Agilità"
+  description: "Sparare si applica all'uso di qualunque arma a distanza: archi, pistole, lanciarazzi e simili. Per le armi scagliate, si utilizza invece Atletica. Per le regole relative al combattimento a distanza vedi il Capitolo Tre."
+  source: core
+
+# Abilità Sociali e Mentali
+- name: Abilita
+  subclass: Esibirsi
+  domains: "Spirito"
+  description: "Un buon intrattenitore può risollevare lo spirito dei compagni, spingere la folla ad agire, o semplicemente guadagnare qualche soldo. Esibirsi può rappresentare il canto, la recitazione, suonare uno strumento, e ogni altra attività che intrattenga un pubblico. Può anche essere usata al posto di Persuasione per tentare di ingannare, bluffare o impersonare qualcuno."
+  source: core
+
+- name: Abilita
+  subclass: Intimidire
+  domains: "Spirito"
+  description: "Intimidire rappresenta l'arte di atterrire l'avversario fino a farlo esitare, rivelare informazioni o fuggire. Il tiro di Intimidire è contrapposto a un tiro di Spirito del bersaglio."
+  source: core
+
+- name: Abilita
+  subclass: Provocare
+  domains: "Intelligenza"
+  description: "Provocare prende di mira l'orgoglio del bersaglio, utilizzando le armi della derisione, dell'ironia crudele o della sopraffazione verbale. Il tiro di Provocare è contrapposto a un tiro di Intelligenza del bersaglio. In combattimento, tale tiro si considera un Test."
+  source: core
+
+# Abilità di Conoscenza
+- name: Abilita
+  subclass: Battaglia
+  domains: "Intelligenza"
+  description: "Battaglia rappresenta l'attitudine al comando e le competenze tattiche e strategiche. I tiri di Battaglia possono riguardare anche le conoscenze in ambito militare, ma sono fondamentali per condurre le truppe durante le Battaglie di Massa."
+  source: core
+
+- name: Abilita
+  subclass: Conoscenze Accademiche
+  domains: "Intelligenza"
+  description: "Le Conoscenze Accademiche includono le arti liberali, le scienze sociali, la letteratura, la storia, l'archeologia e simili campi del sapere. Se un personaggio desidera sapere quando era prevista la fine del mondo nel calendario dei Maya, oppure citare i versi del Macbeth, questa è l'abilità che fa per lui."
+  source: core
+
+- name: Abilita
+  subclass: Elettronica
+  domains: "Intelligenza"
+  description: "Chiunque è in grado di utilizzare i dispositivi di uso comune nel proprio mondo. Attrezzature più complesse e specializzate, come per esempio macchinari industriali o l'apparato di sensori di un'astronave, richiedono invece questa abilità. Per aggiustare attrezzature elettroniche si usa l'abilità Riparare."
+  source: core
+
+- name: Abilita
+  subclass: Gioco d'Azzardo
+  domains: "Intelligenza"
+  description: "Il gioco d'azzardo è un'attività comune nei saloon del vecchio west così come nei covi delle organizzazioni criminali. Determinare rapidamente l'esito di un'ora di gioco d'azzardo: ciascun giocatore si accorda su un valore di posta di partenza e poi effettua un singolo tiro; chi ha ottenuto il totale più basso deve pagare a chi ha ottenuto il totale più alto."
+  source: core
+
+- name: Abilita
+  subclass: Guarigione
+  domains: "Intelligenza"
+  description: "Guarigione ricopre numerose attività: diagnosticare malattie, esaminare prove medico-legali, ma anche curare personaggi feriti. Le regole relative alla guarigione delle Ferite si trovano a pag. 122, mentre per le cure di personaggi intossicati o avvelenati vedi pag. 170."
+  source: core
+
+- name: Abilita
+  subclass: Hackerare
+  domains: "Intelligenza"
+  description: "Hackerare è l'abilità utilizzata per creare programmi e forzare sistemi di sicurezza mediante l'uso di un computer o un altro genere di interfaccia. La maggior parte dei compiti si risolve con un semplice tiro di Hackerare."
+  source: core
+
+- name: Abilita
+  subclass: Linguaggi
+  domains: "Intelligenza"
+  description: "In alcune ambientazioni, la capacità di parlare numerose lingue può essere importante. Se si decide di utilizzare questa abilità, ciascuna lingua è un'abilità separata: Linguaggi (Spagnolo), Linguaggi (Lingua Italiana dei Segni), e così via. Il tipo di dado indica anche quanto è fluente nella conversazione del personaggio."
+  source: core
+
+- name: Abilita
+  subclass: Occulto
+  domains: "Intelligenza"
+  description: "Occulto riflette la conoscenza e l'esperienza in ambito paranormale: il tipo di cose che la maggior parte della gente non crede neanche possa esistere. Può essere utilizzata per decifrare misteriosi pittogrammi, ricordare informazioni utili relative a creature soprannaturali, conoscere i rimedi per 'malattie' quali la licantropia o il vampirismo, e per svolgere rituali esoterici."
+  source: core
+
+- name: Abilita
+  subclass: Ricerca
+  domains: "Intelligenza"
+  description: "Ricerca permette di consultare biblioteche, archivi, internet e ogni altra fonte scritta. La durata di un tentativo è stabilita dal GM. Reperire un'informazione su internet, o trovare un passaggio specifico all'interno di un libro potrebbe essere possibile anche nel corso di un round di combattimento."
+  source: core
+
+- name: Abilita
+  subclass: Riparare
+  domains: "Intelligenza"
+  description: "Riparare consente di smontare e/o aggiustare macchinari, veicoli, armi e semplici dispositivi elettronici, nonché di utilizzare esplosivi. La durata di un tentativo di riparazione dipende dalla complessità del compito ed è stabilita dal GM."
+  source: core
+
+- name: Abilita
+  subclass: Scienze
+  domains: "Intelligenza"
+  description: "Questa abilità rappresenta le conoscenze relative agli ambiti delle cosiddette 'scienze dure', come per esempio biologia, chimica, geologia, ingegneria, programmazione o xenobiologia."
+  source: core
+
+- name: Abilita
+  subclass: Sopravvivenza
+  domains: "Intelligenza"
+  description: "Sopravvivenza consente di trovare cibo, acqua e riparo in ambienti ostili. Può anche essere utilizzata per orientarsi in aree selvagge, comprendere quali piante sono commestibili e quali no. Include anche la capacità di Seguire Tracce."
+  source: core
+
+# Abilità Arcane
+- name: Abilita - Arcana
+  subclass: Arti Psioniche
+  domains: "Intelligenza"
+  description: "Gli psionici utilizzano questa abilità per attivare i loro poteri. Vedi Background Arcano (Arti Psioniche) a pag. 188."
+  source: core
+
+- name: Abilita - Arcana
+  subclass: Fede
+  domains: "Spirito"
+  description: "Fede è l'abilità arcana richiesta dal Background Arcano (Miracoli), descritta a pag. 188."
+  source: core
+
+- name: Abilita - Arcana
+  subclass: Focus
+  domains: "Spirito"
+  description: "Focus è l'abilità arcana richiesta dal Background Arcano (Dono), descritta a pag. 188."
+  source: core
+
+- name: Abilita - Arcana
+  subclass: Lanciare Incantesimi
+  domains: "Intelligenza"
+  description: "Maghi, stregoni, incantatori e streghe utilizzano Lanciare Incantesimi per attivare i propri poteri. Vedi Background Arcano (Magia) a pag. 188."
+  source: core
+
+- name: Abilita - Arcana
+  subclass: Scienza Folle
+  domains: "Intelligenza"
+  description: "Scienziati pazzi, inventori e alchimisti sono figure comuni in molti mondi selvaggi, e tutti utilizzano Scienza Folle come abilità per attivare i poteri del Background Arcano (Scienza Folle), descritto a pag. 165."
+  source: core
