@@ -1,0 +1,126 @@
+pipeline {
+    agent any
+
+    environment {
+        APP_NAME = 'my-app'
+        VERSION   = "1.0.${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Cloning repository..."
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Building ${APP_NAME} v${VERSION}..."
+                sh '''
+                    echo "Compiling source..."
+                    # esempio con Maven:
+                    # mvn clean package -DskipTests
+                    echo "Build completato."
+                '''
+            }
+        }
+
+        stage('Test') {
+            parallel {
+                stage('Unit Tests') {
+                    steps {
+                        echo "Eseguendo unit test..."
+                        sh '''
+                            # mvn test
+                            echo "Unit test superati."
+                        '''
+                    }
+                }
+                stage('Lint') {
+                    steps {
+                        echo "Eseguendo lint..."
+                        sh '''
+                            # eslint . oppure golangci-lint run
+                            echo "Lint superato."
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Docker Build & Push') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "Costruendo immagine Docker..."
+                sh """
+                    docker build -t ${APP_NAME}:${VERSION} .
+                    docker tag ${APP_NAME}:${VERSION} ${APP_NAME}:latest
+                    # docker push myregistry/${APP_NAME}:${VERSION}
+                """
+            }
+        }
+
+        stage('Deploy to Staging') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "Deploy su staging..."
+                sh '''
+                    # kubectl apply -f k8s/staging/
+                    # oppure: docker compose up -d
+                    echo "Deploy su staging completato."
+                '''
+            }
+        }
+
+        stage('Integration Tests') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo "Eseguendo integration test su staging..."
+                sh '''
+                    # curl -f http://staging.myapp.com/health
+                    echo "Integration test superati."
+                '''
+            }
+        }
+
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            input {
+                message "Vuoi fare il deploy in produzione?"
+                ok "Deploy!"
+            }
+            steps {
+                echo "Deploy in produzione di ${APP_NAME} v${VERSION}..."
+                sh '''
+                    # kubectl apply -f k8s/production/
+                    echo "Deploy in produzione completato."
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completata con successo! Build ${VERSION}"
+        }
+        failure {
+            echo "Pipeline fallita. Controlla i log per i dettagli."
+            // emailext subject: "Build fallita: ${APP_NAME} ${VERSION}",
+            //          body: "Controlla: ${BUILD_URL}",
+            //          to: "team@example.com"
+        }
+        always {
+            echo "Pulizia workspace..."
+            cleanWs()
+        }
+    }
+}
