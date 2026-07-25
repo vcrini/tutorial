@@ -1,0 +1,180 @@
+backgrounds:
+  - name: Acolyte
+    ability_choices: [int, wis, cha]
+    feat: Magic Initiate (Cleric)
+    skill_proficiencies: [Insight, Religion]
+    tool_proficiency: "Calligrapher's Supplies"
+    equipment:
+      - "a holy symbol"
+      - "a prayer book or prayer wheel"
+      - "5 sticks of incense"
+      - "vestments"
+      - "a set of common clothes"
+      - "a pouch with 8 GP"
+    gold_alternative: "50 GP"
+
+  - name: Artisan
+    ability_choices: [str, dex, int]
+    feat: Crafter
+    skill_proficiencies: [Investigation, Persuasion]
+    tool_proficiency: "one type of Artisan's Tools"
+    equipment:
+      - "a set of artisan's tools (the type in which you have proficiency)"
+      - "a traveler's clothes"
+      - "a pouch with 32 GP"
+    gold_alternative: "50 GP"
+
+  - name: Charlatan
+    ability_choices: [dex, con, cha]
+    feat: Skilled
+    skill_proficiencies: [Deception, "Sleight of Hand"]
+    tool_proficiency: "Forgery Kit"
+    equipment:
+      - "a forgery kit"
+      - "a set of fine clothes"
+      - "a pouch with 15 GP"
+    gold_alternative: "50 GP"
+
+  - name: Criminal
+    ability_choices: [dex, con, int]
+    feat: Alert
+    skill_proficiencies: [Sleight of Hand, Stealth]
+    tool_proficiency: "Thieves' Tools"
+    equipment:
+      - "a crowbar"
+      - "a set of dark common clothes with a hood"
+      - "a pouch with 16 GP"
+    gold_alternative: "50 GP"
+
+  - name: Entertainer
+    ability_choices: [str, dex, cha]
+    feat: Musician
+    skill_proficiencies: [Acrobatics, Performance]
+    tool_proficiency: "Musical Instrument"
+    equipment:
+      - "a musical instrument of your choice"
+      - "a costume"
+      - "a pouch with 11 GP"
+    gold_alternative: "50 GP"
+
+  - name: Farmer
+    ability_choices: [str, con, wis]
+    feat: Tough
+    skill_proficiencies: [Animal Handling, Nature]
+    tool_proficiency: "Carpenter's Tools"
+    equipment:
+      - "a sickle"
+      - "a set of common clothes"
+      - "a pouch with 30 GP"
+    gold_alternative: "50 GP"
+
+  - name: Guard
+    ability_choices: [str, int, wis]
+    feat: Alert
+    skill_proficiencies: [Athletics, Perception]
+    tool_proficiency: "Gaming Set"
+    equipment:
+      - "a spear"
+      - "a set of common clothes"
+      - "a pouch with 12 GP"
+    gold_alternative: "50 GP"
+
+  - name: Guide
+    ability_choices: [dex, con, wis]
+    feat: Magic Initiate (Druid)
+    skill_proficiencies: [Stealth, Survival]
+    tool_proficiency: "Cartographer's Tools"
+    equipment:
+      - "a staff"
+      - "a set of traveler's clothes"
+      - "a pouch with 3 GP"
+    gold_alternative: "50 GP"
+
+  - name: Hermit
+    ability_choices: [con, wis, cha]
+    feat: Healer
+    skill_proficiencies: [Medicine, Religion]
+    tool_proficiency: "Herbalism Kit"
+    equipment:
+      - "a herbalism kit"
+      - "a set of common clothes"
+      - "a pouch with 16 GP"
+    gold_alternative: "50 GP"
+
+  - name: Merchant
+    ability_choices: [con, int, cha]
+    feat: Lucky
+    skill_proficiencies: [Animal Handling, Persuasion]
+    tool_proficiency: "Navigator's Tools"
+    equipment:
+      - "a pack of merchant's goods"
+      - "a set of traveler's clothes"
+      - "a pouch with 22 GP"
+    gold_alternative: "50 GP"
+
+  - name: Noble
+    ability_choices: [str, int, cha]
+    feat: Skilled
+    skill_proficiencies: [History, Persuasion]
+    tool_proficiency: "Gaming Set"
+    equipment:
+      - "a fine set of clothes"
+      - "a signet ring"
+      - "a pouch with 29 GP"
+    gold_alternative: "50 GP"
+
+  - name: Sage
+    ability_choices: [con, int, wis]
+    feat: Magic Initiate (Wizard)
+    skill_proficiencies: [Arcana, History]
+    tool_proficiency: "Calligrapher's Supplies"
+    equipment:
+      - "a quarterstaff"
+      - "a set of common clothes"
+      - "a pouch with 8 GP"
+    gold_alternative: "50 GP"
+
+  - name: Sailor
+    ability_choices: [str, dex, wis]
+    feat: Tavern Brawler
+    skill_proficiencies: [Acrobatics, Perception]
+    tool_proficiency: "Navigator's Tools"
+    equipment:
+      - "a dagger"
+      - "a set of traveler's clothes"
+      - "a pouch with 20 GP"
+    gold_alternative: "50 GP"
+
+  - name: Scribe
+    ability_choices: [dex, int, wis]
+    feat: Skilled
+    skill_proficiencies: [Investigation, Perception]
+    tool_proficiency: "Calligrapher's Supplies"
+    equipment:
+      - "a calligrapher's supplies"
+      - "a set of fine clothes"
+      - "a pouch with 23 GP"
+    gold_alternative: "50 GP"
+
+  - name: Soldier
+    ability_choices: [str, dex, con]
+    feat: Savage Attacker
+    skill_proficiencies: [Athletics, Intimidation]
+    tool_proficiency: "Gaming Set"
+    equipment:
+      - "a spear"
+      - "a set of gaming set pieces"
+      - "a set of common clothes"
+      - "a pouch with 14 GP"
+    gold_alternative: "50 GP"
+
+  - name: Wayfarer
+    ability_choices: [dex, wis, cha]
+    feat: Lucky
+    skill_proficiencies: [Insight, Stealth]
+    tool_proficiency: "Thieves' Tools"
+    equipment:
+      - "a dagger"
+      - "a set of traveler's clothes"
+      - "a pouch with 16 GP"
+    gold_alternative: "50 GP"
